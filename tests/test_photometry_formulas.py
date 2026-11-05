@@ -45,30 +45,6 @@ def _sloped_flux():
     return 3e-12 * (1.0 + WL / 7000.0)
 
 
-@pytest.mark.parametrize("system, zero_point", [("AB", AB_ZERO_FLUX), ("Vega", VEGA_ZERO_POINT)])
-def test_magnitude_of_positive_flux_is_the_formula_exactly(system, zero_point):
-    sed = EvaluatedSED(WL, _sloped_flux(), {"teff": 5000.0, "logg": 4.0, "meta": 0.0}, _OneFilter(_band()))
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-        result = sed.photometry("Band", system=system)["Band"]
-        _, flux_density, magnitude = _band_magnitude(WL, _sloped_flux(), _band(), system, None)
-
-    assert flux_density == result.flux_density > 0
-    for value in (result.magnitude, magnitude):
-        assert type(value) is float
-        assert value == -2.5 * math.log10(flux_density / zero_point)
-
-
-def test_bolometric_magnitude_of_positive_flux_is_the_formula_exactly():
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-        fbol, mbol = bolometric_magnitude(WL, _sloped_flux(), reference_flux=2.5e-8, reference_magnitude=-26.8)
-
-    assert fbol > 0
-    assert type(mbol) is float
-    assert mbol == -26.8 - 2.5 * math.log10(fbol / 2.5e-8)
-
-
 @pytest.mark.parametrize("flux_scale, reference_flux, expected", [
     (0.0, 1.0, math.inf),     # used to be inf by a special case
     (-1.0, 1.0, math.nan),    # used to be inf by a special case

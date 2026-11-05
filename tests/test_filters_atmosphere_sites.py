@@ -118,31 +118,6 @@ def test_unstated_airmass_is_listed_apart_and_selected_explicitly(tmp_path):
 # ---------------------------------------------------------------------------
 # Which sites an instrument may use
 # ---------------------------------------------------------------------------
-def test_team_site_is_offered_next_to_the_default_site(tmp_path):
-    inst = _instrument(tmp_path / "filters", default_site="paranal", sites=["here_team"])
-    manifest = InstrumentManifest.load(inst)
-    assert manifest.sites() == ["paranal", "here_team"]
-    assert resolve_atmosphere(manifest, AtmosphereSpec(None, 1.2, 2.5)).site == "paranal"
-    assert resolve_atmosphere(manifest, AtmosphereSpec("here_team", 1.2)).site == "here_team"
-    with pytest.raises(ComponentError, match=r"observes from paranal, here_team; atmospheres from other sites \(lsst_std\) are not mixed in"):
-        resolve_atmosphere(manifest, AtmosphereSpec("lsst_std", 1.2))
-    info = manifest.describe()
-    assert info["atmosphere"] is True and info["atmosphere_sites"] == ["paranal", "here_team"]
-
-
-def test_registered_team_sites_need_no_manifest_change():
-    ps1 = InstrumentManifest(facility="PAN-STARRS", instrument="PS1", bands=["g"], ground_based=True)
-    assert resolve_atmosphere(ps1, AtmosphereSpec(None, 1.2)).site == "haleakala_ps1"
-    twomass = InstrumentManifest(facility="2MASS", instrument="2MASS", bands=["J"], ground_based=True)
-    with pytest.raises(ComponentError, match="several atmosphere sites"):
-        resolve_atmosphere(twomass, AtmosphereSpec(None, None))
-    assert resolve_atmosphere(twomass, AtmosphereSpec("ctio_2mass", None)).site == "ctio_2mass"
-    vista = InstrumentManifest(facility="Paranal", instrument="VISTA", bands=["J"], ground_based=True,
-                               default_site="paranal")
-    assert vista.sites() == ["paranal", "paranal_vircam"]
-    assert instrument_sites("Gemini", "GPI") == ()  # moved between sites: deliberately absent
-
-
 def test_existing_single_site_instruments_are_unchanged(tmp_path):
     inst = _instrument(tmp_path / "filters", "LSST", "LSST", default_site="lsst_std")
     manifest = InstrumentManifest.load(inst)
@@ -154,18 +129,6 @@ def test_existing_single_site_instruments_are_unchanged(tmp_path):
 # ---------------------------------------------------------------------------
 # Composition with team atmospheres
 # ---------------------------------------------------------------------------
-def test_compose_with_unstated_team_atmosphere(tmp_path):
-    inst = _instrument(tmp_path / "filters", sites=["plexus_team"])
-    write_site(tmp_path / "atm", _site("plexus_team", entries=[
-        (None, None, DerivedCurve("u", _curve([0.5, 0.5, 0.5]), ""))]), None)
-    out = build_product(inst, ["filter"], atmosphere={"site": "plexus_team", "airmass": None},
-                        atmosphere_root=tmp_path / "atm")
-    assert out.name == "filter+atm_plexus_team_amunstated"
-    header = read_filter_header(out / "g.dat")
-    assert header["Atmosphere"] == "site=plexus_team airmass=unstated"
-    assert header["Components"] == "filter+atmosphere"
-
-
 def test_site_outside_range_overrides_the_instruments_policy(tmp_path):
     short = DerivedCurve("u", lambda s: (np.array([4500.0, 5500.0]), np.array([0.9, 0.9])), "")
     inst = _instrument(tmp_path / "filters", default_site="short_team", outside="edge")

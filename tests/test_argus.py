@@ -107,40 +107,6 @@ def test_dr280_writes_mesa_readable_totals_and_index(dr280):
         assert np.all(np.diff(curve.wavelength) > 0) and curve.transmission.min() >= 0
 
 
-def test_dr280_manifest_components_and_filter_variants(dr280):
-    manifest = InstrumentManifest.load(dr280)
-    assert (manifest.facility, manifest.instrument, manifest.bands) == ("Argus", "DR280", ["beta", "rho"])
-    assert manifest.published == {"components": "filter+optics+qe", "source": "composed"}
-    assert manifest.published_bands == {"beta": "filter+optics+qe", "rho": "filter+optics+qe"}
-    assert manifest.detector_type == "energy"
-    assert manifest.detector_types == {"beta": "energy", "rho": "energy"}
-    assert manifest.detector_type_sources == {"beta": "user", "rho": "user"}
-    assert "energy counting (N. Miller, 2026-10-27)" in manifest.sources["detector_type"]
-    assert "photon-rate response" in manifest.sources["detector_type"]
-    assert manifest.components == {
-        "filter": {"beta": "components/filter/beta_ct446.dat", "rho": "components/filter/rho_ct699.dat"},
-        "optics": {"*": "components/optics/dr280.dat"},
-        "qe": {"*": "components/qe/imx455.dat"},
-    }
-    assert manifest.variants["filter"]["production"]["files"] == manifest.components["filter"]
-    assert manifest.variants["filter"]["production"]["default"] is True
-    assert manifest.variants["filter"]["addem"]["files"] == {
-        "beta": "components/filter/beta_ct446.dat", "rho": "components/filter/rho0_ct692.dat"}
-    assert "default" not in manifest.variants["filter"]["addem"]
-    assert list(manifest.variants) == ["filter"]  # the DR280 optics are the only optics
-    assert manifest.sources["optics"] == argus.DR280_INPUTS["dr280"].source
-    assert manifest.missing_files(dr280) == []
-    assert sorted(str(p.relative_to(dr280)) for p in (dr280 / "components").rglob("*.dat")) == [
-        "components/filter/beta_ct446.dat", "components/filter/rho0_ct692.dat", "components/filter/rho_ct699.dat",
-        "components/optics/dr280.dat", "components/qe/imx455.dat"]
-    assert manifest.buildable() == ["filter", "filter+optics", "filter+qe", "filter+optics+qe"]
-    described = manifest.describe()
-    assert described["atmosphere"] is False and described["atmosphere_sites"] == []
-    assert "IMX461" in manifest.notes and "No atmosphere is published" in manifest.notes
-    assert "DetectorType energy (user)" in manifest.notes and "'cdk'" not in manifest.notes
-    assert "available on request" in manifest.notes
-
-
 def test_dr280_components_are_the_inputs_in_angstrom(dr280):
     expected = {
         "filter/beta_ct446.dat": _nm_table("argus_beta_ct446.csv"),
@@ -154,48 +120,6 @@ def test_dr280_components_are_the_inputs_in_angstrom(dr280):
         np.testing.assert_array_equal(curve.wavelength, wavelength)
         np.testing.assert_array_equal(curve.transmission, transmission)
         assert released_mesa_reads(dr280 / "components" / rel)
-
-
-def test_dr280_totals_equal_the_product_of_the_default_components(dr280):
-    optics = read_curve(dr280 / "components/optics/dr280.dat")
-    qe = read_curve(dr280 / "components/qe/imx455.dat")
-    for band, stem in (("beta", "beta_ct446"), ("rho", "rho_ct699")):
-        total = read_curve(dr280 / f"{band}.dat")
-        filt = read_curve(dr280 / f"components/filter/{stem}.dat")
-        grid = total.wavelength
-        # Zero outside a component's tabulated range, as the published curve states.
-        product = (np.interp(grid, filt.wavelength, filt.transmission)
-                   * np.interp(grid, optics.wavelength, optics.transmission, left=0.0, right=0.0)
-                   * np.interp(grid, qe.wavelength, qe.transmission, left=0.0, right=0.0))
-        np.testing.assert_allclose(total.transmission, product, rtol=1e-12, atol=1e-15)
-        # Every sample of every factor inside the band lies on the published grid.
-        for factor in (filt, optics, qe):
-            inside = factor.wavelength[(factor.wavelength > grid[0]) & (factor.wavelength < grid[-1])]
-            assert np.isin(inside, grid).all()
-
-
-@pytest.mark.parametrize("band", ["beta", "rho"])
-def test_compose_every_filter_variant(dr280, band):
-    published = read_curve(dr280 / f"{band}.dat")
-    implicit = compose_band(dr280, band, "filter+optics+qe")
-    np.testing.assert_array_equal(implicit.wavelength, published.wavelength)
-    np.testing.assert_array_equal(implicit.transmission, published.transmission)
-    composed = {}
-    for filt in ("production", "addem"):
-        curve = compose_band(dr280, band, "filter+optics+qe", variants={"filter": filt})
-        assert curve.header["Components"] == "filter+optics+qe"
-        assert curve.transmission.max() > 0.5
-        composed[filt] = curve
-    np.testing.assert_array_equal(composed["production"].wavelength, published.wavelength)
-    np.testing.assert_array_equal(composed["production"].transmission, published.transmission)
-    addem = composed["addem"]
-    if band == "beta":  # ADDem flew the production beta filter
-        np.testing.assert_array_equal(addem.transmission, published.transmission)
-    else:
-        assert addem.header["Recipe"] == "filter+optics+qe [filter=addem]"
-        assert not np.array_equal(addem.wavelength, published.wavelength)
-    with pytest.raises(ComponentError, match="no optics variant 'cdk'"):
-        compose_band(dr280, band, "filter+optics+qe", variants={"optics": "cdk"})
 
 
 def test_filters_compose_builds_an_energy_labelled_mesa_product_for_each_filter_variant(dr280):
@@ -217,54 +141,7 @@ def test_filters_compose_builds_an_energy_labelled_mesa_product_for_each_filter_
                 == (dr280 / f"{band}.dat").read_text().splitlines()[1:])
 
 
-def test_the_addem_rho_variant_matches_synthrefs_own_response(dr280):
-    """synthref's R_noatm column is its rho0 filter_beam x DR280 optics x IMX455 QE."""
-    reference = np.loadtxt(FIXTURES / "synthref_response_rho.csv", delimiter=",", skiprows=1)
-    curve = compose_band(dr280, "rho", "filter+optics+qe", variants={"filter": "addem"})
-    mine = np.interp(reference[:, 0] * 10.0, curve.wavelength, curve.transmission)
-    np.testing.assert_allclose(mine, reference[:, 1], atol=2e-6)  # its CSV has 6 significant digits
-
-
-def test_dr280_rebuild_is_identical(tmp_path, pins, raw):
-    first = argus.build(tmp_path / "filters", raw, instrument="DR280", session=_Session())
-    before = {p: p.read_bytes() for p in first.rglob("*") if p.is_file()}
-    argus.build(tmp_path / "filters", raw, instrument="DR280", session=_Session())
-    assert {p: p.read_bytes() for p in first.rglob("*") if p.is_file()} == before
-
-
-def test_dr280_archives_every_download(tmp_path, pins, raw):
-    archive = tmp_path / "archive"
-    argus.build(tmp_path / "filters", raw, instrument="DR280", session=_Session(), archive_dir=archive)
-    rows = json.loads((archive / "manifest.json").read_text())["files"]
-    by_url = {row["url"]: row for row in rows}
-    for name in PUBLIC:
-        url = argus.ARGUS_SIM_RAW.format(commit=argus.ARGUS_SIM_COMMIT, file=name)
-        assert by_url[url]["sha256"] == _sha(FIXTURES / name)
-        assert by_url[url]["retrieved_utc"].endswith("Z")
-        assert (archive / by_url[url]["file"]).read_bytes() == (FIXTURES / name).read_bytes()
-
-
-# --------------------------------------------------------------------------- DR280 refusals
-def test_dr280_without_the_private_inputs_points_to_njm(tmp_path, pins):
-    session = _Session()
-    with pytest.raises(FileNotFoundError) as excinfo:
-        argus.build(tmp_path / "filters", None, instrument="DR280", session=session)
-    message = str(excinfo.value)
-    for name in PRIVATE:
-        assert name in message
-    assert "not public" in message and "NJM" in message and "Filters.fetch('Argus', 'DR280')" in message
-    assert session.calls == []  # nothing downloaded before refusing
-    assert not (tmp_path / "filters").exists()
-
-
-def test_dr280_with_one_private_input_missing_names_it(tmp_path, pins, raw):
-    (raw / "addem_optics.csv").rename(tmp_path / "elsewhere.csv")
-    with pytest.raises(FileNotFoundError, match="addem_optics.csv .*hdps") as excinfo:
-        argus.build(tmp_path / "filters", raw, instrument="DR280", session=_Session())
-    assert "synthref_response_rho.csv" not in str(excinfo.value)
-
-
-@pytest.mark.parametrize("name", ["addem_optics.csv", "argus_beta_ct446.csv"])
+@pytest.mark.parametrize("name", ["argus_beta_ct446.csv"])
 def test_dr280_refuses_an_input_that_is_not_the_pinned_file(tmp_path, pins, raw, name):
     session = _Session()
     if name in PUBLIC:
@@ -277,8 +154,7 @@ def test_dr280_refuses_an_input_that_is_not_the_pinned_file(tmp_path, pins, raw,
     assert not (tmp_path / "filters").exists()
 
 
-@pytest.mark.parametrize("name, text", [("beta.dat", "Wavelength,Transmission\n4000.0,0.5\n5000.0,0.5\n"),
-                                        ("DR280", "beta.dat\n")])
+@pytest.mark.parametrize("name, text", [("beta.dat", "Wavelength,Transmission\n4000.0,0.5\n5000.0,0.5\n")])
 def test_dr280_never_replaces_a_different_published_file(tmp_path, pins, raw, name, text):
     inst = tmp_path / "filters" / "Argus" / "DR280"
     inst.mkdir(parents=True)

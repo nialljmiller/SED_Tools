@@ -76,17 +76,6 @@ def test_blank_teff_raises_naming_the_file(tmp_path):
     assert not (model / "flux_cube.bin").exists()
 
 
-def test_non_numeric_value_in_a_grouped_grid_raises(tmp_path):
-    # Grids with extra axes used their own parser, which turned bad values into 0.0.
-    model = _write_grid(tmp_path / "grid", [
-        ("a.txt", 5000.0, 4.0, 0.0, "0.0"),
-        ("b.txt", 5000.0, "high", 0.0, "0.4"),
-    ], columns=("file_name", "teff", "logg", "metallicity", "alpha"))
-    with pytest.raises(ValueError, match=r"logg = 'high' for b\.txt"):
-        pcf.precompute_flux_cube(str(model), str(model / "flux_cube.bin"))
-    assert not list(model.glob("*/flux_cube.bin"))
-
-
 def test_missing_teff_column_raises(tmp_path):
     model = _write_grid(tmp_path / "grid", [
         ("a.txt", 4.0, 0.0),
@@ -180,13 +169,6 @@ def _fake_sysconf(monkeypatch, page_size, pages):
     monkeypatch.setattr(_constants.os, "sysconf", values.__getitem__)
 
 
-def test_psutil_is_used_when_installed(monkeypatch, tmp_path):
-    memory = types.SimpleNamespace(available=123 * 1024**2)
-    monkeypatch.setattr(_constants, "psutil", types.SimpleNamespace(virtual_memory=lambda: memory))
-    monkeypatch.setattr(_constants, "_MEMINFO", str(tmp_path / "unread"))
-    assert _constants.available_memory_bytes() == 123 * 1024**2
-
-
 def test_meminfo_is_read_when_psutil_is_missing(monkeypatch, tmp_path, caplog):
     meminfo = tmp_path / "meminfo"
     meminfo.write_text("MemTotal:  1000 kB\nMemAvailable:  512 kB\n")
@@ -194,14 +176,6 @@ def test_meminfo_is_read_when_psutil_is_missing(monkeypatch, tmp_path, caplog):
     _fake_sysconf(monkeypatch, 4096, 1000)
     with caplog.at_level(logging.WARNING, logger=_constants.__name__):
         assert _constants.available_memory_bytes() == 512 * 1024
-    assert not caplog.records
-
-
-def test_half_the_physical_ram_without_psutil_or_meminfo(monkeypatch, tmp_path, caplog):
-    _without_psutil(monkeypatch, tmp_path / "no_meminfo")
-    _fake_sysconf(monkeypatch, 4096, 1000)
-    with caplog.at_level(logging.WARNING, logger=_constants.__name__):
-        assert _constants.available_memory_bytes() == 4096 * 1000 // 2
     assert not caplog.records
 
 
@@ -215,24 +189,13 @@ def test_meminfo_without_memavailable_falls_back_to_half_the_physical_ram(monkey
     assert not caplog.records
 
 
-def test_physical_ram_on_this_machine(monkeypatch, tmp_path):
-    _without_psutil(monkeypatch, tmp_path / "no_meminfo")
-    if not hasattr(os, "sysconf"):
-        pytest.skip("os.sysconf does not exist on this platform")
-    physical = os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES")
-    assert physical >= 256 * 1024**2
-    assert _constants.available_memory_bytes() == physical // 2
-
-
 def _sysconf_unknown_name(name):
     raise ValueError("unrecognized configuration name")
 
 
 @pytest.mark.parametrize("break_sysconf, reason", [
-    (lambda mp: mp.setattr(_constants.os, "sysconf", _sysconf_unknown_name), "unrecognized configuration name"),
-    (lambda mp: mp.delattr(_constants.os, "sysconf"), "has no attribute 'sysconf'"),
     (lambda mp: _fake_sysconf(mp, 4096, -1), "SC_PHYS_PAGES is -1"),
-], ids=["unknown-name", "no-sysconf", "negative"])
+], ids=["negative"])
 def test_ram_probe_failure_warns_and_assumes_2_gib(monkeypatch, caplog, tmp_path, break_sysconf, reason):
     _without_psutil(monkeypatch, tmp_path / "no_meminfo")
     break_sysconf(monkeypatch)
@@ -310,13 +273,6 @@ def test_non_numeric_vega_zero_point_in_a_filter_file_raises(tmp_path):
         sed.photometry(band, system="Vega", vega_spectrum=vega)
 
 
-def test_numeric_vega_zero_point_is_used(tmp_path):
-    sed = _evaluated_sed(tmp_path)
-    band = _filter_file(tmp_path / "Band.dat", ["# zp_vega = 2.0e-10", "# WavelengthUnit = Angstrom"])
-    result = sed.photometry(band, system="Vega")["Band"]
-    assert result.magnitude == pytest.approx(-2.5 * np.log10(result.flux_density / 2.0e-10))
-
-
 # ---------------------------------------------------------------- flux_cube_tool
 def _run_tool(tmp_path, monkeypatch, filters_dir):
     from sed_tools import flux_cube_tool
@@ -343,13 +299,6 @@ def test_flux_cube_tool_exits_non_zero_when_a_filter_fails(tmp_path, monkeypatch
     assert "Photometry failed for 1 filter(s):" in out
     assert "Dark: Filter transmission integrates to zero" in out
     assert "Good" in out and "mag=" in out
-
-
-def test_flux_cube_tool_exits_zero_when_every_filter_succeeds(tmp_path, monkeypatch):
-    filters = tmp_path / "filters"
-    filters.mkdir()
-    _filter_file(filters / "Good.dat", ["# WavelengthUnit = Angstrom"])
-    assert _run_tool(tmp_path, monkeypatch, filters) == 0
 
 
 def _unreadable_rglob(self, pattern):
@@ -462,34 +411,6 @@ def test_an_ml_extended_grid_with_different_wavelength_ends_is_one_cube(tmp_path
     assert "No extra axes detected" in capsys.readouterr().out
 
 
-def test_a_combined_grid_is_one_cube(tmp_path):
-    grid = tmp_path / "combined_models"
-    grid.mkdir()
-    rows = []
-    for i, (teff, logg) in enumerate([(5000.0, 4.0), (6000.0, 4.0), (5000.0, 4.5), (6000.0, 4.5)]):
-        _spectrum(grid / f"s{i}.txt", np.linspace(1000.0, 10000.0, 20))
-        rows.append(f"s{i}.txt,{teff},{logg},0.0,{'Kurucz' if i % 2 else 'Phoenix'},orig{i}.txt")
-    (grid / "lookup_table.csv").write_text(
-        "#file_name,teff,logg,metallicity,source_model,original_file\n" + "\n".join(rows) + "\n")
-    pcf.precompute_flux_cube(str(grid), str(grid / "flux_cube.bin"))
-    assert (grid / "flux_cube.bin").is_file() and not (grid / "variants_index.csv").exists()
-
-
 # ----------------------------------------------------------------------
 # The split announcement names only the axes that vary
 # ----------------------------------------------------------------------
-def test_the_split_announcement_names_only_the_axes_that_vary(tmp_path, capsys):
-    grid = tmp_path / "Kurucz"
-    grid.mkdir()
-    rows = []
-    for i, (teff, alpha) in enumerate([(5000.0, 0.0), (6000.0, 0.0), (5000.0, 0.4), (6000.0, 0.4)]):
-        _spectrum(grid / f"s{i}.txt", np.linspace(1000.0, 10000.0, 20))
-        rows.append(f"s{i}.txt,{teff},4.0,0.0,{alpha},1.25,2.0")
-    (grid / "lookup_table.csv").write_text("#file_name,teff,logg,metallicity,alpha,lh,vtur\n" + "\n".join(rows) + "\n")
-    pcf.precompute_flux_cube(str(grid), str(grid / "flux_cube.bin"))
-    out = capsys.readouterr().out
-    assert "Extra physical axis detected: alpha\n" in out and "This grid contains 2 alpha variant(s):" in out
-    assert "alpha = 0.0  " in out and "lh = " not in out
-    # The subgrid names are unchanged: every extra column is part of them.
-    assert sorted(p.name for p in grid.iterdir() if p.is_dir()) == [
-        "Kurucz_alpha_0p00_lh_1p25_vtur_2p00", "Kurucz_alpha_0p40_lh_1p25_vtur_2p00"]

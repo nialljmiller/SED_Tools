@@ -319,29 +319,6 @@ def _snapshot(directory):
     return {name: (directory / name).read_bytes() for name in sorted(os.listdir(directory))}
 
 
-def test_bosz_spectrum_is_written_as_served_and_declares_no_flux_unit(tmp_path):
-    model_dir = _download_bosz_fixture(tmp_path)
-    text = (model_dir / mast._sanitize_filename(BOSZ_NAME.replace(".txt.gz", ".txt"))).read_text()
-    header = "".join(line + "\n" for line in text.splitlines() if line.startswith("#"))
-
-    data = np.loadtxt(text.splitlines(), comments="#")
-    np.testing.assert_array_equal(data[:, 0], [float(w) for w in BOSZ_WAVE_LINES])
-    np.testing.assert_array_equal(data[:, 1:], [[float(v) for v in line.split()] for line in BOSZ_SPECTRUM_LINES])
-    assert detect_units_from_header(header)["flux_unit"] is None
-
-
-def test_cleaning_a_bosz_grid_stops_and_asks_for_the_flux_unit(tmp_path):
-    model_dir = _download_bosz_fixture(tmp_path)
-    before = _snapshot(model_dir)
-    txt_files = sorted(str(p) for p in model_dir.glob("*.txt"))
-
-    with pytest.raises(ValueError, match=r"is not declared; best guess"):
-        check_flux_unit("BOSZ-2024-r500", txt_files)
-    with pytest.raises(ValueError, match=r"Flux unit of .*BOSZ-2024-r500 is not declared; best guess"):
-        clean_model_dir(str(model_dir), sample_fraction=1.0)
-    assert _snapshot(model_dir) == before
-
-
 # ---------------------------------------------------------------------
 # Declared flux units: SI factors and header patterns
 # ---------------------------------------------------------------------

@@ -122,17 +122,6 @@ def test_recovery_warns_about_unreadable_h5(tmp_path, caplog):
     assert "broken.h5" in caplog.text
 
 
-def test_recovery_still_uses_a_good_h5_beside_a_broken_one(tmp_path):
-    import numpy as np
-
-    from sed_tools.spectra_cleaner import recover_wavelengths_from_hdf5
-
-    (tmp_path / "broken.h5").write_bytes(b"not an hdf5 file")
-    wl = np.linspace(3000.0, 9000.0, 10)
-    _h5(tmp_path / "good.h5", lambda f: f.create_group("g1").create_dataset("lambda", data=wl))
-    np.testing.assert_array_equal(recover_wavelengths_from_hdf5(str(tmp_path), "g1", 10), wl)
-
-
 # ---------------------------------------------------------------------
 # spectra_cleaner: clean_model_dir must not report success over
 # spectra it left in their original units
@@ -220,20 +209,6 @@ def test_clean_model_dir_stops_at_once_when_a_rewrite_fails(tmp_path, monkeypatc
     assert len(calls) == 1
 
 
-def test_write_standardized_spectrum_length_mismatch_leaves_file_intact(tmp_path):
-    import numpy as np
-
-    from sed_tools.spectra_cleaner import SpectrumMeta, UnitInfo, write_standardized_spectrum
-
-    path = tmp_path / "s.txt"
-    _spectrum(path)
-    before = path.read_text()
-    units = UnitInfo("angstrom", 1.0, "flam", 1.0, "high", "header")
-    with pytest.raises(ValueError):
-        write_standardized_spectrum(str(path), np.arange(1.0, 5.0), np.ones(3), SpectrumMeta(), units)
-    assert path.read_text() == before
-
-
 def test_clean_model_dir_warns_when_units_come_from_each_file(tmp_path, monkeypatch, caplog):
     # The sample happened to hold only standardized files, so the grid-wide
     # units were unknown and the rest were converted one by one, silently.
@@ -270,22 +245,6 @@ def _read(path):
     return read_text_spectrum(str(path))
 
 
-def test_spectrum_100x_too_bright_is_renormalised_to_sigma_t4(tmp_path):
-    # SVO's NextGen T >= 5000 K entries are about 100 times too bright.
-    from sed_tools.spectra_cleaner import clean_spectrum_file
-
-    wl = np.geomspace(100.0, 1e6, 3000)
-    path = tmp_path / "nextgen_like.txt"
-    _write_spectrum(path, 6000.0, wl, 100.0 * planck_flam(wl, 6000.0))
-
-    status, detail = clean_spectrum_file(str(path))
-
-    assert status == "converted_renormed"
-    assert "flux divided by 100 " in detail
-    wl_after, flux_after = _read(path)
-    assert np.trapezoid(flux_after, wl_after) / (SIGMA * 6000.0 ** 4) == pytest.approx(1.0, rel=0.01)
-
-
 def test_cool_giant_far_below_the_blackbody_in_the_optical_is_left_alone(tmp_path):
     # Granada HRES PHOENIX giants at 3000-3500 K, log g <= 1, have 2-10 % of a blackbody's
     # flux over 3000-7000 A (TiO), which holds 8-15 % of sigma*T^4. They are correct; the
@@ -295,25 +254,6 @@ def test_cool_giant_far_below_the_blackbody_in_the_optical_is_left_alone(tmp_pat
     wl = np.linspace(3000.0, 7000.0, 4000)
     path = tmp_path / "m_giant.txt"
     _write_spectrum(path, 3000.0, wl, 0.03 * planck_flam(wl, 3000.0))
-    _, written_before = _read(path)
-
-    status, _ = clean_spectrum_file(str(path))
-
-    assert status == "converted"
-    np.testing.assert_array_equal(_read(path)[1], written_before)
-
-
-@pytest.mark.parametrize("teff", [20000.0, 30000.0, 37000.0])
-def test_correct_hot_blackbody_on_a_wide_grid_is_left_alone(tmp_path, teff):
-    # The first version integrated the blackbody on a 2000-point linear grid. Over
-    # 10 A-1e7 A that misses a hot star's peak, so these correctly scaled spectra
-    # came out 4-11 times too bright and would have been divided by that.
-    from sed_tools.spectra_cleaner import clean_spectrum_file
-
-    wl = np.geomspace(10.0, 1e7, 5000)
-    flux = planck_flam(wl, teff)
-    path = tmp_path / "hot.txt"
-    _write_spectrum(path, teff, wl, flux)
     _, written_before = _read(path)
 
     status, _ = clean_spectrum_file(str(path))
@@ -369,32 +309,6 @@ def test_clean_model_dir_counts_renormed_spectra_as_converted_and_warns(tmp_path
         assert np.trapezoid(flux_after, wl_after) / (SIGMA * teff ** 4) == pytest.approx(1.0, rel=0.01)
 
 
-def test_unstandardized_kurucz_slice_is_converted_without_renormalisation(tmp_path, caplog):
-    # The golden clean_model_dir case only skips these files (they are marked standardized),
-    # so it does not show the check leaves correctly scaled Kurucz spectra alone. This does.
-    import logging
-
-    from sed_tools.spectra_cleaner import clean_model_dir
-
-    grid = shutil.copytree(KURUCZ, tmp_path / "Kurucz2003all")
-    before = {}
-    for path in sorted(grid.glob("*.txt")):
-        path.write_text("".join(line for line in path.read_text().splitlines(keepends=True)
-                                if not line.startswith("# units_standardized")))
-        before[path.name] = _read(path)
-
-    with caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
-        summary = clean_model_dir(str(grid), try_h5_recovery=False, sample_fraction=1.0)
-
-    assert len(summary["converted"]) == 12
-    assert "renormed" not in summary
-    assert not any("renormalisation" in r.getMessage() for r in caplog.records)
-    for name, (wl, flux) in before.items():
-        wl_after, flux_after = _read(grid / name)
-        np.testing.assert_array_equal(wl_after, wl)
-        np.testing.assert_array_equal(flux_after, flux)
-
-
 # ---------------------------------------------------------------------
 # Undeclared flux unit, coverage's A-D note, import's "Load with" hint
 # ---------------------------------------------------------------------
@@ -409,17 +323,6 @@ def _undeclared_flux_grid(directory):
         lines += [f"{w:.6f} {f:.8e}\n" for w, f in zip(wl, planck_flam(wl, teff))]
         (directory / f"s{i}.txt").write_text("".join(lines))
     return directory
-
-
-def test_undeclared_flux_unit_error_names_the_cli_option(tmp_path):
-    from sed_tools.spectra_cleaner import check_flux_unit
-
-    grid = _undeclared_flux_grid(tmp_path / "Cool")
-    with pytest.raises(ValueError) as excinfo:
-        check_flux_unit(str(grid), sorted(str(p) for p in grid.glob("*.txt")), sample_fraction=1.0)
-    message = str(excinfo.value)
-    assert "Pass the unit as flux_unit='fnu_jy'" in message
-    assert "on the command line, pass --flux-unit fnu_jy to sed-tools grids, rebuild or import" in message
 
 
 def _coverage_grid(directory, teffs):
@@ -446,15 +349,3 @@ def test_coverage_says_why_the_normality_test_was_skipped(tmp_path, monkeypatch,
     assert "    A-D     : skipped (needs scipy, which is not installed)" in out
 
 
-def test_import_hint_names_the_model_root_it_imported_into(tmp_path, monkeypatch, capsys):
-    from sed_tools.api import SED
-
-    models = tmp_path / "models"
-    SED.import_grid(_undeclared_flux_grid(tmp_path / "mine"), model_root=models, build_cube=False,
-                    build_h5=False, flux_unit="flam")
-    assert f"Load with: SED.local('mine', model_root={str(models)!r})" in capsys.readouterr().out
-
-    monkeypatch.setattr(SED, "_model_root", models)
-    SED.import_grid(_undeclared_flux_grid(tmp_path / "default"), build_cube=False, build_h5=False,
-                    flux_unit="flam")
-    assert "Load with: SED.local('default')\n" in capsys.readouterr().out

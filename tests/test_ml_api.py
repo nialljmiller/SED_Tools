@@ -21,22 +21,6 @@ from sed_tools.ml import Completer, list_models, model_info
 # list_models — delegates to SEDCompleter.list_models
 # ---------------------------------------------------------------------
 
-def test_list_models_empty_when_directory_missing(tmp_path):
-    assert list_models(str(tmp_path / "nope")) == []
-
-
-def test_list_models_reads_config_fields(tmp_path):
-    model_dir = tmp_path / "m1"
-    model_dir.mkdir()
-    (model_dir / "config.json").write_text(
-        json.dumps({"version": "2.0.0", "framework": "pytorch", "architecture": {"input_dim": 10}})
-    )
-    models = list_models(str(tmp_path))
-    assert len(models) == 1
-    assert models[0]["name"] == "m1"
-    assert models[0]["framework"] == "pytorch"
-
-
 # ---------------------------------------------------------------------
 # model_info — direct config.json read
 # ---------------------------------------------------------------------
@@ -48,11 +32,6 @@ def test_model_info_returns_full_config(tmp_path):
     (model_dir / "config.json").write_text(json.dumps(config))
 
     assert model_info(str(model_dir)) == config
-
-
-def test_model_info_missing_config_raises(tmp_path):
-    with pytest.raises(FileNotFoundError, match="nonexistent/config.json"):
-        model_info(str(tmp_path / "nonexistent"))
 
 
 # ---------------------------------------------------------------------

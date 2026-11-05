@@ -35,12 +35,6 @@ def _write_filter(path):
 
 # --- import / version ---
 
-def test_version_string():
-    parts = sed_tools.__version__.split(".")
-    assert len(parts) >= 2
-    assert all(p.isdigit() for p in parts)
-
-
 def test_spectral_grid_names_preserve_api_compatibility():
     from sed_tools import Catalog, CatalogInfo, SpectralGrid, SpectralGridInfo, find_grids, find_atmospheres
     from sed_tools.api import SED

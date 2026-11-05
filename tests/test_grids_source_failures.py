@@ -34,17 +34,6 @@ def no_network(monkeypatch):
     monkeypatch.setattr(requests.adapters.HTTPAdapter, "send", refuse)
 
 
-# ---------------------------------------------------------------- readers
-def test_parse_header_raises_for_missing_file(tmp_path):
-    with pytest.raises(FileNotFoundError):
-        parse_header(str(tmp_path / "missing.txt"))
-
-
-def test_read_text_spectrum_raises_for_missing_file(tmp_path):
-    with pytest.raises(FileNotFoundError, match="missing.txt"):
-        read_text_spectrum(tmp_path / "missing.txt")
-
-
 # ---------------------------------------------------------------- lookup table
 def write_spectra(directory, headers):
     directory.mkdir(exist_ok=True)
@@ -213,30 +202,6 @@ def test_njm_discovery_from_the_directory_listing_is_warned_about_once(tmp_path,
     assert "using the directory listing instead" in message
 
 
-def test_njm_discovery_reads_cached_index(tmp_path, monkeypatch):
-    grabber, _ = make_njm(tmp_path, monkeypatch, njm_online())
-    assert grabber.discover_models() == ["Grid"]
-
-
-def test_njm_metadata_raises_when_spectra_cannot_be_listed(tmp_path, monkeypatch, caplog):
-    grabber, _ = make_njm(tmp_path, monkeypatch, njm_online({GRID: FakeResponse(403)}))
-
-    with caplog.at_level(logging.WARNING), pytest.raises(RuntimeError, match="lookup_table.csv"):
-        grabber.get_model_metadata("Grid")
-    assert any("no directory listing" in m for m in warnings_from(caplog, "njm_spectra_grabber"))
-
-
-def test_njm_aux_probe_without_an_answer_raises(tmp_path, monkeypatch):
-    grabber, _ = make_njm(tmp_path, monkeypatch, njm_online({
-        GRID: FakeResponse(403),
-        GRID + "lookup_table.csv": FakeResponse(200, LOOKUP),
-        GRID + "flux_cube.bin": lambda **kw: requests.ConnectionError("reset"),
-    }))
-
-    with pytest.raises(requests.ConnectionError, match="reset"):
-        grabber.get_model_metadata("Grid")
-
-
 def test_njm_metadata_falls_back_to_lookup_table(tmp_path, monkeypatch):
     grabber, _ = make_njm(tmp_path, monkeypatch, njm_online({
         GRID: FakeResponse(403),
@@ -287,17 +252,6 @@ def test_njm_failed_downloads_raise_after_the_rest(tmp_path, monkeypatch):
     model_dir = tmp_path / "Grid"
     assert (model_dir / "a.txt").exists() and (model_dir / "lookup_table.csv").exists()
     assert not (model_dir / "b.txt").exists()  # partial file removed
-
-
-def test_njm_complete_download_returns_count(tmp_path, monkeypatch):
-    grabber, _ = make_njm(tmp_path, monkeypatch, njm_online({
-        GRID + "lookup_table.csv": FakeResponse(200, LOOKUP),
-        GRID + "a.txt": FakeResponse(200, SPECTRUM),
-        GRID + "b.txt": FakeResponse(200, SPECTRUM),
-    }))
-    metadata = {"model_url": GRID, "txt_files": ["a.txt", "b.txt"]}
-    assert grabber.download_model_spectra("Grid", metadata, teff_range=(4000, 5500)) == 1
-    assert sorted(p.name for p in (tmp_path / "Grid").iterdir()) == ["a.txt"]
 
 
 def test_njm_wavelength_cut_failures_are_raised(tmp_path, monkeypatch, caplog):

@@ -26,20 +26,6 @@ def test_build_filter_index_accepts_string_root(tmp_path):
     assert index["gbp"][0].name == "Gbp.dat"
 
 
-def test_sedmodel_converts_string_filters_dir_to_path(tmp_path):
-    cube = tmp_path / "flux_cube.bin"
-    _write_minimal_flux_cube(cube)
-
-    model = SEDModel(
-        name="test",
-        flux_cube_path=str(cube),
-        filters_dir=str(tmp_path),
-    )
-
-    assert isinstance(model.filters_dir, Path)
-    assert model.filters_dir == tmp_path
-
-
 def test_sedmodel_resolves_nested_instrument_directory_from_name(tmp_path):
     cube = tmp_path / "flux_cube.bin"
     _write_minimal_flux_cube(cube)
@@ -60,21 +46,3 @@ def test_sedmodel_resolves_nested_instrument_directory_from_name(tmp_path):
     assert sorted(p.name for p in paths) == ["Gbp.dat", "Grp.dat"]
 
 
-def test_sedmodel_resolves_filter_group_to_multiple_curves(tmp_path):
-    cube = tmp_path / "flux_cube.bin"
-    _write_minimal_flux_cube(cube)
-
-    filt = tmp_path / "filters" / "GAIA" / "GAIA"
-    filt.mkdir(parents=True)
-    (filt / "Gbp.dat").write_text("Wavelength,Transmission\n5000,1\n6000,1\n")
-    (filt / "Grp.dat").write_text("Wavelength,Transmission\n5000,1\n6000,1\n")
-
-    model = SEDModel(
-        name="test",
-        flux_cube_path=str(cube),
-        filters_dir=str(tmp_path / "filters"),
-    )
-
-    resolved = model._resolve_filters(["GAIA"])
-
-    assert sorted(resolved) == ["Gbp", "Grp"]

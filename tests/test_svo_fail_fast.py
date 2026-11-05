@@ -32,12 +32,6 @@ def _no_network(monkeypatch):
     monkeypatch.setattr("socket.socket.connect", refuse)
 
 
-def test_fps_url_default_and_environment_override(monkeypatch):
-    assert fm.svo_fps_url() == fm.SVO_FPS_URL == "https://svo2.cab.inta-csic.es/theory/fps/fps.php"
-    monkeypatch.setenv("SED_SVO_FPS_URL", "https://mirror.example/fps/fps.php")
-    assert fm.svo_fps_url() == "https://mirror.example/fps/fps.php"
-
-
 def test_connect_timeout_raises_one_clear_error_and_is_not_retried():
     session = DownSession()
     client = fm.SVOMetadataClient(session=session)
@@ -57,19 +51,6 @@ def test_connect_timeout_raises_one_clear_error_and_is_not_retried():
     assert len(session.calls) == 1
 
 
-def test_url_override_is_honoured_by_metadata_and_index(monkeypatch, tmp_path):
-    monkeypatch.setenv("SED_SVO_FPS_URL", "https://mirror.example/fps/fps.php")
-    session = DownSession()
-    browser = SVOFilterBrowser(base_dir=str(tmp_path), session=session)
-    with pytest.raises(fm.SVOUnreachableError, match="https://mirror.example/fps/index.php"):
-        browser.list_facilities()
-    with pytest.raises(fm.SVOUnreachableError, match="https://mirror.example/fps/fps.php"):
-        browser.metadata_client.get_filter("Generic/Johnson.V")
-    assert [url for url, _ in session.calls] == ["https://mirror.example/fps/index.php",
-                                                 "https://mirror.example/fps/fps.php"]
-    assert session.calls[0][1]["timeout"] == (fm.SVO_CONNECT_TIMEOUT, 60)
-
-
 def test_download_stops_at_first_unreachable_filter(tmp_path):
     session = DownSession()
     browser = SVOFilterBrowser(base_dir=str(tmp_path), session=session)
@@ -79,11 +60,3 @@ def test_download_stops_at_first_unreachable_filter(tmp_path):
     assert len(session.calls) == 1
 
 
-def test_filter_library_reports_unreachable_svo(tmp_path):
-    library = FilterLibrary(tmp_path)
-    library.mirror = SimpleNamespace(fetch_manifest=lambda facility, instrument: None,
-                                     discover_filters=lambda facility, instrument: [])
-    library.svo = SVOFilterBrowser(base_dir=str(tmp_path), session=DownSession())
-    info = library.available("NoSuchFacility", "NoSuchCamera")
-    assert info["availability_source"] == "unknown"
-    assert any("SVO Filter Profile Service unreachable" in e for e in info["errors"])

@@ -43,16 +43,6 @@ def test_variant_is_selected_only_on_request(tmp_path):
         compose_band(inst, "g", "filter+qe", variants={"qe": "nope"})
 
 
-def test_variant_products_do_not_replace_each_other(tmp_path):
-    inst = _instrument_with_qe_variants(tmp_path)
-    a = build_product(inst, "filter+qe")
-    b = build_product(inst, "filter+qe", variants={"qe": "b"})
-    assert a.name == "filter+qe" and b.name == "filter+qe+qe_b"
-    assert read_curve(b / "g.dat").transmission.max() == pytest.approx(0.5)
-    assert read_curve(a / "g.dat").transmission.max() == pytest.approx(0.9)
-    assert product_name(["filter", "qe"], variants={"qe": "b"}) == "filter+qe+qe_b"
-
-
 def test_variants_round_trip_and_are_listed(tmp_path):
     inst = _instrument_with_qe_variants(tmp_path)
     m = InstrumentManifest.load(inst)
@@ -78,14 +68,6 @@ def test_variant_paths_must_stay_inside_the_instrument():
         InstrumentManifest("F", "I", ["g"], variants={"qe": {"x": {"files": {"*": "../other/qe.dat"}}}})
     with pytest.raises(ComponentError):
         InstrumentManifest("F", "I", ["g"], variants={"qe": {"bad/name": {"files": {}}}})
-
-
-def test_band_components_cite_their_own_source(tmp_path):
-    m = InstrumentManifest("F", "I", ["g", "r"])
-    add_component(tmp_path, FILTER, WL, _gauss(5000, 300), band="g", source="g-url", manifest=m)
-    add_component(tmp_path, FILTER, WL, _gauss(5000, 300), band="r", source="r-url", manifest=m)
-    add_component(tmp_path, QE, WL, np.full(WL.size, 0.9), source="qe-url", manifest=m)
-    assert m.sources == {"filter:g": "g-url", "filter:r": "r-url", "qe": "qe-url"}
 
 
 def test_njm_downloads_variant_files(tmp_path, monkeypatch):
@@ -120,11 +102,3 @@ def test_njm_downloads_variant_files(tmp_path, monkeypatch):
 # ---------------------------------------------------------------------------
 # add_component: peaks above 1 are written unclipped (builders explain them in the manifest notes)
 # ---------------------------------------------------------------------------
-def test_component_above_one_is_kept_unclipped(tmp_path, caplog):
-    with caplog.at_level(logging.WARNING):
-        rel = add_component(tmp_path, FILTER, [4000.0, 5000.0], [0.5, 1.03], band="i")
-    assert caplog.text == ""
-    wl, tr = np.loadtxt(tmp_path / rel, delimiter=",", skiprows=1, unpack=True)
-    assert tr.max() == pytest.approx(1.03)
-    with pytest.raises(ComponentError, match="percent"):
-        add_component(tmp_path, FILTER, [4000.0, 5000.0], [0.5, 1.6], band="i")

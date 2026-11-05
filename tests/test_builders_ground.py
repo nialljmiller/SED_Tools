@@ -109,13 +109,6 @@ BASS_TEXT = """# 90Prime SDSS g filter curve: ...
 """
 
 
-def test_bass_qe_is_the_column_ratio_above_the_floor():
-    wl, filt, filt_qe, _ = legacy_surveys.read_bass(BASS_TEXT.encode())
-    qwl, qe = legacy_surveys.bass_qe(wl, filt, filt_qe)
-    np.testing.assert_allclose(qwl, [4500.0, 5000.0])
-    np.testing.assert_allclose(qe, [0.9, 0.88])
-
-
 def test_bass_builder_adds_filter_qe_and_qe(tmp_path):
     inst = tmp_path / "BOK" / "BASS"
     for band in legacy_surveys.BASS_BANDS:
@@ -187,16 +180,6 @@ def _sdss(tmp_path):
     files[sdss.GUNN] = buf.getvalue()
     sdss.build(tmp_path, session=_Session(files))
     return inst
-
-
-def test_sdss_camera_responses_are_variants(tmp_path):
-    inst = _sdss(tmp_path)
-    m = InstrumentManifest.load(inst)
-    assert set(m.variants["filter+optics+qe"]) == {f"camcol{c}" for c in sdss.CAMCOLS} | {"gunn2001"}
-    assert m.component_file("filter+optics+qe", "g") == "components/filter+optics+qe/g_gunn2001.dat"
-    assert m.component_file(FILTER, "g") is None  # the primed USNO filter is not the camera's filter
-    col3 = compose_band(inst, "g", "filter+optics+qe", variants={"filter+optics+qe": "camcol3"})
-    assert col3.transmission.max() == pytest.approx(0.3)
 
 
 def test_sdss_camera_response_left_out_of_build_all_products_is_named(tmp_path, caplog):

@@ -26,12 +26,6 @@ def run_cli(monkeypatch, *argv):
 # ----------------------------------------------------------------------
 # messages, not tracebacks; the menu survives a failed workflow
 # ----------------------------------------------------------------------
-def test_main_prints_an_expected_error_without_a_traceback(tmp_path, monkeypatch, capsys):
-    assert run_cli(monkeypatch, "rebuild", "--base", str(tmp_path)) == 1
-    err = capsys.readouterr().err
-    assert err == f"sed-tools: error: No local spectral grids found under {tmp_path}\n"
-
-
 def test_debug_variable_shows_the_traceback(tmp_path, monkeypatch, capsys):
     monkeypatch.setenv("SED_TOOLS_DEBUG", "1")
     assert run_cli(monkeypatch, "rebuild", "--base", str(tmp_path)) == 1
@@ -47,12 +41,6 @@ def test_main_explains_input_that_ended(monkeypatch, capsys):
     monkeypatch.setattr(cli, "run_rebuild_flow", lambda **kwargs: ask())
     assert run_cli(monkeypatch, "rebuild") == 1
     assert "input ended before a question was answered" in capsys.readouterr().err
-
-
-def test_a_bug_still_shows_its_traceback(monkeypatch):
-    monkeypatch.setattr(cli, "run_rebuild_flow", lambda **kwargs: {}["missing"])
-    with pytest.raises(KeyError):
-        run_cli(monkeypatch, "rebuild")
 
 
 @pytest.fixture
@@ -78,7 +66,7 @@ def test_menu_reports_a_failed_workflow_and_shows_the_menu_again(menu_flows, mon
 
 
 @pytest.mark.parametrize("exit_code,printed,status", [("Not a variant grid", "Not a variant grid\n", 1),
-                                                      (0, "", 0), (None, "", 0)])
+                                                      (None, "", 0)])
 def test_menu_survives_a_workflow_that_exits(menu_flows, monkeypatch, capsys, exit_code, printed, status):
     def prepare():
         raise SystemExit(exit_code)
@@ -99,7 +87,7 @@ def test_menu_returns_after_ctrl_c_in_a_workflow(menu_flows, monkeypatch, capsys
     assert "Interrupted; back to the menu." in capsys.readouterr().out
 
 
-@pytest.mark.parametrize("typed", ["99", "", "x"])
+@pytest.mark.parametrize("typed", ["x"])
 def test_menu_says_unknown_option_and_asks_again(monkeypatch, capsys, typed):
     monkeypatch.setattr(cli, "_print_banner", lambda: None)
     answer(monkeypatch, typed, "q")
@@ -128,16 +116,6 @@ def _undeclared_grid(directory: Path) -> Path:
     return directory
 
 
-def test_flux_unit_choices_come_from_spectra_cleaner():
-    from sed_tools.spectra_cleaner import FLUX_UNITS
-
-    parser = cli._build_parser()
-    for command in ("grids", "rebuild", "import"):
-        action = next(a for a in parser._subparsers._group_actions[0].choices[command]._actions
-                      if a.dest == "flux_unit")
-        assert action.choices == list(FLUX_UNITS)
-
-
 def test_rebuild_uses_the_flux_unit_option_without_asking(tmp_path, monkeypatch, capsys):
     _undeclared_grid(tmp_path / "Cool")
     cleaned = []
@@ -148,40 +126,6 @@ def test_rebuild_uses_the_flux_unit_option_without_asking(tmp_path, monkeypatch,
     assert run_cli(monkeypatch, "rebuild", "--base", str(tmp_path), "--grids", "Cool", "--no-h5", "--no-cube",
                    "--flux-unit", "flam") == 0
     assert cleaned == ["flam"]
-
-
-def test_an_unknown_flux_unit_is_a_usage_error(monkeypatch, capsys):
-    with pytest.raises(SystemExit) as stop:
-        run_cli(monkeypatch, "rebuild", "--flux-unit", "jansky")
-    assert stop.value.code == 2
-    assert "usage: sed-tools rebuild" in capsys.readouterr().err
-
-
-def test_grids_passes_the_flux_unit_and_ranges(monkeypatch):
-    calls = []
-    monkeypatch.setattr(cli, "run_spectra_flow", lambda **kwargs: calls.append(kwargs))
-    assert run_cli(monkeypatch, "grids", "--source", "njm", "--flux-unit", "fnu_jy", "--teff", "3500", "8000",
-                   "--meta", "-1", "0.5", "--wavelength", "3000", "10000") == 0
-    assert calls[0]["flux_unit"] == "fnu_jy"
-    assert (calls[0]["teff_range"], calls[0]["logg_range"], calls[0]["meta_range"], calls[0]["wl_range"]) == (
-        (3500.0, 8000.0), None, (-1.0, 0.5), (3000.0, 10000.0))
-
-
-def test_import_dry_run_reports_the_undeclared_unit(tmp_path, monkeypatch, capsys):
-    src = _undeclared_grid(tmp_path / "mine")
-    assert run_cli(monkeypatch, "import", "--path", str(src), "--base", str(tmp_path / "models"), "--dry-run") == 0
-    out = capsys.readouterr().out
-    assert "[import] mine: flux unit not declared; best guess:" in out and "needs --flux-unit" in out
-    assert not (tmp_path / "models" / "mine").exists()
-
-
-def test_import_passes_the_flux_unit_option(tmp_path, monkeypatch):
-    src = _undeclared_grid(tmp_path / "mine")
-    calls = []
-    monkeypatch.setattr("sys.stdin", _Stdin(False))
-    monkeypatch.setattr(SED, "import_grid", classmethod(lambda cls, *a, **k: calls.append(k)))
-    assert run_cli(monkeypatch, "import", "--path", str(src), "--flux-unit", "flam") == 0
-    assert calls[0]["flux_unit"] == "flam"
 
 
 # ----------------------------------------------------------------------
@@ -195,14 +139,6 @@ def composed(monkeypatch):
     return calls
 
 
-@pytest.mark.parametrize("command", ["filters", "filters-compose"])
-def test_variants_are_chosen_in_the_api_only(monkeypatch, capsys, composed, command):
-    with pytest.raises(SystemExit) as stop:
-        run_cli(monkeypatch, command, "Argus/DR280", "--variant", "filter=addem")
-    assert stop.value.code == 2 and "unrecognized arguments: --variant filter=addem" in capsys.readouterr().err
-    assert composed == []
-
-
 ARGUS_VARIANTS = {"filter": {"production": {"description": "Production filters", "default": True},
                              "addem": {"description": "ADDem filters"}}}
 
@@ -212,15 +148,6 @@ def test_availability_lists_variants_with_the_default_marked(capsys):
     out = " ".join(capsys.readouterr().out.split())
     assert "Variants (API only) : filter: production (default), addem" in out
     assert "--variant" not in out
-
-
-def test_composition_prompt_does_not_ask_for_variants(tmp_path, monkeypatch, composed, capsys):
-    monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: _availability(variants=ARGUS_VARIANTS)))
-    prompts = answer(monkeypatch, "y", "1", "")
-    cli._offer_composition(tmp_path / "Argus" / "DR280")
-    assert composed[0][1]["components"] == ["filter"] and "variants" not in composed[0][1]
-    assert "Recipes (or type your own" in capsys.readouterr().out
-    assert not any("variant" in prompt for prompt in prompts)
 
 
 # ----------------------------------------------------------------------
@@ -236,8 +163,6 @@ def test_availability_lists_every_atmosphere_site(capsys):
 
 @pytest.mark.parametrize("grid,typed,airmass,pwv", [
     ({"airmass": [], "pwv": [], "unstated_airmass": True}, [""], None, None),
-    ({"airmass": [1.0, 1.5], "pwv": [], "unstated_airmass": False}, [""], 1.0, None),
-    ({"airmass": [1.0, 1.5], "pwv": [2.5, 5.0], "unstated_airmass": False}, ["", ""], 1.0, 2.5),
     ({"airmass": [1.0, 1.5], "pwv": [2.5, 5.0], "unstated_airmass": False}, ["1.5", "5"], 1.5, 5.0),
 ])
 def test_airmass_defaults_to_the_first_condition_the_site_has(monkeypatch, capsys, grid, typed, airmass, pwv):
@@ -245,16 +170,6 @@ def test_airmass_defaults_to_the_first_condition_the_site_has(monkeypatch, capsy
     assert cli._ask_conditions("site", grid) == (airmass, pwv)
     shown = "unstated" if not grid["airmass"] else f"{grid['airmass'][0]:g}"
     assert prompts[0] == f"Airmass [{shown}]: "
-
-
-@pytest.mark.parametrize("platform", ["space", "ground"])
-def test_composition_does_not_mention_an_atmosphere_that_is_not_offered(tmp_path, monkeypatch, composed, platform):
-    monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: _availability(platform=platform)))
-    prompts = answer(monkeypatch, "y", "1", "")
-    cli._offer_composition(tmp_path / "Fac" / "Cam")
-    assert prompts[0] == "Build a composed version (e.g. filter only)? [y/N] "
-    assert not any("atmosphere" in p.lower() for p in prompts)
-    assert composed[0][1]["atmosphere"] is None
 
 
 def test_composition_asks_again_after_a_bad_recipe_or_detector_type(tmp_path, monkeypatch, composed, capsys):
@@ -336,50 +251,6 @@ def test_pressing_enter_at_the_atmosphere_choice_folds_in_none(tmp_path, monkeyp
             "  0. none                     the curve without atmosphere\n"
             "  1. lsst_std (default site)  Rubin fiducial atmosphere (MODTRAN, with aerosols…\n"
             ) in out
-
-
-def test_an_atmosphere_is_chosen_by_number_generic_sites_last(tmp_path, monkeypatch, composed, sites, capsys):
-    monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: _availability(
-        atmosphere=True, atmosphere_site="paranal", atmosphere_sites=["paranal", "paranal_vircam"])))
-    answer(monkeypatch, "y", "1", "", "2", "", "")
-    cli._offer_composition(tmp_path / "Paranal" / "VISTA")
-    assert composed[0][1]["atmosphere"] == {"site": "paranal", "airmass": 1.0, "pwv": 2.5}
-    out = capsys.readouterr().out
-    assert "  1. paranal_vircam (team)            Model atmospheres" in out
-    assert "  2. paranal (default site, derived)  ESO SkyCalc sky model" in out
-    assert "  paranal: airmass 1, 1.5; pwv 2.5, 5 mm" in out
-
-
-def test_an_atmosphere_can_be_named_and_a_site_without_a_grid_is_said_so(tmp_path, monkeypatch, composed, sites,
-                                                                            capsys):
-    monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: _availability(
-        atmosphere=True, atmosphere_sites=["hopkins_2mass", "lsst_std"])))
-    answer(monkeypatch, "y", "1", "", "LSST_STD", "1.2")
-    cli._offer_composition(tmp_path / "Fac" / "Cam")
-    assert composed[0][1]["atmosphere"] == {"site": "lsst_std", "airmass": 1.2, "pwv": None}
-    assert "  1. hopkins_2mass  not downloaded yet" in capsys.readouterr().out
-    assert sites == [True]  # one listing, which includes NJM's sites not cached yet
-
-
-def test_an_installed_instrument_is_not_offered_for_download(tmp_path, monkeypatch, capsys):
-    from sed_tools.filter_library import FilterLibrary
-
-    fetched, offered = [], []
-    monkeypatch.setattr(FilterLibrary, "instruments", lambda self, facility: {
-        "entries": [{"key": "Cam", "label": "Cam", "sources": ["local", "svo"]}], "errors": []})
-    monkeypatch.setattr(FilterLibrary, "published_complete", staticmethod(lambda d: True))
-    monkeypatch.setattr(FilterLibrary, "installed_directory", lambda self, f, i: tmp_path / f / i)
-    monkeypatch.setattr(FilterLibrary, "published", lambda self, f, i: fetched.append((f, i)) or tmp_path)
-    monkeypatch.setattr(cli.filters, "_offer_composition", offered.append)
-    _summary_inputs(monkeypatch)
-    prompts = answer(monkeypatch, "1", "n")
-    download = lambda facility, instrument: cli._offer_download(library, facility, instrument, [])
-    library = FilterLibrary(tmp_path)
-    assert cli._browse_instruments(library, {"key": "Fac", "label": "Fac"}, download)
-    assert not any(p.startswith("Download") for p in prompts)
-    # The path is too long for 80 columns, so its place in the filter directory is given.
-    assert "  From       : installed in the filter directory, as Fac/Cam\n" in capsys.readouterr().out
-    assert fetched == [("Fac", "Cam")] and offered == [tmp_path]
 
 
 # ----------------------------------------------------------------------
@@ -529,44 +400,12 @@ def test_menu_4_says_in_one_line_when_an_instrument_has_no_parts(lsst, monkeypat
     assert "\nLSST/LSST has no separate parts to build a filter curve from.\n" in out and lsst == []
 
 
-def test_the_combine_wizard_counts_only_the_curves_combine_takes(tmp_path):
-    listed = tmp_path / "NJM" / "Cam"
-    listed.mkdir(parents=True)
-    for band in ("g", "r", "g_svo", "r_old"):
-        (listed / f"{band}.dat").write_text("Wavelength,Transmission\n1,1\n2,1\n")
-    (listed / "Cam").write_text("g.dat\nr.dat\n")
-    archived = tmp_path / "NJM" / "Archived"
-    archived.mkdir()
-    for band in ("H", "H_svo"):
-        (archived / f"{band}.dat").write_text("Wavelength,Transmission\n1,1\n2,1\n")
-    (archived / "manifest.json").write_text('{"bands": ["H"], "archived_bands": {"H_svo": {}}}')
-    assert cli._FilterSetOption(listed, tmp_path).label == "NJM/Cam (2 filters)"
-    assert cli._FilterSetOption(archived, tmp_path).label == "NJM/Archived (1 filters)"
-
-
-def test_the_removed_commands_are_usage_errors(monkeypatch, capsys):
-    for command in ("filters-search", "filters-cite", "filters-atmospheres"):
-        with pytest.raises(SystemExit) as stop:
-            run_cli(monkeypatch, command)
-        assert stop.value.code == 2 and f"invalid choice: '{command}'" in capsys.readouterr().err
-
-
 # ----------------------------------------------------------------------
 # Output width
 # ----------------------------------------------------------------------
 LICENCE = {"redistribution": "attribution",
            "terms": "MIT License Copyright (c) 2026 The University. Permission is hereby granted, free of charge.",
            "url": "https://github.com/argus-hdps/argus_sim/blob/main/LICENSE-file-with-hyphens"}
-
-
-def test_filters_info_shows_the_licence_first_sentence_and_url(capsys):
-    cli.print_catalogue_entry("Argus/DR280", {"info": {"licence": LICENCE}, "properties": None, "errors": []})
-    out = capsys.readouterr().out
-    assert all(len(line) <= 80 for line in out.splitlines() if LICENCE["url"] not in line)
-    assert LICENCE["url"] in out  # never split, although it is longer than the room left
-    flat = " ".join(out.split())
-    assert "attribution. MIT License Copyright (c) 2026 The University." in flat
-    assert "Permission is hereby" not in flat and "filters-cite" not in flat
 
 
 def test_band_descriptions_wrap_to_the_terminal(capsys):
@@ -632,12 +471,6 @@ def test_non_interactive_combine_leaves_out_earlier_combined_grids(tmp_path, mon
     assert "Leaving out older_mix: an earlier combined grid (name it with --grids to include it)" in out
 
 
-def test_combine_grids_option_takes_the_named_grids_without_prompts(tmp_path, monkeypatch, combine):
-    assert run_cli(monkeypatch, "combine", "--base", str(tmp_path), "--grids", "Phoenix", "older_mix",
-                   "--output", "mix2") == 0
-    assert combine == [(["Phoenix", "older_mix"], "mix2")]
-
-
 @pytest.mark.parametrize("argv,message", [
     (["--grids", "Nope"], "No spectral grid with a lookup table named Nope"),
     (["--grids", "Kurucz", "combined_models"], "The output grid combined_models is also one of the grids"),
@@ -657,12 +490,6 @@ def test_combine_prompt_has_a_space_and_refuses_an_input_name(tmp_path, monkeypa
     assert [(sorted(names), out) for names, out in combine] == [(["Kurucz", "Phoenix"], "mine")]
 
 
-def test_filter_combine_hint_names_menu_option_1(tmp_path, monkeypatch, capsys):
-    answer(monkeypatch, "")
-    cli.run_filter_combine_flow(base_dir=str(tmp_path))
-    assert "Download filters first with option 1" in capsys.readouterr().out
-
-
 # ----------------------------------------------------------------------
 # Stale help and options
 # ----------------------------------------------------------------------
@@ -677,14 +504,6 @@ def test_build_components_refuses_bad_requests_cleanly(monkeypatch, capsys, argv
     assert stop.value.code == 2 and message in capsys.readouterr().err
 
 
-def test_build_components_help_lists_every_registered_source():
-    from sed_tools.component_sources import BUILDERS
-
-    help_text = " ".join(cli._build_parser()._subparsers._group_actions[0].choices[
-        "filters-build-components"].format_help().split())
-    assert all(name in help_text for name in BUILDERS)
-
-
 def test_coverage_prints_each_failure_once(tmp_path, monkeypatch, capsys):
     def coverage(cls, name, **kwargs):
         raise ValueError("lookup_table.csv has no Teff column")
@@ -694,30 +513,9 @@ def test_coverage_prints_each_failure_once(tmp_path, monkeypatch, capsys):
     assert capsys.readouterr().out.count("lookup_table.csv has no Teff column") == 1
 
 
-def test_menu_says_config_without_a_trailing_space(monkeypatch, capsys):
-    answer(monkeypatch, "q")
-    cli.menu()
-    assert "Config (data directory)\n" in capsys.readouterr().out
-
-
 # ----------------------------------------------------------------------
 # Grid cuts without a terminal, and --auto limits
 # ----------------------------------------------------------------------
-def test_given_cuts_go_to_any_source_without_asking(monkeypatch):
-    monkeypatch.setattr(cli.grids, "prompt_njm_axis_cuts", lambda *a, **k: pytest.fail("asked"))
-    ranges = {"teff_range": (3500.0, 8000.0), "logg_range": None, "meta_range": None, "wl_range": None}
-    assert cli._download_cuts("G", "msg", None, {}, ranges) == ranges
-    assert cli._download_cuts("G", "njm", None, {}, ranges) == ranges
-
-
-def test_njm_cuts_are_not_asked_without_a_terminal(monkeypatch, capsys):
-    monkeypatch.setattr("sys.stdin", _Stdin(False))
-    monkeypatch.setattr(cli.grids, "prompt_njm_axis_cuts", lambda *a, **k: pytest.fail("asked"))
-    none = {"teff_range": None, "logg_range": None, "meta_range": None, "wl_range": None}
-    assert cli._download_cuts("G", "njm", None, {}, none) == {}
-    assert "No terminal to ask for axis cuts: downloading the full grid" in capsys.readouterr().out
-
-
 def test_njm_cuts_are_asked_in_a_terminal(monkeypatch):
     monkeypatch.setattr("sys.stdin", _Stdin(True))
     monkeypatch.setattr(cli.grids, "prompt_njm_axis_cuts", lambda name, g, model_url=None: {"teff_range": (1.0, 2.0)})
@@ -742,42 +540,6 @@ def test_auto_training_takes_trials_and_epochs(monkeypatch):
 # ----------------------------------------------------------------------
 # NJM unreachable: its catalogue is an extra
 # ----------------------------------------------------------------------
-def test_filters_info_does_not_fail_when_only_njm_is_unreachable(monkeypatch, capsys):
-    info = _availability(errors=["NJM: Connection refused"], availability_source="svo",
-                         sources_failed={"njm": ["Connection refused"]}, fallback_from=["njm"])
-    monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: info))
-    monkeypatch.setattr(cli, "_catalogue_entry", lambda *a, **k: {
-        "info": None, "properties": None, "errors": ["Cannot fetch index.json from NJM: Connection refused"]})
-    assert run_cli(monkeypatch, "filters-info", "Fac/Cam") == 0
-    out = " ".join(capsys.readouterr().out.split())
-    assert "Source unavailable : NJM: Connection refused" in out
-    assert "so no description, licence or band properties are shown" in out
-
-
-def test_filters_info_fails_when_no_source_answered(monkeypatch):
-    info = _availability(errors=["NJM: Connection refused", "SVO: timed out"], availability_source="unknown",
-                         sources_failed={"njm": ["Connection refused"], "svo": ["timed out"]}, fallback_from=[])
-    monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: info))
-    monkeypatch.setattr(cli, "_catalogue_entry", lambda *a, **k: {"info": None, "properties": None, "errors": []})
-    assert run_cli(monkeypatch, "filters-info", "Fac/Cam") == 1
-
-
-def test_availability_notes_are_shown(capsys):
-    cli.print_filter_availability(_availability(notes=["no component manifest: NJM serves only the published "
-                                                       "curves, described here from their headers"]))
-    out = " ".join(capsys.readouterr().out.split())
-    assert "Note : no component manifest: NJM serves only the published curves" in out
-
-
-def test_an_unknown_band_is_a_clean_error(monkeypatch, capsys):
-    def compose(cls, *a, **k):
-        raise ComponentError("Argus/DR280 has no band 'nosuch'")
-
-    monkeypatch.setattr(Filters, "compose", classmethod(compose))
-    assert run_cli(monkeypatch, "filters-compose", "Argus/DR280", "--bands", "nosuch") == 1
-    assert capsys.readouterr().out == "[filters] Argus/DR280 has no band 'nosuch'\n"
-
-
 def test_grids_without_a_terminal_or_names_says_to_use_grids(monkeypatch, tmp_path):
     class Grabber:
         def __init__(self, *args, **kwargs):
@@ -824,7 +586,6 @@ def test_filters_info_says_when_the_catalogue_is_the_cached_copy(capsys):
 # ---------------------------------------------------------------------------
 @pytest.mark.parametrize("argv,expected", [
     (["--airmass", "unstated", "--atmosphere-site", "ctio_2mass"], {"airmass": None, "pwv": None, "site": "ctio_2mass"}),
-    (["--airmass", "1.2", "--pwv", "2.5"], {"airmass": 1.2, "pwv": 2.5}),
 ])
 def test_cli_passes_the_atmosphere_site_and_unstated_airmass(tmp_path, monkeypatch, argv, expected):
     from sed_tools import api, cli

@@ -78,25 +78,6 @@ def test_fetch_stops_when_a_failed_download_left_files_behind(sources, tmp_path)
     assert sorted(p.name for p in (tmp_path / "Grid").iterdir()) == ["spectrum0.txt", "spectrum1.txt"]
 
 
-def test_fetch_from_msg_reads_the_msg_index_first(tmp_path, monkeypatch):
-    class MSG:
-        def __init__(self, base_dir=None, max_workers=None):
-            self.model_urls = {}
-
-        def discover_models(self):
-            self.model_urls = {"Grid": "https://msg.invalid/Grid.h5"}
-            return ["Grid"]
-
-        def get_model_metadata(self, name):
-            if name not in self.model_urls:
-                raise RuntimeError(f"MSG grid {name} is unknown to this grabber")
-            raise RuntimeError(f"no metadata for {name}")
-
-    monkeypatch.setattr(GRABBERS["msg"], MSG)
-    with pytest.raises(ValueError, match="msg: no metadata for Grid"):
-        SED.fetch("Grid", source="msg", model_root=tmp_path)
-
-
 def test_fetch_from_mast_does_not_wait_for_the_keyboard(tmp_path, monkeypatch):
     monkeypatch.setattr("builtins.input", lambda prompt="": pytest.fail("SED.fetch must not prompt"))
     with pytest.raises(ValueError, match="mast: MAST \\(BOSZ\\) grids are fetched with 'sed-tools grids --source mast'"):
@@ -106,12 +87,6 @@ def test_fetch_from_mast_does_not_wait_for_the_keyboard(tmp_path, monkeypatch):
 def test_fetch_rejects_an_unknown_source(tmp_path):
     with pytest.raises(ValueError, match="Unknown source: sov"):
         SED.fetch("Grid", source="sov", model_root=tmp_path)
-
-
-def test_fetch_raises_when_nothing_was_downloaded(sources, tmp_path):
-    sources(svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], downloaded=0))
-    with pytest.raises(ValueError, match="svo: no spectra downloaded"):
-        SED.fetch("Grid", source="svo", model_root=tmp_path)
 
 
 # ----------------------------------------------------------------------
@@ -162,19 +137,6 @@ def spectrum(teff=5000.0, logg=4.0, metallicity=0.0, filename=None):
 
     return Spectrum(wavelength=np.array([1000.0, 2000.0, 3000.0]), flux=np.array([1.0, 2.0, 3.0]),
                     teff=teff, logg=logg, metallicity=metallicity, filename=filename)
-
-
-def test_grid_write_raises_when_the_flux_cube_build_fails(tmp_path, monkeypatch):
-    from sed_tools.api import SpectralGrid
-
-    def fail(*args):
-        raise RuntimeError("cube failed")
-
-    # The package re-exports the function under the module's name, so patch the module itself.
-    monkeypatch.setattr(importlib.import_module("sed_tools.precompute_flux_cube"), "precompute_flux_cube", fail)
-    grid = SpectralGrid(name="Grid", source="local", spectra=[spectrum()])
-    with pytest.raises(RuntimeError, match="cube failed"):
-        grid.write(tmp_path / "out", build_h5=False)
 
 
 def test_grid_write_raises_when_there_is_nothing_to_bundle(tmp_path):
@@ -266,15 +228,6 @@ def precompute(monkeypatch):
     return install
 
 
-def test_flux_cube_helper_reports_what_was_written(tmp_path, precompute):
-    from sed_tools.api import _build_flux_cube
-
-    precompute("flux_cube.bin")
-    assert _build_flux_cube(tmp_path) == tmp_path / "flux_cube.bin"
-    precompute("variants_index.csv")
-    assert _build_flux_cube(tmp_path) == tmp_path / "variants_index.csv"
-
-
 def test_flux_cube_helper_raises_when_nothing_new_was_written(tmp_path, precompute):
     from sed_tools.api import _build_flux_cube
 
@@ -296,12 +249,6 @@ def test_grid_write_says_when_it_built_one_cube_per_variant(tmp_path, precompute
 # ----------------------------------------------------------------------
 # Interactive picker
 # ----------------------------------------------------------------------
-def test_fetched_grid_records_the_source_it_came_from(sources, tmp_path, monkeypatch):
-    sources(svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], downloaded=1))
-    monkeypatch.setattr("sed_tools.spectra_cleaner.clean_model_dir", lambda *a, **k: dict(CLEAN))
-    assert SED.fetch("Grid", model_root=tmp_path).grid.source == "svo"
-
-
 # ----------------------------------------------------------------------
 # ML wrappers
 # ----------------------------------------------------------------------

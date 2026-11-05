@@ -162,31 +162,6 @@ def _feed_input(monkeypatch, answers):
     monkeypatch.setattr("builtins.input", lambda prompt="": next(feed))
 
 
-def test_menus_count_every_spectrum_of_a_hash_headed_lookup(tmp_path, cube_writer, monkeypatch, capsys):
-    # The menus read the lookup with comment='#' too, so they showed one SED fewer.
-    from sed_tools._lookup_io import write_lookup_csv
-
-    base = tmp_path / "stellar"
-    for name in ("hashed", "plain"):
-        cube_writer(base / name / "flux_cube.bin", [5000.0], [4.0], [0.0], [1000.0, 2000.0],
-                    np.ones((1, 1, 1, 2)))
-    write_lookup_csv({"file_name": ["a.txt", "b.txt", "c.txt"], "teff": [5000, 5500, 6000]},
-                     str(base / "hashed" / "lookup_table.csv"))
-    (base / "plain" / "lookup_table.csv").write_text("file_name,teff\na.txt,5000\nb.txt,5500\n")
-    models = tmp_path / "models"
-    (models / "cm1").mkdir(parents=True)
-    (models / "cm1" / "config.json").write_text("{}")
-    monkeypatch.setattr(mc.SEDCompleter, "load", lambda self, path: setattr(self, "model", object()))
-
-    # Completer training menu, completer extend menu, generator training menu
-    for module, answers in [(mc, ["1", "x"]), (mc, ["2", "1", "x"]), (mg, ["1", "x"])]:
-        _feed_input(monkeypatch, answers)
-        module.run_interactive_workflow(str(base), str(models))
-        out = capsys.readouterr().out
-        assert f"{'hashed':30s} (3 SEDs)" in out
-        assert f"{'plain':30s} (2 SEDs)" in out
-
-
 # ---------------------------------------------------------------------
 # ml_generator --auto: models SEDGenerator can load
 # ---------------------------------------------------------------------

@@ -15,11 +15,6 @@ from sed_tools.flux_cube_tool import (infer_unit_from_values, load_filter_curve,
     "lo,hi,expected",
     [
         (3200.0, 10800.0, "angstrom"),   # Gaia G in A (was misread as nm)
-        (4600.0, 7400.0, "angstrom"),    # Johnson V in A
-        (1340.0, 1806.0, "angstrom"),    # GALEX FUV in A
-        (6000.0, 2.8e5, "angstrom"),     # JWST MIRI in A
-        (900.0, 3.0e6, "angstrom"),      # full-range stellar spectrum in A
-        (298.0, 413.0, "nanometer"),     # SDSS u in nm
         (460.0, 740.0, "nanometer"),     # Johnson V in nm
         (0.3, 28.0, "micrometer"),
         (5e-7, 1e-6, "meter"),

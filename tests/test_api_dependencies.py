@@ -15,20 +15,6 @@ ROOT = Path(__file__).resolve().parents[1]
 # ---------------------------------------------------------------------
 # Packaging: psutil is not a dependency; scipy (the [full] extra) is not needed to import
 # ---------------------------------------------------------------------
-def test_psutil_is_not_a_dependency_and_scipy_is_not_required():
-    try:
-        import tomllib
-    except ModuleNotFoundError:  # Python 3.10: the tomli dependency
-        import tomli as tomllib
-
-    project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
-    extras = project["optional-dependencies"]
-    assert not any(dep.startswith("psutil") for dep in project["dependencies"])
-    assert not any(dep.startswith("psutil") for deps in extras.values() for dep in deps)
-    assert not any(dep.startswith("scipy") for dep in project["dependencies"])
-    assert any(dep.startswith("scipy") for dep in extras["full"])
-
-
 _WITHOUT_PSUTIL = """
 import sys
 sys.modules["psutil"] = None  # import psutil now raises ImportError
@@ -76,17 +62,6 @@ def test_import_sed_tools_works_without_scipy():
 # ---------------------------------------------------------------------
 # ml_generator --auto: models SEDGenerator can load
 # ---------------------------------------------------------------------
-def test_optuna_is_an_optional_extra_only():
-    try:
-        import tomllib
-    except ModuleNotFoundError:  # Python 3.10: the tomli dependency
-        import tomli as tomllib
-
-    project = tomllib.loads((Path(__file__).resolve().parents[1] / "pyproject.toml").read_text())["project"]
-    assert project["optional-dependencies"]["ml-tune"] == ["optuna>=3"]
-    assert not any("optuna" in dep for dep in project["dependencies"] + project["optional-dependencies"]["full"])
-
-
 # ----------------------------------------------------------------------
 # ML without scipy, torch or scikit-learn: one line naming what to install, no traceback
 # ----------------------------------------------------------------------

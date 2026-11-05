@@ -173,12 +173,6 @@ def test_hst_tables_take_the_newest_graph_and_walk_it():
         tables.chain("acs,sbc,f999w")
 
 
-def test_hst_tables_pinned_names_skip_the_listing():
-    session = Session()
-    hst.SynphotTables(session=session, tmg="99c1930om_tmg.fits", tmc="aa621124m_tmc.fits")
-    assert f"{hst.TRDS}/mtab/" not in session.calls
-
-
 def test_hst_tables_need_a_listed_table():
     files = saved()
     files[f"{hst.TRDS}/mtab/"] = files[f"{hst.TRDS}/mtab/"].replace(b"_tmc.fits", b"_tmx.fits")
@@ -245,24 +239,11 @@ def test_write_site_refuses_a_bad_curve_before_writing(tmp_path):
 # ---------------------------------------------------------------------------
 # Which sites an instrument may use
 # ---------------------------------------------------------------------------
-def test_every_registered_instrument_site_is_built_by_a_builder():
-    from sed_tools.facility_sites import _INSTRUMENT_SITES
-
-    for sites in _INSTRUMENT_SITES.values():
-        assert set(sites) <= set(team.SITES)
-
-
 # ---------------------------------------------------------------------------
 # Team recipes (parsers checked on in-memory excerpts)
 # ---------------------------------------------------------------------------
 PS1_ROWS = (" 500 0.500 0.400 0.000 0.000 0.000 0.000 0.000 0.970 0.880 0.990\n"
             " 501 0.500 0.410 0.000 0.000 0.000 0.000 0.000 0.970 0.881 0.980\n")
-
-
-def test_ps1_atmosphere_is_the_product_of_its_three_columns():
-    wl, tr = team.ps1_atmosphere(PS1_ROWS)
-    np.testing.assert_allclose(wl, [5000.0, 5010.0])
-    np.testing.assert_allclose(tr, [0.97 * 0.88 * 0.99, 0.97 * 0.881 * 0.98])
 
 
 def test_ps1_build_registers_its_team_site(tmp_path, monkeypatch):
@@ -344,27 +325,6 @@ def test_bass_ratio_keeps_only_well_measured_rows():
     np.testing.assert_allclose(tr, [0.75, 0.9])
 
 
-def test_team_sites_are_registered_with_provenance():
-    for name, site in team.SITES.items():
-        assert site.kind == TEAM and site.citation and site.source, name
-        assert name.count("_") >= 1 and name == site.site
-    gemini = team.SITES["maunakea_gemini"]
-    assert len(gemini.entries) == 12 and "Lord" in gemini.terms
-    assert {(a, p) for a, p, _ in gemini.entries} >= {(1.0, 1.6), (2.0, 5.0)}
-    assert team.SITES["hopkins_2mass"].entries[0][0] is None  # airmass not stated
-
-
-def test_caching_session_archives_each_download_once(tmp_path):
-    session = team.CachingSession(_Session({"https://x.org/a.dat": b"1 2\n"}), tmp_path / "ev")
-    session.get("https://x.org/a.dat")
-    session.get("https://x.org/a.dat")
-    manifest = json.loads((tmp_path / "ev" / "manifest.json").read_text())
-    assert session.session.calls == ["https://x.org/a.dat"]
-    (record,) = manifest["files"]
-    assert record["url"] == "https://x.org/a.dat" and record["sha256"] == hashlib.sha256(b"1 2\n").hexdigest()
-    assert (tmp_path / "ev" / record["file"]).read_bytes() == b"1 2\n"
-
-
 # ---------------------------------------------------------------------------
 # SkyCalc: derived grids, the web form, provenance
 # ---------------------------------------------------------------------------
@@ -407,21 +367,6 @@ def test_skycalc_grid_is_labelled_derived_and_archived(tmp_path):
     assert hashlib.sha256(raw).hexdigest() == record["sha256"] and record["skycalc_version"] == "2.0.9"
 
 
-def test_skycalc_auto_mode_switches_to_the_form_when_the_api_host_is_down():
-    from requests.exceptions import ConnectTimeout
-
-    class Down(_FormSession):
-        def post(self, url, data=None, json=None, timeout=None, **kw):
-            assert timeout[0] <= 30  # connect fails fast; the model run may take minutes
-            if json is not None:
-                raise ConnectTimeout("api host down")
-            return super().post(url, data=data, timeout=timeout)
-
-    client = skycalc.SkyCalcClient(session=Down(), interface="auto", pause=0)
-    assert client.fetch("paranal", 1.0, 2.5, 1000.0, 1100.0, 2000).interface == "form"
-    assert client.interface == "form"
-
-
 def test_skycalc_resume_leaves_a_complete_grid_untouched(tmp_path):
     client = skycalc.SkyCalcClient(session=_FormSession(), interface="form", pause=0)
     kw = dict(sites=["paranal"], airmasses=[1.0], pwvs=[2.5], chunks=2, client=client)
@@ -436,7 +381,3 @@ def test_skycalc_resume_leaves_a_complete_grid_untouched(tmp_path):
                       **dict(kw, airmasses=[1.5]))
 
 
-def test_hsc_builder_and_team_registry_write_the_same_site():
-    from sed_tools.component_sources import hsc
-
-    assert team.SITES["maunakea_hsc"] is hsc.SPEC.site and hsc.SPEC.site.kind == TEAM

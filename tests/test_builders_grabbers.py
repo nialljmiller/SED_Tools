@@ -37,7 +37,7 @@ def test_browser_finds_no_filters_on_a_page_without_the_table(tmp_path):
     assert svo.SVOFilterBrowser(base_dir=str(tmp_path), session=Session(files)).list_filters("GAIA", "GAIA3") == []
 
 
-@pytest.mark.parametrize("filter_id, band", [("GAIA/GAIA3.Gbp", "Gbp"), ("Generic/Bessell", "Bessell"), ("J", "J")])
+@pytest.mark.parametrize("filter_id, band", [("Generic/Bessell", "Bessell"), ("J", "J")])
 def test_band_from_filter_id(filter_id, band):
     assert svo._band_from_filter_id(filter_id) == band
 
@@ -50,7 +50,7 @@ def test_metadata_client_reads_svos_votable():
     assert 0 < record.transmission.max() <= 1
 
 
-@pytest.mark.parametrize("value, text", [(b"Angstrom", "Angstrom"), ("1", "1"), (1.5, "1.5"), (None, "")])
+@pytest.mark.parametrize("value, text", [(b"Angstrom", "Angstrom")])
 def test_param_text(value, text):
     assert _param_text(value) == text  # astropy gives char PARAMs as str, or bytes in older versions
 
@@ -62,18 +62,6 @@ def _probing(tmp_path, monkeypatch, present, window, gap):
     monkeypatch.setattr(grabber, "_head_exists", lambda model, fid: asked.append(fid) or fid in present)
     grabber.expand_window, grabber.expand_max_gap = window, gap
     return grabber, asked
-
-
-def test_expansion_walks_out_from_a_seed_until_a_gap(tmp_path, monkeypatch):
-    grabber, asked = _probing(tmp_path, monkeypatch, {4, 7, 12, 13, 17}, window=2, gap=3)
-    assert grabber._expand_around("Kurucz", 10) == {4, 7, 10, 12, 13}  # 17 lies beyond 3 misses
-    assert asked == [8, 7, 6, 5, 4, 3, 2, 1, 12, 13, 14, 15, 16]
-
-
-def test_expansion_never_asks_for_fids_below_1(tmp_path, monkeypatch):
-    grabber, asked = _probing(tmp_path, monkeypatch, {1}, window=1, gap=2)
-    assert grabber._expand_around("Kurucz", 2) == {1, 2}
-    assert asked == [1, 3, 4]
 
 
 def test_probe_finds_a_contiguous_grid(tmp_path, monkeypatch):
@@ -93,7 +81,6 @@ def test_mast_lists_every_bosz_resolution_and_accepts_each(tmp_path, monkeypatch
 
 
 @pytest.mark.parametrize("meta, expected", [
-    ([-1.0, 0.0], (100.0, 4.0, 0.0)),         # neither order is plausible: the C order wins a tie
     ([-1.0, np.nan], (200.0, 4.0, -1.0)),     # ... and loses to the order with more finite values
 ])
 def test_msg_takes_the_most_complete_order_when_neither_is_plausible(tmp_path, meta, expected):

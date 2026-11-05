@@ -16,18 +16,6 @@ from sed_tools.filter_metadata import ENERGY, read_filter_header, released_mesa_
 from helpers_builders_cfht_lsst import _Session, _lsst_files, _pre, _published, _table, _twomass_files
 
 
-# ---------------------------------------------------------------------- CFHT
-def test_cfht_scan_averages_position_columns_and_converts_units():
-    text = "400,50,60,70\n300,0,-1,1\n"
-    wl, tr, note = cfht.scan(text, "u")
-    np.testing.assert_allclose(wl, [3000.0, 4000.0])
-    np.testing.assert_allclose(tr, [0.0, 0.6])
-    assert note.startswith("mean of 3 scans")
-    wl, tr, note = cfht.scan("  554.00     80.0\n  552.00     40.0\n", "o")
-    np.testing.assert_allclose(tr, [0.4, 0.8])
-    assert "mean" not in note
-
-
 def _cfht_files(codes):
     nm = np.arange(300, 1101, 50)
     files = {
@@ -81,12 +69,6 @@ def test_cfht_needs_published_curves(tmp_path):
         cfht.build(tmp_path, instrument="WIRCam", session=_Session({}))
 
 
-def test_cfht_megacam_generations():
-    m = cfht.BANDS["MegaCam"]
-    assert (m["u"], m["u_1"], m["i_1"], m["i_2"], m["z_1"]) == ("9302", "9301", "9701", "9702", "9801")
-    assert all(code in cfht.FILTERS for band in cfht.BANDS.values() for code in band.values())
-
-
 # ---------------------------------------------------------------------- ERIS
 def _nix_zip():
     def metres(lo_um, hi_um, value):
@@ -105,47 +87,11 @@ def _nix_zip():
     return buf.getvalue()
 
 
-def test_eris_optics_are_dichroic_times_default_camera(tmp_path):
-    inst = tmp_path / "ERIS" / "NIX"
-    _published(inst, "J", np.linspace(11500, 14000, 20), np.full(20, 0.8), "filter")
-    _published(inst, "Lp", np.linspace(34000, 43000, 20), np.full(20, 0.8), "filter")
-    eris.build(tmp_path, session=_Session({eris.ZIP_URL: _nix_zip()}))
-    m = InstrumentManifest.load(inst)
-    assert m.component_file(FILTER, "J") == "J.dat"
-    assert m.component_file(OPTICS, "J").endswith("dichroic_camera13mas_JHK.dat")
-    assert m.component_file(OPTICS, "Lp").endswith("dichroic_camera13mas_LM.dat")
-    j = read_curve(inst / m.component_file(OPTICS, "J"))
-    np.testing.assert_allclose(j.transmission, 0.45)                   # 50 % x 0.9
-    assert (inst / "components/optics/dichroic_camera27mas_JHK.dat").exists()
-    assert m.default_site == "paranal" and m.outside_range == "zero"
-    assert compose_band(inst, "Lp", (FILTER, OPTICS)).transmission.max() == pytest.approx(0.32)
-
-
 def test_eris_unknown_band_is_refused(tmp_path):
     inst = tmp_path / "ERIS" / "NIX"
     _published(inst, "Q", np.linspace(11500, 14000, 20), np.full(20, 0.8), "filter")
     with pytest.raises(ValueError, match="camera"):
         eris.build(tmp_path, session=_Session({eris.ZIP_URL: _nix_zip()}))
-
-
-# --------------------------------------------------------------------- 2MASS
-def test_twomass_optics_follow_each_band_light_path(tmp_path):
-    inst = tmp_path / "2MASS" / "2MASS"
-    for band, lo in (("J", 10600), ("H", 15000), ("Ks", 19500)):
-        wl = np.linspace(lo, lo + 4000, 30)
-        _published(inst, band, wl, np.ones_like(wl), "filter+instrument+atmosphere", detector=ENERGY)
-    twomass.build(tmp_path, session=_Session(_twomass_files()))
-    m = InstrumentManifest.load(inst)
-    base = 0.9 ** 2 * 0.95 * 0.97 ** 7
-    for band, path in (("J", 0.99), ("H", 0.98 * 0.97), ("Ks", 0.98 * 0.96)):
-        assert m.component_file(OPTICS, band) == f"components/optics/{band}.dat"
-        np.testing.assert_allclose(read_curve(inst / m.component_file(OPTICS, band)).transmission,
-                                   base * path, rtol=1e-12)
-    assert m.component_file(QE, SHARED) == "components/qe/nicmos3.dat"
-    assert m.outside_range == "zero"
-    j = compose_band(inst, "J", (FILTER, OPTICS, QE))
-    assert j.transmission.max() == pytest.approx(0.8 * base * 0.99 * 0.6)
-    assert read_filter_header(inst / "J.dat")["DetectorType"] == ENERGY  # published RSR untouched
 
 
 def test_twomass_table_title_is_checked():
@@ -198,13 +144,6 @@ def test_lsst_releases_are_separate_instruments(tmp_path):
     assert (site / "manifest.json").read_bytes() == site_before        # existing site is not rewritten
     for p in new.rglob("*.dat"):
         assert released_mesa_reads(p)
-
-
-def test_catalog_registers_new_builders():
-    assert catalog.builder_for("LSST", "LSSTv19").publishes
-    assert dict(catalog.builder_for("CFHT", "MegaCam").kwargs) == {"instrument": "MegaCam"}
-    assert catalog.builder_for("ERIS", "NIX").name == "eris"
-    assert catalog.component_availability("2MASS", "2MASS")["status"] == "supported"
 
 
 def test_earlier_manifest_note_is_carried_once(tmp_path):

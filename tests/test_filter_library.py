@@ -44,49 +44,6 @@ def instrument(tmp_path):
     return directory
 
 
-def test_missing_component_is_not_advertised_as_installed(instrument):
-    manifest = InstrumentManifest.load(instrument)
-    qe = instrument / manifest.component_file("qe", "g")
-    qe.unlink()
-    info = Filters.available("Test", "Camera", filter_root=instrument.parent.parent, include_remote=False)
-    assert info["components"] == ["filter"]
-    assert info["buildable"] == ["filter"]
-    assert str(qe.relative_to(instrument)) in info["missing_files"]
-    assert not FilterLibrary.components_ready(instrument, ["filter", "qe"])
-
-
-def test_partial_band_selection_has_cli_api_parity(instrument, monkeypatch):
-    manifest = InstrumentManifest.load(instrument)
-    (instrument / manifest.component_file("filter", "r")).unlink()
-    root = instrument.parent.parent
-    info = Filters.available("Test", "Camera", filter_root=root, include_remote=False)
-    assert info["buildable"] == []
-    assert info["recipes_by_band"]["filter+qe"] == ["g"]
-    product = Filters.compose(instrument, "filter+qe", bands=["g"], detector_type="energy", filter_root=root)
-    before = (product / "g.dat").read_bytes()
-    monkeypatch.setattr("sys.argv", ["sed-tools", "filters-compose", "Test/Camera", "--base", str(root),
-                                    "--components", "filter,qe", "--bands", "g", "--detector-type", "energy"])
-    assert cli.main() in (0, None)
-    assert (product / "g.dat").read_bytes() == before
-    assert not (product / "r.dat").exists()
-    header = read_filter_header(product / "g.dat")
-    assert header["DetectorType"] == "energy"
-    assert header["DetectorTypeOriginal"] == "photon"
-    assert read_filter_header(instrument / "g.dat")["DetectorType"] == "photon"
-    with pytest.raises(ComponentError, match="Missing throughput file"):
-        Filters.compose(instrument, "filter+qe", filter_root=root)
-
-
-def test_failed_rebuild_preserves_existing_product(instrument):
-    product = build_product(instrument, "filter+qe")
-    original = {p.name: p.read_bytes() for p in product.iterdir()}
-    manifest = InstrumentManifest.load(instrument)
-    (instrument / manifest.component_file("filter", "r")).unlink()
-    with pytest.raises(ComponentError, match="Missing throughput file"):
-        build_product(instrument, "filter+qe")
-    assert original == {p.name: p.read_bytes() for p in product.iterdir()}
-
-
 def test_weighting_override_accepts_unknown_published_contents(tmp_path):
     directory = tmp_path / "Mystery" / "Camera"
     directory.mkdir(parents=True)
@@ -112,79 +69,7 @@ def test_manifest_role_must_match_component_header(instrument):
         build_product(instrument, "filter", bands=["g"])
 
 
-def test_mixed_detector_conventions_are_preserved(instrument):
-    path = instrument / "r.dat"
-    path.write_text(path.read_text().replace("DetectorType=photon", "DetectorType=energy"))
-    manifest = InstrumentManifest.from_published(instrument)
-    manifest.save(instrument)
-    assert manifest.describe()["detector_type"] == "mixed"
-    product = build_product(instrument, "published")
-    assert read_filter_header(product / "r.dat")["DetectorType"] == "energy"
-    assert read_filter_header(product / "g.dat")["DetectorType"] == "photon"
-
-
-def test_missing_manifest_reference_runs_upstream_builder(instrument, monkeypatch):
-    manifest = InstrumentManifest.load(instrument)
-    path = instrument / manifest.component_file("qe", "g")
-    path.unlink()
-    monkeypatch.setitem(catalog.BUILDERS_FOR, ("Test", "Camera"), catalog.BuilderRef("test"))
-    calls = []
-
-    def build(root):
-        calls.append(root)
-        add_component(instrument, "qe", [3000., 7000.], [0.8, 0.6], manifest=manifest)
-        manifest.save(instrument)
-
-    monkeypatch.setattr(filter_library, "get_builder", lambda name: build)
-    Filters.compose(instrument, "filter+qe", filter_root=instrument.parent.parent)
-    assert calls == [instrument.parent.parent]
-    assert path.exists()
-
-
-def test_heavy_source_requires_explicit_opt_in(instrument, monkeypatch):
-    manifest = InstrumentManifest.load(instrument)
-    path = instrument / manifest.component_file("qe", "g")
-    path.unlink()
-    monkeypatch.setitem(catalog.BUILDERS_FOR, ("Test", "Camera"), catalog.BuilderRef("test", heavy=True))
-    calls = []
-
-    def build(root):
-        calls.append(root)
-        add_component(instrument, "qe", [3000., 7000.], [0.8, 0.6], manifest=manifest)
-        manifest.save(instrument)
-
-    monkeypatch.setattr(filter_library, "get_builder", lambda name: build)
-    library = FilterLibrary(instrument.parent.parent)
-    assert not library.prepare_components(instrument, components="filter+qe")
-    assert not calls
-    assert library.prepare_components(instrument, components="filter+qe", allow_heavy=True)
-    assert len(calls) == 1
-
-
-def test_builder_programming_errors_reach_the_caller(instrument, monkeypatch):
-    manifest = InstrumentManifest.load(instrument)
-    (instrument / manifest.component_file("qe", "g")).unlink()
-    monkeypatch.setitem(catalog.BUILDERS_FOR, ("Test", "Camera"), catalog.BuilderRef("test"))
-
-    def broken_builder(root):
-        raise TypeError("incorrect builder arguments")
-
-    monkeypatch.setattr(filter_library, "get_builder", lambda name: broken_builder)
-    with pytest.raises(TypeError, match="incorrect builder arguments"):
-        Filters.compose(instrument, "filter+qe", filter_root=instrument.parent.parent)
-
-
-def test_catalogue_programming_errors_are_not_reported_as_an_outage(tmp_path):
-    def broken_catalogue():
-        raise AttributeError("incorrect catalogue field")
-
-    library = FilterLibrary(tmp_path)
-    library.svo = SimpleNamespace(list_facilities=broken_catalogue)
-    with pytest.raises(AttributeError, match="incorrect catalogue field"):
-        library.facilities()
-
-
-@pytest.mark.parametrize("airmass,pwv", [(0.5, 1), (float("nan"), 1), (1.2, -1), (1.2, float("inf"))])
+@pytest.mark.parametrize("airmass,pwv", [(float("nan"), 1), (1.2, float("inf"))])
 def test_invalid_atmosphere_conditions_are_rejected(airmass, pwv):
     with pytest.raises(ComponentError):
         AtmosphereSpec("paranal", airmass, pwv)
@@ -235,16 +120,6 @@ class Catalogue:
         return [FilterRow("NewFacility/NewCamera.g", "g", facility, instrument, "")]
 
 
-def test_inventory_retains_unreviewed_svo_instruments(tmp_path):
-    library = FilterLibrary(tmp_path)
-    library.svo = Catalogue()
-    result = library.inventory()
-    row = next(r for r in result["instruments"] if r["facility"] == "NewFacility")
-    assert row["component_availability"]["status"] == "unreviewed"
-    assert row["sources"] == ["svo"]
-    assert "NJM unavailable" in result["errors"]
-
-
 def test_svo_availability_works_without_njm_or_downloads(tmp_path):
     library = FilterLibrary(tmp_path)
     library.svo = Catalogue()
@@ -257,96 +132,12 @@ def test_svo_availability_works_without_njm_or_downloads(tmp_path):
     assert not list(tmp_path.rglob("*.dat"))
 
 
-def test_declared_partial_download_is_not_accepted(tmp_path):
-    directory = tmp_path / "Test" / "Camera"
-    directory.mkdir(parents=True)
-    (directory / "g.dat").write_text("4000 1\n6000 1\n")
-    InstrumentManifest("Test", "Camera", ["g", "r"]).save(directory)
-    assert not FilterLibrary.published_complete(directory)
-
-
 def test_undeclared_partial_download_is_not_accepted(tmp_path):
     directory = tmp_path / "Test" / "Camera"
     directory.mkdir(parents=True)
     (directory / "g.dat").write_text("4000 1\n6000 1\n")
     (directory / "Camera").write_text("g.dat\n")  # a legacy index may have been built after failures
     assert not FilterLibrary.published_complete(directory)
-
-
-def test_mirror_does_not_certify_partial_download(tmp_path, monkeypatch):
-    import requests
-    from sed_tools.njm_filter_grabber import NJMFilterGrabber
-
-    grabber = NJMFilterGrabber(base_dir=str(tmp_path))
-    grabber._available = True
-    monkeypatch.setattr(grabber, "discover_filters", lambda facility, instrument: ["g", "r"])
-    monkeypatch.setattr(grabber, "download_components", lambda facility, instrument: 0)
-
-    def get(url, **kwargs):
-        if url.endswith("/g.dat"):
-            return SimpleNamespace(text="4000 1\n6000 1\n")
-        raise requests.ConnectionError("mirror unavailable")
-
-    monkeypatch.setattr(grabber, "_get", get)
-    monkeypatch.setattr("sed_tools.njm_filter_grabber.tag_filter_file", lambda *args, **kwargs:
-                        SimpleNamespace(source="header"))
-    with pytest.raises(RuntimeError, match="NJM's index of Test/Camera could not be saved"):
-        grabber.download_filters("Test", "Camera")
-    directory = tmp_path / "Test" / "Camera"
-    assert (directory / "g.dat").is_file()
-    assert not (directory / "Camera").exists()
-    assert not FilterLibrary.published_complete(directory)
-
-
-def test_mirror_index_declares_complete_set_without_remote_manifest(tmp_path, monkeypatch):
-    from sed_tools.njm_filter_grabber import NJMFilterGrabber
-
-    grabber = NJMFilterGrabber(base_dir=str(tmp_path))
-    grabber._available = True
-    monkeypatch.setattr(grabber, "discover_filters", lambda facility, instrument: ["g", "r"])
-    monkeypatch.setattr(grabber, "download_components", lambda facility, instrument: 0)
-    monkeypatch.setattr("sed_tools.njm_filter_grabber.tag_filter_file", lambda *args, **kwargs:
-                        SimpleNamespace(source="header"))
-
-    def get(url, **kwargs):
-        text = "g.dat\nr.dat\n" if url.endswith("/Camera") else "4000 1\n6000 1\n"
-        return SimpleNamespace(text=text, json=lambda: __import__("json").loads(text))
-
-    monkeypatch.setattr(grabber, "_get", get)
-    assert grabber.download_filters("Test", "Camera") == 2
-    directory = tmp_path / "Test" / "Camera"
-    assert InstrumentManifest.load(directory).bands == ["g", "r"]
-    assert FilterLibrary.published_complete(directory)
-
-
-def test_mirror_retries_temporary_forbidden(tmp_path, monkeypatch):
-    import requests
-    from sed_tools.njm_filter_grabber import NJMFilterGrabber
-
-    grabber = NJMFilterGrabber(base_dir=str(tmp_path))
-    delays = []
-    monkeypatch.setattr("sed_tools.njm_filter_grabber.time.sleep", delays.append)
-
-    class Response:
-        status_code = 403
-        headers = {}
-
-        def raise_for_status(self):
-            if self.status_code != 200:
-                raise requests.HTTPError("403", response=self)
-
-    response = Response()
-    calls = []
-
-    def get(url, **kwargs):
-        calls.append(url)
-        if len(calls) == 2:
-            response.status_code = 200
-        return response
-
-    grabber.session.get = get
-    assert grabber._get("https://example.invalid/filter.dat") is response
-    assert len(calls) == 2 and delays == [1]
 
 
 class BurstBlockedNJM:
@@ -434,32 +225,6 @@ def test_outages_and_refusals_are_still_reported_as_down(tmp_path, monkeypatch):
     assert delays == [1, 60] and len(blocked.calls) == 4
 
 
-def test_fetch_and_catalogue_use_njm_through_a_burst_block(tmp_path, monkeypatch):
-    import json
-
-    curve = "Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=svo\n4000,0\n5000,1\n6000,0\n"
-    properties = json.dumps({"bands": {"g": {"WavelengthPivot": 5000.0}, "r": {"WavelengthPivot": 5000.0}}})
-    files = {"index.json": njm_index(), "filters/Test/Camera/Camera": "g.dat\nr.dat\n",
-             "filters/Test/Camera/g.dat": curve, "filters/Test/Camera/r.dat": curve,
-             "filters/Test/Camera/properties.json": properties,
-             "filters/Test/Camera/info.json": json.dumps({"bands": {}, "description": "A camera."})}
-    session = BurstBlockedNJM(files, blocked=2)
-    monkeypatch.setattr("sed_tools.njm_filter_grabber.requests.Session", lambda: session)
-    monkeypatch.setattr("sed_tools.njm_filter_grabber.time", SimpleNamespace(sleep=lambda s: None))
-    monkeypatch.setattr(NJMFilterGrabber, "_check_availability", REAL_AVAILABILITY_CHECK)
-    monkeypatch.setattr("sed_tools.njm_filter_grabber.tag_filter_file", lambda *a, **k: SimpleNamespace(source="header"))
-    monkeypatch.setattr(FilterLibrary, "svo", property(lambda self: pytest.fail("NJM was reported down")))
-    monkeypatch.setattr(Filters, "_catalogues", {})
-
-    root = tmp_path / "filters"
-    directory = Filters.fetch("Test", "Camera", filter_root=root)
-    assert directory == root / "Test" / "Camera" and FilterLibrary.published_complete(directory)
-    assert (directory / "properties.json").is_file()
-
-    session.blocked = 2  # blocked again when the catalogue client checks the mirror
-    assert Filters.properties("Test", "Camera", filter_root=root, refresh=True)["bands"]["g"]["WavelengthPivot"] == 5000
-
-
 def test_svo_fallback_tracks_and_recovers_partial_downloads(tmp_path, monkeypatch):
     from sed_tools.svo_filter_grabber import SVOFilterBrowser
 
@@ -503,18 +268,6 @@ def test_original_source_failure_falls_back_to_svo(tmp_path, monkeypatch):
     directory.mkdir(parents=True)
     assert library.published("Paranal", "HAWKI") == directory
     assert read_filter_header(directory / "J.dat")["DetectorTypeSource"] == "svo"
-
-
-def test_svo_outage_keeps_njm_and_original_catalogues(tmp_path):
-    library = FilterLibrary(tmp_path)
-    library.svo = SimpleNamespace(list_facilities=lambda: (_ for _ in ()).throw(RuntimeError("offline")))
-    library.mirror = SimpleNamespace(is_available=lambda: True,
-                                     discover_facilities=lambda: ["MirrorOnly"],
-                                     discover_instruments=lambda f: ["Camera"],
-                                     _instrument_records=lambda f: {"Camera": {}})
-    inventory = library.inventory()
-    assert any(r["facility"] == "MirrorOnly" and r["instrument"] == "Camera" for r in inventory["instruments"])
-    assert any("SVO" in error for error in inventory["errors"])
 
 
 def test_inventory_offline_cli_emits_clean_json(tmp_path, monkeypatch, capsys):

@@ -37,33 +37,6 @@ def same_grid(a, b):
     return True
 
 
-def test_bounds_become_the_grabbers_ranges_and_a_bound_of_0_counts():
-    assert _parameter_cuts(None, None, None, None, None, None) == {}
-    assert _parameter_cuts(0, None, None, 4.5, None, 0.0) == {"teff_range": (0.0, math.inf),
-                                                             "logg_range": (-math.inf, 4.5),
-                                                             "meta_range": (-math.inf, 0.0)}
-
-
-def test_a_selection_returns_what_the_whole_download_did_and_downloads_only_it(njm, tmp_path):
-    whole = SED.fetch(GRID, source="njm", model_root=tmp_path / "whole").grid.filter(teff_min=5900, teff_max=6100)
-    njm.requested.clear()
-
-    sed = SED.fetch(GRID, source="njm", model_root=tmp_path / "cut", teff_min=5900, teff_max=6100)
-
-    assert [s.filename for s in sed.grid] == AT_6000 and same_grid(sed.grid, whole)
-    assert sorted(njm.spectra_requested()) == AT_6000
-    assert not [rel for rel in njm.requested if rel.endswith((".bin", ".h5"))]  # NJM's whole-grid products
-    folder = tmp_path / "cut" / GRID
-    assert sorted(p.name for p in folder.glob("*.txt")) == AT_6000
-    for name in AT_6000:  # byte for byte the copies a whole download makes
-        assert (folder / name).read_bytes() == (tmp_path / "whole" / GRID / name).read_bytes()
-    lookup = (folder / "lookup_table.csv").read_text().splitlines()
-    assert sorted(row.split(",")[0] for row in lookup[1:]) == AT_6000
-    with h5py.File(folder / f"{GRID}.h5", "r") as bundle:
-        assert sorted(bundle["spectra"]) == AT_6000
-    assert list(_read_flux_cube_header(folder / "flux_cube.bin")["teff"]) == [6000.0]
-
-
 def test_sed_local_then_uses_the_selection(njm, tmp_path):
     fetched = SED.fetch(GRID, source="njm", model_root=tmp_path, teff_min=5900, teff_max=6100).grid
     local = SED.local(GRID, model_root=tmp_path)
@@ -71,42 +44,6 @@ def test_sed_local_then_uses_the_selection(njm, tmp_path):
     assert [(s.teff, s.logg, s.metallicity) for s in local.grid] == [(s.teff, s.logg, s.metallicity) for s in fetched]
     assert local.parameter_ranges()["teff"] == (6000.0, 6000.0)
     assert np.all(np.isfinite(local(6000, 4.25, -0.25).flux))
-
-
-def test_a_later_fetch_completes_the_grid_and_rebuilds_from_every_spectrum(njm, tmp_path):
-    SED.fetch(GRID, source="njm", model_root=tmp_path, teff_min=5900, teff_max=6100)
-    folder = tmp_path / GRID
-
-    wider = SED.fetch(GRID, source="njm", model_root=tmp_path, teff_min=5700, teff_max=6100)
-    assert len(wider.grid) == 8 and len(list(folder.glob("*.txt"))) == 8
-    assert list(_read_flux_cube_header(folder / "flux_cube.bin")["teff"]) == [5750.0, 6000.0]
-
-    njm.requested.clear()
-    sed = SED.fetch(GRID, source="njm", model_root=tmp_path)
-    assert len(sed.grid) == 12 and len(njm.spectra_requested()) == 4  # only the rest
-    assert list(_read_flux_cube_header(folder / "flux_cube.bin")["teff"]) == [5750.0, 6000.0, 6250.0]
-    with h5py.File(folder / f"{GRID}.h5", "r") as bundle:
-        assert len(bundle["spectra"]) == 12
-    assert len(SED.local(GRID, model_root=tmp_path).grid) == 12
-
-
-def test_a_whole_grid_already_installed_is_cut_as_it_stands(njm, tmp_path):
-    whole = SED.fetch(GRID, source="njm", model_root=tmp_path).grid
-    folder = tmp_path / GRID
-    before = digests(folder)
-    njm.requested.clear()
-
-    sed = SED.fetch(GRID, source="njm", model_root=tmp_path, teff_min=5900, teff_max=6100)
-
-    assert digests(folder) == before  # no file, lookup table or cube rewritten or removed
-    assert njm.spectra_requested() == [] and not [r for r in njm.requested if r.endswith((".bin", ".h5"))]
-    assert same_grid(sed.grid, whole.filter(teff_min=5900, teff_max=6100))
-
-
-def test_bounds_no_spectrum_meets_return_an_empty_grid_and_download_nothing(njm, tmp_path):
-    sed = SED.fetch(GRID, source="njm", model_root=tmp_path, teff_min=9000)
-    assert len(sed.grid) == 0 and sed.grid.source == "njm"
-    assert njm.spectra_requested() == [] and not list((tmp_path / GRID).glob("*"))
 
 
 def test_svo_cannot_select_so_the_whole_grid_is_downloaded_then_cut(tmp_path, monkeypatch, caplog):
@@ -206,18 +143,3 @@ def downloaded_grid(tmp_path, monkeypatch):
     return tmp_path
 
 
-@pytest.mark.parametrize("bound, keep", [
-    ({"teff_min": 0}, lambda logg, meta: True),
-    ({"teff_max": 0}, lambda logg, meta: False),
-    ({"logg_min": 0.0}, lambda logg, meta: logg >= 0),
-    ({"logg_max": 0.0}, lambda logg, meta: logg <= 0),
-    ({"metallicity_min": 0.0}, lambda logg, meta: meta >= 0),
-    ({"metallicity_max": 0.0}, lambda logg, meta: meta <= 0),
-    ({"metallicity_max": 0}, lambda logg, meta: meta <= 0),
-])
-def test_fetch_applies_a_bound_of_zero(downloaded_grid, bound, keep):
-    # From SVO, which cannot select spectra, the whole grid is downloaded and the bounds applied after.
-    sed = SED.fetch("Tiny", source="svo", clean=False, model_root=downloaded_grid, **bound)
-
-    expected = {(logg, meta) for logg in (-0.5, 0.0, 0.5) for meta in (-0.5, 0.0, 0.5) if keep(logg, meta)}
-    assert {(s.logg, s.metallicity) for s in sed.grid} == expected

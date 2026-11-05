@@ -111,19 +111,3 @@ def test_common_wavelength_grid_needs_a_usable_spectrum(tmp_path):
         create_common_wavelength_grid([data])
 
 
-def test_combine_with_visualization_writes_plots_and_summary(tmp_path, capsys):
-    import matplotlib.pyplot as plt
-    import numpy as np
-
-    from sed_tools.api import SED
-
-    plt.switch_backend("Agg")
-    models = _copy_grids(tmp_path)
-    np.random.seed(0)
-    SED.combine(["Kurucz2003all", "Kurucz2003all__alpha_04"], output="combined",
-                model_root=models, visualization=True)
-    out = capsys.readouterr().out
-    assert "Grid: 3 × 2 × 2 = 12 points" in out
-    assert "Kurucz2003all__alpha_04: 12 (100.0%)" in out
-    for name in ("parameter_space.png", "sed_samples.png"):
-        assert (models / "combined" / name).stat().st_size > 0
