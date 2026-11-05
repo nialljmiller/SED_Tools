@@ -27,6 +27,20 @@ print(available_memory_bytes())
 """
 
 
+def test_psutil_is_not_a_dependency_and_scipy_is_not_required():
+    try:
+        import tomllib
+    except ModuleNotFoundError:  # Python 3.10: the tomli dependency
+        import tomli as tomllib
+
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]
+    extras = project["optional-dependencies"]
+    assert not any(dep.startswith("psutil") for dep in project["dependencies"])
+    assert not any(dep.startswith("psutil") for deps in extras.values() for dep in deps)
+    assert not any(dep.startswith("scipy") for dep in project["dependencies"])
+    assert any(dep.startswith("scipy") for dep in extras["full"])
+
+
 def test_import_sed_tools_and_measure_ram_without_psutil():
     done = subprocess.run([sys.executable, "-c", _WITHOUT_PSUTIL], cwd=ROOT, capture_output=True, text=True)
     assert done.returncode == 0, done.stderr
@@ -57,6 +71,17 @@ def test_import_sed_tools_works_without_scipy():
     assert done.returncode == 0, done.stderr
     # The grid combination itself still needs scipy, and says so when it is called.
     assert done.stdout.startswith("needs scipy: ") and "scipy" in done.stdout[len("needs scipy: "):]
+
+
+def test_optuna_is_an_optional_extra_only():
+    try:
+        import tomllib
+    except ModuleNotFoundError:  # Python 3.10: the tomli dependency
+        import tomli as tomllib
+
+    project = tomllib.loads((Path(__file__).resolve().parents[1] / "pyproject.toml").read_text())["project"]
+    assert project["optional-dependencies"]["ml-tune"] == ["optuna>=3"]
+    assert not any("optuna" in dep for dep in project["dependencies"] + project["optional-dependencies"]["full"])
 
 
 # ----------------------------------------------------------------------

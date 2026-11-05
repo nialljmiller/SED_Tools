@@ -15,8 +15,8 @@ import numpy as np
 import pytest
 
 from sed_tools import filter_library
-from sed_tools.component_sources import (observatories, space, standards,
-                                         surveys)
+from sed_tools.component_sources import (cassini, catalog, csp, observatories, space, standards,
+                                         surveys, swift)
 from sed_tools.component_sources._original import (Fetcher, clean_curve, make_band, to_angstrom)
 from sed_tools.filter_components import InstrumentManifest
 from sed_tools.filter_library import FilterLibrary
@@ -25,6 +25,8 @@ from sed_tools.filter_metadata import read_filter_header
 from builder_fixtures import _tar
 
 FIX = Path(__file__).parent / "fixtures" / "original_sources"
+MODULES = {"surveys": surveys, "space": space, "observatories": observatories, "standards": standards,
+           "swift": swift, "csp": csp, "cassini": cassini}
 
 
 def fx(name: str) -> str:
@@ -63,6 +65,14 @@ def _zip(members) -> bytes:
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
+def test_original_sources_do_not_shadow_other_builders():
+    original = {(f, i) for entries in catalog.ORIGINAL_SOURCES.values() for f, i, _ in entries}
+    others = {k for k, ref in catalog.BUILDERS_FOR.items() if ref.name not in MODULES}
+    assert not original & others
+    assert len(others) >= 28  # the builders registered before these were added
+    assert all(ref.publishes for ref in catalog.BUILDERS_FOR.values() if ref.name == "tabular")
+
+
 def test_unknown_instrument_and_wrong_facility_are_rejected(tmp_path):
     with pytest.raises(ValueError, match="No original-source recipe"):
         surveys.build(tmp_path, instrument="Nope")
@@ -319,3 +329,11 @@ def test_usno_reads_only_the_wayback_snapshots(tmp_path):
         standards.build(tmp_path, instrument="USNO", session=session)
     assert session.calls == [standards.USNO_README_WB]
     assert not (tmp_path / "Generic").exists()
+
+
+def test_naco_band_names_have_no_inner_dot():
+    from sed_tools.component_sources.tabular import NACO
+
+    assert "IB_2p00" in NACO.filters and "NB_3p74" in NACO.filters
+    assert all("." not in name for name in NACO.filters)
+    assert NACO.filters["IB_2p00"].url.endswith("/IB_2.00.dat")

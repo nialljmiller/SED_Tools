@@ -7,6 +7,16 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
+def test_top_level_workflows_are_cli_aliases():
+    import sed_tools
+    from sed_tools import cli
+
+    assert sed_tools.run_rebuild_flow is cli.run_rebuild_flow
+    assert sed_tools.run_spectra_flow is cli.run_spectra_flow
+    assert sed_tools.run_combine_flow is cli.run_combine_flow
+    assert sed_tools.menu is cli.menu
+
+
 def test_cli_config_subcommand_show(capsys):
     from unittest.mock import patch
     with patch("sys.argv", ["sed-tools", "config"]):

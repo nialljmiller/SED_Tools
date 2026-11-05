@@ -74,6 +74,10 @@ def xlrd(monkeypatch):
     monkeypatch.setitem(sys.modules, "xlrd", module)
 
 
+def test_every_recipe_is_covered():
+    assert sorted(EXPECTED) == sorted(obs.RECIPES)
+
+
 @pytest.mark.parametrize("instrument", sorted(obs.RECIPES))
 def test_builds_from_the_team_files(tmp_path, instrument):
     facility, bands, components, roles, phrase, (n, first, last, at, peak) = EXPECTED[instrument]

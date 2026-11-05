@@ -25,6 +25,13 @@ def test_percent_component_is_rejected(tmp_path):
         add_component(tmp_path, FILTER, [4000.0, 5000.0], [10.0, 95.0], band="g")
 
 
+def test_panic_br_gamma_uses_existing_mirror_band_name():
+    from sed_tools.component_sources.tabular import SOURCES
+
+    assert "Brgamma" in SOURCES["PANIC"].filters
+    assert "BrGamma" not in SOURCES["PANIC"].filters
+
+
 # ---------------------------------------------------------------------------
 # JWST
 # ---------------------------------------------------------------------------

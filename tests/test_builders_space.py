@@ -41,6 +41,10 @@ EXPECTED = {
 }
 
 
+def test_every_recipe_is_covered():
+    assert sorted(EXPECTED) == sorted(space.RECIPES)
+
+
 @pytest.mark.parametrize("instrument", sorted(space.RECIPES))
 def test_builds_from_the_archive_files(tmp_path, instrument):
     facility, bands, components, detector, roles, normalised, (n, first, last, at, peak) = EXPECTED[instrument]

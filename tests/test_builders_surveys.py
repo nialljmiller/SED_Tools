@@ -40,6 +40,10 @@ def lco_fixture_is_the_verified_copy(monkeypatch):
     monkeypatch.setattr(surveys, "_lco", lambda instrument, fetch: lco(instrument, fetch, sha256=sha))
 
 
+def test_every_recipe_is_covered():
+    assert sorted(EXPECTED) == sorted([*surveys.RECIPES, *standards.RECIPES])
+
+
 @pytest.mark.parametrize("instrument", sorted(EXPECTED))
 def test_builds_from_the_team_files(tmp_path, instrument):
     module, facility, bands, components, roles, site, (n, first, last, at, peak) = EXPECTED[instrument]

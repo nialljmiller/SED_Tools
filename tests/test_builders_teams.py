@@ -376,3 +376,9 @@ def test_skycalc_resume_leaves_a_complete_grid_untouched(tmp_path):
     with pytest.raises(ValueError, match="different settings"):
         skycalc.build(tmp_path / "filters", fetch_resolution=2000, store_resolution=400,
                       **dict(kw, airmasses=[1.5]))
+
+
+def test_hsc_builder_and_team_registry_write_the_same_site():
+    from sed_tools.component_sources import hsc
+
+    assert team.SITES["maunakea_hsc"] is hsc.SPEC.site and hsc.SPEC.site.kind == TEAM

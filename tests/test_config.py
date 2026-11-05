@@ -23,6 +23,12 @@ def test_env_var_overrides_default(tmp_path, monkeypatch):
     reload(cfg)
 
 
+def test_data_dir_default_is_home_relative():
+    from sed_tools.config import _DEFAULT_DATA_DIR
+    home = Path("~").expanduser()
+    assert str(_DEFAULT_DATA_DIR).startswith(str(home))
+
+
 # ---------------------------------------------------------------------
 # config
 # ---------------------------------------------------------------------

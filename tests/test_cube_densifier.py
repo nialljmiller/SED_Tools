@@ -39,6 +39,15 @@ def _integral_over_sigma_t4(cube, i_t, i_l, i_m):
     return np.trapezoid(cube.flux[i_t, i_l, i_m], cube.wavelengths) / (SIGMA * cube.teff_grid[i_t] ** 4)
 
 
+def test_densified_grid_keeps_source_axes_and_adds_teff_nodes(kurucz_cubes):
+    source, dense = kurucz_cubes
+    np.testing.assert_array_equal(source.teff_grid, [5750.0, 6000.0, 6250.0])
+    np.testing.assert_array_equal(dense.teff_grid, [5750.0, 5875.0, 6000.0, 6125.0, 6250.0])
+    np.testing.assert_array_equal(dense.logg_grid, source.logg_grid)
+    np.testing.assert_array_equal(dense.meta_grid, source.meta_grid)
+    np.testing.assert_array_equal(dense.wavelengths, source.wavelengths)
+
+
 def test_densified_cube_copies_source_spectra_exactly(kurucz_cubes):
     # Before the fix the copied rows differed from the source by up to 2.6e9.
     source, dense = kurucz_cubes
