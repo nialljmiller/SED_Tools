@@ -58,12 +58,8 @@ def _write_plain(path, wl, tr):
 # ---------------------------------------------------------------------------
 # Physics
 # ---------------------------------------------------------------------------
-@pytest.mark.parametrize(
-    "value,expected",
-    [(2, None)],
-)
-def test_normalize_detector_type(value, expected):
-    assert normalize_detector_type(value) == expected
+def test_normalize_detector_type():
+    assert normalize_detector_type(2) is None
 
 
 # ---------------------------------------------------------------------------

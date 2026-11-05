@@ -431,13 +431,11 @@ def test_generator_train_rejects_a_grid_with_no_flux_above_the_floor(cpu_torch, 
     assert not (tmp_path / "model").exists()
 
 
-@pytest.mark.parametrize("menu", ["3"])
-@pytest.mark.parametrize("number", ["0"])
-def test_generator_workflow_rejects_zero_and_negative_menu_numbers(stellar_dir, tmp_path, monkeypatch,
-                                                                   capsys, menu, number):
+@pytest.mark.parametrize("number", ["0", "-1"])
+def test_generator_workflow_rejects_zero_and_negative_menu_numbers(stellar_dir, tmp_path, monkeypatch, capsys, number):
     # These used to index from the end of the list and pick the last entry.
     _write_model_config(tmp_path / "models" / "gm1", {"model_type": "sed_generator"})
-    _feed_input(monkeypatch, [menu, number])
+    _feed_input(monkeypatch, ["3", number])
 
     mg.run_interactive_workflow(str(stellar_dir), str(tmp_path / "models"))
 
@@ -465,7 +463,7 @@ def test_extend_catalog_raises_without_a_lookup_table(tmp_path):
         _stubbed_completer().extend_catalog(str(tmp_path / "cat"), str(tmp_path / "out"))
 
 
-@pytest.mark.parametrize("missing", ["teff"])
+@pytest.mark.parametrize("missing", ["teff", "file_name"])
 def test_extend_catalog_raises_when_a_column_is_missing(catalog, tmp_path, missing):
     # Missing parameters used to default to 5000 K / 4.5 / 0.0, and a missing
     # file column matched rows to the sorted *.txt files by position.
@@ -527,24 +525,18 @@ def test_extend_catalog_writes_the_good_spectra_then_lists_every_failure(catalog
     assert len(completer._completer.calls) == 2
 
 
-def test_extend_catalog_lists_a_spectrum_the_model_rejects(catalog, tmp_path):
-    completer = _stubbed_completer()
-
-    def reject(wavelength, flux, teff, logg, meta, extension_range):
-        raise ValueError("flux has NaNs")
-
-    completer._completer.complete_sed = reject
-    with pytest.raises(RuntimeError, match=r"row 0 \(a.txt\): flux has NaNs"):
-        completer.extend_catalog(str(catalog), str(tmp_path / "out"), verbose=False)
-
-
-def test_extend_catalog_stops_at_once_on_an_unexpected_error(catalog, tmp_path):
+@pytest.mark.parametrize("error, message", [
+    pytest.param(ValueError("flux has NaNs"), r"row 0 \(a.txt\): flux has NaNs", id="lists_a_spectrum_the_model_rejects"),
     # A broad except used to count any error as one failed spectrum and go on.
+    pytest.param(RuntimeError("Tensor for argument weight is on cpu but expected on mps"), "expected on mps",
+                 id="stops_at_once_on_an_unexpected_error"),
+])
+def test_extend_catalog_raises_what_the_model_could_not_extend(catalog, tmp_path, error, message):
     completer = _stubbed_completer()
 
-    def broken(wavelength, flux, teff, logg, meta, extension_range):
-        raise RuntimeError("Tensor for argument weight is on cpu but expected on mps")
+    def fail(wavelength, flux, teff, logg, meta, extension_range):
+        raise error
 
-    completer._completer.complete_sed = broken
-    with pytest.raises(RuntimeError, match="expected on mps"):
+    completer._completer.complete_sed = fail
+    with pytest.raises(RuntimeError, match=message):
         completer.extend_catalog(str(catalog), str(tmp_path / "out"), verbose=False)

@@ -141,28 +141,24 @@ def test_filters_compose_builds_an_energy_labelled_mesa_product_for_each_filter_
                 == (dr280 / f"{band}.dat").read_text().splitlines()[1:])
 
 
-@pytest.mark.parametrize("name", ["argus_beta_ct446.csv"])
-def test_dr280_refuses_an_input_that_is_not_the_pinned_file(tmp_path, pins, raw, name):
+def test_dr280_refuses_an_input_that_is_not_the_pinned_file(tmp_path, pins, raw):
     session = _Session()
-    if name in PUBLIC:
-        url = argus.ARGUS_SIM_RAW.format(commit=argus.ARGUS_SIM_COMMIT, file=name)
-        session.files[url] = session.files[url] + b"1101.000000,0.000000\n"
-    else:
-        (raw / name).write_bytes((raw / name).read_bytes() + b"1101,0.1\n")
+    url = argus.ARGUS_SIM_RAW.format(commit=argus.ARGUS_SIM_COMMIT, file="argus_beta_ct446.csv")
+    session.files[url] = session.files[url] + b"1101.000000,0.000000\n"
     with pytest.raises(ValueError, match="SHA-256 .* is not the pinned"):
         argus.build(tmp_path / "filters", raw, instrument="DR280", session=session)
     assert not (tmp_path / "filters").exists()
 
 
-@pytest.mark.parametrize("name, text", [("beta.dat", "Wavelength,Transmission\n4000.0,0.5\n5000.0,0.5\n")])
-def test_dr280_never_replaces_a_different_published_file(tmp_path, pins, raw, name, text):
+def test_dr280_never_replaces_a_different_published_file(tmp_path, pins, raw):
     inst = tmp_path / "filters" / "Argus" / "DR280"
     inst.mkdir(parents=True)
-    (inst / name).write_text(text)
+    text = "Wavelength,Transmission\n4000.0,0.5\n5000.0,0.5\n"
+    (inst / "beta.dat").write_text(text)
     with pytest.raises(RuntimeError, match="never replaced; nothing was written"):
         argus.build(tmp_path / "filters", raw, instrument="DR280", session=_Session())
-    assert (inst / name).read_text() == text
-    assert [p.name for p in inst.iterdir()] == [name]
+    assert (inst / "beta.dat").read_text() == text
+    assert [p.name for p in inst.iterdir()] == ["beta.dat"]
 
 
 def test_build_refuses_unknown_instruments_and_options(tmp_path):

@@ -43,30 +43,16 @@ C_ANGSTROM_PER_S = 2.99792458e18
 # validate_converted_spectrum
 # ---------------------------------------------------------------------
 
-def test_validate_rejects_empty_arrays():
-    ok, msg = validate_converted_spectrum(np.array([]), np.array([]))
-    assert ok is False
-    assert "empty" in msg
-
-
-def test_validate_rejects_non_finite_wavelength():
-    ok, msg = validate_converted_spectrum(np.array([1.0, np.nan]), np.array([1.0, 1.0]))
-    assert ok is False
-    assert "wavelength" in msg
-
-
-def test_validate_rejects_non_positive_wavelength():
-    ok, msg = validate_converted_spectrum(np.array([0.0, 1.0]), np.array([1.0, 1.0]))
-    assert ok is False
-    assert "non-positive" in msg
-
-
-def test_validate_rejects_mostly_non_finite_flux():
+@pytest.mark.parametrize("wavelength, flux, reason", [
+    pytest.param([], [], "empty", id="empty_arrays"),
+    pytest.param([1.0, np.nan], [1.0, 1.0], "wavelength", id="non_finite_wavelength"),
+    pytest.param([0.0, 1.0], [1.0, 1.0], "non-positive", id="non_positive_wavelength"),
     # 3 of 4 flux values non-finite (75%) exceeds the 50% threshold.
-    ok, msg = validate_converted_spectrum(
-        np.array([1.0, 2.0, 3.0, 4.0]), np.array([1.0, np.nan, np.nan, np.nan])
-    )
+    pytest.param([1.0, 2.0, 3.0, 4.0], [1.0, np.nan, np.nan, np.nan], "non-finite flux", id="mostly_non_finite_flux"),
+])
+def test_validate_rejects(wavelength, flux, reason):
+    ok, msg = validate_converted_spectrum(np.array(wavelength), np.array(flux))
     assert ok is False
-    assert "non-finite flux" in msg
+    assert reason in msg
 
 

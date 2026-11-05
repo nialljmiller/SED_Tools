@@ -87,10 +87,9 @@ def test_menu_returns_after_ctrl_c_in_a_workflow(menu_flows, monkeypatch, capsys
     assert "Interrupted; back to the menu." in capsys.readouterr().out
 
 
-@pytest.mark.parametrize("typed", ["x"])
-def test_menu_says_unknown_option_and_asks_again(monkeypatch, capsys, typed):
+def test_menu_says_unknown_option_and_asks_again(monkeypatch, capsys):
     monkeypatch.setattr(cli, "_print_banner", lambda: None)
-    answer(monkeypatch, typed, "q")
+    answer(monkeypatch, "x", "q")
     assert cli._run_menu() == 0
     assert capsys.readouterr().out.count("Unknown option: enter a number from the menu, or q to quit.") == 1
 
@@ -584,15 +583,12 @@ def test_filters_info_says_when_the_catalogue_is_the_cached_copy(capsys):
 # ---------------------------------------------------------------------------
 # SkyCalc: derived grids, the web form, provenance
 # ---------------------------------------------------------------------------
-@pytest.mark.parametrize("argv,expected", [
-    (["--airmass", "unstated", "--atmosphere-site", "ctio_2mass"], {"airmass": None, "pwv": None, "site": "ctio_2mass"}),
-])
-def test_cli_passes_the_atmosphere_site_and_unstated_airmass(tmp_path, monkeypatch, argv, expected):
+def test_cli_passes_the_atmosphere_site_and_unstated_airmass(tmp_path, monkeypatch):
     from sed_tools import api, cli
 
     seen = {}
     monkeypatch.setattr(api.Filters, "compose", classmethod(lambda cls, target, **kw: seen.update(kw)))
     monkeypatch.setattr("sys.argv", ["sed-tools", "filters-compose", "2MASS/2MASS", "--base", str(tmp_path),
-                                    "--components", "filter", *argv])
+                                    "--components", "filter", "--airmass", "unstated", "--atmosphere-site", "ctio_2mass"])
     assert cli.main() in (0, None)
-    assert seen["atmosphere"] == expected
+    assert seen["atmosphere"] == {"airmass": None, "pwv": None, "site": "ctio_2mass"}

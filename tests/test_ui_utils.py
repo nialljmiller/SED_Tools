@@ -81,15 +81,14 @@ def test_picking_a_facility_lists_its_instruments_with_their_descriptions_once(g
     assert out.count("GAIA: 5 instruments") == 1  # not again when the list is filtered
 
 
-@pytest.mark.parametrize("columns", ["80"])
-def test_the_instrument_picker_shows_full_names_in_columns(gaia, tmp_path, monkeypatch, capsys, columns):
-    monkeypatch.setenv("COLUMNS", columns)
+def test_the_instrument_picker_shows_full_names_in_columns(gaia, tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv("COLUMNS", "80")
     answer(monkeypatch, "1", "q")
     cli.run_filters_flow(str(tmp_path))
     rows = capsys.readouterr().out.split("Instruments for GAIA\n")[1].splitlines()[1:3]
     assert re.fullmatch(r"\s+1\. DR2\s+3\. GAIA\s+5\. Gaia2m\s*", rows[0])  # 0.4.1 cut these to 'D', 'GA', 'Gaia'
     assert re.fullmatch(r"\s+2\. DR2r\s+4\. GAIA0\s*", rows[1])
-    assert all(len(row) <= int(columns) for row in rows)
+    assert all(len(row) <= 80 for row in rows)
 
 
 def test_picker_cuts_long_labels_with_an_ellipsis(monkeypatch, capsys):

@@ -496,7 +496,7 @@ def test_a_manifest_answer_without_a_body_is_unreadable_not_absent(tmp_path):
         grabber.fetch_manifest("Fac", "Cam")
 
 
-@pytest.mark.parametrize("njm_up", [True])
+@pytest.mark.parametrize("njm_up", [False, True])
 def test_an_njm_outage_is_not_announced_again_for_each_fetch(tmp_path, caplog, njm_up):
     from sed_tools.filter_library import FilterLibrary
     from sed_tools.njm_filter_grabber import SetDownload

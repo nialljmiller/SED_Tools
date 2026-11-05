@@ -50,9 +50,8 @@ def test_metadata_client_reads_svos_votable():
     assert 0 < record.transmission.max() <= 1
 
 
-@pytest.mark.parametrize("value, text", [(b"Angstrom", "Angstrom")])
-def test_param_text(value, text):
-    assert _param_text(value) == text  # astropy gives char PARAMs as str, or bytes in older versions
+def test_param_text():
+    assert _param_text(b"Angstrom") == "Angstrom"  # astropy gives char PARAMs as str, or bytes in older versions
 
 
 # ---------------------------------------------------------------- SVO spectra: probing
@@ -80,13 +79,11 @@ def test_mast_lists_every_bosz_resolution_and_accepts_each(tmp_path, monkeypatch
     assert [grabber.get_model_metadata(n)["reskey"] for n in names] == [n.rsplit("-", 1)[1] for n in names]
 
 
-@pytest.mark.parametrize("meta, expected", [
-    ([-1.0, np.nan], (200.0, 4.0, -1.0)),     # ... and loses to the order with more finite values
-])
-def test_msg_takes_the_most_complete_order_when_neither_is_plausible(tmp_path, meta, expected):
+def test_msg_takes_the_most_complete_order_when_neither_is_plausible(tmp_path):
     grabber = msg.MSGSpectraGrabber(base_dir=str(tmp_path), max_workers=1)
     grabber.model_axes["sg-Cool"] = {
-        "axes": [np.array([100.0, 200.0]), np.array([4.0, 4.5]), np.array(meta)], "shape": (2, 2, 2),
+        "axes": [np.array([100.0, 200.0]), np.array([4.0, 4.5]), np.array([-1.0, np.nan])], "shape": (2, 2, 2),
         "vlin": np.array([1]), "roles": {"teff": 0, "logg": 1, "meta": 2}}
     teff, logg, metal = grabber._params_from_index("sg-Cool", 0)
-    np.testing.assert_array_equal([teff, logg, metal], expected)
+    # ... and loses to the order with more finite values
+    np.testing.assert_array_equal([teff, logg, metal], (200.0, 4.0, -1.0))

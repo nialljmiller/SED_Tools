@@ -28,10 +28,10 @@ from helpers_grids import GRID, KURUCZ, copy_without_times
 pcf = importlib.import_module("sed_tools.precompute_flux_cube")
 
 WAVELENGTHS = np.linspace(1000.0, 10000.0, 20)
+COLUMNS = ("file_name", "teff", "logg", "metallicity")
 
 
-def _write_grid(model_dir, rows, columns=("file_name", "teff", "logg", "metallicity"),
-                *, missing=(), lookup_name="lookup_table.csv"):
+def _write_grid(model_dir, rows, columns=COLUMNS, *, missing=(), lookup_name="lookup_table.csv"):
     """Write one flat spectrum per row (except those in ``missing``) and a lookup table."""
     model_dir.mkdir(parents=True, exist_ok=True)
     lines = [",".join(columns)]
@@ -54,35 +54,21 @@ def _simple_grid(model_dir, **kwargs):
 
 
 # ---------------------------------------------------------------- lookup values
-def test_nan_logg_and_metallicity_raise_instead_of_an_all_zero_cube(tmp_path):
+@pytest.mark.parametrize("rows, columns, message", [
     # regenerate_lookup_table writes "nan" when a header lacks logg/[M/H] (e.g.
     # blackbodies); every spectrum used to be skipped and an all-zero cube written.
-    model = _write_grid(tmp_path / "bbody", [
-        ("bb1.txt", 5000.0, "nan", "nan"),
-        ("bb2.txt", 6000.0, "nan", "nan"),
-    ])
-    with pytest.raises(ValueError, match=r"logg = 'nan' for bb1\.txt is not a finite number"):
+    pytest.param([("bb1.txt", 5000.0, "nan", "nan"), ("bb2.txt", 6000.0, "nan", "nan")], COLUMNS,
+                 r"logg = 'nan' for bb1\.txt is not a finite number", id="nan_logg_and_metallicity"),
+    pytest.param([("a.txt", 5000.0, 4.0, 0.0), ("b.txt", "", 4.0, 0.0)], COLUMNS, r"teff = '' for b\.txt",
+                 id="blank_teff"),
+    pytest.param([("a.txt", 4.0, 0.0), ("b.txt", 4.5, 0.0)], ("file_name", "logg", "metallicity"),
+                 "has no Teff column", id="missing_teff_column"),
+])
+def test_unusable_lookup_values_raise_and_write_no_cube(tmp_path, rows, columns, message):
+    model = _write_grid(tmp_path / "grid", rows, columns)
+    with pytest.raises(ValueError, match=message):
         pcf.precompute_flux_cube(str(model), str(model / "flux_cube.bin"))
     assert not (model / "flux_cube.bin").exists()
-
-
-def test_blank_teff_raises_naming_the_file(tmp_path):
-    model = _write_grid(tmp_path / "grid", [
-        ("a.txt", 5000.0, 4.0, 0.0),
-        ("b.txt", "", 4.0, 0.0),
-    ])
-    with pytest.raises(ValueError, match=r"teff = '' for b\.txt"):
-        pcf.precompute_flux_cube(str(model), str(model / "flux_cube.bin"))
-    assert not (model / "flux_cube.bin").exists()
-
-
-def test_missing_teff_column_raises(tmp_path):
-    model = _write_grid(tmp_path / "grid", [
-        ("a.txt", 4.0, 0.0),
-        ("b.txt", 4.5, 0.0),
-    ], columns=("file_name", "logg", "metallicity"))
-    with pytest.raises(ValueError, match="has no Teff column"):
-        pcf.precompute_flux_cube(str(model), str(model / "flux_cube.bin"))
 
 
 def test_missing_logg_and_metallicity_columns_still_read_as_zero(tmp_path):
@@ -169,23 +155,17 @@ def _fake_sysconf(monkeypatch, page_size, pages):
     monkeypatch.setattr(_constants.os, "sysconf", values.__getitem__)
 
 
-def test_meminfo_is_read_when_psutil_is_missing(monkeypatch, tmp_path, caplog):
+@pytest.mark.parametrize("meminfo_text, available", [
+    pytest.param("MemTotal:  1000 kB\nMemAvailable:  512 kB\n", 512 * 1024, id="memavailable"),
+    pytest.param("MemTotal:  1000 kB\n", 4096 * 1000 // 2, id="half_the_physical_ram_without_memavailable"),
+])
+def test_meminfo_is_read_when_psutil_is_missing(monkeypatch, tmp_path, caplog, meminfo_text, available):
     meminfo = tmp_path / "meminfo"
-    meminfo.write_text("MemTotal:  1000 kB\nMemAvailable:  512 kB\n")
+    meminfo.write_text(meminfo_text)
     _without_psutil(monkeypatch, meminfo)
     _fake_sysconf(monkeypatch, 4096, 1000)
     with caplog.at_level(logging.WARNING, logger=_constants.__name__):
-        assert _constants.available_memory_bytes() == 512 * 1024
-    assert not caplog.records
-
-
-def test_meminfo_without_memavailable_falls_back_to_half_the_physical_ram(monkeypatch, tmp_path, caplog):
-    meminfo = tmp_path / "meminfo"
-    meminfo.write_text("MemTotal:  1000 kB\n")
-    _without_psutil(monkeypatch, meminfo)
-    _fake_sysconf(monkeypatch, 4096, 1000)
-    with caplog.at_level(logging.WARNING, logger=_constants.__name__):
-        assert _constants.available_memory_bytes() == 4096 * 1000 // 2
+        assert _constants.available_memory_bytes() == available
     assert not caplog.records
 
 
@@ -193,18 +173,15 @@ def _sysconf_unknown_name(name):
     raise ValueError("unrecognized configuration name")
 
 
-@pytest.mark.parametrize("break_sysconf, reason", [
-    (lambda mp: _fake_sysconf(mp, 4096, -1), "SC_PHYS_PAGES is -1"),
-], ids=["negative"])
-def test_ram_probe_failure_warns_and_assumes_2_gib(monkeypatch, caplog, tmp_path, break_sysconf, reason):
+def test_ram_probe_failure_warns_and_assumes_2_gib(monkeypatch, caplog, tmp_path):
     _without_psutil(monkeypatch, tmp_path / "no_meminfo")
-    break_sysconf(monkeypatch)
+    _fake_sysconf(monkeypatch, 4096, -1)
     with caplog.at_level(logging.WARNING, logger=_constants.__name__):
         assert _constants.available_memory_bytes() == 2 * 1024**3
     assert "Could not measure available RAM" in caplog.text
     assert "psutil is not installed" in caplog.text
     assert "no_meminfo could not be read" in caplog.text
-    assert reason in caplog.text
+    assert "SC_PHYS_PAGES is -1" in caplog.text
 
 
 def test_other_lookup_table_file_is_used_with_a_warning(tmp_path, caplog):
@@ -305,22 +282,15 @@ def _unreadable_rglob(self, pattern):
     raise PermissionError(13, "Permission denied", str(self))
 
 
-def test_vega_search_warns_when_a_directory_cannot_be_searched(tmp_path, monkeypatch, caplog):
+@pytest.mark.parametrize("search, what", [("discover_vega_candidates", "Vega spectra"),
+                                          ("discover_flux_cube_files", "flux cubes")])
+def test_a_search_warns_when_a_directory_cannot_be_searched(tmp_path, monkeypatch, caplog, search, what):
     from sed_tools import flux_cube_tool
 
     monkeypatch.setattr(flux_cube_tool.Path, "rglob", _unreadable_rglob)
     with caplog.at_level(logging.WARNING, logger=flux_cube_tool.__name__):
-        assert flux_cube_tool.discover_vega_candidates([tmp_path]) == []
-    assert f"Could not finish searching {tmp_path.resolve()} for Vega spectra" in caplog.text
-
-
-def test_flux_cube_search_warns_when_a_directory_cannot_be_searched(tmp_path, monkeypatch, caplog):
-    from sed_tools import flux_cube_tool
-
-    monkeypatch.setattr(flux_cube_tool.Path, "rglob", _unreadable_rglob)
-    with caplog.at_level(logging.WARNING, logger=flux_cube_tool.__name__):
-        flux_cube_tool.discover_flux_cube_files([tmp_path])
-    assert f"Could not finish searching {tmp_path.resolve()} for flux cubes" in caplog.text
+        assert getattr(flux_cube_tool, search)([tmp_path]) == []
+    assert f"Could not finish searching {tmp_path.resolve()} for {what}" in caplog.text
 
 
 ALPHA_04 = KURUCZ.parent / f"{GRID}__alpha_04"

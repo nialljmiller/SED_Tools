@@ -128,13 +128,12 @@ def test_euclid_parse_checks_columns_and_product():
         euclid.parse_table("\n".join(bad))
 
 
-@pytest.mark.parametrize("scale, expect", [(0.6, "Release mismatch")])
-def test_euclid_build_writes_components_and_compares(tmp_path, scale, expect):
+def test_euclid_build_writes_components_and_compares(tmp_path):
     from sed_tools.component_sources import euclid
 
     text, wave, total = _nisp_table()
     inst = tmp_path / "Euclid" / "NISP"
-    _published(inst, "Y", wave * 10.0, total * scale)
+    _published(inst, "Y", wave * 10.0, total * 0.6)
     _published(inst, "Blue", wave * 10.0, total, components="filter+instrument")
     (inst / "NISP").write_text("Blue.dat\nY.dat\n")  # as NJM serves the set
     session = _Session({euclid.URL.format(band="Y"): text})
@@ -142,7 +141,7 @@ def test_euclid_build_writes_components_and_compares(tmp_path, scale, expect):
     m = InstrumentManifest.load(inst)
     assert {r: m.components[r] for r in (FILTER, OPTICS, QE)} == {
         r: {"Y": f"components/{r}/Y.dat"} for r in (FILTER, OPTICS, QE)}
-    assert expect in m.notes and "Blue" in m.notes
+    assert "Release mismatch" in m.notes and "Blue" in m.notes
     assert all(released_mesa_reads(inst / rel) for rel in (m.components[r]["Y"] for r in (FILTER, OPTICS, QE)))
 
 

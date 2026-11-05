@@ -53,18 +53,15 @@ def test_singleton_axis_raises_with_fill_gaps_false(make_affine_cube):
 # NaN / infinite parameters
 # ---------------------------------------------------------------------
 
-@pytest.mark.parametrize("param", ["teff"])
-def test_nan_parameter_raises_even_with_fill_gaps(make_affine_cube, param):
+def test_nan_parameter_raises_even_with_fill_gaps(make_affine_cube):
     # NaN comparisons are always False, so the fill_gaps clamp
     # (min(max(value, lower), upper)) passes NaN straight through, and
     # the low-level bounds check in FluxCube._hermite_interp_axis then
     # raises. This is current, verified behaviour, not an assumption.
     cube = make_affine_cube()
     model = SEDModel(name="affine", flux_cube_path=cube.path, fill_gaps=True)
-    kwargs = {"teff": 5000.0, "logg": 2.0, "metallicity": -0.3}
-    kwargs[param] = float("nan")
     with pytest.raises(ValueError):
-        model(**kwargs)
+        model(teff=float("nan"), logg=2.0, metallicity=-0.3)
 
 
 # ---------------------------------------------------------------------

@@ -75,14 +75,8 @@ def _atmosphere(root, site="paranal", airmass=1.2, pwv=2.5, value=0.9):
 # ---------------------------------------------------------------------------
 # Vocabulary
 # ---------------------------------------------------------------------------
-@pytest.mark.parametrize(
-    "text,expected",
-    [
-        ("", ()),
-    ],
-)
-def test_parse_components(text, expected):
-    assert parse_components(text) == expected
+def test_parse_components():
+    assert parse_components("") == ()
 
 
 # ---------------------------------------------------------------------------
