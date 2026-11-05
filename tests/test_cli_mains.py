@@ -78,8 +78,6 @@ HELP = {
     "svo_filter_grabber": "Interactively browse the SVO Filter Profile Service",
     "svo_regen_spectra_lookup": "Rewrite lookup_table.csv in every spectral grid folder from the headers of its spectra",
 }
-# svo_filter_grabber takes any other argument as its base directory.
-ARGPARSE = sorted(set(HELP) - {"svo_filter_grabber"})
 
 
 @pytest.mark.parametrize("module", sorted(HELP))
@@ -89,7 +87,7 @@ def test_help_prints_the_usage_and_exits_0(module, monkeypatch, capsys):
     assert out.lower().startswith("usage:") and HELP[module] in out
 
 
-@pytest.mark.parametrize("module", ARGPARSE)
+@pytest.mark.parametrize("module", sorted(HELP))
 def test_a_bad_argument_prints_the_usage_and_exits_2(module, monkeypatch, capsys):
     assert run_m(monkeypatch, module, "--no-such-option") == 2
     captured = capsys.readouterr()

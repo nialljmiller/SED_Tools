@@ -34,6 +34,11 @@ Fixed
   listed each grid twice, as ``./data/stellar_models/<grid>`` and
   ``data/stellar_models/<grid>``. Each grid is now listed once, as
   ``data/stellar_models/<grid>``.
+- **python -m sed_tools.svo_filter_grabber** took any argument but ``-h`` or
+  ``--help`` as its base directory, so ``--bogus`` created a folder named
+  ``--bogus`` and started browsing SVO. An unknown option, or a second
+  argument, is now a usage error (exit 2). A base directory given as the
+  one positional argument works as before, and ``--help`` prints the usage.
 
 Version 0.5.0 (November 2026)
 ----------------------------
