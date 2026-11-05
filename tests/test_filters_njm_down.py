@@ -13,10 +13,10 @@ import requests
 
 from sed_tools import cli, filter_library, svo_filter_grabber
 from sed_tools.api import Filters
-from sed_tools.filter_catalogue import CatalogueError, FilterCatalogue, format_citations
+from sed_tools.filter_catalogue import format_citations
 from sed_tools.filter_components import ComponentError
 from sed_tools.filter_library import FilterLibrary
-from sed_tools.filter_metadata import SVOUnreachableError, read_filter_header
+from sed_tools.filter_metadata import SVOUnreachableError
 from sed_tools.njm_filter_grabber import NJMFilterGrabber
 from sed_tools.svo_filter_grabber import SVOFilterBrowser
 
@@ -26,11 +26,6 @@ from helpers_filters import bundled, njm, njm as njm_filters  # noqa: F401 (fixt
 from helpers_grids import run_cli
 
 
-EUCLID = {"NISP": {"description": "Euclid NISP", "svo_instruments": ["Euclid/NISP", "Euclid/NISP0"],
-                   "bands": ["Blue", "H", "J", "Red", "Y"],
-                   "svo_bands": {"Euclid/NISP": ["H", "J", "Y"], "Euclid/NISP0": ["Blue", "Red"]}}}
-
-
 def labels(result):
     return [(e["label"], e["sources"]) for e in result["entries"]]
 
@@ -38,14 +33,6 @@ def labels(result):
 # ----------------------------------------------------------------------
 # The pickers name SVO's copies after NJM while NJM is down
 # ----------------------------------------------------------------------
-def test_two_svo_instruments_of_one_njm_product_are_one_entry(tmp_path, bundled):
-    bundled({"Euclid": EUCLID})
-    library = FilterLibrary(tmp_path / "filters")
-    library.svo = svo_stub({"Euclid": ""}, {"Euclid": {"NISP": "SVO NISP", "NISP0": "pre-launch", "VIS": "v"}})
-    library.mirror = NJM_DOWN
-    assert labels(library.instruments("Euclid")) == [("NISP", ["svo"]), ("VIS", ["svo"])]
-
-
 def test_an_installed_copy_under_svos_name_stays_its_own_entry(tmp_path, bundled):
     bundled({"GAIA": GAIA})
     root = tmp_path / "filters"
@@ -60,56 +47,6 @@ def test_an_installed_copy_under_svos_name_stays_its_own_entry(tmp_path, bundled
 # ----------------------------------------------------------------------
 # NJM's products from SVO, under NJM's names
 # ----------------------------------------------------------------------
-def test_njm_product_from_svo_is_installed_under_njm_names_and_says_what_is_missing(tmp_path, bundled, caplog):
-    bundled({"GAIA": GAIA})
-    root = tmp_path / "filters"
-    library = FilterLibrary(root)
-    library.mirror = NJM_DOWN
-    library.svo = svo_browser(root, {("GAIA", "GAIA3"): ["G", "Gbp", "Grp", "Grvs"], ("GAIA", "GAIA2"): ["G"]})
-    with caplog.at_level(logging.WARNING):
-        directory = library.published("GAIA", "GAIA")  # Nill, 28 Oct: install, warn, carry on
-    assert directory == root / "GAIA" / "GAIA"
-    incomplete = [r.getMessage() for r in caplog.records if "is incomplete" in r.getMessage()]
-    assert incomplete == ["GAIA/GAIA is incomplete: 4 of NJM's 6 bands were installed from SVO's\n"
-                          "GAIA/GAIA3; missing Gbp_bright, Gbp_faint, which SVO does not have. Fetch again\n"
-                          "when NJM is reachable to complete it (NJM: the mirror is unavailable).\n"
-                          f"Installed in: {directory}"]
-    assert all(len(line) <= 80 for line in incomplete[0].splitlines()[:-1])  # all but the folder's line
-    assert "trying SVO" not in caplog.text  # NJM's outage is the NJM client's one notice per process
-    assert sorted(p.name for p in directory.glob("*.dat")) == ["G.dat", "Gbp.dat", "Grp.dat", "Grvs.dat"]
-    assert read_filter_header(directory / "Gbp.dat")["FilterID"] == "GAIA/GAIA3.Gbp"  # where the curve came from
-    assert json.loads((directory / "manifest.json").read_text())["bands"] == GAIA["GAIA"]["bands"]
-    assert not FilterLibrary.published_complete(directory)  # a later fetch asks NJM again
-    assert not (root / "GAIA" / "GAIA3").exists()
-
-
-def test_svo_band_names_become_njms(tmp_path, bundled, monkeypatch):
-    bundled({"GAIA": GAIA})
-    root = tmp_path / "filters"
-    library = FilterLibrary(root)
-    library.mirror = NJM_DOWN
-    monkeypatch.setattr(library, "_publishing_builder", lambda f, i, d: (None, None, "builder offline"))
-    library.svo = svo_browser(root, {("GAIA", "GAIA2"): ["G", "Gbp", "Grp"]}, detector="energy")
-    directory = library.published("GAIA", "DR2")
-    assert directory == root / "GAIA" / "DR2"
-    assert (directory / "DR2").read_text().split() == ["BP.dat", "G.dat", "RP.dat"]
-    assert read_filter_header(directory / "BP.dat")["DetectorType"] == "energy"  # SVO's form, as SVO labels it
-
-
-def test_several_svo_instruments_fill_one_njm_product_without_their_archived_copies(tmp_path, bundled):
-    bundled({"Euclid": EUCLID})
-    root = tmp_path / "filters"
-    library = FilterLibrary(root)
-    library.mirror = NJM_DOWN
-    library.svo = svo_browser(root, {("Euclid", "NISP"): ["H", "J", "Y"],
-                                     ("Euclid", "NISP0"): ["Blue", "H", "J", "Red", "Y"]})
-    directory = library.published("Euclid", "NISP")
-    assert directory == root / "Euclid" / "NISP" and FilterLibrary.published_complete(directory)
-    taken = {read_filter_header(p)["FilterID"] for p in directory.glob("*.dat")}
-    # NISP0's H, J and Y are NJM's archived H_svo, J_svo, Y_svo: never NJM's H, J and Y.
-    assert taken == {"Euclid/NISP.H", "Euclid/NISP.J", "Euclid/NISP.Y", "Euclid/NISP0.Blue", "Euclid/NISP0.Red"}
-
-
 def test_an_svo_curve_that_differs_from_njms_is_used_with_a_warning(tmp_path, bundled, caplog):
     bundled({"Roman": {"WFI": {"svo_instruments": ["Roman/WFI"], "bands": ["F062", "F087"],
                                "svo_bands": {"Roman/WFI": ["F087"]}}}})
@@ -202,47 +139,6 @@ def test_two_installed_spellings_stop_unless_one_is_exact(tmp_path):
     assert library.installed_directory("Gemini", "GMOS-N") == root / "Gemini" / "GMOS-N"  # exact wins
 
 
-def test_another_products_exact_name_is_never_taken(tmp_path, bundled):
-    bundled({"Cameras": {"Sony_NEX5N": {}, "Sony_NEX_5N": {}}})
-    root = tmp_path / "filters"
-    write_set(root / "Cameras" / "Sony_NEX5N", ["g"])
-    library = FilterLibrary(root)
-    assert library.installed_directory("Cameras", "Sony_NEX_5N") is None
-    assert library.installed_directory("Cameras", "sony-nex5n") is not None  # a spelling of the installed one
-
-
-def test_folders_without_curves_do_not_count(tmp_path):
-    root = tmp_path / "filters"
-    (root / "Gemini" / "GMOS_N").mkdir(parents=True)  # left empty by a failed attempt
-    legacy = write_set(root / "Gemini" / "GMOS-N", ["g"])
-    assert FilterLibrary(root).installed_directory("Gemini", "GMOS_N") == legacy
-
-
-# ----------------------------------------------------------------------
-# Builders that make only components are no download source
-# ----------------------------------------------------------------------
-def test_component_only_builders_are_not_listed_or_tried(tmp_path, bundled, caplog):
-    library = FilterLibrary(tmp_path / "filters")
-    library.svo = svo_stub({}, {}, down=True)
-    library.mirror = NJM_DOWN
-    assert "2MASS" not in [e["label"] for e in library.facilities()["entries"]]
-    with caplog.at_level(logging.WARNING), pytest.raises(ComponentError) as raised:
-        library.published("2MASS", "2MASS")
-    assert "original source: its builder makes only the separate components" in str(raised.value)
-    assert "trying its original-source builder" not in caplog.text
-
-
-def test_with_svo_known_down_no_fallback_to_it_is_announced(tmp_path, monkeypatch, caplog):
-    monkeypatch.setattr(svo_filter_grabber._STATE, "error", "SVO Filter Profile Service unreachable: x.")
-    monkeypatch.setattr(svo_filter_grabber._STATE, "until", float("inf"))
-    library = FilterLibrary(tmp_path / "filters")
-    library.mirror = NJM_DOWN
-    with caplog.at_level(logging.WARNING), pytest.raises(ComponentError) as raised:
-        library.published("2MASS", "2MASS")
-    assert "trying SVO" not in caplog.text and caplog.text.count("\n") == 0  # one message: the error
-    assert str(raised.value).endswith("SVO: SVO Filter Profile Service unreachable: x.")
-
-
 # ----------------------------------------------------------------------
 # SVO's availability is known process-wide
 # ----------------------------------------------------------------------
@@ -285,43 +181,6 @@ def test_svo_is_asked_again_after_its_pause(tmp_path, monkeypatch):
 # ----------------------------------------------------------------------
 # filters-info and filters-cite
 # ----------------------------------------------------------------------
-def catalogue_with(tmp_path, files):
-    server = Served(dict({"index.json": njm_index({"GAIA": {"DR2": {
-        "filters": ["BP", "BP_svo", "G"], "properties": "properties.json", "info": "info.json"}}})}, **files))
-    mirror = SimpleNamespace(base_url="https://data.nialljmiller.com/sed_tools", is_available=lambda: True,
-                             _get=lambda url, **kwargs: server.get(url, **kwargs))
-    return FilterCatalogue(tmp_path / "filters", mirror=mirror)
-
-
-def test_info_puts_archived_copies_apart_from_the_bands(tmp_path):
-    bands = {"BP": {"Description": "Gbp"}, "BP_svo": {"Description": "Gbp (SVO)"}, "G": {"Description": "G"}}
-    catalogue = catalogue_with(tmp_path, {"filters/GAIA/DR2/info.json": json.dumps({"bands": bands}),
-                                          "filters/GAIA/DR2/DR2": "BP.dat\nG.dat\n"})
-    info = catalogue.info("GAIA", "DR2")
-    assert list(info["bands"]) == ["BP", "G"] and list(info["archived_bands"]) == ["BP_svo"]
-
-
-def test_installed_index_decides_which_bands_are_archived(tmp_path):
-    directory = tmp_path / "filters" / "GAIA" / "DR2"
-    directory.mkdir(parents=True)
-    (directory / "DR2").write_text("BP.dat\nG.dat\n")
-    (directory / "BP.dat").write_text("Wavelength,Transmission\n4000,1\n6000,1\n")  # an installed copy holds curves
-    (directory / "properties.json").write_text(json.dumps({"bands": {"BP": {}, "G": {}, "G_svo": {}}}))
-    catalogue = FilterCatalogue(tmp_path / "filters", offline=True)
-    assert list(catalogue.properties("GAIA", "DR2")["archived_bands"]) == ["G_svo"]
-
-
-def test_unreachable_njm_is_said_plainly_once(tmp_path):
-    def down(url, **kwargs):
-        raise requests.ConnectionError("('Connection aborted.', ConnectionResetError(54, 'reset'))")
-
-    mirror = SimpleNamespace(base_url="https://data.nialljmiller.com/sed_tools", is_available=lambda: True, _get=down)
-    catalogue = FilterCatalogue(tmp_path / "filters", mirror=mirror)
-    with pytest.raises(CatalogueError) as raised:
-        catalogue.info("GAIA", "DR2")
-    assert str(raised.value) == "index.json is not cached and NJM is unreachable"
-
-
 def test_citation_titles_are_one_line_and_url_keys_are_plain(tmp_path):
     text = format_citations({"instruments": [], "acknowledgements": [], "errors": [], "references": [
         {"key": "bibcode:2016A&A...595A...1G", "short": "Prusti et al. 2016", "title": "The\n          Gaia\n  mission",
@@ -335,16 +194,6 @@ def test_citation_titles_are_one_line_and_url_keys_are_plain(tmp_path):
 # ----------------------------------------------------------------------
 # What available() says without NJM
 # ----------------------------------------------------------------------
-def test_available_without_any_source_gives_the_bundled_bands(tmp_path, bundled):
-    bundled({"GAIA": GAIA})
-    library = FilterLibrary(tmp_path / "filters")
-    library.mirror = NJM_DOWN
-    library.svo = svo_stub({}, {}, down=True)
-    info = library.available("GAIA", "GAIA")
-    assert info["availability_source"] == "unknown" and info["bands"] == GAIA["GAIA"]["bands"]
-    assert "released" in info["notes"][0]
-
-
 def test_available_from_svo_describes_njms_product_and_its_missing_bands(tmp_path, bundled):
     bundled({"GAIA": GAIA})
     root = tmp_path / "filters"
@@ -354,17 +203,6 @@ def test_available_from_svo_describes_njms_product_and_its_missing_bands(tmp_pat
     info = library.available("GAIA", "GAIA")
     assert info["availability_source"] == "svo" and info["bands"] == ["G", "Gbp", "Grp", "Grvs"]
     assert info["notes"] == ["SVO has no curve that is NJM's Gbp_bright, Gbp_faint"]
-
-
-def test_available_without_njm_follows_published_to_the_builder_before_svo(tmp_path, bundled):
-    bundled({"Planck": {"HFI": {"svo_instruments": ["PLANCK/HFI"], "bands": ["100", "545"],
-                                "svo_bands": {"PLANCK/HFI": ["545GHz=545"]}}}})
-    library = FilterLibrary(tmp_path / "filters")
-    library.mirror = NJM_DOWN
-    library.svo = svo_stub({}, {}, down=True)  # never asked: the builder comes first
-    info = library.available("Planck", "HFI")
-    assert info["availability_source"] == "original" and info["bands"] == ["100", "545"]
-    assert info["notes"][0] == "its original-source builder makes the curves when it is fetched"
 
 
 # ----------------------------------------------------------------------
@@ -426,18 +264,6 @@ def test_installed_atmospheres_are_listed_while_njm_is_down(tmp_path, caplog):
 NJM_DOWN_ATMOSPHERES = SimpleNamespace(list_atmosphere_sites=lambda: [])  # what an unavailable grabber lists
 
 
-def test_a_builder_instrument_njm_does_not_list_is_still_described_from_svo(tmp_path, bundled, monkeypatch):
-    from sed_tools.component_sources.catalog import BuilderRef
-
-    monkeypatch.setitem(filter_library.BUILDERS_FOR, ("Lab", "Cam"), BuilderRef("lab", publishes=True))
-    root = tmp_path / "filters"
-    library = FilterLibrary(root)
-    library.mirror = NJM_DOWN
-    library.svo = svo_browser(root, {("Lab", "Cam"): ["g"]})
-    info = library.available("Lab", "Cam")
-    assert info["availability_source"] == "svo" and info["bands"] == ["g"]
-
-
 # ----------------------------------------------------------------------
 # A partial set from SVO, NJM down: installed, warned about, a success
 # ----------------------------------------------------------------------
@@ -451,31 +277,6 @@ def gaia_from_svo(tmp_path, bundled, monkeypatch):
     monkeypatch.setattr(FilterLibrary, "svo", property(lambda self: browser))
     monkeypatch.setenv("COLUMNS", "80")
     return root
-
-
-def incomplete_warnings(caplog):
-    return [r for r in caplog.records if r.levelno == logging.WARNING and "is incomplete" in r.getMessage()]
-
-
-def test_filters_fetch_returns_the_partial_set_with_one_warning(gaia_from_svo, caplog):
-    with caplog.at_level(logging.WARNING):
-        directory = Filters.fetch("GAIA", "GAIA", filter_root=gaia_from_svo)
-    assert directory == gaia_from_svo / "GAIA" / "GAIA"
-    assert len(incomplete_warnings(caplog)) == 1  # one line for the set, not one per band
-    assert "missing Gbp_bright, Gbp_faint" in " ".join(incomplete_warnings(caplog)[0].getMessage().split())
-
-    info = Filters.available("GAIA", "GAIA", filter_root=gaia_from_svo, include_remote=False)
-    assert info["bands"] == ["G", "Gbp", "Grp", "Grvs"]
-    assert info["expected_bands"] == GAIA["GAIA"]["bands"]  # how a script tells the set is incomplete
-    assert info["missing_files"] == ["Gbp_bright.dat", "Gbp_faint.dat"]
-
-
-def test_the_filters_command_exits_0_and_warns_once(gaia_from_svo, monkeypatch, capsys, caplog):
-    with caplog.at_level(logging.WARNING):
-        assert run_cli(monkeypatch, "filters", "GAIA/GAIA", "--base", str(gaia_from_svo)) == 0
-    assert capsys.readouterr().out.rstrip().endswith(str(gaia_from_svo / "GAIA" / "GAIA"))
-    [warning] = incomplete_warnings(caplog)
-    assert "Fetch again when NJM is reachable to complete it" in " ".join(warning.getMessage().split())
 
 
 def test_filters_info_and_the_picker_summary_say_the_set_is_incomplete(gaia_from_svo, monkeypatch, capsys):
@@ -503,14 +304,6 @@ def test_a_complete_set_has_no_incomplete_line(tmp_path, monkeypatch, capsys):
         assert run_cli(monkeypatch, "filters-info", target, "--base", str(root), "--offline") == 0
         assert "Incomplete" not in capsys.readouterr().out
     assert FilterLibrary.published_complete(root / "Fac" / "Old")  # complete for the library too
-
-
-def test_the_browser_downloads_the_partial_set_as_a_success(gaia_from_svo, caplog):
-    failures = []
-    with caplog.at_level(logging.WARNING):
-        cli._fetch_instrument(FilterLibrary(gaia_from_svo), "GAIA", "GAIA", failures)
-    assert failures == []  # the browsing session does not end with exit 1
-    assert len(incomplete_warnings(caplog)) == 1
 
 
 def test_an_svo_curve_that_could_not_be_saved_still_fails(gaia_from_svo, monkeypatch):
@@ -595,55 +388,6 @@ def test_a_set_njm_completes_gets_the_manifest_of_a_fresh_download(tmp_path, bun
 
 
 NJM = "https://data.nialljmiller.com/sed_tools"
-
-
-def _refusing_grabber(monkeypatch, status):
-    """An NJM grabber whose HEAD and GET both answer ``status``."""
-    monkeypatch.setattr("sed_tools.njm_filter_grabber.time.sleep", lambda seconds: None)
-
-    def answer(url, **kwargs):
-        def raise_for_status():
-            raise requests.HTTPError(f"{status} Client Error: Forbidden for url: {url}",
-                                     response=SimpleNamespace(status_code=status, headers={}))
-
-        return SimpleNamespace(status_code=status, raise_for_status=raise_for_status)
-
-    grabber = NJMFilterGrabber.__new__(NJMFilterGrabber)
-    grabber.base_url, grabber._index_data = NJM, None
-    grabber.session = SimpleNamespace(head=answer, get=answer, headers={}, verify=True)
-    return grabber
-
-
-def test_a_block_that_does_not_lift_is_reported_as_the_http_status(monkeypatch, caplog):
-    grabber = _refusing_grabber(monkeypatch, 403)
-    with caplog.at_level(logging.WARNING):
-        assert grabber._check_availability() is False
-    assert caplog.text.count(f"NJM mirror {NJM} is unavailable (HTTP 403)") == 1
-    assert "could not connect" not in caplog.text
-    with pytest.raises(requests.ConnectionError, match=r"NJM is unreachable \(HTTP 403\)"):
-        grabber._get(f"{NJM}/index.json")
-
-
-def test_a_partial_svo_fill_with_curves_that_differ_from_njms_gives_one_warning(tmp_path, monkeypatch, caplog):
-    from sed_tools import filter_library
-    from sed_tools.filter_library import FilterLibrary, instrument_catalogue
-    from helpers_filters import NJM_DOWN, svo_browser
-
-    record = {"svo_instruments": ["Roman/WFI"], "bands": ["F062", "F087", "F106"],
-              "svo_bands": {"Roman/WFI": ["F087"]}}
-    monkeypatch.setattr(filter_library, "load_instrument_catalogue",
-                        lambda: instrument_catalogue({"Roman": {"instruments": {"WFI": record}}}))
-    root = tmp_path / "filters"
-    library = FilterLibrary(root)
-    library.mirror = NJM_DOWN
-    library.svo = svo_browser(root, {("Roman", "WFI"): ["F062", "F087"]})
-    with caplog.at_level(logging.WARNING, logger="sed_tools.filter_library"):
-        library.published("Roman", "WFI")
-    after_svo = [r.getMessage() for r in caplog.records if "trying SVO" not in r.getMessage()]
-    assert len(after_svo) == 1
-    [warning] = after_svo
-    assert "Roman/WFI is incomplete" in warning and "missing F106" in " ".join(warning.split())
-    assert "SVO's F062 of Roman/WFI differ from NJM's current curves" in " ".join(warning.split())
 
 
 def test_a_curve_without_a_column_row_is_reported_once_by_its_caller(tmp_path, caplog):

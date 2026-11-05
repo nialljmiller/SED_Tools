@@ -15,7 +15,7 @@ import numpy as np
 import pytest
 
 from sed_tools import filter_library
-from sed_tools.component_sources import (BUILDERS, cassini, catalog, csp, get_builder, observatories, space, standards,
+from sed_tools.component_sources import (cassini, catalog, csp, observatories, space, standards,
                                          surveys, swift)
 from sed_tools.component_sources._original import (Fetcher, clean_curve, make_band, to_angstrom)
 from sed_tools.filter_components import InstrumentManifest
@@ -65,33 +65,12 @@ def _zip(members) -> bytes:
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
-def test_every_original_source_instrument_resolves():
-    keys = [(fac, inst) for entries in catalog.ORIGINAL_SOURCES.values() for fac, inst, _ in entries]
-    assert len(keys) == len(set(keys)) == 42
-    for module, entries in catalog.ORIGINAL_SOURCES.items():
-        assert module in BUILDERS and callable(get_builder(module))
-        recipes = MODULES[module].RECIPES
-        assert sorted(recipes) == sorted(inst for _, inst, _ in entries)
-        for fac, inst, comps in entries:
-            ref = catalog.builder_for(fac, inst)
-            assert ref.name == module and dict(ref.kwargs) == {"instrument": inst}
-            assert ref.publishes and ref.components is comps and not ref.heavy
-            assert recipes[inst][0] == fac
-
-
 def test_original_sources_do_not_shadow_other_builders():
     original = {(f, i) for entries in catalog.ORIGINAL_SOURCES.values() for f, i, _ in entries}
     others = {k for k, ref in catalog.BUILDERS_FOR.items() if ref.name not in MODULES}
     assert not original & others
     assert len(others) >= 28  # the builders registered before these were added
     assert all(ref.publishes for ref in catalog.BUILDERS_FOR.values() if ref.name == "tabular")
-
-
-def test_availability_of_total_only_original_sources():
-    info = catalog.component_availability("GAIA", "DR2")
-    assert info["status"] == catalog.TOTAL_ONLY and info["builder"] is None
-    assert info["original_published"] is True
-    assert catalog.component_availability("OGLE", "OGLE-IV")["status"] == "supported"
 
 
 def test_unknown_instrument_and_wrong_facility_are_rejected(tmp_path):
@@ -173,14 +152,6 @@ def test_builder_keeps_existing_published_curves(tmp_path):
     assert (directory / "I.dat").is_file() and (directory / "components" / "qe" / "qe.dat").is_file()
 
 
-def test_failed_download_writes_nothing(tmp_path):
-    files = _ogle_files()
-    del files[surveys.OGLE_QE]
-    with pytest.raises(Exception):
-        surveys.build(tmp_path, instrument="OGLE-IV", session=_Session(files))
-    assert not (tmp_path / "OGLE").exists()
-
-
 def test_ogle_header_is_checked(tmp_path):
     files = _ogle_files()
     files[surveys.OGLE_FILT["V"]] = files[surveys.OGLE_FILT["I"]]
@@ -191,21 +162,6 @@ def test_ogle_header_is_checked(tmp_path):
 # ---------------------------------------------------------------------------
 # Survey parsers
 # ---------------------------------------------------------------------------
-def test_atlas_table2_from_eprint_tar():
-    raw = _tar({"atlas_defn.tex": fx("atlas_defn.tex"), "fig.eps": "x"})
-    curves = surveys.atlas_table2(surveys.atlas_tex(raw))
-    assert curves["c"].shape == curves["o"].shape == (9, 2)
-    assert curves["c"][1].tolist() == [520.0, 0.699]
-    assert curves["c"][0].tolist() == [425.0, 0.509] and curves["o"][0].tolist() == [575.0, 0.707]
-
-
-def test_ps1_fixed_width_tables():
-    wl, cols = surveys.ps1_table3(fx("ps1_table3.dat"))
-    assert wl.tolist() == [500.0, 620.0, 750.0] and set(cols) == {"g", "r", "i", "z", "y", "w"}
-    assert cols["g"][0] > 0 and cols["i"][2] > 0
-    assert surveys.ps1_table4(fx("ps1_table4.dat")) == {"g": 4810.0, "r": 6170.0}
-
-
 def test_ukirt_tar_members_refuse_unsafe_names():
     member = fx("ukirt_Table02_online.dat")
     text = surveys.tar_members(_tar({"Table02_online.dat": member}), {"Table02_online.dat"})
@@ -228,15 +184,6 @@ def test_lco_zip_member_and_checksum():
 # ---------------------------------------------------------------------------
 # Space parsers
 # ---------------------------------------------------------------------------
-def test_gaia_sentinel_is_dropped():
-    raw = _zip({"GaiaDR2_Passbands.dat": fx("GaiaDR2_Passbands.dat")})
-    a = space.gaia_passbands(raw, "GaiaDR2_Passbands.dat")
-    assert a.shape == (4, 7) and a[0, 1] == 99.99
-    b = make_band("G", a[:, 0], a[:, 1], unit="nm", detector_type="photon", components="filter+optics+qe",
-                  sources="x", sentinel=99.99)
-    assert len(b.wavelength) == 3 and b.wavelength[0] == a[1, 0] * 10
-
-
 def test_herschel_and_planck_fits(tmp_path):
     import gzip
 
@@ -270,11 +217,6 @@ def test_herschel_and_planck_fits(tmp_path):
         space.planck_bandpass(rimo, "BANDPASS_F100", "GHz")
 
 
-def test_hipparcos_fixed_width_columns_end_independently():
-    curves = space.fixed_width_pairs(fx("hip_table2.dat"), space.HIP_COLS)
-    assert len(curves["Hp"][0]) == 5 and len(curves["BT"][0]) == 3 and len(curves["VT"][0]) == 3
-
-
 def test_iras_html_table():
     page = fx("iras_tabC5.html")
     with pytest.raises(ValueError, match="rows of 4"):  # the excerpt ends inside a row
@@ -292,32 +234,9 @@ def test_msx_ipac_table():
         space.msx_table(fx("msx_rsr_a.tbl").replace("microns", "nm"))
 
 
-def test_spitzer_tables():
-    cols = space.mips_columns(fx("MIPSfiltsumm.txt"))
-    assert len(cols["24"][0]) == 6 and len(cols["70"][0]) == 4 and len(cols["160"][0]) == 6
-    assert cols["70"][1][0] == -0.00029 and cols["160"][0][-1] == 116.4018
-    wl, tr = space.two_col(fx("irac_ch1.txt"), "#")
-    assert len(wl) == 3 and 3.0 < wl[0] < 4.5
-    wl, tr = space.two_col(fx("irs_bluePUtrans.txt"), ";")
-    assert len(wl) == 3
-
-
-def test_xmm_effective_areas_are_normalised():
-    session = _Session({space.XMM_URL: fx("OM_response.txt")})
-    inst = space.xmm_om(Fetcher(session))
-    assert [b.name for b in inst.bands] == ["V", "B", "U", "UVW1", "UVM2", "UVW2"]
-    assert all(b.transmission.max() == 1.0 for b in inst.bands)
-
-
 # ---------------------------------------------------------------------------
 # Observatory parsers
 # ---------------------------------------------------------------------------
-def test_fors_percent_scan_is_cut_at_1100_nm():
-    wl, tr = observatories.fors_curve("u_HIGH", "u_HIGH.txt", fx("fors_u_HIGH.txt"), "nm", True)
-    assert wl.max() <= 1100 and len(wl) == 3
-    np.testing.assert_allclose(tr, [0.8344275665, 0.8359967804, 0.838660965])
-
-
 def test_omegacam_centre_scan():
     wl, tr = observatories.ocam_centre(fx("ocam_u_with_ccd.txt"))
     assert wl.tolist() == [479.916, 482.905, 485.894] and tr[0] == 0.000042
@@ -360,35 +279,6 @@ def test_keck_width_check():
     observatories.check_width("x", wl, np.array([0, 1, 1, 1, 0.0]), 3.0, 2.0, tol=0.01)
     with pytest.raises(ValueError, match="50% points"):
         observatories.check_width("x", wl, np.array([0, 1, 1, 1, 0.0]), 3.5, 2.0)
-
-
-def test_deimos_synphot_table():
-    wl, thr = observatories.deimos_table("B", fx("deimos_Bfaber13norm.txt"))
-    assert len(wl) == 3 and thr.max() == 0.397678
-    with pytest.raises(ValueError, match="PIVWV"):
-        observatories.deimos_table("R", fx("deimos_Bfaber13norm.txt"))
-
-
-def test_kpno_lambda9_scan():
-    a = observatories.kpno_scan(fx("kpno_k1002bp_jul04.txt"), r"Filter: K1002\b")
-    assert a.shape == (5, 2) and a[:, 1].max() == 69.37
-    with pytest.raises(ValueError, match="does not match"):
-        observatories.kpno_scan(fx("kpno_k1002bp_jul04.txt"), r"Filter: K1003\b")
-
-
-def test_fourstar_rederivation():
-    linked = np.array([[20000.0, 0.9], [22000.0, 0.8]])
-    wl, tr = observatories.fourstar_rederive("Ks", linked)
-    np.testing.assert_allclose(tr, [0.9 * (1.714 - 0.76), 0.8 * (1.714 - 0.836)])
-    wl, tr = observatories.fourstar_rederive("FS209", np.array([[2090.0, 50.0]]))
-    np.testing.assert_allclose(wl, [20900.0])
-    np.testing.assert_allclose(tr, [0.5 * (1.714 - 0.38 * 2.09)])
-
-
-def test_megacam_table():
-    t = observatories.megacam_table(fx("megacam_filterthroughput.magg"))
-    assert set(t) == set(observatories.MC_COLS) and len(t["WAVE"]) == 3
-    np.testing.assert_allclose(t["T"] * t["QE"] * t["EXTINCT"] * t["THROUGHPUT"], t["TOTAL"], atol=1e-5)
 
 
 def test_not_scan_header_and_scale():

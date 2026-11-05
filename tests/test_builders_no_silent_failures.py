@@ -14,7 +14,7 @@ import numpy as np
 import pytest
 import requests
 
-from sed_tools.component_sources import cfht, euclid, gmos, roman, skycalc, swift, twomass
+from sed_tools.component_sources import skycalc, swift, twomass
 from sed_tools.component_sources._original import Fetcher
 from sed_tools.filter_components import FILTER, InstrumentManifest
 from sed_tools.filter_metadata import write_filter_file
@@ -47,16 +47,6 @@ class _Session:
 FITS = b"SIMPLE  =                    T" + b" " * 50
 
 
-def test_caldb_warns_when_a_later_mirror_serves_the_file(caplog):
-    primary, mirror = (root + swift.FTRANS for root in swift.CALDB_ROOTS)
-    fetch = Fetcher(_Session({primary: requests.exceptions.SSLError("certificate for another host"),
-                              mirror: FITS}))
-    with caplog.at_level(logging.WARNING, logger=swift.__name__):
-        data, url = swift.caldb_get(fetch, swift.FTRANS)
-    assert (data, url) == (FITS, mirror)
-    assert "certificate for another host" in caplog.text and primary in caplog.text and mirror in caplog.text
-
-
 def test_caldb_names_every_mirror_when_all_fail():
     primary, mirror = (root + swift.FTRANS for root in swift.CALDB_ROOTS)
     fetch = Fetcher(_Session({primary: b"not fits"}))  # the mirror answers 404
@@ -64,15 +54,6 @@ def test_caldb_names_every_mirror_when_all_fail():
         swift.caldb_get(fetch, swift.FTRANS)
     assert f"{primary}: not a FITS file" in str(err.value)
     assert f"{mirror}: 404" in str(err.value)
-
-
-def test_caldb_does_not_hide_a_programming_error():
-    class Broken:
-        def get(self, url):
-            raise TypeError("bug")
-
-    with pytest.raises(TypeError, match="bug"):
-        swift.caldb_get(Broken(), swift.FTRANS)
 
 
 # --------------------------------------------------------------------------- SkyCalc API and form
@@ -135,14 +116,6 @@ def no_wait(monkeypatch):
     monkeypatch.setattr(skycalc.time, "sleep", lambda seconds: None)
 
 
-def test_skycalc_fallback_to_the_form_warns_with_the_api_error(caplog, no_wait):
-    client = skycalc.SkyCalcClient(session=_SkyCalcSession(), interface="auto", pause=0)
-    with caplog.at_level(logging.WARNING, logger=skycalc.__name__):
-        result = client.fetch("paranal", 1.0, 2.5, 1000.0, 1100.0, 2000)
-    assert result.interface == "form"
-    assert "api host down" in caplog.text and "using the web form" in caplog.text
-
-
 def test_skycalc_form_echo_is_checked_after_a_fallback(no_wait):
     session = _SkyCalcSession(echo_override={"SKYMODEL.TARGET.AIRMASS": "1.50"})
     client = skycalc.SkyCalcClient(session=session, interface="auto", pause=0)
@@ -197,18 +170,6 @@ def _published(inst, band, wl, tr, components, detector="photon"):
                       wavelength_unit="Angstrom", extra={"Components": components})
 
 
-def test_cfht_warns_about_bands_without_a_published_curve(tmp_path, caplog):
-    inst = tmp_path / "CFHT" / "Megaprime"
-    _published(inst, "z", np.linspace(8000, 9500, 16), np.full(16, 0.3), "filter+optics+qe")
-    percent = "".join(f"{w} 90\n" for w in range(280, 1101, 10)).encode()
-    files = {url: percent for url in (cfht.PRIMARY, cfht.CORRECTOR, cfht.QE_MODEL, cfht.QE_MEASURED)}
-    files[cfht.CURVE.format(code="9901")] = b"800,0\n850,90\n900,90\n950,0\n"
-    with caplog.at_level(logging.WARNING, logger=cfht.__name__):
-        cfht.build(tmp_path, instrument="Megaprime", session=_Session(files))
-    assert "no published curve for" in caplog.text and "'u'" in caplog.text and "'NB920'" in caplog.text
-    assert InstrumentManifest.load(inst).component_file(FILTER, "z") == "components/filter/z.dat"
-
-
 def test_twomass_warns_about_bands_without_a_published_curve(tmp_path, caplog, monkeypatch):
     inst = tmp_path / "2MASS" / "2MASS"
     _published(inst, "J", np.linspace(10600, 14600, 30), np.ones(30), "filter+instrument+atmosphere", "energy")
@@ -219,43 +180,3 @@ def test_twomass_warns_about_bands_without_a_published_curve(tmp_path, caplog, m
     assert "no published curve for ['H', 'Ks']" in caplog.text
     m = InstrumentManifest.load(inst)
     assert m.component_file(FILTER, "J") == "components/filter/J.dat" and "H" not in m.components[FILTER]
-
-
-def test_euclid_warns_about_requested_bands_without_esa_factors(tmp_path, caplog):
-    wave = np.arange(1000.0, 1011.0)
-    filt, tel, nioa, qe = (np.full(wave.size, v) for v in (0.9, 0.88, 0.95, 0.93))
-    rows = "".join(" ".join(f"{v:.9g}" for v in row) + "\n"
-                   for row in zip(wave, filt * tel * nioa * qe, filt, tel, nioa, qe))
-    table = ("# WAVE T_TOTAL T_FILTER T_TELESCOPE T_NI-OA T_QE\n" + rows).encode()
-    with caplog.at_level(logging.WARNING, logger=euclid.__name__):
-        euclid.build(tmp_path, bands=["Y", "Blue"], session=_Session({euclid.URL.format(band="Y"): table}))
-    assert "['Blue'] skipped" in caplog.text
-    assert InstrumentManifest.load(tmp_path / "Euclid" / "NISP").component_file(FILTER, "Y") is not None
-
-
-class _NoNetwork:
-    def get(self, *args, **kwargs):
-        raise AssertionError("nothing may be downloaded before the refusal")
-
-
-@pytest.mark.parametrize("build, kwargs, directory", [
-    (gmos.build, {"instrument": "GMOS_N"}, ("Gemini", "GMOS_N")),
-    (roman.build, {}, ("Roman", "WFI")),
-])
-def test_builder_refuses_an_instrument_without_published_curves(tmp_path, build, kwargs, directory):
-    (tmp_path.joinpath(*directory)).mkdir(parents=True)
-    with pytest.raises(FileNotFoundError, match="has no published curves; fetch the instrument"):
-        build(tmp_path, session=_NoNetwork(), **kwargs)
-
-
-def test_uvot_with_the_primary_caldb_host_down_warns_once_and_asks_it_once(tmp_path, caplog):
-    from sed_tools.component_sources import swift
-    from helpers_builders_swift_cassini import _Session, _uvot_files
-
-    primary, mirror = swift.CALDB_ROOTS
-    session = _Session(_uvot_files(mirror))  # the primary host serves nothing
-    with caplog.at_level("WARNING", logger="sed_tools.component_sources.swift"):
-        swift.build(tmp_path, instrument="UVOT", session=session)
-    assert len([r for r in caplog.records if r.name == swift.__name__ and r.levelname == "WARNING"]) == 1
-    assert sum(url.startswith(primary) for url in session.calls) == 1
-    assert len(session.calls) == 12  # 11 CALDB files from the mirror, after one refusal

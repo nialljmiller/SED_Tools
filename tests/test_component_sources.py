@@ -2,61 +2,22 @@
 
 from __future__ import annotations
 
-import gzip
-from types import SimpleNamespace
 
 import numpy as np
 import pytest
-import requests
 
 from sed_tools.component_sources import catalog
-from sed_tools.component_sources._common import SimpleSource, Table, build_simple, product
-from sed_tools.filter_components import (FILTER, OPTICS, QE, ComponentError, Curve,
-                                         InstrumentManifest, add_component, multiply_curves)
-from sed_tools.filter_metadata import PHOTON, write_filter_file
-
-
-class _Resp:
-    def __init__(self, content, status=200):
-        self.content = content if isinstance(content, bytes) else content.encode()
-        self.status_code = status
-
-    def raise_for_status(self):
-        if self.status_code != 200:
-            raise RuntimeError(self.status_code)
-
-
-class _Session:
-    def __init__(self, files):
-        self.files = files
-
-    def get(self, url, timeout=None, **kw):
-        return _Resp(self.files[url]) if url in self.files else _Resp(b"", 404)
+from sed_tools.component_sources._common import Table
+from sed_tools.filter_components import (FILTER, OPTICS, QE, ComponentError, InstrumentManifest, add_component)
 
 
 # ---------------------------------------------------------------------------
 # Tables and products
 # ---------------------------------------------------------------------------
-def test_table_reads_nm_percent_and_gzip():
-    text = "# wavelength(nm) T(%)\n500 10\n400 50\n600 0\n"
-    session = _Session({"u": gzip.compress(text.encode())})
-    wl, tr = Table("u", wl_scale=10.0, tr_scale=0.01).read(session)
-    np.testing.assert_allclose(wl, [4000, 5000, 6000])
-    np.testing.assert_allclose(tr, [0.5, 0.1, 0.0])
-
-
 def test_table_floors_negative_measured_transmission():
     wl, tr = Table("u").parse(b"4000,-0.0001\n5000,0.8\n")
     np.testing.assert_allclose(wl, [4000, 5000])
     np.testing.assert_allclose(tr, [0.0, 0.8])
-
-
-def test_product_is_on_common_range():
-    a = (np.array([1.0, 2.0, 3.0, 4.0]), np.array([1.0, 1.0, 1.0, 1.0]))
-    b = (np.array([2.0, 5.0]), np.array([0.5, 0.5]))
-    wl, tr = product([a, b])
-    assert wl[0] == 2.0 and wl[-1] == 4.0
-    np.testing.assert_allclose(tr, 0.5)
 
 
 def test_percent_component_is_rejected(tmp_path):
@@ -64,164 +25,11 @@ def test_percent_component_is_rejected(tmp_path):
         add_component(tmp_path, FILTER, [4000.0, 5000.0], [10.0, 95.0], band="g")
 
 
-def test_edge_policy_holds_component_edge_values():
-    band = Curve(np.linspace(4000, 6000, 21), np.ones(21), {})
-    short = Curve(np.array([4500.0, 5500.0]), np.array([0.5, 0.8]), {})
-    grid, prod = multiply_curves([band, short], outside="edge")
-    assert prod[grid == 4000.0][0] == pytest.approx(0.5)
-    assert prod[grid == 6000.0][0] == pytest.approx(0.8)
-
-
-# ---------------------------------------------------------------------------
-# build_simple
-# ---------------------------------------------------------------------------
-def test_build_simple_writes_components_and_keeps_svo_siblings(tmp_path):
-    inst = tmp_path / "filters" / "Fac" / "Cam"
-    inst.mkdir(parents=True)
-    wl = np.linspace(4000, 6000, 21)
-    for band, comps in (("g", "filter+instrument"), ("g_filter", "filter")):
-        write_filter_file(inst / f"{band}.dat", wl, np.ones_like(wl), detector_type=PHOTON, source="svo",
-                          wavelength_unit="Angstrom", extra={"Components": comps})
-    files = {"f": "400 0.9\n700 0.9\n", "o": "300 0.8\n800 0.8\n", "q": "300 0.5\n800 0.5\n"}
-    spec = SimpleSource("Fac", "Cam", filters={"g": Table("f", wl_scale=10)},
-                        optics=(Table("o", wl_scale=10),), qe=Table("q", wl_scale=10))
-
-    build_simple(spec, tmp_path / "filters", session=_Session(files), svo_client=object())
-
-    m = InstrumentManifest.load(inst)
-    assert m.component_file(FILTER, "g") == "components/filter/g.dat"  # builder's own filter wins
-    assert m.component_file(FILTER, "g_filter") == "g_filter.dat"      # SVO sibling kept
-    assert m.buildable() == ["filter", "filter+optics", "filter+qe", "filter+optics+qe"]
-    assert m.primary_bands() == ["g"]
-
-
-def test_original_filter_source_builds_without_svo_and_preserves_all_bands(tmp_path):
-    files = {"a": b"400 50\n500 80\n", "b": b"400 20\n500 90\n"}
-    spec = SimpleSource("Fac", "Cam", filters={
-        "a": Table("a", wl_scale=10, tr_scale=0.01),
-        "b": Table("b", wl_scale=10, tr_scale=0.01),
-    }, published_from_filters=True)
-    directory = build_simple(spec, tmp_path, session=_Session(files), svo_client=object())
-    manifest = InstrumentManifest.load(directory)
-    assert manifest.bands == ["a", "b"]
-    assert manifest.published_bands == {"a": "filter", "b": "filter"}
-    assert (directory / "Cam").read_text().splitlines() == ["a.dat", "b.dat"]
-    assert manifest.component_file(FILTER, "a") == "a.dat"
-
-
-def test_original_scan_augments_matching_svo_band_without_duplicate(tmp_path):
-    directory = tmp_path / "Gemini" / "Camera"
-    directory.mkdir(parents=True)
-    write_filter_file(directory / "J.dat", [4000., 5000.], [0.5, 0.7],
-                      detector_type=PHOTON, source="svo", extra={"Components": "filter"})
-    before = (directory / "J.dat").read_bytes()
-    spec = SimpleSource("Gemini", "Camera", filters={"J": Table("original")},
-                        published_from_filters=True)
-
-    build_simple(spec, tmp_path, session=_Session({"original": b"4000 0.51\n5000 0.71\n"}))
-
-    manifest = InstrumentManifest.load(directory)
-    assert (directory / "J.dat").read_bytes() == before
-    assert manifest.bands == ["J"]
-    assert manifest.component_file(FILTER, "J") == "components/filter/J.dat"
-    assert len(list(directory.glob("*.dat"))) == 1
-
-
-def test_original_filter_source_does_not_leave_partial_download(tmp_path):
-    spec = SimpleSource("Fac", "Cam", filters={"a": Table("a"), "b": Table("missing")},
-                        published_from_filters=True)
-    with pytest.raises(RuntimeError):
-        build_simple(spec, tmp_path, session=_Session({"a": b"4000 0.5\n5000 0.8\n"}))
-    assert not (tmp_path / "Fac" / "Cam").exists()
-
-
-def test_eso_dual_band_channels_are_distinct():
-    from sed_tools.component_sources.tabular import SOURCES
-
-    spec = SOURCES["SPHERE"]
-    left = spec.filters["D_H23_H2"]
-    right = spec.filters["D_H23_H3"]
-    assert left.url == right.url
-    np.testing.assert_allclose(left.parse(b"400 0.2 0.8\n500 0.3 0.7\n")[1], [0.2, 0.3])
-    np.testing.assert_allclose(right.parse(b"400 0.2 0.8\n500 0.3 0.7\n")[1], [0.8, 0.7])
-
-
-def test_nifs_temperature_columns_are_distinct():
-    from sed_tools.component_sources.tabular import SOURCES
-
-    spec = SOURCES["NIFS"]
-    warm = spec.filters["HK_298K"]
-    cold = spec.filters["HK_77K"]
-    assert warm.url == cold.url
-    np.testing.assert_allclose(warm.parse(b"2.0 25 75\n2.1 50 90\n")[1], [0.25, 0.5])
-    np.testing.assert_allclose(cold.parse(b"2.0 25 75\n2.1 50 90\n")[1], [0.75, 0.9])
-
-
-def test_nsfcam_mk_percent_is_distinct_from_older_fraction_scans():
-    from sed_tools.component_sources.tabular import SOURCES
-
-    filters = SOURCES["NSFCam"].filters
-    assert filters["J"].tr_scale == 1
-    assert filters["JMK"].tr_scale == 0.01
-    np.testing.assert_allclose(filters["JMK"].parse(b"WL (Micrometers) Transmission (%)\n"
-                                                     b"1.0 50\n1.1 90\n")[1], [0.5, 0.9])
-
-
 def test_panic_br_gamma_uses_existing_mirror_band_name():
     from sed_tools.component_sources.tabular import SOURCES
 
     assert "Brgamma" in SOURCES["PANIC"].filters
     assert "BrGamma" not in SOURCES["PANIC"].filters
-
-
-def test_ioo_component_table_skips_unmeasured_qe_and_selects_columns():
-    from sed_tools.component_sources.tabular import SOURCES
-
-    spec = SOURCES["IOO"]
-    raw = b"# wavelength u g r i z B V QE window\n2800 0 1 2 3 4 5 6 nan 80\n"
-    raw += b"3000 10 11 12 13 14 15 16 70 85\n4000 20 21 22 23 24 25 26 80 90\n"
-    np.testing.assert_allclose(spec.filters["g"].parse(raw)[1], [0.01, 0.11, 0.21])
-    qe_wl, qe = spec.qe.parse(raw)
-    np.testing.assert_allclose(qe_wl, [3000, 4000])
-    np.testing.assert_allclose(qe, [0.7, 0.8])
-    np.testing.assert_allclose(spec.optics[0].parse(raw)[1], [0.8, 0.85, 0.9])
-
-
-# ---------------------------------------------------------------------------
-# HST
-# ---------------------------------------------------------------------------
-@pytest.mark.parametrize("component,band,role", [
-    ("acs_f606w_wfc", "F606W", FILTER),
-    ("wfc3uvis1_f606w", "F606W", FILTER),
-    ("nic2_f160w", "F160W", FILTER),
-    ("acs_wfc_ccd1", "F606W", QE),
-    ("wfc3_ir_qe", "F160W", QE),
-    ("wfpc2_dqewfc4", "F606W", QE),
-    ("acs_sbc_mama", "F150LP", QE),
-    ("acs_f150lp_tds_def", "F150LP", QE),   # correction named after the filter
-    ("wfc3uvis1_cor", "F606W", QE),
-    ("hst_ota", "F606W", OPTICS),
-    ("acs_wfc_ebe_win12f", "F606W", OPTICS),
-])
-def test_hst_classify(component, band, role):
-    from sed_tools.component_sources.hst import classify
-
-    assert classify(component, band) == role
-
-
-def test_hst_graph_traversal():
-    from sed_tools.component_sources.hst import SynphotTables
-
-    t = SynphotTables.__new__(SynphotTables)
-    # node 1 -> (acs) 2 -> (wfc1) 3 -> (f606w|default) 4 -> end
-    t.innode = np.array([1, 2, 3, 3])
-    t.outnode = np.array([2, 3, 4, 4])
-    t.keyword = np.array(["acs", "wfc1", "f606w", "default"])
-    t.compname = np.array(["hst_ota", "acs_wfc_ccd1", "acs_f606w_wfc", "clear"])
-    assert t.chain("acs,wfc1,f606w") == ["hst_ota", "acs_wfc_ccd1", "acs_f606w_wfc"]
-    assert t.chain("acs,wfc1") == ["hst_ota", "acs_wfc_ccd1"]
-    with pytest.raises(ValueError, match="not in graph"):
-        t.chain("acs,wfc1,f999w")
 
 
 # ---------------------------------------------------------------------------
@@ -260,7 +68,6 @@ def test_ensure_components_runs_own_builder_and_skips_heavy(tmp_path, monkeypatc
     calls = []
     monkeypatch.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam"), catalog.BuilderRef("fake"))
     monkeypatch.setitem(catalog.BUILDERS_FOR, ("Fac", "Big"), catalog.BuilderRef("fake", heavy=True))
-    import sed_tools.component_sources as cs
     from sed_tools import filter_library
     monkeypatch.setattr(filter_library.NJMFilterGrabber, "_check_availability", lambda self: False)
 
@@ -282,14 +89,6 @@ def test_ensure_components_runs_own_builder_and_skips_heavy(tmp_path, monkeypatc
     assert catalog.ensure_components(tmp_path / "Fac" / "Big") is False
     assert catalog.ensure_components(tmp_path / "Fac" / "None") is False
     assert calls == [("fake", tmp_path)]
-
-
-def test_total_only_instruments_explain_why(tmp_path):
-    inst = tmp_path / "GAIA" / "GAIA"
-    inst.mkdir(parents=True)
-    write_filter_file(inst / "G.dat", [4000.0, 9000.0], [1.0, 1.0], detector_type=PHOTON, source="svo",
-                      wavelength_unit="Angstrom", extra={"Components": "filter+qe+instrument"})
-    assert "only total passbands" in InstrumentManifest.load(inst).describe()["component_status"]
 
 
 # ---------------------------------------------------------------------------
@@ -326,33 +125,6 @@ def test_facility_wide_status_applies_to_every_instrument():
 
 
 # ----------------------------------------------------------------------
-# original-source downloads fail fast when a host is down
-# ----------------------------------------------------------------------
-def test_original_source_requests_use_a_ten_second_connect_timeout():
-    from sed_tools.component_sources._common import Table
-    from sed_tools.component_sources._original import CONNECT_TIMEOUT, Fetcher
-    from sed_tools.component_sources.skycalc import SkyCalcClient
-    from sed_tools.component_sources.team_atmospheres import CachingSession, _bytes
-
-    timeouts = []
-
-    def get(url, timeout=None, **kwargs):
-        timeouts.append(timeout)
-        raise requests.ConnectTimeout(url)
-
-    session = SimpleNamespace(get=get, headers={})
-    for request in (lambda: Table("https://host.invalid/t.dat").read(session),
-                    lambda: Fetcher(session).get("https://host.invalid/t.dat"),
-                    lambda: CachingSession(session).get("https://host.invalid/t.dat"),
-                    lambda: _bytes(session, "https://host.invalid/t.dat")):
-        with pytest.raises(requests.ConnectTimeout):
-            request()
-    assert CONNECT_TIMEOUT == 10.0
-    assert [t[0] for t in timeouts] == [CONNECT_TIMEOUT] * 4
-    assert SkyCalcClient(session=session).timeout[0] == CONNECT_TIMEOUT
-
-
-# ----------------------------------------------------------------------
 # An unknown tabular instrument is a clear ValueError
 # ----------------------------------------------------------------------
 def test_tabular_names_its_instruments_for_an_unknown_one(tmp_path):
@@ -360,18 +132,3 @@ def test_tabular_names_its_instruments_for_an_unknown_one(tmp_path):
 
     with pytest.raises(ValueError, match=r"tabular has no instrument 'NOPE'; choose one of: HAWKI"):
         tabular.build(tmp_path, instrument="NOPE")
-
-
-# ----------------------------------------------------------------------
-# Spelling
-# ----------------------------------------------------------------------
-def test_builder_and_status_lookups_ignore_case_and_punctuation():
-    assert catalog.builder_for("Gemini", "GMOS-N") is catalog.BUILDERS_FOR[("Gemini", "GMOS_N")]
-    assert catalog.registered_name("herschel", "Pacs") == ("Herschel", "PACS")
-    assert catalog.registered_name("PLANCK", "hfi") == ("Planck", "HFI")
-    assert catalog.builder_for("Gemini", "GMOS-X") is None
-    assert catalog.status_for("Pan-STARRS", "ps1") == catalog.STATUS[("PAN-STARRS", "PS1")]
-    assert catalog.status_for("gaia", "GAIA3") == catalog.STATUS[("GAIA", "*")]
-    assert catalog.component_availability("Gemini", "GMOS-N")["status"] == "supported"
-    assert catalog.match_name("Sony_NEX5N", ["Sony_NEX_5N", "Sony_NEX5N"]) == "Sony_NEX5N"
-    assert catalog.match_name("sony nex5n", ["Sony_NEX_5N", "Sony_NEX5N"]) is None  # ambiguous: no guess

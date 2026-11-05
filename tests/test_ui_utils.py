@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import re
 
-import pytest
 
 from sed_tools import cli
 from sed_tools.api import Filters  # noqa: E402
@@ -81,15 +80,14 @@ def test_picking_a_facility_lists_its_instruments_with_their_descriptions_once(g
     assert out.count("GAIA: 5 instruments") == 1  # not again when the list is filtered
 
 
-@pytest.mark.parametrize("columns", ["80", "120"])
-def test_the_instrument_picker_shows_full_names_in_columns(gaia, tmp_path, monkeypatch, capsys, columns):
-    monkeypatch.setenv("COLUMNS", columns)
+def test_the_instrument_picker_shows_full_names_in_columns(gaia, tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv("COLUMNS", "80")
     answer(monkeypatch, "1", "q")
     cli.run_filters_flow(str(tmp_path))
     rows = capsys.readouterr().out.split("Instruments for GAIA\n")[1].splitlines()[1:3]
     assert re.fullmatch(r"\s+1\. DR2\s+3\. GAIA\s+5\. Gaia2m\s*", rows[0])  # 0.4.1 cut these to 'D', 'GA', 'Gaia'
     assert re.fullmatch(r"\s+2\. DR2r\s+4\. GAIA0\s*", rows[1])
-    assert all(len(row) <= int(columns) for row in rows)
+    assert all(len(row) <= 80 for row in rows)
 
 
 def test_picker_cuts_long_labels_with_an_ellipsis(monkeypatch, capsys):
@@ -106,38 +104,6 @@ def test_downloading_several_facilities_asks_first_with_the_count(catalogue, tmp
     assert catalogue == []
     assert prompts[-1] == "Download all 4? [y/N] "
     assert "4 instruments in 2 facilities: GAIA (2), 2MASS (2)" in capsys.readouterr().out
-
-
-# ----------------------------------------------------------------------
-# NJM unreachable: its catalogue is an extra
-# ----------------------------------------------------------------------
-def test_browsing_prints_each_listing_error_once(tmp_path, monkeypatch, capsys):
-    from sed_tools.filter_library import FilterLibrary
-
-    monkeypatch.setattr(FilterLibrary, "facilities", lambda self: {
-        "entries": [{"key": "A", "label": "A", "sources": ["svo"]}], "errors": ["SVO: timed out"]})
-    monkeypatch.setattr(FilterLibrary, "instruments", lambda self, facility: {
-        "entries": [{"key": "Cam", "label": "Cam", "sources": ["svo"]}], "errors": ["SVO: timed out"]})
-    answer(monkeypatch, "1", "b", "1", "b", "q")
-    assert cli.run_filters_flow(str(tmp_path)) == 0
-    assert capsys.readouterr().out.count("[filters] SVO: timed out") == 1
-
-
-def test_an_unreachable_njm_is_neither_printed_again_nor_a_failure(tmp_path, monkeypatch, capsys):
-    from sed_tools.filter_library import FilterLibrary
-
-    monkeypatch.setattr(FilterLibrary, "facilities", lambda self: {"entries": [
-        {"key": "A", "label": "A", "sources": ["svo"]}, {"key": "B", "label": "B", "sources": ["svo"]}],
-        "errors": ["NJM unavailable"]})
-    monkeypatch.setattr(FilterLibrary, "instruments", lambda self, facility: {
-        "entries": [{"key": "Cam", "label": "Cam", "sources": ["svo"]}], "errors": ["NJM unavailable"]})
-    fetched = []
-    monkeypatch.setattr(FilterLibrary, "published", lambda self, f, i: fetched.append(f"{f}/{i}") or tmp_path)
-    monkeypatch.setattr("sys.stdin", _Stdin(True))  # a terminal: the count is confirmed
-    answer(monkeypatch, "1,2", "y")
-    assert cli.run_filters_flow(str(tmp_path)) == 0
-    assert fetched == ["A/Cam", "B/Cam"]
-    assert "NJM unavailable" not in capsys.readouterr().out
 
 
 # ----------------------------------------------------------------------

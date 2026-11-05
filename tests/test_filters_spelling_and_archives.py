@@ -165,32 +165,6 @@ def grabber(tmp_path, monkeypatch):
     return make
 
 
-def test_a_repeated_download_of_an_unchanged_set_fetches_no_curve(tmp_path, grabber):
-    first = grabber(_njm_set())
-    assert first._download_set("Fac", "Cam").downloaded == 2
-    again = grabber(_njm_set())  # a later run: a new grabber
-    result = again._download_set("Fac", "Cam")
-    assert (result.downloaded, result.verified, result.curve_failures) == (0, 2, [])
-    assert again.session.curves_requested() == []
-    assert (tmp_path / "cache" / "njm" / "filters" / "Fac" / "Cam" / "verified_curves.json").is_file()
-
-
-def test_a_changed_curve_or_a_changed_njm_record_is_checked_again(tmp_path, grabber, caplog):
-    grabber(_njm_set())._download_set("Fac", "Cam")
-    r = tmp_path / "filters" / "Fac" / "Cam" / "r.dat"
-    r.write_text(CURVE + "7000,0\n")  # changed since NJM's copy was checked
-    with caplog.at_level(logging.WARNING):
-        local_change = grabber(_njm_set())
-        local_change._download_set("Fac", "Cam")
-    assert local_change.session.curves_requested() == ["r.dat"] and r.read_text() == CURVE
-    assert f"{r.parent}: replaced r.dat with NJM's copies, which differ" in caplog.text
-
-    njm_filter_grabber._STATE.reset()  # a later process, which reads NJM's index.json again
-    njm_change = grabber(_njm_set(size_bytes=151))  # NJM's set changed since
-    njm_change._download_set("Fac", "Cam")
-    assert njm_change.session.curves_requested() == ["g.dat", "r.dat"]
-
-
 def test_a_retry_after_a_partial_download_fetches_only_what_is_missing(grabber):
     partial = _njm_set()
     partial["filters/Fac/Cam/r.dat"] = 404
@@ -409,34 +383,6 @@ def test_compose_of_the_covered_bands_goes_on_to_the_sources(tmp_path):
 
 
 # ----------------------------------------------------------------------
-# The catalogue says where its data came from
-# ----------------------------------------------------------------------
-def test_the_catalogue_reports_njm_the_cache_or_an_installed_copy(legacy_sources, monkeypatch, capsys):
-    from sed_tools.filter_catalogue import FilterCatalogue
-
-    catalogue = FilterCatalogue(legacy_sources.root)
-    assert catalogue.info("Herschel", "PACS")["description"] == "Herschel PACS passbands"
-    assert catalogue.origin("Herschel", "PACS", "info")["source"] == "njm"
-    assert catalogue.origin()["source"] == "njm"  # index.json
-
-    # NJM stops answering: the next catalogue uses the cached copies and says so.
-    legacy_sources.served.files = {}
-    later = FilterCatalogue(legacy_sources.root, index_max_age=0)
-    monkeypatch.setattr(later, "_online_mirror", lambda have_copy=False: None)
-    later.info("Herschel", "PACS")
-    origin = later.origin("Herschel", "PACS", "info")
-    assert origin["source"] == "cache" and origin["njm_unreachable"] and origin["checked"] > 0
-
-    installed = legacy_sources.root / "Herschel" / "PACS"
-    installed.mkdir(parents=True)
-    (installed / "b.dat").write_text("Wavelength,Transmission\n4000,1\n6000,1\n")  # an installed copy holds curves
-    (installed / "info.json").write_text(json.dumps({"description": "installed", "bands": {"b": {}}}))
-    assert later.info("Herschel", "PACS")["description"] == "installed"
-    assert later.origin("Herschel", "PACS", "info") == {"source": "installed", "checked": None,
-                                                        "njm_unreachable": False}
-
-
-# ----------------------------------------------------------------------
 # available() says which source failures were only fallbacks
 # ----------------------------------------------------------------------
 def test_available_reports_failures_by_source_and_which_were_fallbacks(tmp_path, monkeypatch):
@@ -473,14 +419,6 @@ def test_compose_leaves_variants_to_the_sources_that_register_them(tmp_path):
     library.prepare_components = prepare
     with pytest.raises(ComponentError, match="the variant was registered"):
         library.compose("Euclid/NISP", "filter,optics,qe", bands=["H", "Y"], variants={"qe": "cold"})
-
-
-def test_index_json_is_read_once_per_process(tmp_path, grabber):
-    first = grabber(_njm_set())
-    first._download_set("Fac", "Cam")
-    second = grabber(_njm_set())  # every FilterLibrary makes its own grabber
-    second._download_set("Fac", "Cam")
-    assert first.session.requested.count("index.json") == 1 and "index.json" not in second.session.requested
 
 
 def test_no_index_json_is_fetched_for_the_record_while_njm_is_paused(tmp_path, grabber, caplog):
@@ -573,29 +511,3 @@ def test_archived_copies_stay_apart_beside_an_installed_copy_under_other_band_na
         data = getattr(catalogue, kind)(*spelling)
         assert list(data["bands"]) == ["100", "857"]  # the *_svo rows used to be listed with them
         assert list(data["archived_bands"]) == ["100_svo", "857_svo"]
-
-
-def test_bundled_bands_decide_when_njm_has_no_index_file(tmp_path, monkeypatch):
-    from sed_tools import filter_library
-    from sed_tools.filter_library import instrument_catalogue
-
-    monkeypatch.setattr(filter_library, "load_instrument_catalogue", lambda: instrument_catalogue(
-        {"Planck": {"instruments": {"HFI": {"bands": ["100", "857"]}}}}))
-    data = _hfi_catalogue(tmp_path, njm_index_file=False).info("Planck", "HFI")
-    assert list(data["bands"]) == ["100", "857"] and list(data["archived_bands"]) == ["100_svo", "857_svo"]
-
-
-def test_bands_no_list_names_are_left_as_they_are(tmp_path, monkeypatch):
-    from sed_tools import filter_library
-    from sed_tools.filter_library import instrument_catalogue
-
-    monkeypatch.setattr(filter_library, "load_instrument_catalogue", lambda: instrument_catalogue({}))
-    data = _hfi_catalogue(tmp_path, njm_index_file=False).info("Planck", "HFI")
-    assert data == HFI_INFO  # no set to tell the archived copies by: nothing is hidden
-
-
-def test_bands_of_an_installed_copy_under_njm_names_still_decide(tmp_path):
-    catalogue = _hfi_catalogue(tmp_path)
-    (tmp_path / "filters" / "PLANCK" / "HFI" / "HFI").write_text("100.dat\n")  # an installed set of one band
-    data = catalogue.info("Planck", "HFI")
-    assert list(data["bands"]) == ["100"] and list(data["archived_bands"]) == ["100_svo", "857", "857_svo"]

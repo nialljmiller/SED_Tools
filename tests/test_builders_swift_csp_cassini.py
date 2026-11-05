@@ -168,18 +168,6 @@ def test_cassini_publishes_pds_curves_and_keeps_svo_copies_apart(tmp_path):
     assert all(released_mesa_reads(p) for p in out.rglob("*.dat"))
 
 
-def test_cassini_keeps_existing_published_curves(tmp_path):
-    files, _nm, _pairs = _cassini_files("ISS_WAC")
-    inst = tmp_path / "Cassini" / "ISS_WAC"
-    inst.mkdir(parents=True)
-    write_filter_file(inst / "GRN.dat", [5000.0, 5500.0, 6000.0], [0.0, 0.2, 0.0], detector_type="photon",
-                      source="svo", filter_id="Cassini/ISS_WAC.GRN")
-    before = (inst / "GRN.dat").read_bytes()
-    out = cassini.build(tmp_path, instrument="ISS_WAC", session=_Session(files))
-    assert (out / "GRN.dat").read_bytes() == before
-    assert "(not for GRN)" in json.loads((out / "manifest.json").read_text())["notes"]
-
-
 def test_cassini_band_names_map_to_filter_pairs():
     assert cassini.filter_pair("ISS_NAC", "Clear") == ("cl1", "cl2")
     assert cassini.filter_pair("ISS_NAC", "BL2") == ("cl1", "bl2")

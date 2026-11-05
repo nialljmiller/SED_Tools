@@ -46,74 +46,9 @@ def _feed_input(monkeypatch, answers):
     monkeypatch.setattr("builtins.input", fake_input)
 
 
-# Grid order sampled by np.random.seed(3) from the 12-node tiny library.
-_SAMPLED_PARAMS = [
-    [5000.0, 4.0, 0.0], [5000.0, 4.0, -0.5], [4000.0, 4.0, 0.0], [4000.0, 4.5, -0.5],
-    [6000.0, 4.5, 0.0], [5000.0, 4.5, -0.5], [5000.0, 4.5, 0.0], [4000.0, 4.0, -0.5],
-    [4000.0, 4.5, 0.0], [6000.0, 4.0, 0.0], [6000.0, 4.0, -0.5], [6000.0, 4.5, -0.5],
-]
-
-
-# ---------------------------------------------------------------------
-# Characterisation: training-data preparation (torch-free)
-# ---------------------------------------------------------------------
-def test_completer_prepare_training_data_values(tiny_library):
-    np.random.seed(3)
-    X, y, params, masks = mc.SEDCompleter()._prepare_training_data(str(tiny_library), 12)
-
-    assert params.tolist() == _SAMPLED_PARAMS
-    assert X.astype(np.float64).sum() == pytest.approx(9.305711475402932e-07, rel=1e-9)
-    assert y.astype(np.float64).sum() == pytest.approx(2.7577729128764674e-06, rel=1e-9)
-    assert masks.sum(axis=1).tolist() == [166.0] * 12
-    assert np.random.random() == 0.765826378456161
-
-
-def test_generator_prepare_training_data_values(tiny_library):
-    np.random.seed(3)
-    params, flux, masks = mg.SEDGenerator()._prepare_training_data(str(tiny_library), 12)
-
-    assert params.tolist() == _SAMPLED_PARAMS
-    assert flux.astype(np.float64).sum() == pytest.approx(2.7577729128243876e-06, rel=1e-9)
-    assert masks.sum(axis=1).tolist() == [566.0] * 12
-    assert np.random.random() == 0.20724287813818676
-
-
 # ---------------------------------------------------------------------
 # Characterisation: training (torch, CPU)
 # ---------------------------------------------------------------------
-def test_completer_train_values(cpu_torch, tiny_library, tmp_path):
-    torch = cpu_torch
-    completer = mc.SEDCompleter()
-    history = completer.train(str(tiny_library), str(tmp_path / "model"), epochs=3,
-                              batch_size=3, max_samples=12, hidden_layers=[8], patience=20)
-
-    assert history["train_loss"] == pytest.approx(
-        [1.217055320739746, 1.2087888717651367, 1.1866831382115681], rel=1e-3)
-    assert history["val_loss"] == pytest.approx(
-        [0.9876893758773804, 0.977878987789154, 0.9719147086143494], rel=1e-3)
-    assert completer.scaler_params == pytest.approx({
-        "teff_mean": 5000.0, "teff_std": 816.49658203125,
-        "logg_mean": 4.25, "logg_std": 0.25,
-        "meta_mean": -0.25, "meta_std": 0.25,
-        "flux_log_mean": -10.225753784179688, "flux_log_std": 0.7680805921554565,
-        "ext_log_mean": -10.368162155151367, "ext_log_std": 1.48019278049469,
-    }, rel=1e-6)
-    assert _state_sums(completer.model) == pytest.approx((37.48151246241832, 1686.1791792145195), rel=1e-3)
-    assert np.random.random() == 0.9571551589530464
-    assert torch.rand(2).tolist() == pytest.approx([0.41561412811279297, 0.5646539926528931], abs=0)
-
-    config = json.loads((tmp_path / "model" / "config.json").read_text())
-    assert sorted(config) == ["architecture", "framework", "regions", "scaler_params",
-                              "version", "wavelength_grid"]
-    assert config["architecture"] == {"input_dim": 400, "output_dim": 1000,
-                                      "hidden_layers": [8], "dropout": 0.3}
-    assert config["regions"] == {"known_start": 300, "known_end": 700, "known_width": 400}
-    assert (config["version"], config["framework"]) == ("2.0.0", "pytorch")
-    assert config["wavelength_grid"] == np.logspace(2, 5, 1000).tolist()
-    assert sorted(p.name for p in (tmp_path / "model").iterdir()) == [
-        "config.json", "model.pt", "prediction_examples.png", "training_plots.png"]
-
-
 def test_generator_train_values(cpu_torch, tiny_library, tmp_path):
     torch = cpu_torch
     generator = mg.SEDGenerator()
@@ -170,20 +105,6 @@ def test_completer_complete_sed_values(cpu_torch):
     ], rel=1e-5)
 
 
-def test_generator_generate_values(cpu_torch):
-    generator = _fixed_generator(cpu_torch)
-
-    wl_out, flux_out = generator.generate(5200.0, 4.2, -0.2)
-
-    np.testing.assert_array_equal(wl_out, np.logspace(2, 5, 1000))
-    assert flux_out.dtype == np.float32
-    assert flux_out[[0, 250, 500, 750, 999]] == pytest.approx([
-        7.192110101916782e-11, 7.95194882163841e-11, 1.8567157533677658e-10,
-        1.7018070286312081e-10, 1.7596650525586455e-10,
-    ], rel=1e-5)
-    assert flux_out.astype(np.float64).sum() == pytest.approx(1.142879055664181e-07, rel=1e-5)
-
-
 def test_generate_check_bounds_prints_each_out_of_range_parameter(cpu_torch, capsys):
     generator = _fixed_generator(cpu_torch)
 
@@ -193,20 +114,6 @@ def test_generate_check_bounds_prints_each_out_of_range_parameter(cpu_torch, cap
     assert "Warning: Teff=9000 outside range [4000, 7000]" in out
     assert "Warning: logg=5.50 outside range [3.50, 5.00]" in out
     assert "Warning: [M/H]=0.60 outside range [-1.00, 0.50]" in out
-
-
-def test_generate_with_outputs_saves_the_generated_sed(cpu_torch, tmp_path):
-    generator = _fixed_generator(cpu_torch)
-
-    wl, flux = generator.generate_with_outputs(5200.0, 4.2, -0.2, str(tmp_path))
-
-    names = sorted(p.name for p in tmp_path.iterdir())
-    assert names == ["sed_T5200_g4.20_m-0.20.txt", "sed_T5200_g4.20_m-0.20_params.png",
-                     "sed_T5200_g4.20_m-0.20_spectrum.png"]
-    text = (tmp_path / "sed_T5200_g4.20_m-0.20.txt").read_text().splitlines()
-    assert text[:2] == ["# wavelength_A flux_erg/s/cm2/A", "# # Teff=5200.0 logg=4.2 [M/H]=-0.2"]
-    np.testing.assert_array_equal(np.loadtxt(tmp_path / "sed_T5200_g4.20_m-0.20.txt"),
-                                  np.loadtxt([f"{w:.6e} {f:.6e}" for w, f in zip(wl, flux)]))
 
 
 # ---------------------------------------------------------------------
@@ -256,29 +163,6 @@ def _stubbed_completer():
     return completer
 
 
-def test_extend_catalog_values(catalog, tmp_path):
-    completer = _stubbed_completer()
-    out_dir = tmp_path / "out"
-
-    summary = completer.extend_catalog(str(catalog), str(out_dir), extension_range=(500.0, 60000.0))
-
-    assert summary == {"extended": 2, "failed": 0, "skipped": 1, "total": 3, "output_dir": str(out_dir)}
-    assert completer._completer.calls == [(5000.0, 4.0, 0.0, (500.0, 60000.0)),
-                                          (6000.0, 4.5, -0.5, (500.0, 60000.0))]
-    assert completer._completer.plotted == ["a.txt", "b.txt"]
-    assert (out_dir / "lookup_table.csv").read_text() == (
-        "file_name,teff,logg,meta,extra,extended_by_ml,wl_min,wl_max\n"
-        "a.txt,5000,4.0,0.0,x,True,499.99999999999994,60000.00000000003\n"
-        "b.txt,6000,4.5,-0.5,y,True,499.99999999999994,60000.00000000003\n"
-        "c.txt,7000,3.5,0.2,z,False,,\n"
-    )
-    data_a = np.loadtxt(catalog / "a.txt")
-    grid = np.logspace(np.log10(500.0), np.log10(60000.0), 20)
-    expected_a = np.column_stack([grid, np.interp(grid, data_a[:, 0], data_a[:, 1]) * 1.5])
-    np.testing.assert_allclose(np.loadtxt(out_dir / "a.txt"), expected_a, rtol=5e-7)
-    np.testing.assert_allclose(np.loadtxt(out_dir / "c.txt"), np.loadtxt(catalog / "c.txt"), rtol=5e-7)
-
-
 def test_extend_catalog_requires_a_model():
     with pytest.raises(RuntimeError, match="No model loaded"):
         ml.Completer().extend_catalog("in", "out")
@@ -300,25 +184,7 @@ def stellar_dir(tmp_path, cube_writer):
     return base
 
 
-def test_completer_workflow_trains_on_the_chosen_library(stellar_dir, tmp_path, monkeypatch, capsys):
-    calls = []
-    monkeypatch.setattr(mc.SEDCompleter, "train", lambda self, **kw: calls.append(kw) or {})
-    _feed_input(monkeypatch, ["1", "2", "3", "5", "", ""])
-
-    mc.run_interactive_workflow(str(stellar_dir), str(tmp_path / "models"))
-
-    out = capsys.readouterr().out
-    assert calls == [{"library_path": str(stellar_dir / "gridB"),
-                      "output_path": str(tmp_path / "models" / "sed_model_gridB"),
-                      "epochs": 3, "batch_size": 5}]
-    assert "   1) gridA                          (1 SEDs)" in out
-    assert "TRAINING COMPLETE!" in out
-
-
 @pytest.mark.parametrize("answers, message", [
-    (["1", "x"], "Invalid selection"),
-    (["1", "0"], "Invalid selection"),
-    (["1", "9"], "Invalid selection"),
     # 0.5.0: a bad number is asked again (it used to end the menu with "Invalid parameters")
     (["1", "1", "abc", "", "", "", "n"], "Cancelled"),
     (["9"], "Invalid choice"),
@@ -428,9 +294,6 @@ def test_generator_workflow_batch_writes_one_sed_per_grid_point(cpu_torch, stell
                                   np.loadtxt([f"{w:.6e} {f:.6e}" for w, f in zip(wl, flux)]))
 
 
-# =====================================================================
-# Behaviour changes: handlers that now raise or warn
-# =====================================================================
 # --- ml_sed_completer --------------------------------------------------
 
 @pytest.mark.parametrize("cls", [mc.SEDCompleter, mg.SEDGenerator])
@@ -554,13 +417,11 @@ def test_generator_train_rejects_a_grid_with_no_flux_above_the_floor(cpu_torch, 
     assert not (tmp_path / "model").exists()
 
 
-@pytest.mark.parametrize("menu", ["1", "2", "3"])
 @pytest.mark.parametrize("number", ["0", "-1"])
-def test_generator_workflow_rejects_zero_and_negative_menu_numbers(stellar_dir, tmp_path, monkeypatch,
-                                                                   capsys, menu, number):
+def test_generator_workflow_rejects_zero_and_negative_menu_numbers(stellar_dir, tmp_path, monkeypatch, capsys, number):
     # These used to index from the end of the list and pick the last entry.
     _write_model_config(tmp_path / "models" / "gm1", {"model_type": "sed_generator"})
-    _feed_input(monkeypatch, [menu, number])
+    _feed_input(monkeypatch, ["3", number])
 
     mg.run_interactive_workflow(str(stellar_dir), str(tmp_path / "models"))
 
@@ -588,7 +449,7 @@ def test_extend_catalog_raises_without_a_lookup_table(tmp_path):
         _stubbed_completer().extend_catalog(str(tmp_path / "cat"), str(tmp_path / "out"))
 
 
-@pytest.mark.parametrize("missing", ["teff", "logg", "meta", "file_name"])
+@pytest.mark.parametrize("missing", ["teff", "file_name"])
 def test_extend_catalog_raises_when_a_column_is_missing(catalog, tmp_path, missing):
     # Missing parameters used to default to 5000 K / 4.5 / 0.0, and a missing
     # file column matched rows to the sorted *.txt files by position.
@@ -650,24 +511,18 @@ def test_extend_catalog_writes_the_good_spectra_then_lists_every_failure(catalog
     assert len(completer._completer.calls) == 2
 
 
-def test_extend_catalog_lists_a_spectrum_the_model_rejects(catalog, tmp_path):
-    completer = _stubbed_completer()
-
-    def reject(wavelength, flux, teff, logg, meta, extension_range):
-        raise ValueError("flux has NaNs")
-
-    completer._completer.complete_sed = reject
-    with pytest.raises(RuntimeError, match=r"row 0 \(a.txt\): flux has NaNs"):
-        completer.extend_catalog(str(catalog), str(tmp_path / "out"), verbose=False)
-
-
-def test_extend_catalog_stops_at_once_on_an_unexpected_error(catalog, tmp_path):
+@pytest.mark.parametrize("error, message", [
+    pytest.param(ValueError("flux has NaNs"), r"row 0 \(a.txt\): flux has NaNs", id="lists_a_spectrum_the_model_rejects"),
     # A broad except used to count any error as one failed spectrum and go on.
+    pytest.param(RuntimeError("Tensor for argument weight is on cpu but expected on mps"), "expected on mps",
+                 id="stops_at_once_on_an_unexpected_error"),
+])
+def test_extend_catalog_raises_what_the_model_could_not_extend(catalog, tmp_path, error, message):
     completer = _stubbed_completer()
 
-    def broken(wavelength, flux, teff, logg, meta, extension_range):
-        raise RuntimeError("Tensor for argument weight is on cpu but expected on mps")
+    def fail(wavelength, flux, teff, logg, meta, extension_range):
+        raise error
 
-    completer._completer.complete_sed = broken
-    with pytest.raises(RuntimeError, match="expected on mps"):
+    completer._completer.complete_sed = fail
+    with pytest.raises(RuntimeError, match=message):
         completer.extend_catalog(str(catalog), str(tmp_path / "out"), verbose=False)

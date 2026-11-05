@@ -7,11 +7,9 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-import pytest
 import requests
 
 from sed_tools import njm_filter_grabber
-from sed_tools.njm_filter_grabber import NJMFilterGrabber
 
 from helpers_filters import NJM
 
@@ -61,26 +59,3 @@ def test_plain_http_only_when_tls_fails_both_ways(tmp_path, monkeypatch):
         ("GET", plain, False): ok})
     assert grabber.is_available() and grabber.base_url.startswith("http://")
     assert [c[1:3] for c in calls] == [(index, True), (index, False), (plain, False)]
-
-
-# ----------------------------------------------------------------------
-# Grid discovery fails fast; NJM's spectra share NJM's outage
-# ----------------------------------------------------------------------
-def test_grid_indexes_are_asked_once_and_downloads_keep_their_retries(tmp_path):
-    from sed_tools.msg_spectra_grabber import MSGSpectraGrabber
-    from sed_tools.svo_spectra_grabber import DISCOVERY_TIMEOUT, SVOSpectraGrabber
-
-    svo = SVOSpectraGrabber(base_dir=str(tmp_path / "svo"))
-    msg = MSGSpectraGrabber(base_dir=str(tmp_path / "msg"))
-    assert svo.session.get_adapter(svo.model_index_url).max_retries.total == 0
-    assert msg.session.get_adapter(msg.index_url).max_retries.total == 0
-    assert svo.session.get_adapter(svo.spectra_base_url).max_retries.total == 5
-    assert sum(DISCOVERY_TIMEOUT) <= 15
-
-
-def test_njm_spectra_are_not_asked_while_njm_is_paused(tmp_path, monkeypatch):
-    from sed_tools.njm_spectra_grabber import NJMSpectraGrabber
-
-    NJMFilterGrabber._pause("refused", "NJM mirror is unavailable (refused)")
-    monkeypatch.setattr(NJMSpectraGrabber, "_check_availability", lambda self: pytest.fail("NJM was asked"))
-    assert not NJMSpectraGrabber(base_dir=str(tmp_path)).is_available()

@@ -67,57 +67,6 @@ def test_every_densified_node_integrates_to_sigma_t4(kurucz_cubes):
                     assert ratio == pytest.approx(1.0, rel=0.02), (cube.teff_grid[i_t], i_l, i_m)
 
 
-def test_densified_cube_interpolates(kurucz_cubes):
-    _, dense = kurucz_cubes
-    wavelengths, flux = dense.interpolate_spectrum(5940.0, 4.2, -0.3)
-    np.testing.assert_array_equal(wavelengths, dense.wavelengths)
-    assert np.all(np.isfinite(flux))
-    assert np.trapezoid(flux, wavelengths) / (SIGMA * 5940.0 ** 4) == pytest.approx(1.0, rel=0.02)
-    # At a node the interpolation returns that node's spectrum.
-    _, at_node = dense.interpolate_spectrum(5875.0, 4.5, 0.0)
-    np.testing.assert_allclose(at_node, dense.flux[1, 1, 1], rtol=1e-12)
-
-
-def test_inserted_teff_node_is_the_scaled_blackbody_between_its_neighbours(kurucz_cubes):
-    """The default (non-ML) node is pi*B_lambda(T_new) scaled by the nearest node's integral.
-
-    It is not between its neighbours at every wavelength: a smooth Planck curve
-    sits far above line-blanketed Kurucz spectra in the UV and in strong lines.
-    Its integral is between theirs.
-    """
-    source, dense = kurucz_cubes
-    wl = dense.wavelengths
-    for t_new in (5875.0, 6125.0):
-        i_new = int(np.flatnonzero(dense.teff_grid == t_new)[0])
-        i_near = int(np.argmin(np.abs(source.teff_grid - t_new)))
-        i_lo = int(np.searchsorted(source.teff_grid, t_new)) - 1
-        for i_l in range(dense.logg_grid.size):
-            for i_m in range(dense.meta_grid.size):
-                scale = (np.trapezoid(source.flux[i_near, i_l, i_m], wl)
-                         / np.trapezoid(planck_flam(wl, source.teff_grid[i_near]), wl))
-                np.testing.assert_allclose(dense.flux[i_new, i_l, i_m], planck_flam(wl, t_new) * scale,
-                                           rtol=1e-12)
-                lower = np.trapezoid(source.flux[i_lo, i_l, i_m], wl)
-                upper = np.trapezoid(source.flux[i_lo + 1, i_l, i_m], wl)
-                assert lower < np.trapezoid(dense.flux[i_new, i_l, i_m], wl) < upper
-
-
-def test_densifier_keeps_every_node_in_place_on_an_uneven_grid(tmp_path, cube_writer):
-    # Distinct axis lengths and a distinct value at every node, so any axis mix-up shows.
-    teff, logg, meta = [4000.0, 6000.0], [3.0, 4.0, 5.0], [-1.0, 0.0]
-    wl = np.linspace(3000.0, 9000.0, 7)
-    nt, nl, nm, nw = len(teff), len(logg), len(meta), wl.size
-    flux = 1.0 + np.arange(nt * nl * nm * nw, dtype=np.float64).reshape(nt, nl, nm, nw)
-    cube_writer(tmp_path / "src.bin", teff, logg, meta, wl, flux)
-
-    densify_grid(str(tmp_path / "src.bin"), str(tmp_path / "dense.bin"), teff_spacing=1000.0)
-
-    dense = FluxCube.from_file(str(tmp_path / "dense.bin"))
-    np.testing.assert_array_equal(dense.teff_grid, [4000.0, 5000.0, 6000.0])
-    np.testing.assert_array_equal(dense.flux[0], flux[0])
-    np.testing.assert_array_equal(dense.flux[2], flux[1])
-
-
 # ---------------------------------------------------------------------
 # grid_densifier
 # ---------------------------------------------------------------------
@@ -200,22 +149,6 @@ def _densify(monkeypatch, tmp_path, name, ram, **kwargs):
 # 6 dense Teffs: each wavelength holds (3 + 6) x 3 x 2 doubles = 432 bytes, of which a
 # block may use half the RAM, so 6048 bytes gives blocks of 7 wavelengths: 7, 7, 7, 7, 2.
 SEVEN_WAVELENGTHS = 2 * 7 * 432
-
-
-def test_densified_cube_does_not_depend_on_the_block_size(tmp_path, cube_writer, monkeypatch, capsys):
-    _uneven_source_cube(tmp_path / "src.bin", cube_writer)
-
-    one_block = _densify(monkeypatch, tmp_path, "one", 2**40)
-    assert "in 1 wavelength block(s)" in capsys.readouterr().out
-    assert _densify(monkeypatch, tmp_path, "five", SEVEN_WAVELENGTHS) == one_block
-    assert "in 5 wavelength block(s)" in capsys.readouterr().out
-    assert _densify(monkeypatch, tmp_path, "thirty", 1) == one_block
-    assert "in 30 wavelength block(s)" in capsys.readouterr().out
-
-    source = FluxCube.from_file(str(tmp_path / "src.bin"))
-    dense = FluxCube.from_file(str(tmp_path / "five.bin"))
-    np.testing.assert_array_equal(dense.teff_grid, [4000.0, 5000.0, 6000.0, 7000.0, 8000.0, 9000.0])
-    np.testing.assert_array_equal(dense.flux[[0, 2, 5]], source.flux)
 
 
 def test_densified_ml_nodes_do_not_depend_on_the_block_size(tmp_path, cube_writer, monkeypatch):

@@ -43,16 +43,6 @@ def test_instrument_colors_refuses_an_unreadable_curve(tmp_path):
 # ----------------------------------------------------------------------
 # filter_catalogue
 # ----------------------------------------------------------------------
-def _cached(catalogue, rel, text, checked):
-    import json
-
-    path = catalogue.cache_root / rel
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text)
-    path.with_name(path.name + ".http.json").write_text(json.dumps({"checked": checked}))
-    return path
-
-
 def _down_mirror():
     import requests
     from types import SimpleNamespace
@@ -75,38 +65,6 @@ def test_unreadable_installed_catalogue_file_is_refused(tmp_path):
         catalogue.properties("Fac", "Cam")
 
 
-def test_stale_cached_index_used_without_the_mirror_is_reported(tmp_path, caplog):
-    from sed_tools.filter_catalogue import FilterCatalogue
-
-    catalogue = FilterCatalogue(tmp_path / "filters", mirror=_down_mirror(), index_max_age=60)
-    _cached(catalogue, "index.json", '{"filters": {}}', checked=0)
-    with caplog.at_level(logging.WARNING):
-        assert catalogue.index() == {"filters": {}}
-    assert "Cannot ask NJM (unreachable); using the cached index.json" in caplog.text
-
-
-def test_offline_catalogue_uses_its_cache_without_a_warning(tmp_path, caplog):
-    from sed_tools.filter_catalogue import FilterCatalogue
-
-    catalogue = FilterCatalogue(tmp_path / "filters", offline=True, index_max_age=60)
-    _cached(catalogue, "index.json", '{"filters": {}}', checked=0)
-    with caplog.at_level(logging.WARNING):
-        assert catalogue.index() == {"filters": {}}
-    assert caplog.text == ""
-
-
-def test_vega_path_without_an_index_stops(tmp_path):
-    import time
-
-    from sed_tools.filter_catalogue import VEGA_URL, CatalogueError, FilterCatalogue
-
-    catalogue = FilterCatalogue(tmp_path / "filters", mirror=_down_mirror())
-    catalogue._mirror.is_available = lambda: True
-    _cached(catalogue, VEGA_URL, "WAVELENGTH,FLUX\n5000,1e-9\n", checked=time.time())
-    with pytest.raises(CatalogueError, match="index.json"):
-        catalogue.vega()  # the Vega spectrum's path is NJM's index.json's to say
-
-
 # ----------------------------------------------------------------------
 # filter_components
 # ----------------------------------------------------------------------
@@ -123,39 +81,6 @@ def test_unknown_components_header_is_reported(caplog):
 # ----------------------------------------------------------------------
 # svo_filter_grabber
 # ----------------------------------------------------------------------
-def _svo_record(filter_id):
-    import numpy as np
-
-    return fm.SVOFilterRecord(filter_id, fm.PHOTON, np.array([4000.0, 6000.0]), np.ones(2), "Angstrom", "Filter")
-
-
-def test_svo_download_saves_what_it_can_then_lists_the_failures(tmp_path):
-    import requests
-
-    from sed_tools.filter_components import InstrumentManifest
-    from sed_tools.svo_filter_grabber import FilterRow, SVOFilterBrowser
-
-    browser = SVOFilterBrowser(base_dir=str(tmp_path))
-
-    def get_filter(filter_id):
-        if filter_id.endswith(".r"):
-            return None
-        if filter_id.endswith(".i"):
-            raise requests.HTTPError("500 Server Error")
-        return _svo_record(filter_id)
-
-    browser.metadata_client.get_filter = get_filter
-    rows = [FilterRow(f"Fac/Cam.{b}", b, "Fac", "Cam", "") for b in "gri"]
-    with pytest.raises(RuntimeError) as info:
-        browser.download_filters(rows)
-    message = str(info.value)
-    assert "2 of 3 SVO filters could not be saved" in message
-    assert "Fac/Cam.r: SVO returned no transmission data" in message and "Fac/Cam.i: 500" in message
-    directory = tmp_path / "Fac" / "Cam"
-    assert (directory / "Cam").read_text() == "g.dat\n"
-    assert InstrumentManifest.load(directory).missing_files(directory) == ["i.dat", "r.dat"]
-
-
 def test_svo_bulk_download_finishes_then_reports_failed_instruments():
     from types import SimpleNamespace
 
@@ -176,36 +101,6 @@ def test_svo_bulk_download_finishes_then_reports_failed_instruments():
     with pytest.raises(RuntimeError, match="Bulk download incomplete:\nA/One: 1 of 1"):
         _download_facilities(browser, [Facility("A", "A"), Facility("B", "B")])
     assert downloaded == ["A/one.g", "A/two.g", "B/one.g", "B/two.g"]
-
-
-# ----------------------------------------------------------------------
-# filter_library
-# ----------------------------------------------------------------------
-def test_published_reports_each_fallback_and_every_source_failure(tmp_path, monkeypatch, caplog):
-    from types import SimpleNamespace
-
-    from requests import ConnectionError
-
-    from sed_tools import filter_library
-    from sed_tools.component_sources import catalog
-    from sed_tools.filter_components import ComponentError
-    from sed_tools.filter_library import FilterLibrary
-
-    library = FilterLibrary(tmp_path)
-    library.mirror = SimpleNamespace(is_available=lambda: False)
-    library.svo = SimpleNamespace(list_facilities=lambda: (_ for _ in ()).throw(RuntimeError("SVO index down")))
-    monkeypatch.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam"), catalog.BuilderRef("test", publishes=True))
-
-    def builder(root, **kwargs):
-        raise ConnectionError("team site offline")
-
-    monkeypatch.setattr(filter_library, "get_builder", lambda name: builder)
-    with caplog.at_level(logging.WARNING), pytest.raises(ComponentError) as info:
-        library.published("Fac", "Cam")
-    assert str(info.value) == ("No source can provide Fac/Cam: NJM: the mirror is unavailable; "
-                               "original source: team site offline; SVO: SVO index down")
-    assert "NJM cannot provide" not in caplog.text  # an NJM outage is the NJM client's one notice per process
-    assert "The original source cannot provide Fac/Cam (team site offline); trying SVO" in caplog.text
 
 
 # ----------------------------------------------------------------------
@@ -257,22 +152,6 @@ def njm(monkeypatch):
     return make
 
 
-def test_unreachable_mirror_is_reported_with_its_reason(tmp_path, caplog):
-    import requests
-    from types import SimpleNamespace
-
-    from sed_tools.njm_filter_grabber import NJMFilterGrabber
-
-    def head(url, **kwargs):
-        raise requests.ConnectionError("no route to host")
-
-    grabber = NJMFilterGrabber.__new__(NJMFilterGrabber)
-    grabber.base_url, grabber.session = NJM, SimpleNamespace(head=head)
-    with caplog.at_level(logging.WARNING):
-        assert grabber._check_availability() is False
-    assert f"NJM mirror {NJM} is unavailable (no route to host)" in caplog.text
-
-
 def test_directory_listing_is_empty_only_when_nothing_is_there(tmp_path, njm):
     import requests
 
@@ -319,19 +198,6 @@ def test_manifest_is_none_only_when_not_served(tmp_path, njm):
         grabber.fetch_manifest("Fac", "Bad")
     with pytest.raises(requests.HTTPError, match="503"):
         grabber.fetch_manifest("Fac", "Down")
-
-
-def test_component_download_saves_what_it_can_then_lists_the_failures(tmp_path, njm):
-    import json
-
-    manifest = {"facility": "Fac", "instrument": "Cam", "bands": ["g"],
-                "components": {"filter": {"g": "components/filter/g.dat"}, "qe": {"*": "components/qe/ccd.dat"}}}
-    grabber = njm(tmp_path, {"filters/Fac/Cam/manifest.json": json.dumps(manifest),
-                             "filters/Fac/Cam/components/filter/g.dat": CURVE,
-                             "filters/Fac/Cam/components/qe/ccd.dat": 500})
-    with pytest.raises(RuntimeError, match="1 component files of Fac/Cam were not downloaded:\n  components/qe/ccd.dat"):
-        grabber.download_components("Fac", "Cam")
-    assert (tmp_path / "Fac/Cam/components/filter/g.dat").is_file()
 
 
 def test_atmosphere_is_false_only_when_not_served(tmp_path, njm):

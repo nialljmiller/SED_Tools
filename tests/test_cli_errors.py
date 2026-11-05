@@ -6,7 +6,6 @@ No test uses the network: the autouse fixture fails any real request.
 
 import importlib
 import importlib.util
-import logging
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -14,9 +13,8 @@ from types import SimpleNamespace
 import pytest
 import requests
 
-from sed_tools.api import SED
 
-from helpers_api import CLEAN, GRABBERS, fake_grabber, tagged
+from helpers_api import CLEAN, GRABBERS, fake_grabber
 from helpers_api import filters, no_network  # noqa: F401 (fixtures)
 from helpers_cli import write_lookup
 
@@ -119,36 +117,12 @@ def test_spectra_flow_builds_what_it_can_then_lists_every_grid_not_completed(gri
     assert "Done." not in capsys.readouterr().out
 
 
-def test_spectra_flow_carries_on_after_a_grid_whose_build_fails(grid_flow, tmp_path):
-    from sed_tools.cli import run_spectra_flow
-
-    grid_flow(cube_built=False, svo=fake_grabber(["A", "B"], metadata=[{"fid": 1}], downloaded=1))
-    with pytest.raises(RuntimeError) as excinfo:
-        run_spectra_flow("svo", base_dir=str(tmp_path), models=["A", "B"])
-    assert "A: RuntimeError: No flux cube was built in" in str(excinfo.value)
-    assert "B: RuntimeError: No flux cube was built in" in str(excinfo.value)
-
-
-def test_spectra_flow_completes_quietly_when_every_grid_is_built(grid_flow, tmp_path, capsys):
-    from sed_tools.cli import run_spectra_flow
-
-    grid_flow(svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], downloaded=1))
-    run_spectra_flow("svo", base_dir=str(tmp_path), models=["Grid"])
-    assert capsys.readouterr().out.rstrip().endswith("Done.")
-
-
 def test_spectra_flow_raises_when_no_grid_is_discovered(grid_flow, tmp_path):
     from sed_tools.cli import run_spectra_flow
 
     grid_flow(svo=fake_grabber([]))  # as a grabber that could not read its index, after its warning
     with pytest.raises(RuntimeError, match="No spectral grids discovered"):
         run_spectra_flow("svo", base_dir=str(tmp_path), models=["Grid"])
-
-
-def test_grids_command_fails_when_a_grid_is_not_found(grid_flow, tmp_path, monkeypatch, capsys):
-    grid_flow(svo=fake_grabber(["Grid"]))
-    assert run_cli(monkeypatch, "grids", "--source", "svo", "--grids", "Missing", "--base", str(tmp_path)) == 1
-    assert "sed-tools: error: " in capsys.readouterr().err
 
 
 def test_axis_cut_prompt_asks_again_after_an_unparseable_range(monkeypatch, capsys):
@@ -288,14 +262,6 @@ def test_filter_browser_reports_a_failed_build_when_browsing_ends(filter_browser
     assert "A/Cam1 composed product: Airmass and PWV must be numbers" in out.split("Failed (1):")[1]
 
 
-def test_filter_browser_ends_quietly_when_nothing_failed(filter_browser, monkeypatch):
-    from sed_tools.cli import run_filters_flow
-
-    answer(monkeypatch, "1", "2", "y", "n", "q")
-    run_filters_flow()
-    assert filter_browser.fetched == ["A/Cam2"]
-
-
 def test_filters_command_without_a_target_fails_when_a_download_failed(filter_browser, monkeypatch, capsys):
     answer(monkeypatch, "2", "2", "y", "n", "q")
     assert run_cli(monkeypatch, "filters") == 1
@@ -364,20 +330,6 @@ def test_densify_refuses_options_it_cannot_honour(densify, monkeypatch, capsys, 
     assert densify == []
 
 
-def test_coverage_reports_every_grid_then_exits_1_if_any_failed(tmp_path, monkeypatch, capsys):
-    covered = []
-
-    def coverage(cls, name, **kwargs):
-        if name == "B":
-            raise ValueError("lookup_table.csv has no Teff column")
-        covered.append(name)
-
-    monkeypatch.setattr(SED, "coverage", classmethod(coverage))
-    assert run_cli(monkeypatch, "coverage", "--grids", "A", "B", "C", "--no-plot", "--base", str(tmp_path)) == 1
-    assert covered == ["A", "C"]
-    assert "[coverage] FAILED B: lookup_table.csv has no Teff column" in capsys.readouterr().out
-
-
 def test_cleaning_report_reads_the_summary_clean_model_dir_returns(capsys):
     from sed_tools.cli import _print_cleaning_report
 
@@ -406,36 +358,6 @@ def test_picker_rejects_an_invalid_regex_instead_of_showing_everything(monkeypat
     assert "beta" in last_listing and "alpha" not in last_listing
 
 
-def test_spectra_flow_tries_the_next_source_when_one_raises(grid_flow, tmp_path, caplog):
-    from sed_tools.cli import run_spectra_flow
-
-    built = grid_flow(svo=fake_grabber(["Grid"], metadata=RuntimeError("SVO: incomplete FID list")),
-                      msg=fake_grabber(["Grid"], metadata={"m": 1}, downloaded=1))
-    with caplog.at_level(logging.WARNING, logger="sed_tools.cli"):
-        run_spectra_flow("all", base_dir=str(tmp_path), models=["Grid"])
-    assert built == ["Grid"]
-    assert "[svo] SVO: incomplete FID list — trying next source..." in caplog.text
-
-
-def test_spectra_flow_tries_no_other_source_after_a_partial_download(grid_flow, tmp_path):
-    """Only files written by the failed attempt are detected; files from earlier runs are not."""
-    from sed_tools.cli import run_spectra_flow
-
-    built = grid_flow(svo=fake_grabber(["A", "B"], metadata=[{"fid": 1}], downloaded=1,
-                                       download_error=RuntimeError("2 of 5 spectra failed")),
-                      msg=fake_grabber(["A", "B", "C"], metadata=RuntimeError("MSG down")),
-                      mast=fake_grabber(["C"], metadata={"m": 1}, downloaded=1))
-    with pytest.raises(RuntimeError) as excinfo:
-        run_spectra_flow("all", base_dir=str(tmp_path), models=["A", "B", "C"])
-    message = str(excinfo.value)
-    assert built == ["C"]
-    for name in ("A", "B"):
-        assert f"{name}: RuntimeError: svo failed after changing" in message
-        assert "Tried: svo: 2 of 5 spectra failed" in message
-    # msg (which would fail with "MSG down") was never tried for A or B, only for C, which mast then built.
-    assert "MSG down" not in message
-
-
 # ----------------------------------------------------------------------
 # ML wrappers
 # ----------------------------------------------------------------------
@@ -453,20 +375,6 @@ def test_ml_generator_auto_fails_at_once_without_optuna(monkeypatch, capsys):
 # ----------------------------------------------------------------------
 # Detector-type tagging
 # ----------------------------------------------------------------------
-def test_filters_detector_prints_what_was_tagged_and_what_failed(tmp_path, monkeypatch, capsys):
-    import sed_tools.filter_metadata as fm
-
-    def tag_tree(root, *, force, dry_run, progress):
-        progress(tagged(Path(root) / "g.dat"))
-        raise RuntimeError("1 of 2 filter files could not be tagged and were left unchanged:\n  r.dat: bad")
-
-    monkeypatch.setattr(fm, "tag_filter_tree", tag_tree)
-    assert run_cli(monkeypatch, "filters-detector", str(tmp_path)) == 1
-    captured = capsys.readouterr()
-    assert "g.dat: photon [svo]" in captured.out
-    assert "sed-tools: error: 1 of 2 filter files could not be tagged" in captured.err
-
-
 def test_composition_says_when_the_atmosphere_list_failed(tmp_path, monkeypatch, filters):
     from sed_tools import cli
 

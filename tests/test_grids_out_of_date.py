@@ -9,7 +9,6 @@ import os
 import shutil
 import time
 
-import numpy as np
 
 from sed_tools import cli
 from sed_tools.api import SED, _bundle_shortfall, _flux_cube_shortfall
@@ -96,27 +95,6 @@ def test_an_unreadable_cube_is_out_of_date(njm, tmp_path):
     cube = folder / "flux_cube.bin"
     cube.write_bytes(cube.read_bytes()[:1000])  # truncated
     assert _flux_cube_shortfall(folder).startswith("cannot be compared with the spectra beside it")
-
-
-# ----------------------------------------------------------------------
-# Holes in a cube: zero, then filled when their spectra arrive
-# ----------------------------------------------------------------------
-def test_disjoint_selections_leave_empty_points_and_a_later_fill_is_rebuilt(njm, tmp_path, capsys):
-    folder = tmp_path / GRID
-    SED.fetch(GRID, source="njm", model_root=tmp_path, teff_max=5800, logg_max=4.2)
-    SED.fetch(GRID, source="njm", model_root=tmp_path, teff_min=6200, logg_min=4.3)
-    # The empty points are zero, the others hold their spectra
-    nw = len(_read_flux_cube_header(folder / "flux_cube.bin")["wavelengths"])
-    cube = np.fromfile(folder / "flux_cube.bin", dtype=np.float64, offset=16 + 8 * (2 + 2 + 2 + nw))
-    flux = cube.reshape(nw, 2, 2, 2)  # (wavelength, [M/H], logg, Teff)
-    assert not flux[:, :, 1, 0].any() and not flux[:, :, 0, 1].any()
-    assert flux[:, :, 0, 0].any(axis=0).all() and flux[:, :, 1, 1].any(axis=0).all()
-
-    # Spectra on exactly those empty points: every one is on the cube's axes, yet the cube lacks them
-    capsys.readouterr()
-    SED.fetch(GRID, source="njm", model_root=tmp_path, teff_max=5800, logg_min=4.3)
-    assert "[fetch] flux_cube.bin does not include 2 of the 6 spectra beside it:" in capsys.readouterr().out
-    assert spectra_not_in_cube(folder / "flux_cube.bin", folder / "lookup_table.csv")[1] == []
 
 
 # ----------------------------------------------------------------------

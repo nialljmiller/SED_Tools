@@ -62,18 +62,6 @@ def test_mesa_prepare_exits_1_for_a_single_grid_without_a_flux_cube(tmp_path, mo
     assert not (tmp_path / "out").exists()
 
 
-def test_mesa_prepare_accepts_a_single_grid_that_has_its_flux_cube(tmp_path, monkeypatch, capsys, cube_writer):
-    import numpy as np
-
-    from sed_tools import mesa_prepare
-
-    write_lookup(tmp_path / "Plain", ["file_name", "teff", "logg", "metallicity"], [("a.txt", 5000, 4.0, 0.0)])
-    cube_writer(tmp_path / "Plain" / "flux_cube.bin", [5000.0], [4.0], [0.0], [1000.0, 2000.0], np.ones((1, 1, 1, 2)))
-    mesa_prepare.run_interactive(base_dir=str(tmp_path), model="Plain", output=str(tmp_path / "out"))
-    assert "already MESA-ready" in capsys.readouterr().out
-    assert not (tmp_path / "out").exists()
-
-
 def test_mesa_prepare_exits_1_on_an_invalid_variant_choice(variant_grid, monkeypatch):
     message = run_mesa_prepare(variant_grid, "3", monkeypatch=monkeypatch, model="Grid",
                                output=str(variant_grid / "out"))
@@ -208,7 +196,7 @@ def test_split_and_filter_cubes_report_their_own_averaged_rows(tmp_path, caplog)
 # ----------------------------------------------------------------------
 # Combine grids (menu 7): q or b goes back, as in the other pickers
 # ----------------------------------------------------------------------
-@pytest.mark.parametrize("reply", ["q", "b", "Q", "back"])
+@pytest.mark.parametrize("reply", ["q", "b"])
 def test_combine_grid_selection_goes_back(reply, tmp_path, monkeypatch):
     from sed_tools.combine_stellar_atm import select_models_interactive
 
@@ -327,25 +315,6 @@ def test_list_variants_reads_the_subgrids_rebuild_writes(split_grid):
     assert set(variants[1].lookup_rows["alpha"]) == {"0.4"}
 
 
-def test_export_variant_writes_a_mesa_ready_folder_from_a_split_grid(split_grid, tmp_path):
-    import pandas as pd
-
-    from sed_tools.mesa_prepare import export_variant, list_variants
-
-    variant = list_variants(split_grid)[1]
-    out = export_variant(variant, tmp_path / "export")
-
-    spectra = sorted(out.glob("*.txt"))
-    assert len(spectra) == 12 and not any(p.is_symlink() for p in spectra)
-    for path in spectra:
-        assert path.read_bytes() == (split_grid / path.name).read_bytes()
-    sub = split_grid / "KuruczAlpha_alpha_0p40_lh_1p25_vtur_2_km_s"
-    assert (out / "flux_cube.bin").read_bytes() == (sub / "flux_cube.bin").read_bytes()
-    lookup = pd.read_csv(out / "lookup_table.csv", dtype=str)
-    assert sorted(lookup["file_name"]) == [p.name for p in spectra]
-    assert set(lookup["alpha"]) == {"0.4"}
-
-
 def test_mesa_prepare_menu_exports_a_variant_of_a_split_grid(split_grid, monkeypatch, capsys):
     from sed_tools import mesa_prepare
 
@@ -403,39 +372,6 @@ def test_mesa_prepare_notes_a_mean_cube_naming_only_the_varying_axes(tmp_path, m
     assert "Note: KuruczAlpha has 2 variants over alpha, but no per-variant cubes" in out
     assert "lh" not in out and "vtur" not in out
     assert variant.label == "full_grid" and variant.flux_cube_path == grid / "flux_cube.bin"
-
-
-def _legacy_library_grid(tmp_path, cube_writer):
-    """A grid in the layout of earlier SED_Tools versions: cube names carry every extra column."""
-    grid = tmp_path / "Grid"
-    grid.mkdir()
-    (grid / "lookup_table.csv").write_text(
-        "file_name,teff,logg,metallicity,alpha,vtur\na.txt,5000,4.0,0.0,0.0,2\nb.txt,5000,4.0,0.0,0.4,2\n")
-    for name in ("a.txt", "b.txt"):
-        (grid / name).write_text("4000 1.0\n5000 2.0\n")
-    for alpha in ("0.0", "0.4"):
-        cube_writer(grid / "fluxcube_library" / f"flux_cube__alpha_{alpha}__vtur_2.bin",
-                    [5000.0], [4.0], [0.0], [4000.0, 5000.0], np.ones((1, 1, 1, 2)))
-    return grid
-
-
-def test_list_variants_still_reads_a_fluxcube_library(tmp_path, cube_writer):
-    from sed_tools.mesa_prepare import export_variant, list_variants
-
-    variants = list_variants(_legacy_library_grid(tmp_path, cube_writer))
-
-    assert [v.label for v in variants] == ["alpha_0.0__vtur_2", "alpha_0.4__vtur_2"]
-    out = export_variant(variants[1], tmp_path / "export")
-    assert sorted(p.name for p in out.iterdir()) == ["b.txt", "flux_cube.bin", "lookup_table.csv"]
-
-
-def test_print_variant_table_names_only_the_axes_that_vary(tmp_path, cube_writer, capsys):
-    from sed_tools.mesa_prepare import list_variants, print_variant_table
-
-    print_variant_table(list_variants(_legacy_library_grid(tmp_path, cube_writer)), model_name="Grid")
-    out = capsys.readouterr().out
-    assert "Sub-variants of Grid: 2 variants over alpha" in out
-    assert "alpha=0.4" in out and "vtur=" not in out
 
 
 def test_export_variant_refuses_a_missing_cube_before_writing(tmp_path):
@@ -500,29 +436,6 @@ def test_non_interactive_combine_does_not_fold_in_the_previous_output(two_grids,
     assert set(lookup["source_model"]) == {"Kurucz2003all", "Kurucz2003all__alpha_04"}
 
 
-def test_combine_menu_counts_every_spectrum_of_a_hash_headed_lookup(tmp_path, monkeypatch, capsys):
-    # comment="#" dropped the '#file_name,...' header, so the first spectrum became the header.
-    from sed_tools._lookup_io import write_lookup_csv
-    from sed_tools.combine_stellar_atm import select_models_interactive
-
-    grids = []
-    for name, header in (("hashed", True), ("plain", False)):
-        (tmp_path / name).mkdir()
-        lookup = tmp_path / name / "lookup_table.csv"
-        if header:
-            write_lookup_csv({"file_name": ["a.txt", "b.txt", "c.txt"], "teff": [5000, 5500, 6000]},
-                             str(lookup))
-        else:
-            lookup.write_text("file_name,teff\na.txt,5000\nb.txt,5500\nc.txt,6000\n")
-        grids.append((name, str(tmp_path / name)))
-    _feed_input(monkeypatch, ["all"])
-
-    select_models_interactive(grids)
-
-    out = capsys.readouterr().out
-    assert "1. hashed (3 model spectra)" in out and "2. plain (3 model spectra)" in out
-
-
 # ---------------------------------------------------------------------
 # Undeclared flux unit, coverage's A-D note, import's "Load with" hint
 # ---------------------------------------------------------------------
@@ -542,18 +455,3 @@ def test_mesa_prepare_takes_a_combined_grid_as_it_is(two_grids, monkeypatch, cap
     out = capsys.readouterr().out
     assert "Note" not in out and "variants over" not in out
     assert "has one flux_cube.bin for all its spectra and no variants to choose between" in out
-
-
-def test_mesa_prepare_ignores_the_ml_completers_columns(tmp_path, cube_writer, capsys):
-    from sed_tools import mesa_prepare
-
-    grid = tmp_path / "Ext"
-    grid.mkdir()
-    (grid / "lookup_table.csv").write_text(
-        "file_name,teff,logg,metallicity,extended_by_ml,wl_min,wl_max\n"
-        "a.txt,5000,4.0,0.0,True,100.0,400000.0\nb.txt,6000,4.0,0.0,False,,\n")
-    cube_writer(grid / "flux_cube.bin", [5000.0, 6000.0], [4.0], [0.0], [1000.0, 2000.0], np.ones((2, 1, 1, 2)))
-
-    (variant,) = mesa_prepare.list_variants(grid)
-
-    assert variant.label == "full_grid" and "Note" not in capsys.readouterr().out

@@ -15,6 +15,18 @@ ROOT = Path(__file__).resolve().parents[1]
 # ---------------------------------------------------------------------
 # Packaging: psutil is not a dependency; scipy (the [full] extra) is not needed to import
 # ---------------------------------------------------------------------
+_WITHOUT_PSUTIL = """
+import sys
+sys.modules["psutil"] = None  # import psutil now raises ImportError
+
+import sed_tools
+from sed_tools._constants import available_memory_bytes
+
+assert not [m for m, mod in sys.modules.items() if m.startswith("psutil") and mod is not None]
+print(available_memory_bytes())
+"""
+
+
 def test_psutil_is_not_a_dependency_and_scipy_is_not_required():
     try:
         import tomllib
@@ -27,18 +39,6 @@ def test_psutil_is_not_a_dependency_and_scipy_is_not_required():
     assert not any(dep.startswith("psutil") for deps in extras.values() for dep in deps)
     assert not any(dep.startswith("scipy") for dep in project["dependencies"])
     assert any(dep.startswith("scipy") for dep in extras["full"])
-
-
-_WITHOUT_PSUTIL = """
-import sys
-sys.modules["psutil"] = None  # import psutil now raises ImportError
-
-import sed_tools
-from sed_tools._constants import available_memory_bytes
-
-assert not [m for m, mod in sys.modules.items() if m.startswith("psutil") and mod is not None]
-print(available_memory_bytes())
-"""
 
 
 def test_import_sed_tools_and_measure_ram_without_psutil():
@@ -73,9 +73,6 @@ def test_import_sed_tools_works_without_scipy():
     assert done.stdout.startswith("needs scipy: ") and "scipy" in done.stdout[len("needs scipy: "):]
 
 
-# ---------------------------------------------------------------------
-# ml_generator --auto: models SEDGenerator can load
-# ---------------------------------------------------------------------
 def test_optuna_is_an_optional_extra_only():
     try:
         import tomllib

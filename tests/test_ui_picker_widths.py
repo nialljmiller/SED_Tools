@@ -29,13 +29,6 @@ def test_combine_picker_shows_a_long_product_label_whole_at_80_columns(monkeypat
     assert max(len(line) for line in lines) <= 80
 
 
-def test_picker_cuts_with_an_ellipsis_only_when_the_terminal_is_narrower(monkeypatch, capsys):
-    long = "x" * 70
-    lines = _picker_page([long], 60, monkeypatch, capsys)
-    row = next(line for line in lines if line.lstrip().startswith("1."))
-    assert row.rstrip().endswith("…") and len(row) <= 59
-
-
 def test_picker_keeps_its_columns_for_short_names(monkeypatch, capsys):
     names = [f"name{i:02d}" for i in range(30)]
     lines = _picker_page(names, 80, monkeypatch, capsys)

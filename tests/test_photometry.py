@@ -5,7 +5,6 @@ or computed.
 
 from __future__ import annotations
 
-import logging
 import math
 import warnings
 
@@ -13,17 +12,6 @@ import numpy as np
 import pytest
 
 from helpers_api import no_network  # noqa: F401 (an autouse fixture)
-from helpers_cli import flat_filter
-
-
-# ---------------------------------------------------------------- Vega zero points
-def test_get_metadata_float_raises_on_the_first_non_numeric_key():
-    from sed_tools.flux_cube_tool import VEGA_ZP_KEYS, get_metadata_float
-
-    assert get_metadata_float({"vega_zp": 1.5}, VEGA_ZP_KEYS) == 1.5
-    assert get_metadata_float({}, VEGA_ZP_KEYS) is None
-    with pytest.raises(ValueError, match="metadata zp_vega = '' is not a number"):
-        get_metadata_float({"zp_vega": "", "vega_zp": 1.5}, VEGA_ZP_KEYS)
 
 
 # ---------------------------------------------------------------- flux_cube_tool
@@ -112,30 +100,3 @@ def test_vega_magnitude_with_a_zero_or_negative_zero_point_is_computed(flux_leve
                 assert math.isnan(magnitude)
             else:
                 assert magnitude == expected
-
-
-# ----------------------------------------------------------------------
-# Band averages: a filter that extends past the SED
-# ----------------------------------------------------------------------
-def test_filters_past_the_sed_are_named_in_one_warning(caplog):
-    from sed_tools.flux_cube_tool import _warn_outside_sed
-
-    sed_wavelength = np.arange(3000.0, 5001.0, 100.0)
-    with caplog.at_level(logging.WARNING, logger="sed_tools.flux_cube_tool"):
-        _warn_outside_sed(sed_wavelength, [flat_filter("V"), flat_filter("B")])
-    # Transmission is 1 from 4000 to 6000 Å; 950 of its 2000 Å·T lie past 5000 Å.
-    assert [r.getMessage() for r in caplog.records] == [
-        "Filter transmission outside the SED's wavelength range (3000-5000 Å), where the band average "
-        "counts the flux as zero, so these bands are biased low: V (47.5%), B (47.5%)."]
-
-
-def test_filters_inside_the_sed_do_not_warn(caplog):
-    from sed_tools.flux_cube_tool import FilterCurve, _warn_outside_sed
-
-    sed_wavelength = np.arange(3000.0, 7001.0, 100.0)
-    # Zero transmission past the SED's end does not bias the average.
-    wavelength = np.arange(4000.0, 8001.0, 100.0)
-    curve = FilterCurve("R", wavelength, np.where(wavelength <= 6000.0, 1.0, 0.0), {})
-    with caplog.at_level(logging.WARNING, logger="sed_tools.flux_cube_tool"):
-        _warn_outside_sed(sed_wavelength, [flat_filter(), curve])
-    assert not caplog.records

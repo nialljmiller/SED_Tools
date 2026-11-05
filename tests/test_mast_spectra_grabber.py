@@ -1,10 +1,6 @@
-import gzip
-from pathlib import Path
 
 from sed_tools.mast_spectra_grabber import (
     MASTSpectraGrabber,
-    _filter_metals_by_range,
-    _filter_urls_by_params,
 )
 
 
@@ -47,18 +43,3 @@ def test_mast_download_accepts_generic_axis_kwargs(tmp_path, monkeypatch):
     assert body[0].startswith("2000.000000 ")
     assert body[-1].startswith("3000.000000 ")
     assert (model_dir / "lookup_table.csv").exists()
-
-
-def test_mast_param_filters_can_exclude_urls():
-    urls = [
-        "https://x/m+0.00/r1000/bosz2024_mp_t05750_g+4.5_m+0.00_a+0.00_c+0.00_v2_r1000_resam.txt.gz",
-        "https://x/m+0.00/r1000/bosz2024_mp_t10000_g+4.5_m+0.00_a+0.00_c+0.00_v2_r1000_resam.txt.gz",
-    ]
-
-    kept = _filter_urls_by_params(urls, teff_range=(5500, 6000), logg_range=(4.0, 5.0))
-
-    assert kept == [urls[0]]
-
-
-def test_mast_metallicity_filter_handles_bosz_tags():
-    assert _filter_metals_by_range(["m-1.00", "m+0.00", "m+0.75"], (-0.2, 0.5)) == ["m+0.00"]

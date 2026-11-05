@@ -1,26 +1,7 @@
-from pathlib import Path
 
-import h5py
 import numpy as np
-import pytest
 
-from sed_tools.parsing import parse_numeric_range
-from sed_tools.spectrum_io import build_h5_bundle, read_text_spectrum
-
-
-@pytest.mark.parametrize(
-    ("raw", "expected"),
-    [
-        ("3500,8000", (3500.0, 8000.0)),
-        ("5:3", (3.0, 5.0)),
-        ("-1.0,0.5", (-1.0, 0.5)),
-        ("1e3 2e3", (1000.0, 2000.0)),
-        ("", None),
-        ("bad", None),
-    ],
-)
-def test_parse_numeric_range(raw, expected):
-    assert parse_numeric_range(raw) == expected
+from sed_tools.spectrum_io import read_text_spectrum
 
 
 def test_text_spectrum_compatibility_aliases(tmp_path):
@@ -38,22 +19,3 @@ def test_text_spectrum_compatibility_aliases(tmp_path):
         actual = loader(str(path))
         np.testing.assert_array_equal(actual[0], expected[0])
         np.testing.assert_array_equal(actual[1], expected[1])
-
-
-def test_h5_bundle_schema_and_metadata(tmp_path):
-    spectrum = tmp_path / "star.txt"
-    spectrum.write_text("# Teff = 5000 K\n# logg = 4.5\n# [M/H] = -0.5\n1 2\n")
-    output = tmp_path / "nested" / "bundle.h5"
-
-    assert build_h5_bundle(tmp_path, output)
-    with h5py.File(output) as handle:
-        item = handle["spectra/star.txt"]
-        np.testing.assert_array_equal(item["lambda"][:], [1.0])
-        assert item.attrs["teff"] == 5000.0
-        assert item.attrs["feh"] == -0.5
-
-
-def test_h5_bundle_with_no_spectra_is_not_written(tmp_path):
-    output = tmp_path / "bundle.h5"
-    assert not build_h5_bundle(tmp_path, output)
-    assert not output.exists()

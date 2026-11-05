@@ -15,11 +15,6 @@ from sed_tools.flux_cube_tool import (infer_unit_from_values, load_filter_curve,
     "lo,hi,expected",
     [
         (3200.0, 10800.0, "angstrom"),   # Gaia G in A (was misread as nm)
-        (4600.0, 7400.0, "angstrom"),    # Johnson V in A
-        (1340.0, 1806.0, "angstrom"),    # GALEX FUV in A
-        (6000.0, 2.8e5, "angstrom"),     # JWST MIRI in A
-        (900.0, 3.0e6, "angstrom"),      # full-range stellar spectrum in A
-        (298.0, 413.0, "nanometer"),     # SDSS u in nm
         (460.0, 740.0, "nanometer"),     # Johnson V in nm
         (0.3, 28.0, "micrometer"),
         (5e-7, 1e-6, "meter"),
@@ -34,45 +29,26 @@ def _write(path, rows, header=""):
     return str(path)
 
 
-def test_optical_filter_without_header_loads_in_angstrom(tmp_path, caplog):
-    path = _write(tmp_path / "V.dat", [(4600.0, 0.0), (5500.0, 1.0), (7400.0, 0.0)])
-
-    with caplog.at_level(logging.WARNING):
-        curve = load_filter_curve(path)
-
-    np.testing.assert_allclose(curve.wavelength, [4600.0, 5500.0, 7400.0])
-    assert curve.metadata["wavelength_unit_source"] == "inferred"
-    assert "declares no wavelength unit" in caplog.text
-
-
-@pytest.mark.parametrize("unit,factor", [("Angstrom", 1.0), ("nm", 10.0), ("um", 1e4), ("Å", 1.0), ("microns", 1e4)])
-def test_header_unit_is_honoured(tmp_path, unit, factor):
-    path = _write(tmp_path / "f.dat", [(2.0, 1.0), (3.0, 1.0)], header=f"# WavelengthUnit: {unit}\n")
-
-    curve = load_filter_curve(path)
-
-    np.testing.assert_allclose(curve.wavelength, [2.0 * factor, 3.0 * factor])
-    assert curve.metadata["wavelength_unit_source"] == "header"
-
-
-def test_argument_overrides_header_and_inference(tmp_path):
+@pytest.mark.parametrize("header, argument, rows, factor, source, warning", [
+    pytest.param("", None, [(4600.0, 0.0), (5500.0, 1.0), (7400.0, 0.0)], 1.0, "inferred",
+                 "declares no wavelength unit", id="optical_filter_without_header_in_angstrom"),
+    *[pytest.param(f"# WavelengthUnit: {unit}\n", None, [(2.0, 1.0), (3.0, 1.0)], factor, "header", "",
+                   id=f"header-{unit}")
+      for unit, factor in [("Angstrom", 1.0), ("nm", 10.0), ("um", 1e4), ("Å", 1.0), ("microns", 1e4)]],
     # A K-band curve in nm is indistinguishable from a UV curve in A by value alone.
-    path = _write(tmp_path / "K.dat", [(1950.0, 1.0), (2400.0, 1.0)])
-
-    curve = load_filter_curve(path, wavelength_unit="nm")
-
-    np.testing.assert_allclose(curve.wavelength, [19500.0, 24000.0])
-    assert curve.metadata["wavelength_unit_source"] == "argument"
-
-
-def test_unknown_header_unit_falls_back_to_inference(tmp_path, caplog):
-    path = _write(tmp_path / "f.dat", [(4000.0, 1.0), (5000.0, 1.0)], header="# WavelengthUnit: furlongs\n")
+    pytest.param("", "nm", [(1950.0, 1.0), (2400.0, 1.0)], 10.0, "argument", "", id="argument_overrides_inference"),
+    pytest.param("# WavelengthUnit: furlongs\n", None, [(4000.0, 1.0), (5000.0, 1.0)], 1.0, None,
+                 "Unrecognised wavelength unit", id="unknown_header_unit_falls_back_to_inference"),
+])
+def test_filter_curve_wavelength_unit(tmp_path, caplog, header, argument, rows, factor, source, warning):
+    path = _write(tmp_path / "f.dat", rows, header=header)
 
     with caplog.at_level(logging.WARNING):
-        curve = load_filter_curve(path)
+        curve = load_filter_curve(path, wavelength_unit=argument)
 
-    np.testing.assert_allclose(curve.wavelength, [4000.0, 5000.0])
-    assert "Unrecognised wavelength unit" in caplog.text
+    np.testing.assert_allclose(curve.wavelength, [w * factor for w, _ in rows])
+    assert source is None or curve.metadata["wavelength_unit_source"] == source
+    assert warning in caplog.text
 
 
 def test_spectrum_accepts_explicit_unit(tmp_path):

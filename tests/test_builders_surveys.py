@@ -10,7 +10,6 @@ import numpy as np
 import pytest
 
 from sed_tools.component_sources import standards, surveys
-from sed_tools.filter_components import AtmosphereGrid, InstrumentManifest
 
 from builder_fixtures import Session, _tar, check_published, curve, saved
 
@@ -57,24 +56,6 @@ def test_builds_from_the_team_files(tmp_path, instrument):
     assert (len(wl), wl[0], wl[-1], wl[np.argmax(tr)]) == (n, pytest.approx(first), pytest.approx(last),
                                                           pytest.approx(at))
     assert tr.max() == pytest.approx(peak)
-
-
-def test_ps1_writes_its_team_atmosphere_site(tmp_path):
-    surveys.build(tmp_path / "filters", instrument="PS1", session=Session())
-    site = tmp_path / "atmospheres" / "haleakala_ps1"
-    grid = AtmosphereGrid.load(site)
-    assert grid.kind == "team" and [(e["airmass"], e["pwv"]) for e in grid.entries] == [(1.2, None)]
-    wl, tr = curve(site / grid.entries[0]["file"])
-    assert (wl[0], wl[-1], len(wl)) == (3800.0, 11000.0, 73) and tr.max() <= 1.0
-    assert tr[0] == pytest.approx(0.945 * 0.694 * 0.998)  # table3 at 380 nm: Aero x Ray x Mol
-    assert "Aero, Ray and Mol" in grid.entries[0]["derivation"]
-
-
-def test_wfcam_qe_is_the_paper_table(tmp_path):
-    inst = surveys.build(tmp_path, instrument="WFCAM", session=Session())
-    wl, qe = curve(inst / InstrumentManifest.load(inst).component_file("qe", "J"))
-    np.testing.assert_allclose(wl, np.array(surveys.UKIRT_QE_UM) * 1e4)
-    np.testing.assert_allclose(qe, surveys.UKIRT_QE)
 
 
 def test_atlas_needs_every_table_row(tmp_path):

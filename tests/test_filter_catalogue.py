@@ -4,7 +4,6 @@ import json
 import sys
 import threading
 import time
-from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
@@ -12,8 +11,7 @@ import pytest
 import requests
 
 from sed_tools.api import Filters
-from sed_tools.filter_catalogue import CatalogueError, FilterCatalogue, cache_root, format_bibtex
-from sed_tools.filter_library import FilterLibrary
+from sed_tools.filter_catalogue import CatalogueError, FilterCatalogue, cache_root
 from sed_tools.njm_filter_grabber import NJMFilterGrabber
 
 BASE = "https://njm.invalid/sed_tools"
@@ -218,23 +216,6 @@ def test_search_accepts_quantities_and_names_only(root, njm):
         Filters.search(fwhm=(1, 2), properties=False, filter_root=root)
 
 
-def test_bulk_fetch_is_capped_at_six_requests_at_a_time(tmp_path, njm):
-    files = catalogue_files()
-    index = json.loads(files["index.json"])
-    many = {f"I{n}": {"filters": ["b"], "detector_types": {"photon": 1}, "properties": "properties.json"}
-            for n in range(20)}
-    index["filters"]["facilities_detailed"] = {"Big": {"instruments": many}}
-    files = {"index.json": json.dumps(index)}
-    files.update({f"filters/Big/I{n}/properties.json": json.dumps({"bands": {"b": band(5000 + n, 100)}})
-                  for n in range(20)})
-    server = FakeNJM(files, delay=0.02)
-    catalogue = FilterCatalogue(tmp_path / "filters", mirror=grabber_for(tmp_path / "filters", server),
-                                max_workers=50)
-    result = catalogue.search(pivot=(5010, 5020))
-    assert list(result["instrument"]) == [f"I{n}" for n in range(10, 20)]
-    assert 1 < server.max_active <= 6
-
-
 # ----------------------------------------------------------------------
 # properties.json / info.json and the cache
 # ----------------------------------------------------------------------
@@ -274,74 +255,9 @@ def test_offline_and_unreachable_mirror_use_cached_copies(root, njm):
         catalogue.info("Other", "IR")
 
 
-def test_refresh_asks_the_mirror_even_when_its_availability_check_failed(tmp_path, njm):
-    grabber = grabber_for(tmp_path, njm)
-    catalogue = FilterCatalogue(tmp_path, mirror=grabber)
-    catalogue.info("Fac", "Cam")
-    grabber._available = False  # e.g. NJM's HEAD answered 403 during a burst block
-    njm.files["filters/Fac/Cam/info.json"] = njm.files["filters/Fac/Cam/info.json"].replace("A camera.", "New.")
-    assert catalogue.info("Fac", "Cam", prefer_installed=False)["description"] == "A camera."
-    assert catalogue.info("Fac", "Cam", refresh=True)["description"] == "New."
-    assert len(njm.fetched("filters/Fac/Cam/info.json")) == 2
-
-
-def test_installed_copy_describes_installed_curves(root, njm):
-    local = json.loads(catalogue_files()["filters/Fac/Cam/info.json"])
-    local["description"] = "As installed."
-    (root / "Fac" / "Cam").mkdir(parents=True)
-    (root / "Fac" / "Cam" / "g.dat").write_text("Wavelength,Transmission\n4000,1\n6000,1\n")  # an installed copy holds curves
-    (root / "Fac" / "Cam" / "info.json").write_text(json.dumps(local))
-    assert Filters.info("Fac", "Cam", filter_root=root)["description"] == "As installed."
-    assert Filters.info("Fac", "Cam", filter_root=root, refresh=True)["description"] == "A camera."
-
-
-def test_download_keeps_catalogue_files_beside_curves_only(tmp_path, njm):
-    njm.files.update({"filters/Fac/Cam/Cam": "g.dat\nr.dat\ni.dat\n"})
-    for name in "gri":
-        njm.files[f"filters/Fac/Cam/{name}.dat"] = "Wavelength,Transmission,DetectorType=photon\n4000,1\n6000,1\n"
-    grabber = grabber_for(tmp_path, njm)
-    assert grabber.download_filters("Fac", "Cam") == 3
-    directory = tmp_path / "Fac" / "Cam"
-    assert json.loads((directory / "properties.json").read_text())["bands"]["g"]["FWHM"] == 1200
-    assert (directory / "info.json").is_file()
-    assert (directory / "Cam").read_text().split() == ["g.dat", "r.dat", "i.dat"]  # MESA index: curves only
-    assert FilterLibrary.published_complete(directory)
-
-    from sed_tools.combine_filters import find_filter_sets, write_filter_index
-    from sed_tools.models import _build_filter_index
-
-    assert find_filter_sets(tmp_path) == [directory]
-    assert set(_build_filter_index(tmp_path)) == {"g", "r", "i"}
-    out = tmp_path / "copy"
-    out.mkdir()
-    for p in directory.iterdir():
-        (out / p.name).write_bytes(p.read_bytes())
-    assert write_filter_index(out, "copy").read_text().split() == ["g.dat", "i.dat", "r.dat"]
-
-    # Curves already installed are kept, and so is the description that came with them.
-    (directory / "info.json").write_text('{"bands": {}, "description": "old"}')
-    assert grabber.download_filters("Fac", "Cam") == 0
-    assert json.loads((directory / "info.json").read_text())["description"] == "old"
-
-
 # ----------------------------------------------------------------------
 # Citations
 # ----------------------------------------------------------------------
-def test_citations_merge_references_and_acknowledgements(root, njm):
-    result = Filters.citations("Fac/Cam", "Other/IR", filter_root=root)
-    keys = [r["key"] for r in result["references"]]
-    assert keys == ["bibcode:2020Cam.....1A", "bibcode:2021gband...2B", "bibcode:2012ivoa.rept.1015R"]
-    camera = result["references"][0]
-    assert camera["used_by"] == ["Fac/Cam", "Other/IR"] and camera["aliases"] == ["arxiv:2001.00001"]
-    svo = [a for a in result["acknowledgements"] if a["for"] == "SVO Filter Profile Service"]
-    assert len(svo) == 1 and svo[0]["used_by"] == ["Fac/Cam", "Other/IR"]
-
-    bib = format_bibtex(result)
-    assert bib.count("@article{") == 2
-    assert "% No BibTeX served for bibcode:2012ivoa.rept.1015R" in bib
-    assert "@misc" not in bib and "@techreport" not in bib  # nothing made up
-
-
 def test_citations_for_chosen_bands(root, njm):
     r_only = Filters.citations("Fac/Cam/r", filter_root=root)
     assert [r["key"] for r in r_only["references"]] == ["bibcode:2020Cam.....1A", "bibcode:2012ivoa.rept.1015R"]

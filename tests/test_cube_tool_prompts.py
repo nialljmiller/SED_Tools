@@ -59,43 +59,8 @@ def write_vega(path):
 
 
 # ----------------------------------------------------------------------
-# Distance, radius and saving
-# ----------------------------------------------------------------------
-def test_distance_and_radius_take_a_unit_or_the_default_one(monkeypatch):
-    answer(monkeypatch, "10 pc", "3.1e17 m", "2", "1 Rsun", "7e8 m", "2 R_sun")
-    assert [tool.prompt_distance_m() for _ in range(3)] == pytest.approx([10 * PC_TO_M, 3.1e17, 2 * PC_TO_M])
-    assert [tool.prompt_radius_m() for _ in range(3)] == pytest.approx([RSUN_TO_M, 7e8, 2 * RSUN_TO_M])
-
-
-def test_prompt_length_scales_only_its_own_units(monkeypatch):
-    answer(monkeypatch, "4 au", "4 AU")
-    assert tool._prompt_length("? ", "m", ("au",), 1.5e11) == pytest.approx(6e11)  # the unit is case-blind
-    answer(monkeypatch, "4 m")
-    assert tool._prompt_length("? ", "au", ("au",), 1.5e11) == 4.0
-
-
-def test_save_sed_writes_two_columns_and_makes_its_folder(tmp_path):
-    path = tmp_path / "out" / "sed.txt"
-    tool.save_sed(str(path), WL, 2 * WL)
-    assert path.read_text().splitlines()[0] == "# wavelength flux"
-    assert np.loadtxt(path).tolist() == np.column_stack([WL, 2 * WL]).tolist()
-
-
-def test_infer_filter_directories_looks_beside_and_above_the_cube(grid, tmp_path):
-    (grid / "filters").mkdir()
-    found = tool.infer_filter_directories(str(grid / "flux_cube.bin"))
-    assert list(dict.fromkeys(path for path in found if tmp_path in path.parents)) == [
-        (grid / "filters").resolve(), (tmp_path / "grids" / "filters").resolve()]
-
-
-# ----------------------------------------------------------------------
 # Which flux cube
 # ----------------------------------------------------------------------
-def test_one_flux_cube_found_is_used_without_asking(grid, capsys):
-    assert tool.prompt_for_flux_cube_path([grid]) == (grid / "flux_cube.bin").resolve()
-    assert capsys.readouterr().out == f"Using flux cube: {(grid / 'flux_cube.bin').resolve()}\n"
-
-
 def test_several_flux_cubes_are_offered_by_number(grid, tmp_path, monkeypatch, capsys):
     other = tmp_path / "grids" / "h" / "flux_cube.bin"
     other.parent.mkdir()

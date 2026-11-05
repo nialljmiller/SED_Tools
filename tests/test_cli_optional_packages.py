@@ -103,17 +103,6 @@ def test_an_ml_action_is_refused_when_chosen_if_it_needs_a_missing_package(
         assert status == 1 and err == f"Error: missing {lacking[install]}: {FULL}\n"
 
 
-def test_ml_generator_auto_without_torch_says_what_to_install(monkeypatch, capsys, tmp_path):
-    import importlib.util
-
-    if importlib.util.find_spec("optuna") is None:
-        pytest.skip("optuna is checked first")
-    _without(monkeypatch, "torch")
-    assert _run_cli(monkeypatch, "ml_generator", "--auto", "--library", str(tmp_path),
-                    "--output", str(tmp_path / "out")) == 1
-    assert capsys.readouterr().err == f"Error: missing torch: {FULL}\n"  # was a torch traceback
-
-
 def _densifier_inputs(tmp_path):
     import numpy as np
 

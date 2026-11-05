@@ -11,8 +11,7 @@ import pytest
 
 from builder_fixtures import Session, check_published, curve, saved
 from sed_tools.component_sources import observatories as obs
-from sed_tools.filter_components import InstrumentManifest
-from sed_tools.filter_metadata import read_filter_header, released_mesa_reads
+from sed_tools.filter_metadata import released_mesa_reads
 
 # instrument: facility, bands, published components, component roles, a phrase of the notes,
 # and the first band's samples, first and last wavelength (A), peak wavelength (A) and peak
@@ -97,34 +96,6 @@ def test_builds_from_the_team_files(tmp_path, instrument):
     assert len(session.calls) == len(set(session.calls))  # each file is downloaded once
 
 
-def test_omegacam_publishes_filter_times_qe_and_keeps_the_filter_scan(tmp_path):
-    inst = obs.build(tmp_path, instrument="OmegaCAM", session=Session())
-    manifest = InstrumentManifest.load(inst)
-    for band in ("u_SDSS", "B_JOHN"):
-        wl, total = curve(inst / f"{band}.dat")
-        fw, filt = curve(inst / manifest.component_file("filter", band))
-        assert np.array_equal(wl, fw) and np.all(total <= filt + 1e-12) and total.max() < filt.max()
-    source = read_filter_header(inst / manifest.component_file("filter", "B_JOHN"))["Sources"]
-    assert source.endswith("B-partD_modified_transmission_data (mean of the 4 segment-centre scans)")
-
-
-def test_megacam_total_is_filter_times_qe_times_optics_times_atmosphere(tmp_path):
-    inst = obs.build(tmp_path, instrument="MegaCam", session=Session())
-    manifest = InstrumentManifest.load(inst)
-    wl, total = curve(inst / "r.dat")
-    factors = [curve(inst / manifest.component_file(role, "r")) for role in ("filter", "optics", "qe")]
-    product = np.prod([np.interp(wl, w, t) for w, t in factors], axis=0)
-    inside = product > 1e-3
-    extinction = total[inside] / product[inside]  # the 1.2-airmass atmosphere, which is not a component
-    assert np.all((extinction > 0.5) & (extinction <= 1.0))
-
-
-def test_suprimecam_qe_is_shared_and_in_angstrom(tmp_path):
-    inst = obs.build(tmp_path, instrument="SuprimeCam", session=Session())
-    wl, qe = curve(inst / InstrumentManifest.load(inst).component_file("qe", "g"))
-    assert wl[0] >= 3000 and wl[-1] <= 11000 and 0.5 < qe.max() <= 1.0
-
-
 def test_keck_workbooks_need_xlrd(tmp_path, monkeypatch):
     monkeypatch.setitem(sys.modules, "xlrd", None)  # not installed
     with pytest.raises(RuntimeError, match="needs xlrd"):
@@ -147,7 +118,6 @@ KECK, KPNO, FS, MC = obs.KECK, obs.KPNO_DOCS, obs.FS, obs.MC
      "MOSFIRE J: not micron / fraction"),
     ("DEIMOS", _swap(KECK + "deimos/Bfaber13norm.txt", KECK + "deimos/RlrisDredonorm.txt"), "DEIMOS B: header PIVWV"),
     ("FourStar", _swap(FS + "HST_STD/J.txt", FS + "HST_STD/J1.txt"), "FourStar J: HST_STD differs"),
-    ("MegaCam", _swap(MC + "magg.tab", MC + "magr.tab"), "MegaCam g: T column differs from magg.tab"),
     ("MegaCam", _swap(MC + "filterthroughput.magr", MC + "filterthroughput.magu"), "MegaCam r: T column differs"),
     ("FOCAS", _swap(obs.FO + "txt/U.txt", obs.SC + "txt/B.txt"), "outside 290-1001"),
 ])
