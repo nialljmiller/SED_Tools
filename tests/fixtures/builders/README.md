@@ -30,7 +30,8 @@ stored gzipped.
   the full file. Run on these fixtures, every builder returns the same bands, notes and
   components as on the full downloads, and the same transmission at every wavelength kept.
   The exceptions are the curves made from the reused `original_sources` excerpts, and the
-  cleaning summaries, which count fewer negative samples.
+  cleaning summaries, which count fewer negative samples (Sinistro's and Spectral's notes
+  quote theirs, so those notes differ too).
 - **Files that must share wavelengths are cut at the same wavelengths:** MegaCam's five tables
   and `mag<b>.tab`, FourStar's `HST_STD` and linked files, and OmegaCAM's segment scans.
 - **PS1 `table3.dat` keeps every 10 nm,** so its log-mean check still holds.
