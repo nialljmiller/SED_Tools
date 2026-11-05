@@ -1,0 +1,71 @@
+J/PASP/124/140      UBVRI Hp BT and VT photonic responses       (Bessell+, 2012)
+================================================================================
+Spectrophotometric libraries, revised photonic passbands, and zero points for
+UBVRI, Hipparcos, and Tycho photometry.
+    Bessell M., Murphy S.
+   <Publ. Astron. Soc. Pac., 124, 140-157 (2012)>
+   =2012PASP..124..140B
+================================================================================
+ADC_Keywords: Photometry, sensitivity functions ; Photometry, UBVRI
+Keywords: stars
+
+Abstract:
+    We have calculated improved photonic passbands for the UBVRI,
+    Hipparcos Hp, and Tycho BT and VT standard systems using the extensive
+    spectrophotometric libraries of NGSL and MILES. Using the Hp passband,
+    we adjusted the absolute flux levels of stars in the
+    spectrophotometric libraries so that their synthetic Hp magnitudes
+    matched the precise Hipparcos Catalogue value. Synthetic photometry
+    based on the renormalized fluxes was compared with the standard UBVRI,
+    BT and VT magnitudes, and revised synthetic zero points were
+    determined. The Hipparcos and Tycho photometry system zero points were
+    also compared with the V-magnitude zero points of the SAAO UBVRI
+    system, the homogenized UBV system, and the Walraven VB system.
+
+File Summary:
+--------------------------------------------------------------------------------
+ FileName   Lrecl  Records   Explanations
+--------------------------------------------------------------------------------
+ReadMe         80        .   This file
+table1.dat     54       37   Normalized UBVRI photonic responses
+table2.dat     32       56   Normalized Hp BT, and VT photonic responses
+--------------------------------------------------------------------------------
+
+See also:
+            I/239  : The Hipparcos and Tycho Catalogues (ESA 1997)
+   J/AJ/140/1919   : Zero point spectral energy distribution (Engelke+, 2010)
+   J/PASP/120/1128 : Calibrated griz magnitudes of Tycho star (Ofek, 2008)
+
+Byte-by-byte Description of file:table1.dat
+--------------------------------------------------------------------------------
+   Bytes Format Units   Label     Explanations
+--------------------------------------------------------------------------------
+   1-  4  I4    0.1nm   lam.U     ? Wavelenght in U
+   6- 10  F5.3  ---     U         ? Normalized response in U
+  12- 15  I4    0.1nm   lam.B     ? Wavelenght in B
+  17- 21  F5.3  ---     B         ? Normalized response in B
+  23- 26  I4    0.1nm   lam.V     ? Wavelenght in V
+  28- 32  F5.3  ---     V         ? Normalized response in V
+  34- 37  I4    0.1nm   lam.R     ? Wavelenght in R
+  39- 43  F5.3  ---     R         ? Normalized response in R
+  45- 48  I4    0.1nm   lam.I     ? Wavelenght in I
+  50- 54  F5.3  ---     I         ? Normalized response in I
+--------------------------------------------------------------------------------
+
+Byte-by-byte Description of file: table2.dat
+--------------------------------------------------------------------------------
+   Bytes Format Units   Label     Explanations
+--------------------------------------------------------------------------------
+   1-  4  I4    0.1nm   lam.Hp    ? Wavelenght in Hp
+   6- 10  F5.3  ---     Hp        ? Normalized response in Hp
+  12- 15  I4    0.1nm   lam.BT    ? Wavelenght in BT
+  17- 21  F5.3  ---     BT        ? Normalized response in BT
+  23- 26  I4    0.1nm   lam.VT    ? Wavelenght in VT
+  28- 32  F5.3  ---     VT        ? Normalized response in VT
+--------------------------------------------------------------------------------
+
+History:
+    From electronic version of the journal
+
+================================================================================
+(End)                                      Patricia Vannier [CDS]    11-Feb-2013
