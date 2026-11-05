@@ -6,24 +6,18 @@ saved-page fixtures.  Nothing here touches the network.
 """
 
 import json
-import logging
-from dataclasses import asdict
-from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 import requests
-from bs4 import BeautifulSoup
 
 from sed_tools import filter_library
-from sed_tools.component_sources import catalog
-from sed_tools.filter_components import ComponentError, InstrumentManifest
-from sed_tools.filter_library import FilterLibrary, instrument_catalogue, load_instrument_catalogue
-from sed_tools.filter_metadata import read_filter_header
+from sed_tools.filter_components import ComponentError
+from sed_tools.filter_library import FilterLibrary, instrument_catalogue
 from sed_tools.njm_filter_grabber import NJMFilterGrabber
-from sed_tools.svo_filter_grabber import Facility, FilterRow, Instrument, SVOFilterBrowser
+from sed_tools.svo_filter_grabber import Facility, FilterRow, Instrument
 
-from helpers_filters import CURVE, NJM, Served, njm_index, svo_stub, write_set
+from helpers_filters import CURVE, Served, njm_index, svo_stub, write_set
 
 
 SVO_CURVE = "Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=svo\n4100,0\n5000,1\n5900,0\n"
@@ -120,9 +114,6 @@ def test_a_same_named_svo_product_njm_does_not_claim_keeps_its_own_name_and_text
 
 
 # ----------------------------------------------------------------------
-# Completeness
-# ----------------------------------------------------------------------
-# ----------------------------------------------------------------------
 # NJM fails fast
 # ----------------------------------------------------------------------
 def test_svo_may_complete_a_set_njm_wrote_nothing_into(tmp_path, njm, bundled):
@@ -171,8 +162,3 @@ def test_njm_instrument_without_manifest_is_described_not_an_error(tmp_path, njm
     assert result["availability_source"] == "njm" and result["errors"] == []
     assert result["bands"] == ["G", "Grvs"] and result["detector_type"] == "photon"
     assert result["notes"][0].startswith("no component manifest")
-
-
-# ----------------------------------------------------------------------
-# The bundled catalogue
-# ----------------------------------------------------------------------

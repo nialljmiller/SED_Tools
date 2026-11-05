@@ -109,5 +109,3 @@ def test_common_wavelength_grid_needs_a_usable_spectrum(tmp_path):
     data = {"files": np.array(["far_ir.txt"]), "model_dir": str(tmp_path)}
     with pytest.raises(ValueError, match="between 3000 and 25000"):
         create_common_wavelength_grid([data])
-
-

@@ -13,10 +13,10 @@ import requests
 
 from sed_tools import cli, filter_library, svo_filter_grabber
 from sed_tools.api import Filters
-from sed_tools.filter_catalogue import CatalogueError, FilterCatalogue, format_citations
+from sed_tools.filter_catalogue import format_citations
 from sed_tools.filter_components import ComponentError
 from sed_tools.filter_library import FilterLibrary
-from sed_tools.filter_metadata import SVOUnreachableError, read_filter_header
+from sed_tools.filter_metadata import SVOUnreachableError
 from sed_tools.njm_filter_grabber import NJMFilterGrabber
 from sed_tools.svo_filter_grabber import SVOFilterBrowser
 
@@ -24,11 +24,6 @@ from helpers_filters import (CURVE, GAIA, NJM_DOWN, STALE, Served, atmosphere_si
                              write_set)
 from helpers_filters import bundled, njm, njm as njm_filters  # noqa: F401 (fixtures)
 from helpers_grids import run_cli
-
-
-EUCLID = {"NISP": {"description": "Euclid NISP", "svo_instruments": ["Euclid/NISP", "Euclid/NISP0"],
-                   "bands": ["Blue", "H", "J", "Red", "Y"],
-                   "svo_bands": {"Euclid/NISP": ["H", "J", "Y"], "Euclid/NISP0": ["Blue", "Red"]}}}
 
 
 def labels(result):
@@ -145,9 +140,6 @@ def test_two_installed_spellings_stop_unless_one_is_exact(tmp_path):
 
 
 # ----------------------------------------------------------------------
-# Builders that make only components are no download source
-# ----------------------------------------------------------------------
-# ----------------------------------------------------------------------
 # SVO's availability is known process-wide
 # ----------------------------------------------------------------------
 def test_svo_that_does_not_answer_is_waited_for_once_per_process(tmp_path, monkeypatch):
@@ -189,14 +181,6 @@ def test_svo_is_asked_again_after_its_pause(tmp_path, monkeypatch):
 # ----------------------------------------------------------------------
 # filters-info and filters-cite
 # ----------------------------------------------------------------------
-def catalogue_with(tmp_path, files):
-    server = Served(dict({"index.json": njm_index({"GAIA": {"DR2": {
-        "filters": ["BP", "BP_svo", "G"], "properties": "properties.json", "info": "info.json"}}})}, **files))
-    mirror = SimpleNamespace(base_url="https://data.nialljmiller.com/sed_tools", is_available=lambda: True,
-                             _get=lambda url, **kwargs: server.get(url, **kwargs))
-    return FilterCatalogue(tmp_path / "filters", mirror=mirror)
-
-
 def test_citation_titles_are_one_line_and_url_keys_are_plain(tmp_path):
     text = format_citations({"instruments": [], "acknowledgements": [], "errors": [], "references": [
         {"key": "bibcode:2016A&A...595A...1G", "short": "Prusti et al. 2016", "title": "The\n          Gaia\n  mission",
@@ -293,10 +277,6 @@ def gaia_from_svo(tmp_path, bundled, monkeypatch):
     monkeypatch.setattr(FilterLibrary, "svo", property(lambda self: browser))
     monkeypatch.setenv("COLUMNS", "80")
     return root
-
-
-def incomplete_warnings(caplog):
-    return [r for r in caplog.records if r.levelno == logging.WARNING and "is incomplete" in r.getMessage()]
 
 
 def test_filters_info_and_the_picker_summary_say_the_set_is_incomplete(gaia_from_svo, monkeypatch, capsys):
@@ -408,23 +388,6 @@ def test_a_set_njm_completes_gets_the_manifest_of_a_fresh_download(tmp_path, bun
 
 
 NJM = "https://data.nialljmiller.com/sed_tools"
-
-
-def _refusing_grabber(monkeypatch, status):
-    """An NJM grabber whose HEAD and GET both answer ``status``."""
-    monkeypatch.setattr("sed_tools.njm_filter_grabber.time.sleep", lambda seconds: None)
-
-    def answer(url, **kwargs):
-        def raise_for_status():
-            raise requests.HTTPError(f"{status} Client Error: Forbidden for url: {url}",
-                                     response=SimpleNamespace(status_code=status, headers={}))
-
-        return SimpleNamespace(status_code=status, raise_for_status=raise_for_status)
-
-    grabber = NJMFilterGrabber.__new__(NJMFilterGrabber)
-    grabber.base_url, grabber._index_data = NJM, None
-    grabber.session = SimpleNamespace(head=answer, get=answer, headers={}, verify=True)
-    return grabber
 
 
 def test_a_curve_without_a_column_row_is_reported_once_by_its_caller(tmp_path, caplog):

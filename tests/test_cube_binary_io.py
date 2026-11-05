@@ -1,9 +1,5 @@
-"""Binary flux-cube (``flux_cube.bin``) read-path correctness tests.
-
-Covers the parts of ``flux_cube_tool.FluxCube.from_file`` and
-``models._read_flux_cube_header`` that the existing suite doesn't touch:
-lossless round-tripping, the on-disk axis layout, truncated/corrupt
-files, and the trailing-byte warning path.
+"""Reading ``flux_cube.bin``: a truncated header or body raises, naming the expected and found
+counts; trailing bytes are warned about.
 """
 
 import struct
@@ -12,12 +8,7 @@ import numpy as np
 import pytest
 
 from sed_tools._flux import FluxCube
-from sed_tools.models import SEDModel, _read_flux_cube_header
 
-
-# ---------------------------------------------------------------------
-# Lossless round trip
-# ---------------------------------------------------------------------
 
 # ---------------------------------------------------------------------
 # Truncated / corrupt files
@@ -62,5 +53,3 @@ def test_trailing_bytes_emit_warning_but_do_not_raise(tmp_path, make_affine_cube
     )
     captured = capsys.readouterr()
     assert "trailing data" in captured.out.lower()
-
-

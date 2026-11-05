@@ -10,9 +10,7 @@ import warnings
 import numpy as np
 import pytest
 
-from sed_tools._flux import AB_ZERO_FLUX
-from sed_tools.flux_cube_tool import FilterCurve, _band_magnitude, bolometric_magnitude
-from sed_tools.models import EvaluatedSED
+from sed_tools.flux_cube_tool import bolometric_magnitude
 
 from helpers_grids import no_network  # noqa: F401 (an autouse fixture)
 
@@ -22,23 +20,7 @@ from helpers_grids import no_network  # noqa: F401 (an autouse fixture)
 # ---------------------------------------------------------------------
 # Zero and negative band flux in AB and Vega are tested in test_photometry.py.
 
-VEGA_ZERO_POINT = 2.0e-10
 WL = np.linspace(2000.0, 8000.0, 300)
-
-
-class _OneFilter:
-    """Stands in for the SEDModel behind an EvaluatedSED: every filter resolves to one curve."""
-
-    def __init__(self, curve):
-        self.curve = curve
-
-    def _resolve_filters(self, filters):
-        return {"Band": self.curve}
-
-
-def _band():
-    return FilterCurve("Band", np.array([3000.0, 4000.0, 5000.0, 6000.0]), np.array([0.0, 1.0, 1.0, 0.0]),
-                       {"zp_vega": VEGA_ZERO_POINT})
 
 
 def _sloped_flux():

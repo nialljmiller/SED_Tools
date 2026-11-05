@@ -43,16 +43,6 @@ def test_instrument_colors_refuses_an_unreadable_curve(tmp_path):
 # ----------------------------------------------------------------------
 # filter_catalogue
 # ----------------------------------------------------------------------
-def _cached(catalogue, rel, text, checked):
-    import json
-
-    path = catalogue.cache_root / rel
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text)
-    path.with_name(path.name + ".http.json").write_text(json.dumps({"checked": checked}))
-    return path
-
-
 def _down_mirror():
     import requests
     from types import SimpleNamespace
@@ -91,12 +81,6 @@ def test_unknown_components_header_is_reported(caplog):
 # ----------------------------------------------------------------------
 # svo_filter_grabber
 # ----------------------------------------------------------------------
-def _svo_record(filter_id):
-    import numpy as np
-
-    return fm.SVOFilterRecord(filter_id, fm.PHOTON, np.array([4000.0, 6000.0]), np.ones(2), "Angstrom", "Filter")
-
-
 def test_svo_bulk_download_finishes_then_reports_failed_instruments():
     from types import SimpleNamespace
 
@@ -119,9 +103,6 @@ def test_svo_bulk_download_finishes_then_reports_failed_instruments():
     assert downloaded == ["A/one.g", "A/two.g", "B/one.g", "B/two.g"]
 
 
-# ----------------------------------------------------------------------
-# filter_library
-# ----------------------------------------------------------------------
 # ----------------------------------------------------------------------
 # njm_filter_grabber (a fake session; never the network)
 # ----------------------------------------------------------------------

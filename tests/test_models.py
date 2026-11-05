@@ -10,6 +10,7 @@ import numpy as np
 
 from sed_tools.models import SED
 
+
 def _write_flux_cube(path: Path, teff, logg, meta, wavelengths) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("wb") as fh:

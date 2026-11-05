@@ -1,33 +1,16 @@
-"""Integration tests for extra-axis collision handling in ``precompute_flux_cube``.
-
-Covers the three on-collision strategies against small synthetic grids
-where multiple spectra share the same (Teff, logg, [M/H]) node but
-differ along an extra physical axis (e.g. alpha-enhancement):
-
-* ``split`` (default) — one MESA-ready subgrid directory per variant
-* ``mean``             — a single cube, arithmetic mean over variants
-* ``filter``           — one cube built from a single selected variant
-
-Also covers the pure filesystem-safe naming helpers used to build
-subgrid/variant names, and a single-group case that isn't a real
-collision at all.
+"""Extra-axis collisions in ``precompute_flux_cube``: the filter strategy names what it could not
+match, and variant names are safe as file names.
 """
 
-import csv
 
 import numpy as np
 import pytest
 
-from sed_tools.models import SEDModel
 from sed_tools.precompute_flux_cube import (
     _extra_key_to_filename,
-    _subdir_name,
-    _value_to_safe_str,
     precompute_flux_cube,
 )
 from sed_tools.spectra_cleaner import clean_model_dir
-
-C_ANGSTROM_PER_S = 2.99792458e18
 
 
 def _write_node(model_dir, fname, teff, logg, meta, alpha, flux_jy_value, wl_nm):
@@ -60,14 +43,6 @@ def _make_collision_grid(model_dir):
 
 
 # ---------------------------------------------------------------------
-# split strategy (default) — per-variant MESA-ready subgrids
-# ---------------------------------------------------------------------
-
-# ---------------------------------------------------------------------
-# mean strategy — arithmetic mean over colliding variants
-# ---------------------------------------------------------------------
-
-# ---------------------------------------------------------------------
 # filter strategy — build from one selected variant
 # ---------------------------------------------------------------------
 
@@ -91,5 +66,3 @@ def test_extra_key_to_filename_sanitizes_unsafe_characters():
     assert "/" not in name
     assert " " not in name
     assert name == "alpha_Fe_0.4__f_sed_2.0"
-
-

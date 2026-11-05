@@ -46,17 +46,6 @@ def _feed_input(monkeypatch, answers):
     monkeypatch.setattr("builtins.input", fake_input)
 
 
-# Grid order sampled by np.random.seed(3) from the 12-node tiny library.
-_SAMPLED_PARAMS = [
-    [5000.0, 4.0, 0.0], [5000.0, 4.0, -0.5], [4000.0, 4.0, 0.0], [4000.0, 4.5, -0.5],
-    [6000.0, 4.5, 0.0], [5000.0, 4.5, -0.5], [5000.0, 4.5, 0.0], [4000.0, 4.0, -0.5],
-    [4000.0, 4.5, 0.0], [6000.0, 4.0, 0.0], [6000.0, 4.0, -0.5], [6000.0, 4.5, -0.5],
-]
-
-
-# ---------------------------------------------------------------------
-# Characterisation: training-data preparation (torch-free)
-# ---------------------------------------------------------------------
 # ---------------------------------------------------------------------
 # Characterisation: training (torch, CPU)
 # ---------------------------------------------------------------------
@@ -305,9 +294,6 @@ def test_generator_workflow_batch_writes_one_sed_per_grid_point(cpu_torch, stell
                                   np.loadtxt([f"{w:.6e} {f:.6e}" for w, f in zip(wl, flux)]))
 
 
-# =====================================================================
-# Behaviour changes: handlers that now raise or warn
-# =====================================================================
 # --- ml_sed_completer --------------------------------------------------
 
 @pytest.mark.parametrize("cls", [mc.SEDCompleter, mg.SEDGenerator])

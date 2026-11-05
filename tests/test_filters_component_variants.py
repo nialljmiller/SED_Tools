@@ -6,13 +6,11 @@ component above one kept unclipped.
 from __future__ import annotations
 
 import json
-import logging
 
 import numpy as np
 import pytest
 
-from sed_tools.filter_components import (FILTER, QE, ComponentError, InstrumentManifest, add_component, build_product,
-                                         compose_band, product_name, read_curve)
+from sed_tools.filter_components import (QE, ComponentError, InstrumentManifest, add_component, compose_band)
 
 from helpers_builders_ground import WL, _Resp, _gauss, _published
 
@@ -97,8 +95,3 @@ def test_njm_downloads_variant_files(tmp_path, monkeypatch):
     monkeypatch.setattr(njm.session, "get", fake_get)
     assert njm.download_components("F", "I") == 1
     assert (tmp_path / "F/I/components/qe/qe_a.dat").exists()
-
-
-# ---------------------------------------------------------------------------
-# add_component: peaks above 1 are written unclipped (builders explain them in the manifest notes)
-# ---------------------------------------------------------------------------

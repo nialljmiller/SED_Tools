@@ -9,7 +9,6 @@ import os
 import shutil
 import time
 
-import numpy as np
 
 from sed_tools import cli
 from sed_tools.api import SED, _bundle_shortfall, _flux_cube_shortfall
@@ -98,9 +97,6 @@ def test_an_unreadable_cube_is_out_of_date(njm, tmp_path):
     assert _flux_cube_shortfall(folder).startswith("cannot be compared with the spectra beside it")
 
 
-# ----------------------------------------------------------------------
-# Holes in a cube: zero, then filled when their spectra arrive
-# ----------------------------------------------------------------------
 # ----------------------------------------------------------------------
 # Messages and folders
 # ----------------------------------------------------------------------

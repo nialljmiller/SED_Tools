@@ -3,9 +3,8 @@
 import colorsys
 
 import numpy as np
-import pytest
 
-from sed_tools.filter_colors import display_colors, true_color, visible_fraction
+from sed_tools.filter_colors import display_colors
 
 
 def box(lo, hi, step=10.0):

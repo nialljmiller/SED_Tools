@@ -4,7 +4,6 @@ import pytest
 
 from sed_tools import cli
 from sed_tools.filter_library import FilterLibrary
-from sed_tools.parsing import parse_multi_selection
 from sed_tools.ui_utils import prompt_choice
 
 

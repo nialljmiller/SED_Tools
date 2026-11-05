@@ -374,20 +374,6 @@ def test_mesa_prepare_notes_a_mean_cube_naming_only_the_varying_axes(tmp_path, m
     assert variant.label == "full_grid" and variant.flux_cube_path == grid / "flux_cube.bin"
 
 
-def _legacy_library_grid(tmp_path, cube_writer):
-    """A grid in the layout of earlier SED_Tools versions: cube names carry every extra column."""
-    grid = tmp_path / "Grid"
-    grid.mkdir()
-    (grid / "lookup_table.csv").write_text(
-        "file_name,teff,logg,metallicity,alpha,vtur\na.txt,5000,4.0,0.0,0.0,2\nb.txt,5000,4.0,0.0,0.4,2\n")
-    for name in ("a.txt", "b.txt"):
-        (grid / name).write_text("4000 1.0\n5000 2.0\n")
-    for alpha in ("0.0", "0.4"):
-        cube_writer(grid / "fluxcube_library" / f"flux_cube__alpha_{alpha}__vtur_2.bin",
-                    [5000.0], [4.0], [0.0], [4000.0, 5000.0], np.ones((1, 1, 1, 2)))
-    return grid
-
-
 def test_export_variant_refuses_a_missing_cube_before_writing(tmp_path):
     from sed_tools.mesa_prepare import export_variant, list_variants
 
@@ -469,5 +455,3 @@ def test_mesa_prepare_takes_a_combined_grid_as_it_is(two_grids, monkeypatch, cap
     out = capsys.readouterr().out
     assert "Note" not in out and "variants over" not in out
     assert "has one flux_cube.bin for all its spectra and no variants to choose between" in out
-
-

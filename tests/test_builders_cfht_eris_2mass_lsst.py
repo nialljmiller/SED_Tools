@@ -8,12 +8,12 @@ import zipfile
 import numpy as np
 import pytest
 
-from sed_tools.component_sources import catalog, cfht, eris, lsst, twomass
-from sed_tools.filter_components import (FILTER, OPTICS, QE, SHARED, AtmosphereGrid,
+from sed_tools.component_sources import cfht, eris, lsst, twomass
+from sed_tools.filter_components import (FILTER, OPTICS, QE, AtmosphereGrid,
                                          InstrumentManifest, compose_band, read_curve)
 from sed_tools.filter_metadata import ENERGY, read_filter_header, released_mesa_reads, write_filter_file
 
-from helpers_builders_cfht_lsst import _Session, _lsst_files, _pre, _published, _table, _twomass_files
+from helpers_builders_cfht_lsst import _Session, _lsst_files, _pre, _published, _table
 
 
 def _cfht_files(codes):

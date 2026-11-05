@@ -2,21 +2,17 @@
 
 from __future__ import annotations
 
-import json
 
 import numpy as np
 import pytest
-import requests
 
 from sed_tools.combine_filters import write_filter_index
-from sed_tools.filter_components import (ATMOSPHERE, FILTER, OPTICS, PUBLISHED, QE,
-                                         AtmosphereGrid, AtmosphereSpec,
-                                         ComponentCoverageError, ComponentError,
+from sed_tools.filter_components import (ATMOSPHERE, FILTER, OPTICS, QE,
+                                         AtmosphereGrid, ComponentCoverageError, ComponentError,
                                          Curve, InstrumentManifest, add_component,
                                          build_all_products, build_product, compose_band,
-                                         multiply_curves, parse_components,
-                                         recipe_name)
-from sed_tools.filter_metadata import ENERGY, PHOTON, read_filter_header, write_filter_file
+                                         multiply_curves, parse_components)
+from sed_tools.filter_metadata import ENERGY, PHOTON, write_filter_file
 from sed_tools.flux_cube_tool import load_filter_curve
 
 WL = np.linspace(4000.0, 6000.0, 201)
@@ -91,9 +87,6 @@ def test_multiply_curves_refuses_to_extrapolate():
     assert np.all(product[grid < 4500.0] == 0.0)
 
 
-# ---------------------------------------------------------------------------
-# Manifests
-# ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
 # Products
 # ---------------------------------------------------------------------------
@@ -187,15 +180,3 @@ def test_skycalc_build_writes_grid_and_resumes(tmp_path):
 # ---------------------------------------------------------------------------
 # NJM mirror download
 # ---------------------------------------------------------------------------
-class _Resp:
-    def __init__(self, text, status=200):
-        self.text, self.status_code = text, status
-
-    def json(self):
-        return json.loads(self.text)
-
-    def raise_for_status(self):
-        if self.status_code != 200:
-            raise requests.HTTPError(str(self.status_code), response=self)
-
-

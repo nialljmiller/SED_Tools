@@ -383,9 +383,6 @@ def test_compose_of_the_covered_bands_goes_on_to_the_sources(tmp_path):
 
 
 # ----------------------------------------------------------------------
-# The catalogue says where its data came from
-# ----------------------------------------------------------------------
-# ----------------------------------------------------------------------
 # available() says which source failures were only fallbacks
 # ----------------------------------------------------------------------
 def test_available_reports_failures_by_source_and_which_were_fallbacks(tmp_path, monkeypatch):
@@ -514,5 +511,3 @@ def test_archived_copies_stay_apart_beside_an_installed_copy_under_other_band_na
         data = getattr(catalogue, kind)(*spelling)
         assert list(data["bands"]) == ["100", "857"]  # the *_svo rows used to be listed with them
         assert list(data["archived_bands"]) == ["100_svo", "857_svo"]
-
-

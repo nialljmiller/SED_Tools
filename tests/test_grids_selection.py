@@ -6,17 +6,16 @@ Every source is mocked; nothing here touches the network.
 """
 
 import logging
-import math
 from pathlib import Path
 
 import h5py
 import numpy as np
 import pytest
 
-from sed_tools.api import SED, _parameter_cuts
+from sed_tools.api import SED
 from sed_tools.models import _read_flux_cube_header
 
-from helpers_grids import GRID, digests, run_cli
+from helpers_grids import GRID, run_cli
 from helpers_grids import njm, njm_grid, no_network  # noqa: F401 (fixtures)
 
 
@@ -26,15 +25,6 @@ from helpers_grids import njm, njm_grid, no_network  # noqa: F401 (fixtures)
 #: Teff 5900-6100 selects the four spectra at 6000 K.
 AT_6000 = ["Kurucz2003all_fid16526.txt", "Kurucz2003all_fid16527.txt",
            "Kurucz2003all_fid18906.txt", "Kurucz2003all_fid18907.txt"]
-
-
-def same_grid(a, b):
-    """Whether two SpectralGrids hold the same spectra, in the same order, with the same values."""
-    assert (a.name, a.source, len(a)) == (b.name, b.source, len(b))
-    for x, y in zip(a, b):
-        assert (x.filename, x.teff, x.logg, x.metallicity) == (y.filename, y.teff, y.logg, y.metallicity)
-        assert np.array_equal(x.wavelength, y.wavelength) and np.array_equal(x.flux, y.flux)
-    return True
 
 
 def test_sed_local_then_uses_the_selection(njm, tmp_path):
@@ -125,21 +115,3 @@ def local_grids(tmp_path, monkeypatch, cube_writer):
 def test_query_applies_a_bound_of_zero(local_grids, bound, expected):
     found = SED.query(source="local", include_remote=False, **bound)
     assert {info.name for info in found} == expected
-
-
-@pytest.fixture
-def downloaded_grid(tmp_path, monkeypatch):
-    """A grid already on disk; SED.fetch's download step is replaced by a no-op."""
-    grid = tmp_path / "Tiny"
-    grid.mkdir()
-    rows = ["file_name,teff,logg,metallicity"]
-    for logg in (-0.5, 0.0, 0.5):
-        for meta in (-0.5, 0.0, 0.5):
-            name = f"g{logg:+.1f}_m{meta:+.1f}.txt"
-            (grid / name).write_text("4000 1.0\n5000 2.0\n")
-            rows.append(f"{name},5000,{logg},{meta}")
-    (grid / "lookup_table.csv").write_text("\n".join(rows) + "\n")
-    monkeypatch.setattr(SED, "_download_from", classmethod(lambda cls, src, catalog, model_dir, workers, cuts: None))
-    return tmp_path
-
-

@@ -4,7 +4,6 @@ import json
 import sys
 import threading
 import time
-from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
@@ -12,8 +11,7 @@ import pytest
 import requests
 
 from sed_tools.api import Filters
-from sed_tools.filter_catalogue import CatalogueError, FilterCatalogue, cache_root, format_bibtex
-from sed_tools.filter_library import FilterLibrary
+from sed_tools.filter_catalogue import CatalogueError, FilterCatalogue, cache_root
 from sed_tools.njm_filter_grabber import NJMFilterGrabber
 
 BASE = "https://njm.invalid/sed_tools"

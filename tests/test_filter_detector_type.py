@@ -2,24 +2,17 @@
 
 from __future__ import annotations
 
-import math
 
 import numpy as np
-import pytest
 
-from sed_tools._flux import (FilterCurve, band_average_flux_lambda,
-                             band_average_flux_lambda_from_arrays,
-                             band_average_flux_nu, load_filter_curve)
-from sed_tools.filter_metadata import (DETECTOR_SOURCE_PRECEDENCE, ENERGY, PHOTON,
+from sed_tools._flux import (load_filter_curve)
+from sed_tools.filter_metadata import (ENERGY, PHOTON,
                                        SOURCE_ASSUMED, SOURCE_INFERRED,
-                                       SOURCE_ORIGINAL, SOURCE_SVO,
-                                       SOURCE_SVO_MATCH, SVOFilterRecord,
-                                       detector_source_may_replace,
+                                       SOURCE_SVO,
+                                       SVOFilterRecord,
                                        normalize_detector_type,
                                        read_filter_header, tag_filter_file,
                                        tag_filter_tree, write_filter_file)
-
-C_ANG = 2.99792458e18
 
 
 class FakeSVO:
@@ -41,11 +34,6 @@ class FakeSVO:
         return self.facilities.get(facility, [])
 
 
-def _boxcar(lo=4000.0, hi=8000.0, n=4001):
-    wl = np.linspace(lo, hi, n)
-    return wl, np.ones_like(wl)
-
-
 def _record(filter_id, detector_type, wl, tr, unit="Angstrom"):
     return SVOFilterRecord(filter_id, detector_type, np.asarray(wl), np.asarray(tr), unit)
 
@@ -62,9 +50,6 @@ def test_normalize_detector_type():
     assert normalize_detector_type(2) is None
 
 
-# ---------------------------------------------------------------------------
-# File header / loader
-# ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
 # Resolution / tagging
 # ---------------------------------------------------------------------------
@@ -163,8 +148,3 @@ def test_cli_reports_kept_types(tmp_path, monkeypatch, capsys):
     assert "1 kept their DetectorType" in out and "1 of them resolve to the other type" in out
     assert "kept photon [inferred]: inferred outranks svo-curve-match; svo-curve-match gives energy" in out
     assert path.read_bytes() == before
-
-
-# ---------------------------------------------------------------------------
-# Download path
-# ---------------------------------------------------------------------------

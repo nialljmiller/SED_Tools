@@ -12,20 +12,11 @@ import sed_tools.filter_properties as fp
 from sed_tools.filter_metadata import write_filter_file
 from sed_tools.filter_properties import (
     AB_JY,
-    EXTINCTION_RV,
-    ST_FLAM,
-    UNITS,
     curve_properties,
     extinction_law,
     extinction_ratio,
     filter_properties,
     instrument_properties,
-)
-from sed_tools.flux_cube_tool import (
-    SPEED_OF_LIGHT_ANG_PER_S,
-    FilterCurve,
-    band_average_flux_lambda_from_arrays,
-    band_average_flux_nu,
 )
 
 

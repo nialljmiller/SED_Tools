@@ -16,7 +16,6 @@ import requests
 
 from sed_tools import (mast_spectra_grabber as mast, msg_spectra_grabber as msg, njm_spectra_grabber as njm,
                        svo_spectra_grabber as svo)
-from sed_tools.header_parser import parse_header
 from sed_tools.spectrum_io import read_text_spectrum
 from sed_tools.svo_regen_spectra_lookup import regenerate_lookup_table
 
@@ -231,6 +230,7 @@ def test_njm_parameter_cut_without_lookup_raises_instead_of_downloading_everythi
 def test_njm_failed_downloads_raise_after_the_rest(tmp_path, monkeypatch):
     def broken_stream(**kwargs):
         response = FakeResponse(200, SPECTRUM)
+
         def iter_content(chunk_size=1):
             yield response.content[:2000]
             raise requests.exceptions.ChunkedEncodingError("connection dropped")

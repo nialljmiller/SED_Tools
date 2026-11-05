@@ -1,11 +1,7 @@
-from pathlib import Path
 
-import h5py
 import numpy as np
-import pytest
 
-from sed_tools.parsing import parse_numeric_range
-from sed_tools.spectrum_io import build_h5_bundle, read_text_spectrum
+from sed_tools.spectrum_io import read_text_spectrum
 
 
 def test_text_spectrum_compatibility_aliases(tmp_path):
@@ -23,5 +19,3 @@ def test_text_spectrum_compatibility_aliases(tmp_path):
         actual = loader(str(path))
         np.testing.assert_array_equal(actual[0], expected[0])
         np.testing.assert_array_equal(actual[1], expected[1])
-
-

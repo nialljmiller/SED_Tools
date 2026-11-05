@@ -1,7 +1,6 @@
 import sys
 from pathlib import Path
 
-import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -9,7 +8,6 @@ if str(ROOT) not in sys.path:
 
 
 def test_cli_config_subcommand_show(capsys):
-    import sys
     from unittest.mock import patch
     with patch("sys.argv", ["sed-tools", "config"]):
         from sed_tools.cli import main

@@ -8,9 +8,7 @@ from __future__ import annotations
 import importlib
 import io
 import logging
-import os
 import shutil
-import types
 
 import numpy as np
 import pytest
@@ -167,10 +165,6 @@ def test_meminfo_is_read_when_psutil_is_missing(monkeypatch, tmp_path, caplog, m
     with caplog.at_level(logging.WARNING, logger=_constants.__name__):
         assert _constants.available_memory_bytes() == available
     assert not caplog.records
-
-
-def _sysconf_unknown_name(name):
-    raise ValueError("unrecognized configuration name")
 
 
 def test_ram_probe_failure_warns_and_assumes_2_gib(monkeypatch, caplog, tmp_path):
@@ -379,8 +373,3 @@ def test_an_ml_extended_grid_with_different_wavelength_ends_is_one_cube(tmp_path
     assert not (grid / "variants_index.csv").exists()
     assert not [p for p in grid.iterdir() if p.is_dir()]
     assert "No extra axes detected" in capsys.readouterr().out
-
-
-# ----------------------------------------------------------------------
-# The split announcement names only the axes that vary
-# ----------------------------------------------------------------------

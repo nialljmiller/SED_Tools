@@ -1,12 +1,10 @@
 """SVO FPS access fails fast with one clear error when the host is unreachable (offline)."""
 
-from types import SimpleNamespace
 
 import pytest
 import requests
 
 from sed_tools import filter_metadata as fm
-from sed_tools.filter_library import FilterLibrary
 from sed_tools.svo_filter_grabber import FilterRow, SVOFilterBrowser
 
 
@@ -58,5 +56,3 @@ def test_download_stops_at_first_unreachable_filter(tmp_path):
     with pytest.raises(fm.SVOUnreachableError):
         browser.download_filters(rows)
     assert len(session.calls) == 1
-
-

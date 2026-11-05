@@ -237,9 +237,6 @@ def test_write_site_refuses_a_bad_curve_before_writing(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# Which sites an instrument may use
-# ---------------------------------------------------------------------------
-# ---------------------------------------------------------------------------
 # Team recipes (parsers checked on in-memory excerpts)
 # ---------------------------------------------------------------------------
 PS1_ROWS = (" 500 0.500 0.400 0.000 0.000 0.000 0.000 0.000 0.970 0.880 0.990\n"
@@ -379,5 +376,3 @@ def test_skycalc_resume_leaves_a_complete_grid_untouched(tmp_path):
     with pytest.raises(ValueError, match="different settings"):
         skycalc.build(tmp_path / "filters", fetch_resolution=2000, store_resolution=400,
                       **dict(kw, airmasses=[1.5]))
-
-

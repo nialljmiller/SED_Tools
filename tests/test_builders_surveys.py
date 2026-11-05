@@ -10,7 +10,6 @@ import numpy as np
 import pytest
 
 from sed_tools.component_sources import standards, surveys
-from sed_tools.filter_components import AtmosphereGrid, InstrumentManifest
 
 from builder_fixtures import Session, _tar, check_published, curve, saved
 

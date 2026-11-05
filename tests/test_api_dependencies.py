@@ -59,9 +59,6 @@ def test_import_sed_tools_works_without_scipy():
     assert done.stdout.startswith("needs scipy: ") and "scipy" in done.stdout[len("needs scipy: "):]
 
 
-# ---------------------------------------------------------------------
-# ml_generator --auto: models SEDGenerator can load
-# ---------------------------------------------------------------------
 # ----------------------------------------------------------------------
 # ML without scipy, torch or scikit-learn: one line naming what to install, no traceback
 # ----------------------------------------------------------------------

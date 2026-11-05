@@ -6,17 +6,14 @@ No test uses the network: the autouse fixture fails any real HTTP request.
 
 from __future__ import annotations
 
-import gzip
 import logging
-import os
 import sys
 
 import numpy as np
 import pytest
 
-from sed_tools import mast_spectra_grabber as mast
 from sed_tools._constants import planck_flam
-from sed_tools.spectra_cleaner import (FLUX_UNITS, check_flux_unit, clean_model_dir,
+from sed_tools.spectra_cleaner import (FLUX_UNITS, clean_model_dir,
                                        detect_units_from_header)
 
 from helpers_grids import no_network  # noqa: F401 (an autouse fixture)
@@ -256,26 +253,6 @@ def test_fetch_stops_on_an_undeclared_flux_unit_and_cleans_with_the_one_given(tm
     assert "# original_flux_unit = flam" in (tmp_path / "Cool" / "s0.txt").read_text()
 
 
-class FakeResponse:
-    def __init__(self, body):
-        self.status_code = 200
-        self.content = body if isinstance(body, bytes) else body.encode()
-        self.text = self.content.decode("utf-8", "ignore")
-
-    def raise_for_status(self):
-        pass
-
-
-class FakeSession:
-    """Answers from a {url: response} table; any other URL is a test error."""
-
-    def __init__(self, routes):
-        self.routes = routes
-
-    def get(self, url, **kwargs):
-        return self.routes[url]
-
-
 # ---------------------------------------------------------------------
 # BOSZ spectra: the flux is H_λ, so cleaning stops and asks
 # ---------------------------------------------------------------------
@@ -288,37 +265,6 @@ class FakeSession:
 # continuum; the surface flux is F_λ = 4πH_λ (Mészáros et al. 2024, eq. 2).
 # Where the flux is below 1e-6 the file holds 0 and 1.
 BOSZ_NAME = "bosz2024_mp_t5000_g+5.0_m+0.00_a+0.00_c+0.00_v0_r500_resam.txt.gz"
-BOSZ_WAVE_LINES = [
-    "5.0000000e+02", "1.0160182e+03", "1.0168939e+03", "1.0177704e+03",
-    "2.8008166e+03", "6.6289080e+03", "1.0198133e+04", "1.5689147e+04",
-    "3.7132711e+04", "8.7884843e+04", "2.0800382e+05", "3.1972443e+05",
-]
-BOSZ_SPECTRUM_LINES = [
-    "0.0000e+00 1.0000e+00", "0.0000e+00 1.0000e+00", "7.9405e-07 1.0064e-06", "8.1437e-07 1.0373e-06",
-    "4.0757e+03 5.8027e+04", "3.1197e+05 3.2022e+05", "1.6892e+05 1.7022e+05", "7.7956e+04 8.1788e+04",
-    "3.6002e+03 3.6386e+03", "1.2803e+02 1.2810e+02", "4.2380e+00 4.2434e+00", "7.6432e-01 7.6514e-01",
-]
-
-
-def _download_bosz_fixture(tmp_path):
-    """The fixture spectrum as MASTSpectraGrabber writes it; returns the grid directory."""
-    url = f"{mast.DATA_BASE}/r500/m+0.00/{BOSZ_NAME}"
-    script = f"{mast.SCRIPTS_DIR}/hlsp_bosz_bosz2024_sim_r500_m%2B0.00_v1_bulkdl.sh"
-    wave_url = f"{mast.DATA_BASE}/wavelength_grids/bosz2024_wave_r500.txt"
-    session = FakeSession({
-        script: FakeResponse(f'curl -f --create-dirs --output "r500/m+0.00/{BOSZ_NAME}" "{url}"\n'),
-        url: FakeResponse(gzip.compress(("\n".join(BOSZ_SPECTRUM_LINES) + "\n").encode())),
-        wave_url: FakeResponse("\n".join(BOSZ_WAVE_LINES) + "\n"),
-    })
-    grabber = mast.MASTSpectraGrabber(base_dir=str(tmp_path), max_workers=1, session=session)
-    assert grabber.download_model_spectra("BOSZ-2024-r500", {"reskey": "r500", "metals": ["m+0.00"]}) == 1
-    return tmp_path / "BOSZ-2024-r500"
-
-
-def _snapshot(directory):
-    return {name: (directory / name).read_bytes() for name in sorted(os.listdir(directory))}
-
-
 # ---------------------------------------------------------------------
 # Declared flux units: SI factors and header patterns
 # ---------------------------------------------------------------------

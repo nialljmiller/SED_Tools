@@ -7,11 +7,9 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-import pytest
 import requests
 
 from sed_tools import njm_filter_grabber
-from sed_tools.njm_filter_grabber import NJMFilterGrabber
 
 from helpers_filters import NJM
 
@@ -61,8 +59,3 @@ def test_plain_http_only_when_tls_fails_both_ways(tmp_path, monkeypatch):
         ("GET", plain, False): ok})
     assert grabber.is_available() and grabber.base_url.startswith("http://")
     assert [c[1:3] for c in calls] == [(index, True), (index, False), (plain, False)]
-
-
-# ----------------------------------------------------------------------
-# Grid discovery fails fast; NJM's spectra share NJM's outage
-# ----------------------------------------------------------------------

@@ -44,5 +44,3 @@ def test_sedmodel_resolves_nested_instrument_directory_from_name(tmp_path):
     paths = model._locate_filter_paths("GAIA")
 
     assert sorted(p.name for p in paths) == ["Gbp.dat", "Grp.dat"]
-
-

@@ -1,29 +1,17 @@
-"""Unit tests for ``sed_tools.collision_config``.
-
-Covers the fuzzy key/value matching used to resolve on-collision filter
-specs, ``CollisionConfig`` validation, the four-level config precedence
-chain in ``load_config``, and ``discover_extra_axes`` (which determines
-what counts as a "collision" in the first place).
+"""``sed_tools.collision_config``: fuzzy matching of on-collision filter specs, ``CollisionConfig``
+validation, ``load_config``'s root-directory level and the default config file.
 """
 
 import pytest
 
 from sed_tools.collision_config import (
     CollisionConfig,
-    _find_column,
-    _keys_match,
-    _normalise_key,
     copy_global_config_to_model,
-    discover_extra_axes,
     load_config,
     match_filter_value,
     write_default_config,
 )
 
-
-# ---------------------------------------------------------------------
-# Fuzzy key normalisation
-# ---------------------------------------------------------------------
 
 # ---------------------------------------------------------------------
 # match_filter_value
@@ -114,9 +102,3 @@ def test_write_default_config_does_not_overwrite_by_default(tmp_path):
 
     write_default_config(root, overwrite=False)
     assert path.read_text() == "# manually edited\n"
-
-
-# ---------------------------------------------------------------------
-# discover_extra_axes
-# ---------------------------------------------------------------------
-

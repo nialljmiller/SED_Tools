@@ -6,7 +6,6 @@ No test uses the network: the autouse fixture fails any real request.
 
 import importlib
 import importlib.util
-import logging
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -14,9 +13,8 @@ from types import SimpleNamespace
 import pytest
 import requests
 
-from sed_tools.api import SED
 
-from helpers_api import CLEAN, GRABBERS, fake_grabber, tagged
+from helpers_api import CLEAN, GRABBERS, fake_grabber
 from helpers_api import filters, no_network  # noqa: F401 (fixtures)
 from helpers_cli import write_lookup
 

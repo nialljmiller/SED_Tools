@@ -4,14 +4,12 @@ a lookup table with every parameter, and MSG grid names kept whole.
 No test uses the network: the autouse fixture fails any real HTTP request.
 """
 
-import csv
 import gzip
 
 import numpy as np
 import requests
 
-from sed_tools import mast_spectra_grabber as mast, msg_spectra_grabber as msg
-from sed_tools._lookup_io import find_logg_column, find_metallicity_column, find_teff_column
+from sed_tools import mast_spectra_grabber as mast
 
 from helpers_grids import no_network  # noqa: F401 (an autouse fixture)
 
@@ -53,11 +51,6 @@ RORIG_NAMES = [
     "bosz2024_ap_t10500_g+2.0_m-1.00_a+0.25_c+0.50_v4_rorig_noresam.txt.gz",
     "bosz2024_ms_t2800_g-0.5_m-1.00_a-0.25_c-0.75_v2_rorig_noresam.txt.gz",
     "bosz2024_ms_t4250_g+3.0_m-1.00_a+0.50_c+0.25_v0_rorig_noresam.txt.gz",
-]
-R500_NAMES = [
-    "bosz2024_ap_t10500_g+4.5_m+0.00_a+0.00_c-0.50_v0_r500_resam.txt.gz",
-    "bosz2024_ap_t9250_g+2.5_m+0.00_a-0.25_c+0.50_v0_r500_resam.txt.gz",
-    "bosz2024_ms_t3600_g-0.5_m+0.00_a+0.25_c-0.75_v1_r500_resam.txt.gz",
 ]
 N_ROWS = 600
 WAVE = 1000.0 + 10.0 * np.arange(N_ROWS)  # rises 50 % over the first 51 rows
@@ -105,10 +98,3 @@ def test_mast_rorig_writes_every_row_of_every_spectrum_including_the_first(tmp_p
         np.testing.assert_allclose(data[:, 0], WAVE)
         np.testing.assert_allclose(data[:, 1], flux_of(k), rtol=1e-6)
         np.testing.assert_allclose(data[:, 2], 2 * flux_of(k), rtol=1e-6)
-
-
-def read_lookup(model_dir):
-    with open(model_dir / "lookup_table.csv", newline="") as f:
-        return list(csv.DictReader(f))
-
-

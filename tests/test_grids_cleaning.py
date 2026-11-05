@@ -2,15 +2,12 @@
 wavelengths recovered from HDF5 files, coverage, and messages that name the CLI option or the model root.
 """
 
-import shutil
 
 import numpy as np
 import pytest
 
 import sed_tools.config as config
 from sed_tools._constants import SIGMA, planck_flam
-
-from helpers_cube import KURUCZ
 
 
 # ---------------------------------------------------------------------
@@ -312,19 +309,6 @@ def test_clean_model_dir_counts_renormed_spectra_as_converted_and_warns(tmp_path
 # ---------------------------------------------------------------------
 # Undeclared flux unit, coverage's A-D note, import's "Load with" hint
 # ---------------------------------------------------------------------
-def _undeclared_flux_grid(directory):
-    """Three spectra of a surface flux in erg/s/cm2/A whose headers do not declare the flux unit."""
-    from sed_tools._constants import planck_flam
-
-    directory.mkdir(parents=True)
-    wl = np.linspace(3000.0, 10000.0, 200)
-    for i, teff in enumerate((3500.0, 3600.0, 3700.0)):
-        lines = [f"# teff = {teff}\n", "# logg = 4.5\n", "# metallicity = 0.0\n", "# wavelength_unit = Angstrom\n"]
-        lines += [f"{w:.6f} {f:.8e}\n" for w, f in zip(wl, planck_flam(wl, teff))]
-        (directory / f"s{i}.txt").write_text("".join(lines))
-    return directory
-
-
 def _coverage_grid(directory, teffs):
     directory.mkdir()
     rows = "".join(f"s{i}.txt,{t},4.0,0.0\n" for i, t in enumerate(teffs))
@@ -347,5 +331,3 @@ def test_coverage_says_why_the_normality_test_was_skipped(tmp_path, monkeypatch,
     print_coverage(coverage_summary(_coverage_grid(tmp_path / "many", range(4000, 9000, 500))))
     out = capsys.readouterr().out
     assert "    A-D     : skipped (needs scipy, which is not installed)" in out
-
-

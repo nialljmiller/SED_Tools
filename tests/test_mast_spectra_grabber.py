@@ -1,10 +1,6 @@
-import gzip
-from pathlib import Path
 
 from sed_tools.mast_spectra_grabber import (
     MASTSpectraGrabber,
-    _filter_metals_by_range,
-    _filter_urls_by_params,
 )
 
 
@@ -47,5 +43,3 @@ def test_mast_download_accepts_generic_axis_kwargs(tmp_path, monkeypatch):
     assert body[0].startswith("2000.000000 ")
     assert body[-1].startswith("3000.000000 ")
     assert (model_dir / "lookup_table.csv").exists()
-
-

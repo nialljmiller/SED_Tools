@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import dataclasses
 import hashlib
-import json
 import shutil
 from pathlib import Path
 
@@ -20,7 +19,7 @@ import pytest
 
 from sed_tools.api import Filters
 from sed_tools.component_sources import argus, catalog
-from sed_tools.filter_components import ComponentError, InstrumentManifest, compose_band, read_curve
+from sed_tools.filter_components import InstrumentManifest, compose_band, read_curve
 from sed_tools.filter_metadata import read_filter_header, released_mesa_reads
 
 FIXTURES = Path(__file__).parent / "fixtures" / "argus"

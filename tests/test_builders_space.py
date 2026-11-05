@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 
 from sed_tools.component_sources import catalog, space
-from sed_tools.filter_components import FILTER, OPTICS, QE, SHARED, InstrumentManifest, add_component
+from sed_tools.filter_components import FILTER, OPTICS, QE, SHARED, InstrumentManifest
 from sed_tools.filter_metadata import PHOTON, released_mesa_reads, write_filter_file
 
 from builder_fixtures import Session, check_published, curve, saved
@@ -95,9 +95,6 @@ def _published(inst, band, wl, tr, components="filter+optics+qe"):
                       wavelength_unit="Angstrom", extra={"Components": components})
 
 
-# ---------------------------------------------------------------------------
-# add_component: peaks above 1 are written unclipped (builders explain them in the manifest notes)
-# ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
 # Euclid NISP
 # ---------------------------------------------------------------------------

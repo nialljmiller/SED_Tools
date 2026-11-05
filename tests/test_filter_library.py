@@ -7,7 +7,6 @@ import pytest
 
 from sed_tools import cli, filter_library, njm_filter_grabber
 from sed_tools.api import Filters
-from sed_tools.component_sources import catalog
 from sed_tools.filter_components import (
     AtmosphereGrid, AtmosphereSpec, ComponentError, InstrumentManifest,
     add_component, build_product,
@@ -251,6 +250,7 @@ def test_original_source_failure_falls_back_to_svo(tmp_path, monkeypatch):
     from requests import ConnectionError
 
     library = FilterLibrary(tmp_path)
+
     def download_svo(rows):
         write_filter_file(tmp_path / "Paranal" / "HAWKI" / "J.dat", [4000., 5000.], [0.5, 0.9],
                           detector_type=PHOTON, source="svo", extra={"Components": "filter"})

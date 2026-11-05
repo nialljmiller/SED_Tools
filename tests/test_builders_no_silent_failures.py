@@ -14,7 +14,7 @@ import numpy as np
 import pytest
 import requests
 
-from sed_tools.component_sources import cfht, euclid, gmos, roman, skycalc, swift, twomass
+from sed_tools.component_sources import skycalc, swift, twomass
 from sed_tools.component_sources._original import Fetcher
 from sed_tools.filter_components import FILTER, InstrumentManifest
 from sed_tools.filter_metadata import write_filter_file
@@ -180,10 +180,3 @@ def test_twomass_warns_about_bands_without_a_published_curve(tmp_path, caplog, m
     assert "no published curve for ['H', 'Ks']" in caplog.text
     m = InstrumentManifest.load(inst)
     assert m.component_file(FILTER, "J") == "components/filter/J.dat" and "H" not in m.components[FILTER]
-
-
-class _NoNetwork:
-    def get(self, *args, **kwargs):
-        raise AssertionError("nothing may be downloaded before the refusal")
-
-

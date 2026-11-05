@@ -11,8 +11,7 @@ import pytest
 
 from builder_fixtures import Session, check_published, curve, saved
 from sed_tools.component_sources import observatories as obs
-from sed_tools.filter_components import InstrumentManifest
-from sed_tools.filter_metadata import read_filter_header, released_mesa_reads
+from sed_tools.filter_metadata import released_mesa_reads
 
 # instrument: facility, bands, published components, component roles, a phrase of the notes,
 # and the first band's samples, first and last wavelength (A), peak wavelength (A) and peak

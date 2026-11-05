@@ -15,8 +15,8 @@ import numpy as np
 import pytest
 
 from sed_tools import filter_library
-from sed_tools.component_sources import (BUILDERS, cassini, catalog, csp, get_builder, observatories, space, standards,
-                                         surveys, swift)
+from sed_tools.component_sources import (observatories, space, standards,
+                                         surveys)
 from sed_tools.component_sources._original import (Fetcher, clean_curve, make_band, to_angstrom)
 from sed_tools.filter_components import InstrumentManifest
 from sed_tools.filter_library import FilterLibrary
@@ -25,8 +25,6 @@ from sed_tools.filter_metadata import read_filter_header
 from builder_fixtures import _tar
 
 FIX = Path(__file__).parent / "fixtures" / "original_sources"
-MODULES = {"surveys": surveys, "space": space, "observatories": observatories, "standards": standards,
-           "swift": swift, "csp": csp, "cassini": cassini}
 
 
 def fx(name: str) -> str:
@@ -321,5 +319,3 @@ def test_usno_reads_only_the_wayback_snapshots(tmp_path):
         standards.build(tmp_path, instrument="USNO", session=session)
     assert session.calls == [standards.USNO_README_WB]
     assert not (tmp_path / "Generic").exists()
-
-

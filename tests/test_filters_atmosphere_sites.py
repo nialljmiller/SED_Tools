@@ -12,9 +12,8 @@ import pytest
 
 from sed_tools import filter_library
 from sed_tools.component_sources._common import DerivedCurve, SiteAtmosphere, write_site
-from sed_tools.facility_sites import instrument_sites
 from sed_tools.filter_components import (FILTER, AtmosphereGrid, AtmosphereSpec, ComponentCoverageError, ComponentError,
-                                         InstrumentManifest, add_component, build_product, compose_band,
+                                         InstrumentManifest, add_component, compose_band,
                                          resolve_atmosphere)
 from sed_tools.filter_library import FilterLibrary
 from sed_tools.filter_metadata import PHOTON, read_filter_header, released_mesa_reads, write_filter_file

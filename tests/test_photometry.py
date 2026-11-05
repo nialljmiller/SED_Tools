@@ -5,7 +5,6 @@ or computed.
 
 from __future__ import annotations
 
-import logging
 import math
 import warnings
 
@@ -13,7 +12,6 @@ import numpy as np
 import pytest
 
 from helpers_api import no_network  # noqa: F401 (an autouse fixture)
-from helpers_cli import flat_filter
 
 
 # ---------------------------------------------------------------- flux_cube_tool
@@ -102,8 +100,3 @@ def test_vega_magnitude_with_a_zero_or_negative_zero_point_is_computed(flux_leve
                 assert math.isnan(magnitude)
             else:
                 assert magnitude == expected
-
-
-# ----------------------------------------------------------------------
-# Band averages: a filter that extends past the SED
-# ----------------------------------------------------------------------

@@ -2,36 +2,13 @@
 
 from __future__ import annotations
 
-import gzip
-from types import SimpleNamespace
 
 import numpy as np
 import pytest
-import requests
 
 from sed_tools.component_sources import catalog
-from sed_tools.component_sources._common import SimpleSource, Table, build_simple, product
-from sed_tools.filter_components import (FILTER, OPTICS, QE, ComponentError, Curve,
-                                         InstrumentManifest, add_component, multiply_curves)
-from sed_tools.filter_metadata import PHOTON, write_filter_file
-
-
-class _Resp:
-    def __init__(self, content, status=200):
-        self.content = content if isinstance(content, bytes) else content.encode()
-        self.status_code = status
-
-    def raise_for_status(self):
-        if self.status_code != 200:
-            raise RuntimeError(self.status_code)
-
-
-class _Session:
-    def __init__(self, files):
-        self.files = files
-
-    def get(self, url, timeout=None, **kw):
-        return _Resp(self.files[url]) if url in self.files else _Resp(b"", 404)
+from sed_tools.component_sources._common import Table
+from sed_tools.filter_components import (FILTER, OPTICS, QE, ComponentError, InstrumentManifest, add_component)
 
 
 # ---------------------------------------------------------------------------
@@ -48,12 +25,6 @@ def test_percent_component_is_rejected(tmp_path):
         add_component(tmp_path, FILTER, [4000.0, 5000.0], [10.0, 95.0], band="g")
 
 
-# ---------------------------------------------------------------------------
-# build_simple
-# ---------------------------------------------------------------------------
-# ---------------------------------------------------------------------------
-# HST
-# ---------------------------------------------------------------------------
 # ---------------------------------------------------------------------------
 # JWST
 # ---------------------------------------------------------------------------
@@ -90,7 +61,6 @@ def test_ensure_components_runs_own_builder_and_skips_heavy(tmp_path, monkeypatc
     calls = []
     monkeypatch.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam"), catalog.BuilderRef("fake"))
     monkeypatch.setitem(catalog.BUILDERS_FOR, ("Fac", "Big"), catalog.BuilderRef("fake", heavy=True))
-    import sed_tools.component_sources as cs
     from sed_tools import filter_library
     monkeypatch.setattr(filter_library.NJMFilterGrabber, "_check_availability", lambda self: False)
 
@@ -148,9 +118,6 @@ def test_facility_wide_status_applies_to_every_instrument():
 
 
 # ----------------------------------------------------------------------
-# original-source downloads fail fast when a host is down
-# ----------------------------------------------------------------------
-# ----------------------------------------------------------------------
 # An unknown tabular instrument is a clear ValueError
 # ----------------------------------------------------------------------
 def test_tabular_names_its_instruments_for_an_unknown_one(tmp_path):
@@ -158,8 +125,3 @@ def test_tabular_names_its_instruments_for_an_unknown_one(tmp_path):
 
     with pytest.raises(ValueError, match=r"tabular has no instrument 'NOPE'; choose one of: HAWKI"):
         tabular.build(tmp_path, instrument="NOPE")
-
-
-# ----------------------------------------------------------------------
-# Spelling
-# ----------------------------------------------------------------------

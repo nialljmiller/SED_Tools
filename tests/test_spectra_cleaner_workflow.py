@@ -1,22 +1,13 @@
-"""Workflow-level tests for ``spectra_cleaner``.
-
-Covers ``clean_spectrum_file``, ``clean_model_dir``, and
-``rebuild_lookup_table`` against malformed/edge-case inputs, idempotence
-(the ``units_standardized`` header guard), and the catalog-wide unit
-detection + apply-to-all-files pipeline.
-
-Also includes a regression test for the post-conversion bolometric
-renormalisation documented in ``docs/source/changelog.rst`` (the fix for
-"NextGen T >= 5000 K flux 100x too large"), which never ran until it was
-fixed: see ``test_bolometric_renorm_rescales_a_spectrum_100x_too_large``.
+"""``spectra_cleaner`` workflows: a one-point spectrum is skipped as invalid, ``rebuild_lookup_table``
+on an empty directory, and the bolometric renormalisation of a spectrum 100x too bright (the
+changelog's fix for "NextGen T >= 5000 K flux 100x too large").
 """
 
-import csv
 
 import numpy as np
 import pytest
 
-from sed_tools.spectra_cleaner import clean_model_dir, clean_spectrum_file, rebuild_lookup_table
+from sed_tools.spectra_cleaner import clean_spectrum_file, rebuild_lookup_table
 from sed_tools.spectrum_io import read_text_spectrum
 
 
@@ -39,42 +30,11 @@ def test_single_valid_point_is_skipped_invalid(tmp_path):
 
 
 # ---------------------------------------------------------------------
-# clean_spectrum_file: idempotence / skip conditions
-# ---------------------------------------------------------------------
-
-# ---------------------------------------------------------------------
 # rebuild_lookup_table
 # ---------------------------------------------------------------------
 
 def test_rebuild_lookup_table_empty_directory_returns_empty_string(tmp_path):
     assert rebuild_lookup_table(str(tmp_path)) == ""
-
-
-# ---------------------------------------------------------------------
-# clean_model_dir: end-to-end catalog cleaning
-# ---------------------------------------------------------------------
-
-def _make_test_grid(tmp_path, n=3):
-    model_dir = tmp_path / "TestGrid"
-    model_dir.mkdir()
-    teffs = [4000.0 + 1000.0 * i for i in range(n)]
-    for i, teff in enumerate(teffs):
-        wl_nm = np.linspace(400.0, 700.0, 30)
-        flux = np.full(30, 1e-14)
-        _write_spectrum(
-            model_dir / f"star_{i}.txt",
-            [
-                "# source = testgrid\n",
-                f"# teff = {teff}\n",
-                "# logg = 4.0\n",
-                "# metallicity = 0.0\n",
-                "# wavelength_unit = nm\n",
-                "# flux_unit = erg/s/cm2/A\n",
-            ],
-            wl_nm,
-            flux,
-        )
-    return model_dir, teffs
 
 
 # ---------------------------------------------------------------------

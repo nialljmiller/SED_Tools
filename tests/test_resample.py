@@ -1,13 +1,7 @@
-"""Known-answer tests for ``sed_tools._resample.resample_to_grid``.
-
-``resample_to_grid`` is the single authoritative resampling function used
-by both ``precompute_flux_cube.py`` and ``combine_stellar_atm.py`` (per
-its own docstring), so a bug here silently propagates into every flux
-cube built from text spectra.
+"""resample_to_grid keeps its teff argument for the interface; it does not change the result.
 """
 
 import numpy as np
-import pytest
 
 from sed_tools._resample import resample_to_grid
 
@@ -23,5 +17,3 @@ def test_teff_argument_does_not_affect_output():
     high_t = resample_to_grid(wl_src, fl_src, teff=50000.0, wl_tgt=wl_tgt)
 
     np.testing.assert_array_equal(low_t, high_t)
-
-

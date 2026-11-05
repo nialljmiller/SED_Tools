@@ -1,6 +1,5 @@
 import json
 import logging
-from pathlib import Path
 
 import pytest
 
@@ -88,5 +87,3 @@ def test_combine_refuses_an_index_listing_a_missing_curve(tmp_path):
 
     with pytest.raises(FileNotFoundError, match="lists V.dat, not found in"):
         Filters.combine("Combined/J", inst, filter_root=tmp_path)
-
-

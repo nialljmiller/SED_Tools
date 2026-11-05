@@ -1,7 +1,5 @@
 from pathlib import Path
 
-import numpy as np
-
 
 def _write_spectrum(path: Path, teff=5000, logg=4.0, metallicity=0.0):
     path.write_text(

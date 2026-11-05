@@ -157,11 +157,6 @@ def test_extend_catalog_extends_each_spectrum_with_its_own_parameters(tmp_path):
     assert sorted(p.name for p in out_dir.glob("*.txt")) == names
 
 
-def _feed_input(monkeypatch, answers):
-    feed = iter(answers)
-    monkeypatch.setattr("builtins.input", lambda prompt="": next(feed))
-
-
 # ---------------------------------------------------------------------
 # ml_generator --auto: models SEDGenerator can load
 # ---------------------------------------------------------------------

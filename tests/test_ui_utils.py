@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import re
 
-import pytest
 
 from sed_tools import cli
 from sed_tools.api import Filters  # noqa: E402
@@ -107,9 +106,6 @@ def test_downloading_several_facilities_asks_first_with_the_count(catalogue, tmp
     assert "4 instruments in 2 facilities: GAIA (2), 2MASS (2)" in capsys.readouterr().out
 
 
-# ----------------------------------------------------------------------
-# NJM unreachable: its catalogue is an extra
-# ----------------------------------------------------------------------
 # ----------------------------------------------------------------------
 # One re-asking number question for the CLI and the ML and densifier menus
 # ----------------------------------------------------------------------
