@@ -20,7 +20,7 @@ from ..photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterC
                           band_average_flux_lambda, band_average_flux_lambda_from_arrays, band_average_flux_nu,
                           get_metadata_float, load_filter_curve, load_spectrum)
 from .fileio import read_axes
-from .tool import FluxCube
+from .fluxcube import FluxCube
 
 Number = Union[int, float, np.floating]
 FilterSpec = Union[str, os.PathLike[str], FilterCurve, Tuple[str, Union[str, os.PathLike[str]]]]
