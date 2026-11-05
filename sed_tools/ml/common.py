@@ -1,4 +1,5 @@
-"""What the two ML engines share: the device, the training loop, and their common data preparation and menus.
+"""What the two ML engines share: the device, the network and engine bases, prediction, the training loop, the .txt
+spectrum writer, and their common data preparation and menus.
 
 The engines are completer.py (SEDCompleter) and generator.py (SEDGenerator); ml/__init__.py is the 0.4.1
 completer API over them. torch is imported inside the functions, so importing any of them needs no torch.
@@ -27,7 +28,6 @@ _completer_log = logging.getLogger("sed_tools.ml_sed_completer")
 def get_device():
     """CUDA if available (with cudnn.benchmark on), else Apple MPS, else the CPU."""
     import torch
-
     if torch.cuda.is_available():
         torch.backends.cudnn.benchmark = True
         return torch.device("cuda")
@@ -51,7 +51,6 @@ def mlp(n_in: int, hidden_layers: List[int], n_out: int, dropout: float):
     The layer order is the model.pt format: its state_dict keys are the layer indices.
     """
     import torch.nn as nn
-
     layers = []
     for i, width in enumerate(hidden_layers):
         layers.append(nn.Linear(n_in, width))
@@ -64,17 +63,88 @@ def mlp(n_in: int, hidden_layers: List[int], n_out: int, dropout: float):
     return nn.Sequential(*layers)
 
 
+# The networks and the engines
+
+class Network:
+    """An mlp() on get_device(), with the nn.Module calls the engines make (SEDCompleterNetwork, SEDGeneratorNetwork).
+
+    The mlp is the ``model`` attribute, so model.pt holds its state_dict and nothing else.
+    """
+
+    def __init__(self, n_in: int, hidden_layers: List[int], n_out: int, dropout: float):
+        self.output_dim = n_out
+        self.hidden_layers = hidden_layers
+        self.dropout = dropout
+        self.model = mlp(n_in, hidden_layers, n_out, dropout)
+        # The device Engine.device picks, so inputs and weights agree
+        self.device = get_device()
+        self.model.to(self.device)
+
+    def forward(self, x):
+        """Forward pass."""
+        return self.model(x)
+
+    def __call__(self, x):
+        return self.forward(x)
+
+    def train(self, mode: bool = True):
+        self.model.train(mode)
+        return self
+
+    def eval(self):
+        self.model.eval()
+        return self
+
+    def parameters(self):
+        return self.model.parameters()
+
+    def state_dict(self):
+        return self.model.state_dict()
+
+    def load_state_dict(self, state_dict):
+        self.model.load_state_dict(state_dict)
+
+    def to(self, device):
+        self.model.to(device)
+        self.device = device
+        return self
+
+
+class Engine:
+    """The model folder's file names and the compute device, the same for SEDCompleter and SEDGenerator."""
+
+    MODEL_FILE = "model.pt"
+    CONFIG_FILE = "config.json"
+    TRAINING_PLOT = "training_plots.png"
+    PREDICTION_PLOT = "prediction_examples.png"
+
+    @property
+    def device(self):
+        """Get compute device."""
+        if self._device is None:
+            self._device = get_device()
+        return self._device
+
+
+def predict(model, row: np.ndarray, device) -> np.ndarray:
+    """A network's output for one input row, computed without gradients."""
+    import torch
+    with torch.no_grad():
+        return model(torch.from_numpy(row[None]).to(device)).cpu().numpy()[0]
+
+
+def write_spectrum(path, *columns, note: str = "") -> None:
+    """An ML .txt spectrum: the header 'wavelength_A flux_erg/s/cm2/A' (then '# note'), the columns at %.6e."""
+    header = "wavelength_A flux_erg/s/cm2/A" + (f"\n# {note}" if note else "")
+    np.savetxt(path, np.column_stack(columns), header=header, fmt="%.6e")
+
+
 # Training data
 
 def resample(grid: np.ndarray, wavelengths: np.ndarray, flux: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     """flux on grid (NaN outside its coverage), and where it is valid: covered, finite and positive."""
     flux_interp = np.interp(grid, wavelengths, flux, left=np.nan, right=np.nan)
-    valid = (
-        (grid >= wavelengths.min()) &
-        (grid <= wavelengths.max()) &
-        np.isfinite(flux_interp) &
-        (flux_interp > 0)
-    )
+    valid = (grid >= wavelengths.min()) & (grid <= wavelengths.max()) & np.isfinite(flux_interp) & (flux_interp > 0)
     return flux_interp, valid
 
 
@@ -146,7 +216,6 @@ def data_loaders(train_arrays, val_arrays, batch_size: int):
     """DataLoaders over (inputs, targets, masks) arrays; only training batches are shuffled."""
     import torch
     from torch.utils.data import DataLoader, TensorDataset
-
     train_dataset = TensorDataset(*(torch.from_numpy(a) for a in train_arrays))
     val_dataset = TensorDataset(*(torch.from_numpy(a) for a in val_arrays))
     return (DataLoader(train_dataset, batch_size=batch_size, shuffle=True),
@@ -169,7 +238,6 @@ def fit(model, train_loader, val_loader, optimizer, scheduler, *, epochs: int, p
     best_val_loss = float('inf')
     best_state = None
     patience_counter = 0
-
     print(f"\nTraining for up to {epochs} epochs...")
     print("-" * 60)
 
@@ -179,12 +247,10 @@ def fit(model, train_loader, val_loader, optimizer, scheduler, *, epochs: int, p
         if not train_losses or not val_losses:
             print(f"  Epoch {epoch+1}: No valid batches, stopping")
             break
-
         train_loss = np.mean(train_losses)
         val_loss = np.mean(val_losses)
         history['train_loss'].append(train_loss)
         history['val_loss'].append(val_loss)
-
         scheduler.step(val_loss)
 
         if val_loss < best_val_loss:
@@ -193,11 +259,9 @@ def fit(model, train_loader, val_loader, optimizer, scheduler, *, epochs: int, p
             patience_counter = 0
         else:
             patience_counter += 1
-
         if verbose and (epoch + 1) % 10 == 0:
             lr = optimizer.param_groups[0]['lr']
             print(progress.format(epoch=epoch + 1, train=train_loss, val=val_loss, lr=lr))
-
         if patience_counter >= patience:
             print(f"  Early stopping at epoch {epoch+1}")
             break
@@ -213,7 +277,6 @@ def fit(model, train_loader, val_loader, optimizer, scheduler, *, epochs: int, p
 def _train_epoch(model, loader, optimizer, device, epoch: int) -> List[float]:
     """One pass over the training batches; returns their losses. NaN batches are skipped."""
     import torch
-
     model.train()
     losses = []
     for batch in loader:
@@ -223,7 +286,6 @@ def _train_epoch(model, loader, optimizer, device, epoch: int) -> List[float]:
         if torch.isnan(loss):
             print(f"  Warning: NaN loss at epoch {epoch+1}, skipping batch")
             continue
-
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
         optimizer.step()
@@ -234,7 +296,6 @@ def _train_epoch(model, loader, optimizer, device, epoch: int) -> List[float]:
 def _validation_losses(model, loader, device) -> List[float]:
     """Losses of the validation batches whose loss is not NaN."""
     import torch
-
     model.eval()
     losses = []
     with torch.no_grad():
@@ -269,13 +330,11 @@ def model_configs(models_dir: str, config_file: str, logger: logging.Logger):
 def training_libraries(base_dir: str) -> List[Dict[str, Any]]:
     """Libraries under base_dir with a flux_cube.bin, and their SED counts ("?" if unknown)."""
     import pandas as pd
-    
     libraries = []
     for name in sorted(os.listdir(base_dir)):
         path = os.path.join(base_dir, name)
         if not os.path.isdir(path) or not os.path.exists(os.path.join(path, "flux_cube.bin")):
             continue
-        
         lookup = os.path.join(path, "lookup_table.csv")
         n_seds = "?"
         if os.path.exists(lookup):
@@ -304,7 +363,6 @@ def action_menu(actions) -> Optional[int]:
     for number, (label, _, _) in enumerate(actions, 1):
         print(f"  {number}) {label}")
     print("  0) Back")
-    
     choice = input("> ").strip()
     if choice == "0":
         return None

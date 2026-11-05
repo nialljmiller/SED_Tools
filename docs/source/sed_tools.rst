@@ -307,6 +307,14 @@ sed\_tools.cube.tool module
    :show-inheritance:
    :undoc-members:
 
+sed\_tools.cube.fluxcube module
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: sed_tools.cube.fluxcube
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 sed\_tools.cube.model module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

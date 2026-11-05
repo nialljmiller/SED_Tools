@@ -8,7 +8,6 @@ in memory from them.
 from __future__ import annotations
 
 import io
-import tarfile
 import zipfile
 from pathlib import Path
 
@@ -16,12 +15,14 @@ import numpy as np
 import pytest
 
 from sed_tools import filter_library
-from sed_tools.component_sources import BUILDERS, get_builder, catalog
-from sed_tools.component_sources import cassini, csp, observatories, space, standards, surveys, swift
+from sed_tools.component_sources import (BUILDERS, cassini, catalog, csp, get_builder, observatories, space, standards,
+                                         surveys, swift)
 from sed_tools.component_sources._original import (Fetcher, clean_curve, make_band, to_angstrom)
 from sed_tools.filter_components import InstrumentManifest
 from sed_tools.filter_library import FilterLibrary
 from sed_tools.filter_metadata import read_filter_header
+
+from builder_fixtures import _tar
 
 FIX = Path(__file__).parent / "fixtures" / "original_sources"
 MODULES = {"surveys": surveys, "space": space, "observatories": observatories, "standards": standards,
@@ -51,17 +52,6 @@ class _Session:
     def get(self, url, timeout=None, **kw):
         self.calls.append(url)
         return _Resp(self.files[url]) if url in self.files else _Resp(b"", 404)
-
-
-def _tar(members) -> bytes:
-    buf = io.BytesIO()
-    with tarfile.open(fileobj=buf, mode="w:gz") as t:
-        for name, text in members.items():
-            data = text.encode("ascii")
-            info = tarfile.TarInfo(name)
-            info.size = len(data)
-            t.addfile(info, io.BytesIO(data))
-    return buf.getvalue()
 
 
 def _zip(members) -> bytes:

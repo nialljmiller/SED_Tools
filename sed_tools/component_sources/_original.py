@@ -67,9 +67,6 @@ class Fetcher:
     def text(self, url: str, encoding: str = "utf-8", errors: str = "strict", **kw) -> str:
         return self.get(url, **kw).decode(encoding, errors)
 
-    def stream(self, url: str) -> io.BytesIO:
-        return io.BytesIO(self.get(url))
-
 
 class CachingSession:
     """Fetch each URL once per build; optionally archive every raw download.

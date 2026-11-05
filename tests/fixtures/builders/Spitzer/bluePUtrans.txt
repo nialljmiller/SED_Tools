@@ -1,0 +1,54 @@
+;*** IRS Blue-Peakup Filter
+;*** RQExTransmission at 2.0 volts USED IN NOMINAL OPERATIONS
+;*** 
+;*** The first column is wavelength in microns.  They second 
+;*** is "RQExT", which is the product of the detector's 
+;*** responsive quantum efficiency (QE times photoconductive 
+;*** gain) and the filter transmission.  That is, if you 
+;*** multiply incident photons/second at some wavelength by 
+;*** RQExT at that wavelength, then you get electrons/second 
+;*** contributed by the incident light at that wavelength. 
+;*** These data represent the same curve that is provided in 
+;*** the SMART software package, and represent a revised 
+;*** (improved) version of the peak-up filter transmission
+;*** curve shown in Figure 7.39 of the Spitzer Observer's 
+;*** Manual (v5.0).
+;***
+10.0104	    1.49E-03
+10.2478	    1.15E-03
+10.4967	    1.50E-03
+10.7581	    -2.77E-03
+11.0327	    -1.40E-03
+11.3218	    -1.12E-03
+11.6264	    2.40E-03
+11.9479	    2.19E-03
+12.2876	    2.35E-03
+12.6473	    1.64E-02
+13.0286	    5.06E-01
+13.1609	    1.28E+00
+13.1944	    1.49E+00
+13.2280	    1.71E+00
+13.4336	    2.10E+00
+13.8647	    2.77E+00
+14.3243	    2.77E+00
+14.7312	    2.96E+00
+14.8154	    2.94E+00
+15.3414	    2.32E+00
+15.9061	    2.61E+00
+16.5140	    2.33E+00
+17.1702	    2.35E+00
+17.8806	    2.22E+00
+18.5856	    1.88E+00
+18.6525	    1.57E+00
+18.7198	    1.18E+00
+19.4939	    -2.67E-04
+20.4149	    -1.05E-03
+21.4272	    5.75E-04
+22.5452	    5.14E-03
+23.7862	    -1.90E-03
+25.1718	    -7.74E-04
+26.7288	    2.98E-03
+28.4912	    3.79E-02
+30.5022	    1.80E-02
+32.8188	    1.06E-03
+35.0363	    -7.67E-05

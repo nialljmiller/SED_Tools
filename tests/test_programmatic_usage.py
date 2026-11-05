@@ -35,10 +35,6 @@ def _write_filter(path):
 
 # --- import / version ---
 
-def test_import():
-    assert hasattr(sed_tools, "__version__")
-
-
 def test_version_string():
     parts = sed_tools.__version__.split(".")
     assert len(parts) >= 2

@@ -78,21 +78,10 @@ def train_completer(
     ... )
     """
     from .completer import SEDCompleter
-    
     completer = SEDCompleter()
-    completer.train(
-        library_path=library,
-        output_path=output,
-        epochs=epochs,
-        batch_size=batch_size,
-        learning_rate=learning_rate,
-        max_samples=max_samples,
-        hidden_layers=hidden_layers,
-        dropout=dropout,
-        patience=patience,
-        verbose=verbose,
-    )
-    
+    completer.train(library_path=library, output_path=output, epochs=epochs, batch_size=batch_size,
+                    learning_rate=learning_rate, max_samples=max_samples, hidden_layers=hidden_layers,
+                    dropout=dropout, patience=patience, verbose=verbose)
     return completer
 
 
@@ -116,7 +105,6 @@ def load_completer(model_path: str) -> 'SEDCompleter':
     >>> wl, flux = completer.complete_sed(wl_in, flux_in, teff=5500, logg=4.5, meta=0.0)
     """
     from .completer import SEDCompleter
-    
     return SEDCompleter(model_path=model_path)
 
 
@@ -165,14 +153,8 @@ def complete_sed(
     ...     extension_range=(100, 100000),
     ... )
     """
-    return completer.complete_sed(
-        wavelength=wavelength,
-        flux=flux,
-        teff=teff,
-        logg=logg,
-        meta=meta,
-        extension_range=extension_range,
-    )
+    return completer.complete_sed(wavelength=wavelength, flux=flux, teff=teff, logg=logg, meta=meta,
+                                  extension_range=extension_range)
 
 
 def list_models(models_dir: str = "models") -> List[Dict[str, Any]]:
@@ -198,7 +180,6 @@ def list_models(models_dir: str = "models") -> List[Dict[str, Any]]:
     ...     print(f"{model['name']}: {model['framework']}")
     """
     from .completer import SEDCompleter
-    
     return SEDCompleter.list_models(models_dir)
 
 
@@ -223,7 +204,6 @@ def model_info(model_path: str) -> Dict[str, Any]:
     """
     import json
     from .completer import SEDCompleter
-    
     with open(Path(model_path) / SEDCompleter.CONFIG_FILE, 'r') as f:
         return json.load(f)
 
@@ -260,13 +240,8 @@ def auto_train_generator(
         The trained generator
     """
     from .tuning import AutoTrainer
-    
-    generator, _ = AutoTrainer(library, task="generator").train_best(
-        library_path=library,
-        output_path=output,
-        n_trials=n_trials,
-        epochs=epochs
-    )
+    generator, _ = AutoTrainer(library, task="generator").train_best(library_path=library, output_path=output,
+                                                                     n_trials=n_trials, epochs=epochs)
     return generator
 
 
@@ -295,7 +270,7 @@ class Completer:
         completer = Completer('models/my_model')
         results = completer.extend_catalog('data/sphinx_models', 'data/sphinx_extended')
     """
-    
+
     def __init__(self, model_path: Optional[str] = None):
         """
         Initialize completer.
@@ -306,30 +281,29 @@ class Completer:
             Path to existing model directory. If None, must call train() first.
         """
         from .completer import SEDCompleter
-        
         self._completer = SEDCompleter(model_path)
         self._model_path = model_path
-    
+
     @property
     def is_trained(self) -> bool:
         """Check if model is loaded/trained."""
         return self._completer.model is not None
-    
+
     @property
     def model_path(self) -> Optional[str]:
         """Get current model path."""
         return self._model_path
-    
+
     @property
     def config(self) -> Dict[str, Any]:
         """Get model configuration."""
         return self._completer.config
-    
+
     @property
     def wavelength_grid(self) -> Optional[np.ndarray]:
         """Get model wavelength grid."""
         return self._completer.wavelength_grid
-    
+
     def train(
         self,
         library: str,
@@ -362,17 +336,11 @@ class Completer:
         self
             For method chaining
         """
-        self._completer.train(
-            library_path=library,
-            output_path=output,
-            epochs=epochs,
-            batch_size=batch_size,
-            learning_rate=learning_rate,
-            **kwargs,
-        )
+        self._completer.train(library_path=library, output_path=output, epochs=epochs, batch_size=batch_size,
+                              learning_rate=learning_rate, **kwargs)
         self._model_path = output
         return self
-    
+
     def load(self, model_path: str) -> 'Completer':
         """
         Load a trained model.
@@ -390,7 +358,7 @@ class Completer:
         self._completer.load(model_path)
         self._model_path = model_path
         return self
-    
+
     def extend(
         self,
         wavelength: np.ndarray,
@@ -424,7 +392,7 @@ class Completer:
             Extended arrays
         """
         return complete_sed(self._completer, wavelength, flux, teff, logg, meta, extension_range)
-    
+
     def extend_catalog(
         self,
         input_dir: str,
@@ -458,17 +426,14 @@ class Completer:
             read or extended; the message lists each one and why.
         """
         import pandas as pd
-        
         if not self.is_trained:
             raise RuntimeError("No model loaded. Call train() or load() first.")
-        
         df, columns = _read_catalog_table(input_dir)
         if verbose:
             print(f"  Total rows to process: {len(df)}")
             print(f"  Using file column: {columns['file']}")
-        
         os.makedirs(output_dir, exist_ok=True)
-        
+
         new_rows = []
         examples = []
         failures = []
@@ -480,40 +445,34 @@ class Completer:
             except (OSError, ValueError) as exc:
                 failures.append(f"row {i} ({row[columns['file']]}): {exc}")
                 continue
-            
             new_rows.append(new_row)
             if example is None:
                 skipped_count += 1
                 continue
-            
             extended_count += 1
             if len(examples) < 6:
                 examples.append(example)
             if verbose and extended_count % 50 == 0:
                 print(f"  Extended {extended_count} SEDs...")
-        
+
         if new_rows:
             new_df = pd.DataFrame(new_rows)
             cols = ['file_name'] + [c for c in new_df.columns if c != 'file_name']
             new_df[cols].to_csv(os.path.join(output_dir, "lookup_table.csv"), index=False)
-        
         if examples:
             if verbose:
                 print("\nGenerating inference examples plot...")
             self._completer.plot_inference_examples(examples, output_dir)
-        
         if verbose:
             print("\nProcessing complete:")
             print(f"  {extended_count} extended")
             print(f"  {skipped_count} skipped (already covered the range)")
             print(f"  {len(failures)} failed")
-        
         if failures:
             raise RuntimeError(
                 f"{len(failures)} of {len(df)} spectra in {input_dir} could not be extended "
                 f"(the other {len(new_rows)} were written to {output_dir}):\n  " + "\n  ".join(failures)
             )
-        
         return {
             'extended': extended_count,
             'failed': 0,
@@ -521,52 +480,42 @@ class Completer:
             'total': len(df),
             'output_dir': output_dir,
         }
-    
+
     def _extend_one(self, row, columns, input_dir, output_dir, extension_range):
         """Extend, or copy, one catalog spectrum into output_dir: its new lookup row, and a plot example if extended.
         Raises ValueError or OSError, which extend_catalog collects, if the spectrum cannot be used."""
+        from .common import write_spectrum
         teff, logg, meta = _row_parameters(row, columns)
-        
         filename = str(row[columns['file']])
         if filename == 'nan' or not filename:
             raise ValueError("no file name")
-        
         data = np.loadtxt(_find_spectrum(input_dir, filename))
         if data.ndim != 2 or data.shape[1] < 2:
             raise ValueError(f"expected wavelength and flux columns, got an array of shape {data.shape}")
         wavelength = data[:, 0]
         flux = data[:, 1]
-        
+
         output_file = os.path.join(output_dir, filename)
         new_row = row.to_dict()
-        
         covers_low = wavelength.min() <= extension_range[0] * 1.1
         covers_high = wavelength.max() >= extension_range[1] * 0.9
         if covers_low and covers_high:
-            np.savetxt(output_file, data, header='wavelength_A flux_erg/s/cm2/A', fmt='%.6e')
+            write_spectrum(output_file, *data.T)  # every column of the file, as read
             new_row.update(extended_by_ml=False, file_name=filename)
             return new_row, None
-        
-        wl_ext, flux_ext = self.extend(
-            wavelength, flux,
-            teff=teff, logg=logg, meta=meta,
-            extension_range=extension_range,
-        )
-        np.savetxt(
-            output_file,
-            np.column_stack([wl_ext, flux_ext]),
-            header='wavelength_A flux_erg/s/cm2/A',
-            fmt='%.6e',
-        )
+
+        wl_ext, flux_ext = self.extend(wavelength, flux, teff=teff, logg=logg, meta=meta,
+                                       extension_range=extension_range)
+        write_spectrum(output_file, wl_ext, flux_ext)
         new_row.update(extended_by_ml=True, file_name=filename,
                        wl_min=float(wl_ext.min()), wl_max=float(wl_ext.max()))
         return new_row, (filename, wavelength, flux, wl_ext, flux_ext)
-    
+
     @staticmethod
     def available_models(models_dir: str = "models") -> List[Dict[str, Any]]:
         """List the trained SED completer models in ``models_dir`` (not generator models)."""
         return list_models(models_dir)
-    
+
     def __repr__(self) -> str:
         status = "trained" if self.is_trained else "untrained"
         path = f" @ {self._model_path}" if self._model_path else ""
@@ -587,7 +536,6 @@ _CATALOG_COLUMNS = {
 def _read_catalog_table(input_dir: str):
     """Read a catalog's lookup table and find its file-name and parameter columns."""
     import pandas as pd
-    
     lookup_path = os.path.join(input_dir, "lookup_table.csv")
     if not os.path.exists(lookup_path):
         raise FileNotFoundError(

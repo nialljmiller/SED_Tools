@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import gzip
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
+import requests
 
 from sed_tools.component_sources import catalog
 from sed_tools.component_sources._common import SimpleSource, Table, build_simple, product
@@ -321,3 +323,55 @@ def test_facility_wide_status_applies_to_every_instrument():
     assert catalog.status_for("GAIA", "GAIA0")[0] == catalog.TOTAL_ONLY
     assert catalog.status_for("GAIA", "GAIA3")[0] == catalog.TOTAL_ONLY
     assert catalog.status_for("LSST", "LSST") is None
+
+
+# ----------------------------------------------------------------------
+# original-source downloads fail fast when a host is down
+# ----------------------------------------------------------------------
+def test_original_source_requests_use_a_ten_second_connect_timeout():
+    from sed_tools.component_sources._common import Table
+    from sed_tools.component_sources._original import CONNECT_TIMEOUT, Fetcher
+    from sed_tools.component_sources.skycalc import SkyCalcClient
+    from sed_tools.component_sources.team_atmospheres import CachingSession, _bytes
+
+    timeouts = []
+
+    def get(url, timeout=None, **kwargs):
+        timeouts.append(timeout)
+        raise requests.ConnectTimeout(url)
+
+    session = SimpleNamespace(get=get, headers={})
+    for request in (lambda: Table("https://host.invalid/t.dat").read(session),
+                    lambda: Fetcher(session).get("https://host.invalid/t.dat"),
+                    lambda: CachingSession(session).get("https://host.invalid/t.dat"),
+                    lambda: _bytes(session, "https://host.invalid/t.dat")):
+        with pytest.raises(requests.ConnectTimeout):
+            request()
+    assert CONNECT_TIMEOUT == 10.0
+    assert [t[0] for t in timeouts] == [CONNECT_TIMEOUT] * 4
+    assert SkyCalcClient(session=session).timeout[0] == CONNECT_TIMEOUT
+
+
+# ----------------------------------------------------------------------
+# An unknown tabular instrument is a clear ValueError
+# ----------------------------------------------------------------------
+def test_tabular_names_its_instruments_for_an_unknown_one(tmp_path):
+    from sed_tools.component_sources import tabular
+
+    with pytest.raises(ValueError, match=r"tabular has no instrument 'NOPE'; choose one of: HAWKI"):
+        tabular.build(tmp_path, instrument="NOPE")
+
+
+# ----------------------------------------------------------------------
+# Spelling
+# ----------------------------------------------------------------------
+def test_builder_and_status_lookups_ignore_case_and_punctuation():
+    assert catalog.builder_for("Gemini", "GMOS-N") is catalog.BUILDERS_FOR[("Gemini", "GMOS_N")]
+    assert catalog.registered_name("herschel", "Pacs") == ("Herschel", "PACS")
+    assert catalog.registered_name("PLANCK", "hfi") == ("Planck", "HFI")
+    assert catalog.builder_for("Gemini", "GMOS-X") is None
+    assert catalog.status_for("Pan-STARRS", "ps1") == catalog.STATUS[("PAN-STARRS", "PS1")]
+    assert catalog.status_for("gaia", "GAIA3") == catalog.STATUS[("GAIA", "*")]
+    assert catalog.component_availability("Gemini", "GMOS-N")["status"] == "supported"
+    assert catalog.match_name("Sony_NEX5N", ["Sony_NEX_5N", "Sony_NEX5N"]) == "Sony_NEX5N"
+    assert catalog.match_name("sony nex5n", ["Sony_NEX_5N", "Sony_NEX5N"]) is None  # ambiguous: no guess

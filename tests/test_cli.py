@@ -8,11 +8,6 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-def test_cli_importable():
-    from sed_tools import cli
-    assert callable(cli.main)
-
-
 @pytest.mark.parametrize("command,option", [("grids", "--grids"), ("spectra", "--models"),
                                            ("grids", "--models"), ("spectra", "--grids")])
 def test_spectral_grid_command_aliases_share_one_workflow(monkeypatch, command, option):

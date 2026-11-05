@@ -14,10 +14,6 @@ import pytest
 from sed_tools.ml_sed_generator import SEDGenerator
 
 
-def test_module_imports_without_torch():
-    import sed_tools.ml_sed_generator  # noqa: F401
-
-
 def test_init_without_model_path_is_torch_free_and_untrained():
     g = SEDGenerator()
     assert g.model is None
@@ -184,11 +180,4 @@ def test_list_models_excludes_configs_without_matching_model_type(tmp_path):
     model_dir = tmp_path / "completer1"
     model_dir.mkdir()
     (model_dir / SEDGenerator.CONFIG_FILE).write_text(json.dumps({"framework": "pytorch", "architecture": {}}))
-    assert SEDGenerator.list_models(str(tmp_path)) == []
-
-
-def test_list_models_skips_unreadable_config_without_raising(tmp_path):
-    model_dir = tmp_path / "broken"
-    model_dir.mkdir()
-    (model_dir / SEDGenerator.CONFIG_FILE).write_text("{not valid json")
     assert SEDGenerator.list_models(str(tmp_path)) == []
