@@ -137,6 +137,7 @@ def test_the_grid_finder_resolves_a_model_and_takes_z_for_metallicity(installed)
     with pytest.raises(FileNotFoundError, match="Could not resolve model 'Empty'"):
         finder.model("Empty")
     assert finder.model("Loose").flux_cube_path == loose and finder.model("Hot").name == "Hot"
+    assert finder.model("Loose").name == finder.model(loose).name == "Loose"  # not the model root's name
     for call in ({"z": -0.5}, {"Z": -0.5}, {"metallicity": -0.5}):
         assert finder(6000, 4.5, **call).flux.tolist() == pytest.approx([1.0, 1.0, 1.0])
     with pytest.raises(TypeError, match="Unexpected keyword arguments: feh"):

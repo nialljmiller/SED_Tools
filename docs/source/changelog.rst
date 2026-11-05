@@ -39,6 +39,10 @@ Fixed
   ``--bogus`` and started browsing SVO. An unknown option, or a second
   argument, is now a usage error (exit 2). A base directory given as the
   one positional argument works as before, and ``--help`` prints the usage.
+- **SED.model("Loose")** (``sed_tools.models.SED``) for a flux cube saved
+  as ``Loose.bin`` directly in the model root named the model after the
+  model root's folder (e.g. ``stellar_models``). It is now named ``Loose``,
+  after the file. A ``flux_cube.bin`` is still named after its folder.
 
 Version 0.5.0 (November 2026)
 ----------------------------

@@ -497,6 +497,8 @@ class SED:
             return Path(model.flux_cube), model.name
 
         flux_path = self._resolve_model_path(model)
+        if flux_path.parent == self.model_root and flux_path.name != "flux_cube.bin":
+            return flux_path, flux_path.stem  # a loose <name>.bin under the model root
         name = flux_path.parent.name if flux_path.parent != flux_path else flux_path.stem
         return flux_path, name
 
