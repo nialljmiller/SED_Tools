@@ -25,7 +25,6 @@ class AutoTrainer:
     """Tune SEDGenerator's hyperparameters with optuna, then train it with the best."""
     def __init__(self, library_path: str, task: str = "generator"):
         from .common import get_device
-
         self.library_path = library_path
         self.task = task
         self.device = get_device()
@@ -41,10 +40,8 @@ class AutoTrainer:
         }
         model = SEDGeneratorNetwork(output_dim, hidden_layers=_hidden_layers(params), dropout=params["dropout"])
         optimizer, scheduler = _optimizer_and_scheduler(model, params["lr"])
-        _, best_val_loss = fit(
-            model, train_loader, val_loader, optimizer, scheduler,
-            epochs=TRIAL_EPOCHS, patience=TRIAL_EPOCHS, verbose=False, device=self.device, progress="",
-        )
+        _, best_val_loss = fit(model, train_loader, val_loader, optimizer, scheduler, epochs=TRIAL_EPOCHS,
+                               patience=TRIAL_EPOCHS, verbose=False, device=self.device, progress="")
         return best_val_loss
 
     def train_best(self, library_path, output_path, n_trials=20, epochs=100):
@@ -67,10 +64,7 @@ class AutoTrainer:
 
         print(f"Training final model for up to {epochs} epochs...")
         generator = SEDGenerator()
-        generator.train(
-            library_path, output_path,
-            epochs=epochs, batch_size=BATCH_SIZE, learning_rate=best_params["lr"],
-            max_samples=MAX_SAMPLES, hidden_layers=_hidden_layers(best_params),
-            dropout=best_params["dropout"],
-        )
+        generator.train(library_path, output_path, epochs=epochs, batch_size=BATCH_SIZE,
+                        learning_rate=best_params["lr"], max_samples=MAX_SAMPLES,
+                        hidden_layers=_hidden_layers(best_params), dropout=best_params["dropout"])
         return generator, best_params
