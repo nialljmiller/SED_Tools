@@ -9,10 +9,10 @@ import tarfile
 import numpy as np
 import pytest
 
-from builder_fixtures import Session, check_published, curve, saved
 from sed_tools.component_sources import standards, surveys
 from sed_tools.filter_components import AtmosphereGrid, InstrumentManifest
-from test_original_sources import _tar
+
+from builder_fixtures import Session, _tar, check_published, curve, saved
 
 # instrument: module, facility, bands, published components, component roles, default site,
 # and the first band's samples, first and last wavelength (A), peak wavelength (A) and peak

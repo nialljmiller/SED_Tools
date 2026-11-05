@@ -1,4 +1,5 @@
-"""Saved upstream responses for the builder tests, and the checks every published instrument meets.
+"""Saved upstream responses for the builder tests, the checks every published instrument meets, and _tar, which
+builds a .tar.gz of text members in memory.
 
 The files are in tests/fixtures/builders; its README says where each comes from and how it was cut.
 """
@@ -6,7 +7,9 @@ The files are in tests/fixtures/builders; its README says where each comes from 
 from __future__ import annotations
 
 import gzip
+import io
 import json
+import tarfile
 from pathlib import Path
 
 import numpy as np
@@ -73,3 +76,14 @@ def check_published(inst_dir, facility, instrument, bands, components, detector)
         assert manifest.published_bands[band] == components
     assert manifest.detector_type_sources == dict.fromkeys(bands, "original")
     return manifest
+
+
+def _tar(members) -> bytes:
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w:gz") as t:
+        for name, text in members.items():
+            data = text.encode("ascii")
+            info = tarfile.TarInfo(name)
+            info.size = len(data)
+            t.addfile(info, io.BytesIO(data))
+    return buf.getvalue()

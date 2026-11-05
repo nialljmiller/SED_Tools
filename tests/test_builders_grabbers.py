@@ -5,12 +5,12 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from builder_fixtures import Session, saved
 from sed_tools.filters import svo
 from sed_tools.filters.curve_metadata import SVOMetadataClient, _param_text, svo_fps_url
-from sed_tools.grids import mast, msg
-from sed_tools.grids import svo as svo_grid
-from test_release_cli import answer
+from sed_tools.grids import mast, msg, svo as svo_grid
+
+from builder_fixtures import Session, saved
+from helpers_cli_menus import answer
 
 GAIA3 = svo_fps_url().replace("fps.php", "index.php?mode=browse&gname=GAIA&gname2=GAIA3&asttype=")
 

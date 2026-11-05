@@ -6,22 +6,27 @@ DECam, VISTA, the team atmosphere sites and the HST synphot tables read saved fi
 
 from __future__ import annotations
 
+import gzip
 import hashlib
 import io
 import json
+import tarfile
 
 import numpy as np
 import pytest
 
-import test_components_cfht_eris_2mass_lsst as t_lsst
-import test_swift_csp_cassini as t_cassini
-from builder_fixtures import Session, curve, saved
-from sed_tools.component_sources import cassini, decam, hst, lsst, skycalc, team_atmospheres, twomass, vista
+from sed_tools.component_sources import (cassini, decam, hst, lsst, skycalc, surveys, team_atmospheres as team,
+                                         team_atmospheres, twomass, vista)
+from sed_tools.component_sources._common import DerivedCurve, write_site
 from sed_tools.component_sources._original import Fetcher
-from sed_tools.filter_components import (FILTER, OPTICS, QE, SHARED, AtmosphereGrid, InstrumentManifest,
+from sed_tools.filter_components import (DERIVED, FILTER, OPTICS, QE, SHARED, TEAM, AtmosphereGrid, InstrumentManifest,
                                          compose_band)
 from sed_tools.filter_metadata import SVOFilterRecord, read_filter_header, released_mesa_reads
-from test_team_atmospheres import _FormSession
+
+import helpers_builders_cfht_lsst as t_lsst
+import helpers_builders_swift_cassini as t_cassini
+from builder_fixtures import Session, curve, saved
+from helpers_builders_sites import _FormSession, _Resp, _curve, _site
 
 
 # ---------------------------------------------------------------------------- Cassini
@@ -216,3 +221,222 @@ def test_skycalc_transmission_is_the_fetched_curve():
     np.testing.assert_allclose(wl, np.geomspace(1000.0, 1100.0, 200))
     np.testing.assert_allclose(tr, 0.8 ** 1.5)
     assert client.session.posts[-1]["SKYMODEL.TARGET.AIRMASS"] == "1.50"
+
+
+class _Session:
+    def __init__(self, files):
+        self.files, self.headers, self.calls = files, {}, []
+
+    def get(self, url, timeout=None, **kw):
+        self.calls.append(url)
+        return _Resp(self.files[url]) if url in self.files else _Resp(b"", 404)
+
+
+# ---------------------------------------------------------------------------
+# Registering a team atmosphere as a site
+# ---------------------------------------------------------------------------
+def test_write_site_refuses_a_bad_curve_before_writing(tmp_path):
+    bad = _site(entries=[(1.2, None, DerivedCurve("u", _curve([0.5, 1.2, 0.9]), "x"))])
+    with pytest.raises(ValueError, match="not a transmission"):
+        write_site(tmp_path, bad, None)
+    assert not (tmp_path / "here_team").exists()
+
+
+# ---------------------------------------------------------------------------
+# Which sites an instrument may use
+# ---------------------------------------------------------------------------
+def test_every_registered_instrument_site_is_built_by_a_builder():
+    from sed_tools.facility_sites import _INSTRUMENT_SITES
+
+    for sites in _INSTRUMENT_SITES.values():
+        assert set(sites) <= set(team.SITES)
+
+
+# ---------------------------------------------------------------------------
+# Team recipes (parsers checked on in-memory excerpts)
+# ---------------------------------------------------------------------------
+PS1_ROWS = (" 500 0.500 0.400 0.000 0.000 0.000 0.000 0.000 0.970 0.880 0.990\n"
+            " 501 0.500 0.410 0.000 0.000 0.000 0.000 0.000 0.970 0.881 0.980\n")
+
+
+def test_ps1_atmosphere_is_the_product_of_its_three_columns():
+    wl, tr = team.ps1_atmosphere(PS1_ROWS)
+    np.testing.assert_allclose(wl, [5000.0, 5010.0])
+    np.testing.assert_allclose(tr, [0.97 * 0.88 * 0.99, 0.97 * 0.881 * 0.98])
+
+
+def test_ps1_build_registers_its_team_site(tmp_path, monkeypatch):
+    table4 = "g_P1|0.4|481|414|551|24.6\n"
+    session = _Session({surveys.PS1_URL: PS1_ROWS, surveys.PS1_BASE + "table4.dat": table4})
+    monkeypatch.setattr(surveys, "ps1", lambda fetch: surveys.Instrument(
+        "PAN-STARRS", "PS1", [surveys.make_band("g", [500.0, 501.0], [0.4, 0.41], unit="nm",
+                                                detector_type="photon", components="filter+optics+qe+atmosphere",
+                                                sources="x")], "n", ground_based=True,
+        sites=[team.HALEAKALA_PS1], default_site="haleakala_ps1"))
+    monkeypatch.setitem(surveys.RECIPES, "PS1", ("PAN-STARRS", surveys.ps1))
+    build = surveys.make_builder(surveys.RECIPES)
+    inst = build(tmp_path / "filters", instrument="PS1", session=session)
+    assert InstrumentManifest.load(inst).default_site == "haleakala_ps1"
+    grid = AtmosphereGrid.load(tmp_path / "atmospheres" / "haleakala_ps1")
+    assert grid.kind == TEAM and grid.entries[0]["airmass"] == 1.2 and "Aero" in grid.entries[0]["derivation"]
+
+
+def _tar(members, prefix):
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w:gz") as t:
+        for name, data in members.items():
+            info = tarfile.TarInfo(f"{prefix}/{name}")
+            info.size = len(data)
+            t.addfile(info, io.BytesIO(data))
+    return buf.getvalue()
+
+
+def test_csp_atmosphere_raises_the_one_airmass_transmission_to_1p2():
+    raw = _tar({"atm_ext_ctio.dat": b"3000. 0.5\n5000. 0.8\n11000. 1.0\n",
+                "atm_ext_lines.dat": b"2950. 1.\n4000. 0.9\n6000. 1.0\n12000. 1.\n"}, "CSP_filter_package")
+    wl, tr = team.csp_atmosphere(raw)
+    assert wl[0] == 3000.0 and wl[-1] == 11000.0
+    np.testing.assert_allclose(tr[wl == 5000.0], 0.8 ** 1.2 * 0.95)
+
+
+def test_vircam_atmosphere_skips_its_title_lines():
+    member = gzip.compress(b"1.0mm H2O, airmass=1.0\n\n0.900000   0.97\n0.900500   0.96\n")
+    raw = _tar({"trans_10_10.dat.gz": member}, "Filters_QE_Atm_curves")
+    wl, tr = team.vircam_atmosphere(raw, "trans_10_10.dat.gz", "1.0mm H2O, airmass=1.0")
+    np.testing.assert_allclose(wl, [9000.0, 9005.0])
+    with pytest.raises(ValueError, match="unexpected title"):
+        team.vircam_atmosphere(raw, "trans_10_10.dat.gz", "3.0mm H2O, airmass=2.0")
+
+
+def test_twomass_table_refuses_a_truncated_copy():
+    page = ("<html><head><title>ATMOSPHERIC TRANSMISSION AT 2MASS NORTH SITE</title></head><pre>\n"
+            "|n  |xlam     |yval     |\n   1    1.0000    0.8948\n   2    1.0001    0.8922\n</pre>")
+    wl, tr = team.twomass_table(page.encode(), "ATMOSPHERIC TRANSMISSION AT 2MASS NORTH SITE")
+    np.testing.assert_allclose(wl, [10000.0, 10001.0])
+    with pytest.raises(ValueError, match="consecutive"):
+        team.twomass_table(page.replace("   2 ", "   3 ").encode(), "ATMOSPHERIC TRANSMISSION AT 2MASS NORTH SITE")
+
+
+def test_gemini_atran_refuses_a_truncated_file():
+    full = ".900000 0.99\n3.0 0.5\n5.59998 0.1\n"
+    wl, _ = team.gemini_atran(full.encode(), "u")
+    assert wl[-1] == pytest.approx(55999.8)
+    with pytest.raises(ValueError, match="truncated"):
+        team.gemini_atran(b".900000 0.99\n1.2 0.5\n", "u")
+
+
+def test_sdss_transparency_merges_bands_and_refuses_conflicts():
+    head = "# assumed\n# atmospheric\n# extinction\n# through\n# 1.0 airmasses\n"
+    files = {url: head + "3000 0 0 0 0.10\n3025 0 0 0 0.12\n" for url in team.SDSS_FILES.values()}
+    wl, tr = team.sdss_transparency(_Session(files))
+    np.testing.assert_allclose(tr, [0.10, 0.12])
+    files[team.SDSS_FILES["z"]] = head + "3000 0 0 0 0.11\n"
+    with pytest.raises(ValueError, match="disagrees"):
+        team.sdss_transparency(_Session(files))
+
+
+def test_bass_ratio_keeps_only_well_measured_rows():
+    head = "# ... atmospheric extinction at airmass of 1.0.\n"
+    files = {team.BASS_FILES["g"]: head + "4000 0.5 0.400 0.300\n4010 0.1 0.050 0.040\n",
+             team.BASS_FILES["r"]: head + "6000 0.9 0.800 0.720\n"}
+    wl, tr = team.bass_atmosphere(_Session(files))
+    np.testing.assert_allclose(wl, [4000.0, 6000.0])
+    np.testing.assert_allclose(tr, [0.75, 0.9])
+
+
+def test_team_sites_are_registered_with_provenance():
+    for name, site in team.SITES.items():
+        assert site.kind == TEAM and site.citation and site.source, name
+        assert name.count("_") >= 1 and name == site.site
+    gemini = team.SITES["maunakea_gemini"]
+    assert len(gemini.entries) == 12 and "Lord" in gemini.terms
+    assert {(a, p) for a, p, _ in gemini.entries} >= {(1.0, 1.6), (2.0, 5.0)}
+    assert team.SITES["hopkins_2mass"].entries[0][0] is None  # airmass not stated
+
+
+def test_caching_session_archives_each_download_once(tmp_path):
+    session = team.CachingSession(_Session({"https://x.org/a.dat": b"1 2\n"}), tmp_path / "ev")
+    session.get("https://x.org/a.dat")
+    session.get("https://x.org/a.dat")
+    manifest = json.loads((tmp_path / "ev" / "manifest.json").read_text())
+    assert session.session.calls == ["https://x.org/a.dat"]
+    (record,) = manifest["files"]
+    assert record["url"] == "https://x.org/a.dat" and record["sha256"] == hashlib.sha256(b"1 2\n").hexdigest()
+    assert (tmp_path / "ev" / record["file"]).read_bytes() == b"1 2\n"
+
+
+# ---------------------------------------------------------------------------
+# SkyCalc: derived grids, the web form, provenance
+# ---------------------------------------------------------------------------
+def test_form_fields_follow_skycalc_spelling():
+    params = dict(skycalc._BASE_PARAMS, airmass=2.0, pwv=0.5, observatory="2400")
+    fields = skycalc._form_fields(params)
+    assert fields["SKYMODEL.PWV"] == "0.50" and fields["TEL.SITE.HEIGHT"] == "2400"
+    assert fields["SKYMODEL.TARGET.AIRMASS"] == "2.00" and fields["SKYMODEL.TARGET.ALT"] == "30.000"
+    assert "SKYMODEL.INCL.MOON" not in fields  # unticked checkbox
+    assert skycalc.airmass_altitude(3.0) == 19.5
+    with pytest.raises(ValueError):
+        skycalc.pwv_option(2.0)
+
+
+def test_form_client_checks_the_echo():
+    client = skycalc.SkyCalcClient(session=_FormSession(), interface="form", pause=0)
+    result = client.fetch("paranal", 1.5, 2.5, 1000.0, 1100.0, 2000)
+    assert result.interface == "form" and result.version == "2.0.9"
+    assert result.url == skycalc.FORM_HOST + "/observing/etc/tmp/abc/skytable.fits"
+    bad = skycalc.SkyCalcClient(session=_FormSession({"SKYMODEL.PWV": "3.5"}), interface="form", pause=0)
+    with pytest.raises(RuntimeError, match="echoed SKYMODEL.PWV"):
+        bad.fetch("paranal", 1.5, 2.5, 1000.0, 1100.0, 2000)
+
+
+def test_skycalc_grid_is_labelled_derived_and_archived(tmp_path):
+    client = skycalc.SkyCalcClient(session=_FormSession(), interface="form", pause=0)
+    root = skycalc.build(tmp_path / "filters", sites=["lasilla"], airmasses=[1.0], pwvs=[2.5],
+                         fetch_resolution=2000, store_resolution=500, chunks=2, client=client,
+                         archive_dir=tmp_path / "evidence")
+    grid = AtmosphereGrid.load(root / "lasilla")
+    assert grid.kind == DERIVED and grid.model_version == "2.0.9" and "Noll" in grid.citation
+    assert grid.parameters["observatory"] == "2400" and grid.parameters["fetch_resolution"] == 2000
+    assert grid.parameters["interface"].startswith("form: https://www.eso.org")
+    header = read_filter_header(root / "lasilla" / "am1.00_pwv2.5.dat")
+    assert header["ComponentsSource"] == "derived" and header["Sources"] == "ESO SkyCalc 2.0.9"
+    evidence = json.loads((tmp_path / "evidence" / "lasilla" / "manifest.json").read_text())
+    assert len(evidence["files"]) == 2
+    record = evidence["files"][0]
+    raw = gzip.decompress((tmp_path / "evidence" / "lasilla" / record["file"]).read_bytes())
+    assert hashlib.sha256(raw).hexdigest() == record["sha256"] and record["skycalc_version"] == "2.0.9"
+
+
+def test_skycalc_auto_mode_switches_to_the_form_when_the_api_host_is_down():
+    from requests.exceptions import ConnectTimeout
+
+    class Down(_FormSession):
+        def post(self, url, data=None, json=None, timeout=None, **kw):
+            assert timeout[0] <= 30  # connect fails fast; the model run may take minutes
+            if json is not None:
+                raise ConnectTimeout("api host down")
+            return super().post(url, data=data, timeout=timeout)
+
+    client = skycalc.SkyCalcClient(session=Down(), interface="auto", pause=0)
+    assert client.fetch("paranal", 1.0, 2.5, 1000.0, 1100.0, 2000).interface == "form"
+    assert client.interface == "form"
+
+
+def test_skycalc_resume_leaves_a_complete_grid_untouched(tmp_path):
+    client = skycalc.SkyCalcClient(session=_FormSession(), interface="form", pause=0)
+    kw = dict(sites=["paranal"], airmasses=[1.0], pwvs=[2.5], chunks=2, client=client)
+    root = skycalc.build(tmp_path / "filters", fetch_resolution=2000, store_resolution=500, **kw)
+    before = (root / "paranal" / "manifest.json").read_bytes()
+    # A curator re-running the builder (other settings, nothing to fetch) must not rewrite served files.
+    skycalc.build(tmp_path / "filters", client=skycalc.SkyCalcClient(session=_FormSession(), pause=0),
+                  sites=["paranal"], airmasses=[1.0], pwvs=[2.5])
+    assert (root / "paranal" / "manifest.json").read_bytes() == before
+    with pytest.raises(ValueError, match="different settings"):
+        skycalc.build(tmp_path / "filters", fetch_resolution=2000, store_resolution=400,
+                      **dict(kw, airmasses=[1.5]))
+
+
+def test_hsc_builder_and_team_registry_write_the_same_site():
+    from sed_tools.component_sources import hsc
+
+    assert team.SITES["maunakea_hsc"] is hsc.SPEC.site and hsc.SPEC.site.kind == TEAM

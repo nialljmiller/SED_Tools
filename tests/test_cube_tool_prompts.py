@@ -8,7 +8,8 @@ import pytest
 
 from sed_tools import flux_cube_tool as tool
 from sed_tools.photometry import PC_TO_M, RSUN_TO_M
-from test_cli_mains import keep_random_state  # noqa: F401 (an autouse fixture)
+
+from helpers_random import keep_random_state  # noqa: F401 (an autouse fixture)
 
 
 def answer(monkeypatch, *replies):
