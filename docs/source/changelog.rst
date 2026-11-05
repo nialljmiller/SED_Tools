@@ -30,6 +30,10 @@ Fixed
   without a unit as metres, so ``1.5`` meant 1.5 m, not 1.5 R☉. A bare number
   is now in R☉, as the prompt says; type ``m`` after it for metres.
   ``Rsun`` and ``m`` work as before, and so does the distance prompt.
+- **python -m sed_tools.precompute_flux_cube** without ``--model_dir``
+  listed each grid twice, as ``./data/stellar_models/<grid>`` and
+  ``data/stellar_models/<grid>``. Each grid is now listed once, as
+  ``data/stellar_models/<grid>``.
 
 Version 0.5.0 (November 2026)
 ----------------------------

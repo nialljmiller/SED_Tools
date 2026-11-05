@@ -134,6 +134,9 @@ def test_precompute_flux_cube_asks_for_the_grid_and_the_output(tmp_path, monkeyp
     (tmp_path / "data" / "stellar_models" / "notes.txt").write_text("not a grid\n")
     answer(monkeypatch, "0")
     assert run_m(monkeypatch, "precompute_flux_cube") == "Invalid selection."
+    # Listed once (it was listed as ./data/stellar_models/<grid> and as data/stellar_models/<grid>)
+    menu = [line for line in capsys.readouterr().out.splitlines() if line[:1].isdigit()]
+    assert menu == [f"1. data/stellar_models/{KURUCZ.name}"]
     answer(monkeypatch, "1", "")  # the first grid listed, and the default output beside it
     assert run_m(monkeypatch, "precompute_flux_cube") == 0
     assert "No --model_dir provided. Discovering local model directories" in capsys.readouterr().out

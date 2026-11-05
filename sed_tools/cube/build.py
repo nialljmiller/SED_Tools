@@ -501,7 +501,7 @@ def _main():
                 has_lookup = os.path.isfile(os.path.join(p, "lookup_table.csv"))
                 has_txt    = any(fn.lower().endswith(".txt") for fn in os.listdir(p))
                 if has_lookup or has_txt:
-                    found.add(p)
+                    found.add(os.path.normpath(p))  # one entry for data/... and ./data/...
         cands = sorted(found)
         if not cands:
             sys.exit("No model directories found.")
