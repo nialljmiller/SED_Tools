@@ -118,6 +118,18 @@ def test_vega_spectra_near_the_cube_are_found_and_offered_by_number(grid, monkey
 
 
 # ----------------------------------------------------------------------
+# The stellar radius
+# ----------------------------------------------------------------------
+@pytest.mark.parametrize("typed, metres", [
+    ("1.5", 1.5 * RSUN_TO_M),  # a bare number is in R☉, as the prompt says (it was taken as metres)
+    ("7e8 m", 7e8),
+])
+def test_radius_prompt_takes_a_bare_number_in_solar_radii(monkeypatch, typed, metres):
+    answer(monkeypatch, typed)
+    assert tool.prompt_radius_m() == metres
+
+
+# ----------------------------------------------------------------------
 # The whole tool
 # ----------------------------------------------------------------------
 def test_tool_scales_and_measures_vega_magnitudes_with_the_cube_it_finds(grid, tmp_path, monkeypatch, capsys):

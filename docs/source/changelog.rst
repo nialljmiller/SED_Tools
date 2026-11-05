@@ -25,6 +25,11 @@ Fixed
   usage (naming that folder) and changes nothing, and an unknown argument is
   a usage error (exit 2). Run without arguments, it rewrites the tables as
   before.
+- **The flux cube tool's stellar-radius prompt** (``python -m
+  sed_tools.flux_cube_tool``, when scaling for distance) took a number typed
+  without a unit as metres, so ``1.5`` meant 1.5 m, not 1.5 R☉. A bare number
+  is now in R☉, as the prompt says; type ``m`` after it for metres.
+  ``Rsun`` and ``m`` work as before, and so does the distance prompt.
 
 Version 0.5.0 (November 2026)
 ----------------------------
