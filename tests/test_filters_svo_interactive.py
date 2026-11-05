@@ -11,6 +11,7 @@ import requests
 
 from sed_tools.filters import svo
 from sed_tools.svo_filter_grabber import Facility
+from test_cli_mains import keep_random_state  # noqa: F401 (an autouse fixture)
 from test_release_njmdown import svo_browser
 
 

@@ -20,6 +20,7 @@ from sed_tools.models import SED as GridFinder
 from sed_tools.njm_filter_grabber import _STATE, NJMFilterGrabber
 from test_cleanup_interface import GRABBERS, fake_grabber
 from test_cleanup_ml import cpu_torch, tiny_library  # noqa: F401 (fixtures)
+from test_cli_mains import keep_random_state  # noqa: F401 (an autouse fixture)
 from test_release_decide import GRID, KURUCZ, njm, njm_grid  # noqa: F401 (fixtures)
 from test_release_library import NJM, Served, njm_index
 from test_release_njmdown import STALE, atmosphere_site
