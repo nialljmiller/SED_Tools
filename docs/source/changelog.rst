@@ -36,9 +36,9 @@ Fixed
   ``data/stellar_models/<grid>``.
 - **python -m sed_tools.svo_filter_grabber** took any argument but ``-h`` or
   ``--help`` as its base directory, so ``--bogus`` created a folder named
-  ``--bogus`` and started browsing SVO. An unknown option, or a second
-  argument, is now a usage error (exit 2). A base directory given as the
-  one positional argument works as before, and ``--help`` prints the usage.
+  ``--bogus`` and started browsing SVO. An unknown option is now a usage
+  error (exit 2), and ``--help`` prints the usage. The first positional
+  argument is still the base directory, and any after it are still ignored.
 - **SED.model("Loose")** (``sed_tools.models.SED``) for a flux cube saved
   as ``Loose.bin`` directly in the model root named the model after the
   model root's folder (e.g. ``stellar_models``). It is now named ``Loose``,

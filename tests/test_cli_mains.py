@@ -94,6 +94,14 @@ def test_a_bad_argument_prints_the_usage_and_exits_2(module, monkeypatch, capsys
     assert captured.out == "" and "usage:" in captured.err and "error:" in captured.err
 
 
+def test_svo_filter_grabber_ignores_arguments_after_the_folder_as_in_041(tmp_path, monkeypatch):
+    from sed_tools.filters import svo
+    seen = []
+    monkeypatch.setattr(svo, "run_interactive", seen.append)
+    assert svo.main([str(tmp_path), "extra"]) == 0
+    assert seen == [str(tmp_path)]
+
+
 # ----------------------------------------------------------------------
 # Short runs
 # ----------------------------------------------------------------------

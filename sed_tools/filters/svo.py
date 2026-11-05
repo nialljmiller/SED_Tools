@@ -471,9 +471,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="Interactively browse the SVO Filter Profile Service, choose a facility and instrument, then "
                     "download all filters for that instrument into <base_dir>/<Facility>/<Instrument>/<Band>.dat.")
-    parser.add_argument("base_dir", nargs="?", default=DEFAULT_BASE_DIR,
-                        help=f"If base_dir is not provided, the default is {DEFAULT_BASE_DIR}.")
-    base_dir = parser.parse_args(list(argv or sys.argv[1:])).base_dir
+    parser.add_argument("base_dir", nargs="*", default=[DEFAULT_BASE_DIR],
+                        help=f"If base_dir is not provided, the default is {DEFAULT_BASE_DIR}. "
+                             "Further arguments are ignored, as in 0.4.1.")
+    base_dir = parser.parse_args(list(argv or sys.argv[1:])).base_dir[0]
     try:
         run_interactive(base_dir)
         return 0
