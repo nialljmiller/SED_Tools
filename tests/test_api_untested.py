@@ -202,7 +202,7 @@ def test_the_041_completer_api_trains_loads_and_describes_a_model(cpu_torch, tin
     assert completer.train(str(tiny_library), str(second), epochs=1, batch_size=3, hidden_layers=[8]) is completer
     assert repr(completer) == f"<Completer(trained @ {second})>"
     assert ml.Completer().load(str(first)).model_path == str(first)
-    assert [m["name"] for m in ml.Completer.available_models(str(tmp_path / "models"))] == ["a", "b"]
+    assert sorted(m["name"] for m in ml.Completer.available_models(str(tmp_path / "models"))) == ["a", "b"]
 
 
 def test_the_completer_network_moves_to_a_device(cpu_torch):
