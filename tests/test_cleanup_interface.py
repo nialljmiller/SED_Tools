@@ -815,6 +815,7 @@ def test_ml_generator_auto_fails_at_once_without_optuna(monkeypatch, capsys):
     out, err = capsys.readouterr()
     assert not out and len(err.splitlines()) == 1  # the one-line refusal of the other ML actions
     assert err.startswith("Error: missing ") and "optuna" in err and "ml-tune" in err
+    assert "ml-tune" in err.split("pip install ")[1]
 
 
 # ----------------------------------------------------------------------

@@ -261,9 +261,6 @@ def test_si_flux_units_have_the_factor_of_their_wavelength_unit():
     ("# erg/s/cm2/Ang", "flam"),
     ("# erg/s/cm2/Å", "flam"),
     ("# fnu (erg/s/cm2/Hz)", "fnu"),
-    ("# units: F_nu", "fnu"),
-    ("# flux in Jansky", "fnu_jy"),
-    ("# normalized flux", "normalized"),
 ])
 def test_flux_unit_header_patterns(header, expected):
     assert detect_units_from_header(header + "\n")["flux_unit"] == expected

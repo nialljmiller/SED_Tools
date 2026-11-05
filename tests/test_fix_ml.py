@@ -80,6 +80,26 @@ def test_train_complete_and_generate_run_on_mps(tiny_library, tmp_path, monkeypa
         assert np.all(np.isfinite(flux_out)) and len(flux_out) == len(wl_out) == 1000
 
 
+def test_both_networks_keep_their_defaults_model_pt_keys_and_move_with_to(cpu_torch):
+    # The two networks share one base class (ml/common.Network); SEDGeneratorNetwork gained .to().
+    # model.pt is the mlp's state_dict, keyed by layer index as 0.4.1 and 0.5.0 wrote it.
+    torch = cpu_torch
+    completer = mc.SEDCompleterNetwork(input_dim=4, output_dim=5, hidden_layers=[3, 2])
+    generator = mg.SEDGeneratorNetwork(output_dim=5, hidden_layers=[3, 2])
+    batch_norm = ["weight", "bias", "running_mean", "running_var", "num_batches_tracked"]
+    keys = (["0.weight", "0.bias"] + [f"1.{k}" for k in batch_norm] + ["4.weight", "4.bias"]
+            + [f"5.{k}" for k in batch_norm] + ["7.weight", "7.bias"])
+    for network, n_in, dropout in ((completer, 4 + 3, 0.3), (generator, 3, 0.2)):
+        assert (network.output_dim, network.hidden_layers, network.dropout) == (5, [3, 2], dropout)
+        assert list(network.state_dict()) == keys
+        assert tuple(network.state_dict()["0.weight"].shape) == (3, n_in)
+        assert network.to(torch.device("cpu")) is network and network.device == torch.device("cpu")
+        assert {p.device.type for p in network.parameters()} == {"cpu"}
+    assert completer.input_dim == 4
+    assert mc.SEDCompleterNetwork(4, 5).hidden_layers == [256, 128, 64]
+    assert mg.SEDGeneratorNetwork(5).hidden_layers == [512, 512, 256, 256]
+
+
 # ---------------------------------------------------------------------
 # extend_catalog on the lookup tables sed_tools writes ('#file_name,...')
 # ---------------------------------------------------------------------
@@ -230,20 +250,6 @@ def test_auto_train_generator_saves_a_model_sedgenerator_and_the_api_load(cpu_to
         teff=6000.0, logg=4.25, metallicity=-0.25)
     np.testing.assert_array_equal(wl_api, wl)
     np.testing.assert_array_equal(flux_api, flux_out)
-
-
-def test_ml_generator_auto_names_the_extra_when_optuna_is_missing(monkeypatch, capsys):
-    import importlib.util
-    import sys
-    from sed_tools import cli
-
-    real_find_spec = importlib.util.find_spec
-    monkeypatch.setattr(importlib.util, "find_spec",
-                        lambda name, *args: None if name == "optuna" else real_find_spec(name, *args))
-    monkeypatch.setattr(sys, "argv", ["sed-tools", "ml_generator", "--auto", "--library", "lib", "--output", "out"])
-
-    assert cli.main() == 1
-    assert "ml-tune" in capsys.readouterr().err.split("pip install ")[1]
 
 
 def test_optuna_is_an_optional_extra_only():

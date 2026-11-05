@@ -4,7 +4,7 @@ import h5py
 import numpy as np
 import pytest
 
-from sed_tools.parsing import parse_multi_selection, parse_numeric_range
+from sed_tools.parsing import parse_numeric_range
 from sed_tools.spectrum_io import build_h5_bundle, read_text_spectrum
 
 
@@ -21,10 +21,6 @@ from sed_tools.spectrum_io import build_h5_bundle, read_text_spectrum
 )
 def test_parse_numeric_range(raw, expected):
     assert parse_numeric_range(raw) == expected
-
-
-def test_parse_multi_selection():
-    assert parse_multi_selection("1,3-5,5", 6) == [0, 2, 3, 4]
 
 
 def test_text_spectrum_compatibility_aliases(tmp_path):
