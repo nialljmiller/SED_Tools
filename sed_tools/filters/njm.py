@@ -307,8 +307,7 @@ class NJMFilterGrabber:
         else:
             return index_names(response.text)
 
-        return [name.removesuffix(".dat") for name in self._parse_directory_listing(instrument_url)
-                if name.endswith(".dat")]
+        return [name for name in self._parse_directory_listing(instrument_url) if name.endswith(".dat")]
 
     def _parse_directory_listing(self, url: str, *, directories_only: bool = False) -> List[str]:
         """The entries of an Apache directory listing (only subdirectories with ``directories_only``); [] for a 404."""

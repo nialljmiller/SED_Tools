@@ -43,6 +43,11 @@ Fixed
   as ``Loose.bin`` directly in the model root named the model after the
   model root's folder (e.g. ``stellar_models``). It is now named ``Loose``,
   after the file. A ``flux_cube.bin`` is still named after its folder.
+- **NJMFilterGrabber.discover_filters** gave band names as an instrument's
+  index file lists them (``g.dat``, as in 0.4.1) but without ``.dat``
+  (``g``) when NJM has no readable index file and the directory listing is
+  used instead. Both now give ``g.dat``, and so do ``get_filter_info`` and
+  the download error messages. Downloads are unchanged.
 
 Version 0.5.0 (November 2026)
 ----------------------------
