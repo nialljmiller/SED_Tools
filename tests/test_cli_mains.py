@@ -35,6 +35,8 @@ def offline(monkeypatch, tmp_path):
 
     monkeypatch.setattr(requests.Session, "send", refuse)
     monkeypatch.chdir(tmp_path)
+    # svo_regen_spectra_lookup without argument parsing rewrote every lookup table under it, even for --help
+    monkeypatch.setattr("sed_tools.cube.model.STELLAR_DIR_DEFAULT", tmp_path / "stellar_models")
 
 
 def answer(monkeypatch, *replies):
@@ -74,8 +76,9 @@ HELP = {
     "njm_filter_grabber": "Download filters from NJM mirror",
     "precompute_flux_cube": "Precompute flux cube for stellar spectral grids",
     "svo_filter_grabber": "Interactively browse the SVO Filter Profile Service",
+    "svo_regen_spectra_lookup": "Rewrite lookup_table.csv in every spectral grid folder from the headers of its spectra",
 }
-# svo_filter_grabber takes any other argument as its base directory, and svo_regen_spectra_lookup takes none.
+# svo_filter_grabber takes any other argument as its base directory.
 ARGPARSE = sorted(set(HELP) - {"svo_filter_grabber"})
 
 

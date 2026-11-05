@@ -19,6 +19,12 @@ Fixed
   generator on an 82-spectrum grid at 64. That one-spectrum batch is now
   left out of each epoch. Training that ran before is unchanged, and so are
   the models it makes.
+- **python -m sed_tools.svo_regen_spectra_lookup --help** rewrote every
+  ``lookup_table.csv`` under the stellar-models folder instead of printing
+  help, because the command read no arguments. ``--help`` now prints its
+  usage (naming that folder) and changes nothing, and an unknown argument is
+  a usage error (exit 2). Run without arguments, it rewrites the tables as
+  before.
 
 Version 0.5.0 (November 2026)
 ----------------------------
