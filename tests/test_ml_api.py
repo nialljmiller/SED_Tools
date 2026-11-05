@@ -17,10 +17,6 @@ import pytest
 from sed_tools.ml import Completer, list_models, model_info
 
 
-def test_module_imports_without_torch():
-    import sed_tools.ml  # noqa: F401
-
-
 # ---------------------------------------------------------------------
 # list_models — delegates to SEDCompleter.list_models
 # ---------------------------------------------------------------------

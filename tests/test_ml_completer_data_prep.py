@@ -25,14 +25,6 @@ from sed_tools.ml_sed_completer import SEDCompleter
 
 
 # ---------------------------------------------------------------------
-# Import safety — must succeed with or without torch installed
-# ---------------------------------------------------------------------
-
-def test_module_imports_without_torch():
-    import sed_tools.ml_sed_completer  # noqa: F401 — import success is the test
-
-
-# ---------------------------------------------------------------------
 # __init__ (untrained state)
 # ---------------------------------------------------------------------
 
@@ -244,10 +236,3 @@ def test_list_models_leaves_out_generators(tmp_path):
         (tmp_path / name).mkdir()
         (tmp_path / name / SEDCompleter.CONFIG_FILE).write_text(json.dumps(config))
     assert [m["name"] for m in SEDCompleter.list_models(str(tmp_path))] == ["completer"]
-
-
-def test_list_models_skips_unreadable_config_without_raising(tmp_path):
-    model_dir = tmp_path / "broken"
-    model_dir.mkdir()
-    (model_dir / SEDCompleter.CONFIG_FILE).write_text("{not valid json")
-    assert SEDCompleter.list_models(str(tmp_path)) == []

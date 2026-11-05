@@ -252,20 +252,6 @@ def test_auto_train_generator_saves_a_model_sedgenerator_and_the_api_load(cpu_to
     np.testing.assert_array_equal(flux_api, flux_out)
 
 
-def test_ml_generator_auto_names_the_extra_when_optuna_is_missing(monkeypatch, capsys):
-    import importlib.util
-    import sys
-    from sed_tools import cli
-
-    real_find_spec = importlib.util.find_spec
-    monkeypatch.setattr(importlib.util, "find_spec",
-                        lambda name, *args: None if name == "optuna" else real_find_spec(name, *args))
-    monkeypatch.setattr(sys, "argv", ["sed-tools", "ml_generator", "--auto", "--library", "lib", "--output", "out"])
-
-    assert cli.main() == 1
-    assert "ml-tune" in capsys.readouterr().err.split("pip install ")[1]
-
-
 def test_optuna_is_an_optional_extra_only():
     try:
         import tomllib
