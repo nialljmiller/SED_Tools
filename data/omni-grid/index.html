@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Omni-grid Study</title>
+    <style>
+        body {
+            background-color: #000080;
+            color: #00FF00;
+            font-family: "Courier New", Courier, monospace;
+            margin: 0;
+            padding: 20px;
+        }
+
+        a { color: #000080; }
+        a:visited { color: #FF00FF; }
+        a:hover { color: #00FFFF; background-color: #000000; }
+
+        .main-container {
+            border: 5px ridge #C0C0C0;
+            background-color: #C0C0C0;
+            color: #000000;
+            padding: 15px;
+            margin: 10px auto;
+            max-width: 1100px;
+        }
+
+        .header {
+            text-align: center;
+            background-color: #000080;
+            color: #FFFFFF;
+            padding: 10px;
+            border: 3px outset #808080;
+        }
+
+        .header h1 { margin: 5px; text-shadow: 2px 2px #000000; }
+        .header a { color: #FFFF00; }
+
+        .section {
+            border: 3px inset #808080;
+            background-color: #FFFFFF;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        .section-title {
+            background-color: #000080;
+            color: #FFFFFF;
+            padding: 5px 10px;
+            margin: -10px -10px 10px -10px;
+            font-weight: bold;
+            font-size: 14px;
+            font-family: "Courier New", monospace;
+        }
+
+        h3 {
+            background-color: #008080;
+            color: #FFFFFF;
+            margin: 14px 0 6px;
+            padding: 2px 6px;
+            font-size: 13px;
+            font-family: "Courier New", monospace;
+        }
+
+        table { border-collapse: collapse; width: 100%; font-size: 12px; }
+        th { background-color: #000080; color: #FFFFFF; padding: 4px; border: 2px outset #C0C0C0; text-align: left; }
+        td { padding: 3px 6px; border: 1px solid #808080; background-color: #FFFFFF; }
+        tr:nth-child(even) td { background-color: #E0E0E0; }
+        .table-scroll { overflow-x: auto; }
+        .num { text-align: right; white-space: nowrap; }
+
+        .note {
+            background-color: #FFFFC0;
+            border: 1px solid #808080;
+            padding: 8px;
+            margin: 8px 0;
+            font-size: 12px;
+        }
+
+        .muted { color: #666666; }
+
+        .plot svg {
+            width: 100%;
+            height: auto;
+            background-color: #000000;
+            border: 3px inset #808080;
+        }
+
+        .plot text { font-family: "Courier New", monospace; font-size: 12px; fill: #00FF00; }
+
+        .heat td { text-align: center; font-family: "Courier New", monospace; padding: 2px 4px; white-space: nowrap; }
+        .heat th { text-align: center; }
+        td.c0 { background-color: #00C000 !important; }
+        td.c1 { background-color: #90EE90 !important; }
+        td.c2 { background-color: #FFD000 !important; }
+        td.c3 { background-color: #FF5050 !important; }
+        td.cx { background-color: #C0C0C0 !important; color: #666666; }
+        .legend span { display: inline-block; padding: 1px 6px; margin: 2px; border: 1px solid #808080; font-size: 12px; }
+
+        .button {
+            border: 2px outset #C0C0C0;
+            background-color: #C0C0C0;
+            font-family: "Courier New", monospace;
+            font-size: 12px;
+            cursor: pointer;
+            margin: 2px;
+        }
+        .button[aria-pressed="true"] { border-style: inset; background-color: #A0A0A0; font-weight: bold; }
+
+        .changelog li, .refs li { margin: 4px 0; }
+        code { font-size: 12px; }
+
+        .footer { text-align: center; font-size: 11px; margin-top: 20px; color: #00FF00; }
+        .footer a { color: #00FFFF; }
+
+        @media (max-width: 600px) {
+            body { padding: 6px; }
+            .main-container { padding: 6px; border-width: 3px; }
+            .header h1 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="header">
+        <h1>THE OMNI-GRID STUDY</h1>
+        <font size="2">One combined grid of stellar spectra for MESA: working notes</font><br>
+        <font size="1"><a href="../">&#8592; back to the SED Tools data archive</a></font>
+    </div>
+
+    <div class="section">
+        <div class="section-title">ABOUT THESE NOTES</div>
+        <p>These are the study's public working notes. They started on 6 November 2026 and grow as the work does;
+        the <a href="#changelog">changelog</a> at the bottom dates every change. Every number on this page is
+        dated and says where it comes from. Numbers marked <b>benchmark</b> come from a first run on 22 instruments
+        (801 bands); they will be replaced by the run on all 12,259 NJM bands.</p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">THE AIM</div>
+        <p>MESA's equation of state is not one table. It is a blend of several (OPAL, SCVH, FreeEOS, HELM, PC, Skye
+        and others): each is used where its physics holds, and neighbouring tables are blended smoothly where they
+        overlap (<a href="https://ui.adsabs.harvard.edu/abs/2023ApJS..265...15J" target="_blank">Jermyn et al. 2023</a>).</p>
+        <p>The omni-grid does the same for stellar spectra (SEDs). It is one grid for MESA's colors module in which</p>
+        <ul>
+            <li>each source grid is used where its physics is valid (for example, molecular opacities in cool stars);</li>
+            <li>neighbouring grids are blended where, and only where, they agree;</li>
+            <li>every node can be traced back to the source spectra it came from.</li>
+        </ul>
+        <p>It should be simple to justify and good enough for most uses, so it can ship as MESA's default.</p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">METHOD</div>
+        <h3>1. GUARD</h3>
+        <p>Every grid first goes through SED_Tools' grid guard, a set of eight automatic, read-only checks. One of
+        them is flux conservation: each spectrum's integral should equal &sigma;T<sub>eff</sub><sup>4</sup>. Only
+        grids that pass are served on NJM and used here.</p>
+        <h3>2. PHOTOMETRY</h3>
+        <p>Every spectrum of every passing grid is put through every NJM filter, using SED_Tools'
+        <code>band_average_flux_lambda</code> unchanged. The stored number is the ST magnitude of the band-averaged
+        surface flux. AB and Vega magnitudes, and bolometric corrections, follow from it by adding constants:</p>
+        <ul>
+            <li>m<sub>X</sub> = m<sub>ST</sub> + (X &minus; ST), with the offset per band;</li>
+            <li>BC<sub>X</sub> = M<sub>bol</sub> &minus; M<sub>X</sub>, with M<sub>bol</sub> from &sigma;T<sub>eff</sub><sup>4</sup> and
+                M<sub>bol,&#9737;</sub> = 4.74 (<a href="https://arxiv.org/abs/1510.06262" target="_blank">IAU 2015 Resolution B2</a>).
+                The radius cancels, so at equal T<sub>eff</sub> the difference in BC between two grids is just the
+                difference in their surface magnitudes.</li>
+            <li>The Vega system has CALSPEC's Vega at magnitude 0 in every band (Vega &equiv; 0).</li>
+        </ul>
+        <p>Before anything is written, 300 random spectrum&ndash;band pairs per grid are checked against SED_Tools'
+        own photometry (agreement to about 10<sup>&minus;13</sup> mag). The operator applied to Vega must also
+        reproduce each band's published Vega zero point. The tables are browsable on the archive page: open a grid's
+        <b>PHOTOMETRY</b>, or an instrument's <b>DETAILS</b>.</p>
+        <h3>3. COMPARISON MAPS</h3>
+        <p>For a pair of grids A and B, &Delta;BC = BC<sub>A</sub> &minus; BC<sub>B</sub> is measured at each of A's
+        points (T<sub>eff</sub>, log g, [M/H]), band by band. B's value comes from its own node when one coincides.
+        Otherwise B's band fluxes are interpolated linearly inside a cell of B whose corners all hold spectra, so
+        interpolation never crosses a hole in B. A band counts only where both spectra cover it fully. [M/H] is
+        compared at its nominal value, as a MESA user would choose a model, so the grids' different solar mixtures
+        are part of the measured difference.</p>
+        <p>Each point is classed by its worst |&Delta;BC| over a set of standard bands: &le; 0.01, &le; 0.03,
+        &le; 0.1 or &gt; 0.1 mag. A noise floor (each node of B predicted from its two T<sub>eff</sub> neighbours)
+        shows how much of a difference interpolation alone could cause.</p>
+        <h3>4. REGION BOUNDARIES AND BLENDS</h3>
+        <p>Not started. The maps will show where each grid can be trusted and where neighbouring grids agree well
+        enough to blend. The boundaries and blend zones will be chosen from that evidence.</p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">GRIDS AND THEIR GUARD STATUS</div>
+        <p class="muted">As of 6 November 2026.</p>
+        <div class="table-scroll"><table>
+            <thead><tr><th>GRID</th><th>SPECTRA</th><th>GUARD</th><th>IN THE PHOTOMETRY</th><th>NOTE</th></tr></thead>
+            <tbody>
+                <tr><td>Kurucz2003all</td><td class="num">8,092</td><td>pass</td><td>benchmark (22 instruments)</td><td>Castelli &amp; Kurucz (2003) ATLAS9, two &alpha; variants (0 and +0.4)</td></tr>
+                <tr><td>Kurucz</td><td class="num">3,808</td><td>pass</td><td>benchmark (22 instruments)</td><td>Identical to Kurucz2003all (&alpha; = 0) above 4500 K; see the null test below</td></tr>
+                <tr><td>NextGen2</td><td class="num">2,712</td><td>pass</td><td>benchmark (22 instruments)</td><td>NextGen (Hauschildt et al. 1999)</td></tr>
+                <tr><td>bbody</td><td class="num">588</td><td>pass</td><td>benchmark (22 instruments)</td><td>Blackbodies, used as a control</td></tr>
+                <tr><td>Husfeld</td><td class="num">448</td><td>pass</td><td>in the all-band run (pending)</td><td>Variants in helium abundance, Y(He)</td></tr>
+                <tr><td>bt-cond</td><td class="num">6,028</td><td>fails flux conservation at log g &minus;0.5</td><td>not yet</td><td>The failure is in SVO's own data. Could be added later with the failing points flagged</td></tr>
+            </tbody>
+        </table></div>
+        <p>Being checked now: bt-settl, bt-nextgen (AGSS2009), hres, koester2, the TLUSTY O-star and B-star grids,
+        cond00 and dusty00. Still to be gathered: coelho, morley12, tmap2 and huss, among others.</p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">FIRST RESULTS</div>
+        <div class="note" id="results-source">Loading the figures&hellip;</div>
+
+        <h3>NEXTGEN2 VS KURUCZ2003ALL (&alpha; = 0)</h3>
+        <p><b>The two grids never agree within 0.01 mag in the standard broadbands, anywhere they overlap.</b></p>
+        <ul>
+            <li><b>Where they come closest:</b> leaving out U and u, they agree within 0.03 mag only for metal-poor
+                ([M/H] &le; &minus;1) F and G dwarfs, at about 5600&ndash;7000 K and log g 4&ndash;5.</li>
+            <li><b>At solar metallicity:</b> they differ by 0.04&ndash;0.07 mag from 5000 to 10,000 K, with NextGen2
+                redder at the same T<sub>eff</sub>. Both grids conserve flux, so this is a difference in colour, not
+                in normalisation.</li>
+            <li><b>Below 5000 K:</b> the difference is 0.15&ndash;0.9 mag, where the molecules are.</li>
+            <li><b>In U and u:</b> they differ by 0.1&ndash;0.6 mag almost everywhere.</li>
+        </ul>
+        <p>So a blend between these two grids would sit at about 5000&ndash;7000 K, and it would have to absorb a
+        colour step of 0.03&ndash;0.06 mag.</p>
+        <p>The map shows the worst |&Delta;BC| at each NextGen2 point over the bands named below the map (U and u
+        left out). Choose a metallicity. A &#9679; marks a point where Kurucz2003all has its own node; the others are
+        interpolated. Blank cells are outside Kurucz2003all or next to a hole in it.</p>
+        <div id="map-buttons"></div>
+        <div class="table-scroll" id="map"></div>
+        <div class="legend" id="map-legend"></div>
+        <p class="muted" id="map-bands"></p>
+        <div class="table-scroll" id="band-table"></div>
+        <p class="muted">The noise floor is Kurucz2003all predicting its own nodes from their T<sub>eff</sub> neighbours,
+        at double the spacing. It is largest at cool T<sub>eff</sub>, so there the nodes it has (&#9679;) are the ones
+        to trust.</p>
+
+        <h3>NULL TEST: KURUCZ VS KURUCZ2003ALL (&alpha; = 0)</h3>
+        <p>SVO serves both. They should be the same ATLAS9 models, and above 4500 K they mostly are: &Delta;BC is
+        exactly 0 at most points, and <span id="null-count">3293 of 3808</span> points agree within 0.01 mag, with U
+        and u included.</p>
+        <ul>
+            <li><b>Below 4500 K they are different models.</b> At 3500 K the optical spectra differ by up to 30%,
+                although the integrated flux agrees to 10<sup>&minus;4</sup>, so &Delta;V reaches 0.32 mag.</li>
+            <li><b>Smaller differences in metal-rich models:</b> up to 0.04 mag at 4750&ndash;5500 K ([M/H] &ge;
+                &minus;0.5, mostly +0.5), and up to 0.015 mag at 9250&ndash;11,500 K ([M/H] +0.2 and +0.5).</li>
+        </ul>
+        <p>So the two cannot simply be treated as copies of each other. This needs a line on both grids' pages.</p>
+        <div class="plot" id="null-plot"></div>
+        <p class="muted">Each dot is one Kurucz point: its worst |&Delta;BC| over U, B, V, R, I, J, H, K<sub>s</sub>,
+        G, G<sub>BP</sub>, G<sub>RP</sub>, u, g, r, i and z, against T<sub>eff</sub>, coloured by the classes of the map above.</p>
+
+        <h3>THE SUN: BC<sub>V</sub> WITH VEGA &equiv; 0</h3>
+        <p>The Sun's model, interpolated to T<sub>eff</sub> = 5772 K, log g = 4.44 and [M/H] = 0, through the
+        Bessell V curve (<a href="https://ui.adsabs.harvard.edu/abs/2012PASP..124..140B" target="_blank">Bessell &amp; Murphy 2012</a>).</p>
+        <div class="table-scroll" id="solar-table"></div>
+        <p><b>The models match the observed Sun to 0.001 mag.</b> Published solar BC<sub>V</sub> values of about
+        &minus;0.07 to &minus;0.1 use Vega at V = 0.03. SED_Tools puts Vega at 0 in every band, which makes every
+        Vega-system BC 0.03 mag larger.</p>
+
+        <h3>CHECKS OF THE CODE</h3>
+        <ul>
+            <li><b>Blackbodies against the Planck function</b> (2000&ndash;50,000 K, 16 standard bands): median
+                |&Delta;| 4&ndash;15 &times; 10<sup>&minus;5</sup> mag, worst 0.0015 in U and u. This is the
+                tabulation of SVO's blackbody grid, not the code; the integrated flux is 1.00002 &sigma;T<sup>4</sup>.</li>
+            <li><b>Vega:</b> its V magnitude is 0 by construction, and the Vega offsets match the published
+                properties.json values to 5 &times; 10<sup>&minus;7</sup> mag.</li>
+            <li><b>Detector type</b> (photon or energy counting) changes the results only where it should. A flat
+                f<sub>&lambda;</sub> gives the same answer either way. Swapping the counting type on real spectra
+                changes UBVRI, JHK<sub>s</sub> and ugriz by 0.003&ndash;0.03 mag, and the very broad Gaia G by up
+                to 0.22 mag at 30,000 K.</li>
+            <li><b>Coverage flags work:</b> the ATLAS9 grids stop at 160 &micro;m, so Herschel/SPIRE has no value in
+                them, while NextGen2, which reaches 970 &micro;m, covers it.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <div class="section-title">OPEN QUESTIONS</div>
+        <ul>
+            <li><b>Where should the NextGen2&ndash;Kurucz2003all blend go,</b> and how should it absorb the 0.03&ndash;0.06 mag
+                colour step at 5000&ndash;7000 K? Do any of the grids still being checked agree better with one or the other?</li>
+            <li><b>U and u:</b> the grids differ by 0.1&ndash;0.6 mag almost everywhere. Which is closer to observed stars?</li>
+            <li><b>A suspect NextGen2 spectrum:</b> at 9600 K, log g 3.5 and [M/H] 0, NextGen2 gives &Delta;U = 0.37 mag,
+                against about 0.09 at its neighbours. It may be a bad spectrum; check it before using NextGen2 there.</li>
+            <li><b>Solar mixtures:</b> NextGen uses Jaschek &amp; Jaschek (1995) and Castelli &amp; Kurucz (2003) use
+                Grevesse &amp; Sauval (1998). Comparing at equal Z rather than equal nominal [M/H] would shift one axis
+                by about 0.05&ndash;0.15 dex. Is it worth doing?</li>
+            <li><b>bt-cond:</b> should it be added, with its failing points (log g &minus;0.5) flagged rather than dropped?</li>
+            <li><b>Kurucz and Kurucz2003all below 4500 K:</b> which of SVO's two versions should the omni-grid use?</li>
+            <li><b>Which comparisons to publish:</b> per-point &Delta;BC for every band is about 0.3 GB per pair of grids.
+                Publish summaries for every band, and per-point maps only for the standard broadbands?</li>
+        </ul>
+    </div>
+
+    <div class="section" id="changelog">
+        <div class="section-title">CHANGELOG</div>
+        <ul class="changelog">
+            <li><b>2026-11-06</b>: Study opened. Guard run started on every pending grid. Photometry designed,
+                checked against SED_Tools and benchmarked on 22 instruments for Kurucz2003all, NextGen2, Kurucz and
+                bbody. First comparisons: NextGen2 vs Kurucz2003all, the Kurucz vs Kurucz2003all null test,
+                Kurucz2003all vs bbody (control: every point differs by more than 0.1 mag, as it should), and the
+                solar BC<sub>V</sub> check. This page started.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <div class="section-title">SOURCES</div>
+        <ul class="refs">
+            <li>Bessell, M. &amp; Murphy, S. 2012, PASP 124, 140: the UBVRI passbands.
+                [<a href="https://ui.adsabs.harvard.edu/abs/2012PASP..124..140B" target="_blank">ADS</a>]</li>
+            <li>Bohlin, R. C., Gordon, K. D. &amp; Tremblay, P.-E. 2014, PASP 126, 711: CALSPEC (Vega and the Sun).
+                [<a href="https://ui.adsabs.harvard.edu/abs/2014PASP..126..711B" target="_blank">ADS</a>]</li>
+            <li>Castelli, F. &amp; Kurucz, R. L. 2003, IAU Symposium 210: the ATLAS9 grids.
+                [<a href="https://arxiv.org/abs/astro-ph/0405087" target="_blank">arXiv</a>]</li>
+            <li>Hauschildt, P. H. et al. 1999, ApJ 525, 871: NextGen.
+                [<a href="https://arxiv.org/abs/astro-ph/9907194" target="_blank">arXiv</a>]</li>
+            <li>Jermyn, A. S. et al. 2023, ApJS 265, 15: MESA, including its blended equation of state.
+                [<a href="https://ui.adsabs.harvard.edu/abs/2023ApJS..265...15J" target="_blank">ADS</a>]</li>
+            <li>Mamajek, E. E. et al. 2015, IAU 2015 Resolution B2: the bolometric magnitude scale.
+                [<a href="https://arxiv.org/abs/1510.06262" target="_blank">arXiv</a>]</li>
+            <li>Willmer, C. N. A. 2018, ApJS 236, 47: the absolute magnitude of the Sun.
+                [<a href="https://arxiv.org/abs/1804.07788" target="_blank">arXiv</a>]</li>
+            <li>The model grids come from the
+                <a href="http://svo2.cab.inta-csic.es/theory/newov2/" target="_blank">SVO Theoretical Spectra service</a>;
+                the filters from the archive's own <a href="../">filter profiles</a>.</li>
+        </ul>
+    </div>
+</div>
+
+<div class="footer">
+    <a href="../">SED Tools data archive</a> &middot; <a href="https://github.com/nialljmiller/SED_Tools" target="_blank">SED_Tools on GitHub</a>
+</div>
+
+<script>
+// Figures for FIRST RESULTS, from results.json: an extract of the photometry run's comparison summaries and
+// validation, with its source stamped in the file.
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[c]);
+}
+
+const CLASS_NAMES = ['\u{2264} 0.01', '\u{2264} 0.03', '\u{2264} 0.1', '> 0.1'];
+const CLASS_COLOURS = ['#00C000', '#90EE90', '#FFD000', '#FF5050'];
+
+function drawMap(pair, metallicity) {
+    const rows = pair.map.filter(r => r[2] === metallicity);
+    const teffs = [...new Set(rows.map(r => r[0]))].sort((a, b) => a - b);
+    const loggs = [...new Set(pair.map.map(r => r[1]))].sort((a, b) => a - b);
+    const cell = new Map(rows.map(r => [`${r[0]}|${r[1]}`, r]));
+    let html = `<table class="heat"><thead><tr><th>T<sub>eff</sub> (K)</th>${loggs.map(g => `<th>log g ${g}</th>`).join('')}</tr></thead><tbody>`;
+    teffs.forEach(t => {
+        html += `<tr><th>${t}</th>` + loggs.map(g => {
+            const r = cell.get(`${t}|${g}`);
+            if (!r) return '<td class="cx"></td>';
+            const tip = `${t} K, log g ${g}, [M/H] ${metallicity}: worst |\u{394}BC| ${r[3].toFixed(3)} mag (${r[5] ? 'Kurucz2003all node' : 'interpolated'})`;
+            return `<td class="c${r[4]}" title="${escapeHtml(tip)}">${r[3].toFixed(3)}${r[5] ? ' \u{25cf}' : ''}</td>`;
+        }).join('') + '</tr>';
+    });
+    document.getElementById('map').innerHTML = html + '</tbody></table>';
+}
+
+function showPair(pair) {
+    const metallicities = [...new Set(pair.map.map(r => r[2]))].sort((a, b) => b - a);
+    const buttons = document.getElementById('map-buttons');
+    buttons.innerHTML = '[M/H]: ' + metallicities.map(m =>
+        `<button type="button" class="button" data-m="${m}" aria-pressed="${m === 0}">${m > 0 ? '+' : ''}${m}</button>`).join('');
+    buttons.addEventListener('click', event => {
+        const b = event.target.closest('button');
+        if (!b) return;
+        buttons.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+        drawMap(pair, Number(b.dataset.m));
+    });
+    drawMap(pair, metallicities.includes(0) ? 0 : metallicities[0]);
+    const counts = pair.counts;
+    document.getElementById('map-legend').innerHTML = 'worst |\u{394}BC| (mag): ' + CLASS_NAMES.map((name, k) =>
+        `<span style="background:${CLASS_COLOURS[k]}">${name}: ${counts.coinciding[k]} at nodes, ${counts.interpolated[k]} interpolated</span>`).join('');
+    document.getElementById('map-bands').textContent = 'Bands in the map: ' +
+        Object.entries(pair.summary_bands).map(([inst, bands]) => `${inst} ${bands.join(', ')}`).join('; ') +
+        `. Of NextGen2's ${pair.points_A} points, ${pair.B_at_A_points.coinciding} coincide with a Kurucz2003all node, ` +
+        `${pair.B_at_A_points.interpolated} are interpolated and ${pair.B_at_A_points.not_covered} are outside it or next to a hole.`;
+
+    const keys = [];
+    Object.entries(pair.summary_bands).forEach(([inst, bands]) => {
+        const all = bands.slice();
+        ['U', 'u'].forEach(extra => { if (`${inst}:${extra}` in pair.bands && !all.includes(extra)) all.unshift(extra); });
+        all.forEach(b => keys.push(`${inst}:${b}`));
+    });
+    const f = (x, d = 3) => (x === null || x === undefined) ? '\u{2014}' : Number(x).toFixed(d);
+    let html = `<table><thead><tr><th>BAND</th><th>MEDIAN |\u{394}BC|<br>nodes / interp.</th><th>95th PERCENTILE<br>nodes / interp.</th>
+        <th>WORST AT A NODE (T<sub>eff</sub>/log g/[M/H])</th><th>NOISE FLOOR, 95th</th></tr></thead><tbody>`;
+    keys.filter(k => pair.bands[k]).forEach(k => {
+        const s = pair.bands[k], c = s.coinciding || {}, i = s.interpolated || {}, w = c.worst;
+        const noise = (pair.noise_floor_B_teff_loo || {})[k];
+        html += `<tr><td>${escapeHtml(k.replace(':', ' '))}</td><td class="num">${f(c.median_abs)} / ${f(i.median_abs)}</td>
+            <td class="num">${f(c.p95_abs, 2)} / ${f(i.p95_abs, 2)}</td>
+            <td class="num">${w ? `${w.dBC > 0 ? '+' : ''}${w.dBC.toFixed(2)} at ${w.teff}/${w.logg}/${w.metallicity}` : '\u{2014}'}</td>
+            <td class="num">${noise ? f(noise.p95_abs) : '\u{2014}'}</td></tr>`;
+    });
+    document.getElementById('band-table').innerHTML = html + '</tbody></table>';
+}
+
+function showNull(pair) {
+    const within = pair.counts.coinciding[0] + pair.counts.interpolated[0];
+    document.getElementById('null-count').textContent = `${within.toLocaleString()} of ${pair.points_A.toLocaleString()}`;
+    const pts = pair.map;
+    const W = 900, H = 300, L = 62, R = 14, T = 14, B = 44;
+    const t0 = Math.min(...pts.map(p => p[0])), t1 = Math.max(...pts.map(p => p[0]));
+    const top = Math.max(...pts.map(p => p[3])) * 1.08 || 0.01;
+    const x = t => L + (W - L - R) * Math.log(t / t0) / Math.log(t1 / t0);
+    const y = v => H - B - (H - T - B) * v / top;
+    let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+    [3500, 4000, 5000, 6000, 8000, 10000, 15000, 20000, 30000, 50000].filter(t => t >= t0 && t <= t1).forEach(t => {
+        svg += `<line x1="${x(t)}" x2="${x(t)}" y1="${T}" y2="${H - B}" stroke="#003300"/><text x="${x(t)}" y="${H - B + 16}" text-anchor="middle">${t}</text>`;
+    });
+    [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4].filter(v => v <= top).forEach(v => {
+        svg += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#003300"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
+    });
+    svg += `<line x1="${x(4500)}" x2="${x(4500)}" y1="${T}" y2="${H - B}" stroke="#808080" stroke-dasharray="4 4"/>` +
+           `<text x="${x(4500) + 4}" y="${T + 14}" style="fill:#C0C0C0">4500 K</text>`;
+    svg += `<rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="none" stroke="#00FF00"/>`;
+    svg += `<text x="${(L + W - R) / 2}" y="${H - 6}" text-anchor="middle">Teff (K), log scale</text>`;
+    svg += `<text transform="translate(14 ${(T + H - B) / 2}) rotate(-90)" text-anchor="middle">worst |\u{394}BC| (mag)</text>`;
+    pts.forEach(p => {
+        svg += `<circle cx="${x(p[0]).toFixed(1)}" cy="${y(p[3]).toFixed(1)}" r="2.2" fill="${CLASS_COLOURS[p[4]]}" fill-opacity="0.8"><title>${p[0]} K, log g ${p[1]}, [M/H] ${p[2]}: ${p[3].toFixed(4)}</title></circle>`;
+    });
+    document.getElementById('null-plot').innerHTML = svg + '</svg>';
+}
+
+function showSolar(s) {
+    const rows = [
+        ...Object.entries(s.models).map(([name, v]) => [`Model grid ${name.replace(/_alpha0$/, ' (\u{3b1} = 0)')}`, v]),
+        ['CALSPEC Sun through the same V curve and Vega: m<sub>V</sub> = ' + s.calspec_sun.m_V.toFixed(3) +
+            ', M<sub>V</sub> = ' + s.calspec_sun.M_V.toFixed(3), s.calspec_sun.BC_V_vega0],
+        ['<a href="https://arxiv.org/abs/1804.07788" target="_blank">Willmer 2018</a>, with Vega at V = 0.03 (M<sub>V</sub> = 4.82)', -0.08],
+        ['Willmer 2018, moved to Vega \u{2261} 0', -0.05],
+        [`A pure ${s.teff} K blackbody (for scale)`, s.planck_5772K],
+    ];
+    document.getElementById('solar-table').innerHTML = '<table><thead><tr><th>SOURCE</th><th>BC<sub>V</sub> (mag)</th></tr></thead><tbody>' +
+        rows.map(([what, v]) => `<tr><td>${what}</td><td class="num">${v.toFixed(3)}</td></tr>`).join('') + '</tbody></table>';
+}
+
+fetch('results.json')
+    .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    .then(data => {
+        const src = data.source || {};
+        document.getElementById('results-source').innerHTML =
+            `<b>Source of the figures:</b> <a href="results.json">results.json</a>, extracted from the benchmark run of
+            ${escapeHtml((src.run || '').slice(0, 10))} (${escapeHtml(src.code || '')}). ${escapeHtml(src.note || '')}
+            Kurucz2003all is its &alpha; = 0 variant throughout.`;
+        showPair(data.nextgen2_vs_kurucz2003all);
+        showNull(data.kurucz_vs_kurucz2003all);
+        showSolar(data.solar_bc_v);
+    })
+    .catch(error => {
+        document.getElementById('results-source').textContent = `The figures could not be loaded (${error.message}).`;
+    });
+</script>
+</body>
+</html>

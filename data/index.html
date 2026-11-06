@@ -31,26 +31,6 @@
             color: #FFFFFF;
             padding: 10px;
             border: 3px outset #808080;
-            position: relative;
-            overflow: hidden;
-            touch-action: pan-y;
-        }
-
-        .header > * {
-            position: relative;
-            z-index: 1;
-        }
-
-        .header > canvas.banner-trail {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-            image-rendering: crisp-edges;
-            image-rendering: pixelated;
         }
 
         .header h1 {
@@ -389,6 +369,47 @@
             font-family: "Courier New", monospace;
             display: inline-block;
         }
+
+        .phot-section {
+            position: sticky;
+            left: 0;
+            max-width: calc(100vw - 150px);
+        }
+
+        .phot-section > summary {
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .phot-controls {
+            font-size: 12px;
+            margin: 6px 0;
+            line-height: 2;
+        }
+
+        .phot-controls label {
+            margin-right: 12px;
+            white-space: nowrap;
+        }
+
+        .phot-controls select, .phot-controls input {
+            font-family: "Courier New", monospace;
+            font-size: 12px;
+            max-width: 100%;
+        }
+
+        .phot-flag {
+            background-color: #FFFFC0;
+            border: 1px solid #808080;
+            padding: 4px 6px;
+            margin: 4px 0;
+            font-size: 12px;
+        }
+
+        .phot-table td {
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -444,6 +465,12 @@
 
     <div class="section">
         <div class="section-title"> STELLAR ATMOSPHERE MODELS</div>
+        <div class="filter-explanation">
+            <b>PHOTOMETRY</b> opens a grid's synthetic photometry: pick an instrument and see each band's bolometric
+            correction or magnitude against T<sub>eff</sub>. How the grids compare is written up in the
+            <a href="omni-grid/">omni-grid study</a>.
+        </div>
+        <div class="table-scroll">
         <table id="models-table">
             <thead>
                 <tr>
@@ -459,6 +486,7 @@
                 <tr><td colspan="6" align="center"><span class="blink">LOADING...</span></td></tr>
             </tbody>
         </table>
+        </div>
     </div>
 
     <div class="section">
@@ -470,6 +498,7 @@
             Detector type describes photon or energy counting, not an additional optical component.
             <b>DETAILS</b> opens each instrument's band properties (pivot, width, zero points), descriptions,
             references to cite, and where every curve came from, including what the SVO Filter Profile Service said about it.
+            Its <b>SYNTHETIC PHOTOMETRY</b> section shows each band's bolometric correction or magnitude in the stellar grids.
             Link to an instrument with <code>#Facility/Instrument</code>.
             <b>Downloading several filters:</b> tick whole instruments here, or single bands inside DETAILS, then press
             <b>DOWNLOAD ZIP</b>. Each instrument comes as a MESA-ready folder (the curves, an index file listing them,
@@ -529,6 +558,7 @@
     <center>
         <a class="button" href="https://github.com/nialljmiller/SED_Tools" target="_blank">&#128193; GitHub Repo</a>
         <a class="button" href="index.json">&#128196; Raw JSON Index</a>
+        <a class="button" href="omni-grid/">&#128202; Omni-grid Study</a>
     </center>
 
 </div>
@@ -722,6 +752,7 @@ function renderDetails(record, info, props) {
     files.push(`<a href="${folder}">all files</a>`);
     html += `<h4>FILES</h4><p>${files.join(' \u{b7} ')}</p>`;
     html += `<h4>TRANSMISSION</h4><div class="curve-plot"><span class="blink">LOADING CURVES...</span></div>`;
+    html += '<h4>SYNTHETIC PHOTOMETRY</h4><div class="phot-box"></div>';
     return html + '</div>';
 }
 
@@ -751,6 +782,7 @@ function toggleDetails(key, toggle) {
             cell.innerHTML = renderDetails(record, info, props);
             syncSelection(key);
             plotInstrument(record, props, cell.querySelector('.curve-plot'));
+            photSection(cell.querySelector('.phot-box'), {instrument: key});
         });
     }
     return true;
@@ -1017,6 +1049,278 @@ async function plotInstrument(record, props, box) {
     redraw();
 }
 
+// Synthetic photometry (photometry/index.json lists what exists, grid -> instruments and instrument -> grids).
+// photometry/<grid>/points.json: each point's axes, m_bol (from sigma Teff^4, M_bol,sun = 4.74), the ratio of the
+// spectrum's integral to sigma Teff^4, and an empty flag. photometry/<grid>/<Facility>/<Instrument>.json: per band,
+// the ST magnitude m_st of the band-averaged surface flux at every point, AB_minus_ST, Vega_minus_ST and the
+// fraction of the band outside the spectrum. m_X = m_st + X_minus_ST and BC_X = m_bol - m_X.
+// Nothing is fetched until a section is opened, then one file per choice (NJM's flood guard counts requests).
+const PHOT = {root: 'photometry/', index: null, files: {}, views: 0};
+const AXIS_LABELS = {teff: 'T<sub>eff</sub> (K)', logg: 'log g', metallicity: '[M/H]'};
+const SYSTEM_OFFSET = {AB: 'AB_minus_ST', Vega: 'Vega_minus_ST', ST: null};
+
+function photIndex() {
+    if (!PHOT.index) PHOT.index = fetchJson(PHOT.root + 'index.json').catch(() => null);
+    return PHOT.index;
+}
+
+function photUrl(grid, instrument) {
+    return PHOT.root + encodeURIComponent(grid) + '/' +
+        (instrument ? instrument.split('/').map(encodeURIComponent).join('/') + '.json' : 'points.json');
+}
+
+function photFetch(url) {
+    if (!PHOT.files[url]) PHOT.files[url] = fetchJson(url).catch(error => { delete PHOT.files[url]; throw error; });
+    return PHOT.files[url];
+}
+
+function megabytes(bytes) {
+    return typeof bytes === 'number' ? ` (${(bytes / 1e6).toFixed(bytes < 1e6 ? 2 : 1)} MB)` : '';
+}
+
+function axisLabel(axis) {
+    return AXIS_LABELS[axis] || escapeHtml(axis);
+}
+
+// The section in an instrument's DETAILS ({instrument: "F/I"}) or under a grid's row ({grid, open}).
+function photSection(box, {instrument, grid, open}) {
+    if (!box) return;
+    box.innerHTML = `<details class="phot-section"${open ? ' open' : ''}><summary>${instrument
+        ? 'Show this instrument\'s bands in the stellar grids (bolometric corrections and magnitudes)'
+        : `Synthetic photometry of ${escapeHtml(grid)} in NJM's filters`}</summary>
+        <div class="phot-body"><span class="blink">LOADING...</span></div></details>`;
+    const details = box.firstElementChild, body = details.querySelector('.phot-body');
+    let started = false;
+    const start = () => {
+        if (started || !details.open) return;
+        started = true;
+        photIndex().then(index => {
+            let entries = index && (instrument ? (index.instruments || {})[instrument]
+                                               : ((index.grids || {})[grid] || {}).instruments);
+            if (Array.isArray(entries)) entries = Object.fromEntries(entries.map(name => [name, null]));
+            if (!entries || !Object.keys(entries).length) {
+                body.innerHTML = `<p class="metadata-missing">No synthetic photometry for this ${instrument ? 'instrument' : 'grid'} yet.</p>`;
+                return;
+            }
+            photChooser(body, entries, instrument, grid, index);
+        });
+    };
+    details.addEventListener('toggle', start);
+    start();
+}
+
+function photChooser(body, entries, instrument, grid, index) {
+    const names = Object.keys(entries).sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+    const stamp = index.computed ? ` Computed ${escapeHtml(index.computed.slice(0, 10))}.` : '';
+    let html = '<div class="phot-controls">';
+    if (instrument) {
+        html += `<b>${names.length} grid${names.length === 1 ? '' : 's'}:</b> ${names.map(escapeHtml).join(', ')}.${stamp}<br>
+            <label>Grid <select class="phot-pick"><option value="">choose a grid</option>` +
+            names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}${megabytes(entries[n])}</option>`).join('') +
+            '</select></label>';
+    } else {
+        const list = `phot-list-${encodeURIComponent(grid).replace(/[^A-Za-z0-9]/g, '_')}`;
+        html += `<b>${names.length} instrument${names.length === 1 ? '' : 's'}</b> computed.${stamp}<br>
+            <label>Instrument <input class="phot-pick" list="${list}" size="28" placeholder="type to search, e.g. a facility"></label>
+            <datalist id="${list}">` +
+            names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(megabytes(entries[n]).trim())}</option>`).join('') +
+            '</datalist>';
+    }
+    body.innerHTML = html + '</div><div class="phot-view"></div>';
+    const view = body.querySelector('.phot-view');
+    body.querySelector('.phot-pick').addEventListener('change', event => {
+        const choice = event.target.value;
+        if (!(choice in entries)) return;
+        const [g, inst] = instrument ? [choice, instrument] : [grid, choice];
+        view.innerHTML = `<span class="blink">LOADING ${escapeHtml(inst)} IN ${escapeHtml(g)}${megabytes(entries[choice])}...</span>`;
+        Promise.all([photFetch(photUrl(g)), photFetch(photUrl(g, inst))])
+            .then(([points, table]) => photView(view, points, table, g, inst))
+            .catch(error => { view.innerHTML = `<p class="note-warn">Could not load the photometry: ${escapeHtml(error.message)}</p>`; });
+    });
+}
+
+// The points of a variant: those whose extra parameters equal the variant's.
+function variantMembers(points, variant) {
+    const p = points.points, params = Object.entries((variant && variant.params) || {});
+    const members = [];
+    for (let i = 0; i < p[points.axes[0]].length; i++) {
+        if (params.every(([k, v]) => p[k] && Math.abs(p[k][i] - v) < 1e-9)) members.push(i);
+    }
+    return members;
+}
+
+// The value of an axis shared by the most points (ties: the one nearest the middle).
+function commonValue(values) {
+    const counts = new Map();
+    values.forEach(v => counts.set(v, (counts.get(v) || 0) + 1));
+    const sorted = [...counts.keys()].sort((a, b) => a - b), middle = sorted[Math.floor(sorted.length / 2)];
+    return sorted.reduce((best, v) => (counts.get(v) > counts.get(best) ||
+        (counts.get(v) === counts.get(best) && Math.abs(v - middle) < Math.abs(best - middle))) ? v : best, sorted[0]);
+}
+
+function photView(view, points, table, grid, instrument) {
+    const bands = Object.keys(table.bands || {}).sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+    const variants = points.variants && points.variants.length ? points.variants : [{name: null, params: {}}];
+    const axes = points.axes || ['teff'];
+    const xAxis = axes.includes('teff') ? 'teff' : axes[0];
+    const state = {
+        band: bands.find(b => !table.bands[b].error) || bands[0],
+        quantity: 'BC', system: 'Vega',
+        variant: Math.max(0, variants.findIndex(v => v.name && v.name === points.default_variant)),
+        fixed: {}, id: ++PHOT.views, table: false,
+    };
+    const render = () => {
+        const p = points.points, band = table.bands[state.band] || {};
+        const variant = variants[state.variant];
+        const members = variantMembers(points, variant);
+        const others = axes.filter(a => a !== xAxis && p[a]);
+        others.forEach(a => {
+            const values = members.map(i => p[a][i]);
+            if (!values.includes(state.fixed[a])) state.fixed[a] = commonValue(values);
+        });
+        const rows = members.filter(i => others.every(a => p[a][i] === state.fixed[a]))
+            .sort((i, j) => p[xAxis][i] - p[xAxis][j]);
+        if (state.system === 'Vega' && band.Vega_minus_ST === null) state.system = 'AB';
+
+        let html = '<div class="phot-controls">';
+        html += `<label>Band <select data-phot="band">` + bands.map(b =>
+            `<option value="${escapeHtml(b)}"${b === state.band ? ' selected' : ''}${table.bands[b].error ? ' disabled' : ''}>${escapeHtml(b)}${table.bands[b].error ? ' (not computed)' : ''}</option>`).join('') +
+            '</select></label>';
+        if (variants.length > 1) {
+            html += `<label>Variant <select data-phot="variant">` + variants.map((v, k) => {
+                const params = Object.entries(v.params || {}).map(([a, x]) => `${a} = ${x}`).join(', ');
+                return `<option value="${k}"${k === state.variant ? ' selected' : ''}>${escapeHtml(params || v.name || `variant ${k + 1}`)}${v.name && v.name === points.default_variant ? ' (default)' : ''}</option>`;
+            }).join('') + '</select></label>';
+        }
+        others.forEach(a => {
+            const values = [...new Set(members.map(i => p[a][i]))].sort((x, y) => x - y);
+            html += `<label>${axisLabel(a)} <select data-phot="axis" data-axis="${escapeHtml(a)}">` + values.map(v =>
+                `<option value="${v}"${v === state.fixed[a] ? ' selected' : ''}>${v}</option>`).join('') + '</select></label>';
+        });
+        html += '<br>' + ['BC', 'magnitude'].map(q =>
+            `<label><input type="radio" name="q-${state.id}" data-phot="quantity" value="${q}"${q === state.quantity ? ' checked' : ''}> ${q === 'BC' ? 'bolometric correction' : 'surface magnitude'}</label>`).join('');
+        html += Object.keys(SYSTEM_OFFSET).map(s => {
+            const off = SYSTEM_OFFSET[s] && band[SYSTEM_OFFSET[s]];
+            const missing = SYSTEM_OFFSET[s] && (off === null || off === undefined);
+            return `<label><input type="radio" name="s-${state.id}" data-phot="system" value="${s}"${s === state.system ? ' checked' : ''}${missing ? ' disabled' : ''}> ${s}${missing ? ' (no Vega zero point)' : ''}</label>`;
+        }).join('');
+        html += '</div>';
+
+        if (band.error) {
+            view.innerHTML = html + `<p class="note-warn">${escapeHtml(state.band)} was not computed: ${escapeHtml(band.error)}</p>`;
+            return;
+        }
+        const offset = SYSTEM_OFFSET[state.system] ? band[SYSTEM_OFFSET[state.system]] : 0;
+        const mag = i => band.m_st[i] === null || band.m_st[i] === undefined ? null : band.m_st[i] + offset;
+        const value = i => { const m = mag(i); return m === null ? null : state.quantity === 'BC' ? p.m_bol[i] - m : m; };
+        html += `<p><b>${escapeHtml(state.band)}</b> in <b>${escapeHtml(grid)}</b>: ${escapeHtml(band.detector_type || '?')}-counting,
+            pivot ${fmt(band.pivot)} \u{c5}, AB\u{2212}ST ${fmt(band.AB_minus_ST, 4)}, Vega\u{2212}ST ${fmt(band.Vega_minus_ST, 4)} mag.
+            ${rows.length} point${rows.length === 1 ? '' : 's'} at ${others.map(a => `${axisLabel(a)} = ${state.fixed[a]}`).join(', ') || 'every value'}.</p>`;
+
+        // Coverage and quality, for the points shown and for the whole grid.
+        const flags = [];
+        const outside = band.outside;
+        if (!outside) {
+            flags.push('Coverage: the band lies wholly inside every spectrum of this grid.');
+        } else {
+            const part = rows.filter(i => outside[i] > 0), worst = Math.max(0, ...part.map(i => outside[i]));
+            const all = outside.filter(x => x > 0).length;
+            flags.push(`Coverage: at ${part.length} of these ${rows.length} points (${all} of ${outside.length} in the grid) part of the band lies outside the spectrum, where no flux is counted; up to ${(100 * worst).toFixed(1)}% of its weight here.`);
+        }
+        const missing = rows.filter(i => mag(i) === null).length;
+        if (missing) flags.push(`No value at ${missing} point${missing === 1 ? '' : 's'}: no flux in the band (empty spectrum or band wholly outside it).`);
+        const empty = (p.empty || []).filter(Boolean).length;
+        flags.push(empty ? `Empty spectra: ${empty} in this grid (marked in the table).` : 'Empty spectra: none in this grid.');
+        const ratios = rows.map(i => p.fbol_ratio && p.fbol_ratio[i]).filter(x => typeof x === 'number');
+        if (ratios.length) flags.push(`Flux check: the spectra's integrals are ${fmt(Math.min(...ratios), 4)}\u{2013}${fmt(Math.max(...ratios), 4)} \u{d7} \u{3c3}T<sub>eff</sub><sup>4</sup> at these points.`);
+        html += `<div class="phot-flag">${flags.join('<br>')}</div>`;
+
+        html += `<div class="curve-plot">${photPlot(rows, i => p[xAxis][i], value, outside, axisLabel(xAxis),
+            state.quantity === 'BC' ? `BC (${state.system})` : `m (${state.system}), surface`, state.quantity !== 'BC',
+            i => `${axes.filter(a => p[a]).map(a => `${a} ${p[a][i]}`).join(', ')}: ${value(i) === null ? 'no value' : value(i).toFixed(4)}` +
+                 (outside && outside[i] > 0 ? `, ${(100 * outside[i]).toFixed(1)}% of the band outside the spectrum` : '') +
+                 (p.empty && p.empty[i] ? ', EMPTY spectrum' : ''))}</div>`;
+
+        html += `<details class="phot-rows"${state.table ? ' open' : ''}><summary>Table (${rows.length} points)</summary><div class="table-scroll"><table class="band-table phot-table"><thead><tr>` +
+            axes.filter(a => p[a]).map(a => `<th>${axisLabel(a)}</th>`).join('') +
+            `<th>m (${state.system})</th><th>BC (${state.system})</th><th>m<sub>bol</sub> (surface)</th><th>OUTSIDE</th><th>\u{222b}F / \u{3c3}T<sup>4</sup></th><th>EMPTY</th><th>SPECTRUM</th></tr></thead><tbody>` +
+            rows.map(i => `<tr>${axes.filter(a => p[a]).map(a => `<td align="right">${p[a][i]}</td>`).join('')}
+                <td align="right">${mag(i) === null ? fmt(null) : mag(i).toFixed(4)}</td>
+                <td align="right">${mag(i) === null ? fmt(null) : (p.m_bol[i] - mag(i)).toFixed(4)}</td>
+                <td align="right">${fmt(p.m_bol[i], 7)}</td>
+                <td align="right">${outside && outside[i] > 0 ? (100 * outside[i]).toFixed(1) + '%' : '0'}</td>
+                <td align="right">${fmt(p.fbol_ratio && p.fbol_ratio[i], 5)}</td>
+                <td align="center">${p.empty && p.empty[i] ? '<span class="note-warn">YES</span>' : 'no'}</td>
+                <td>${escapeHtml((p.file || [])[i] || '')}</td></tr>`).join('') +
+            '</tbody></table></div></details>';
+
+        html += `<p>BC<sub>X</sub> = M<sub>bol</sub> \u{2212} M<sub>X</sub>, with M<sub>bol</sub> from \u{3c3}T<sub>eff</sub><sup>4</sup>
+            (M<sub>bol,\u{2609}</sub> = 4.74, IAU 2015 B2), so the stellar radius cancels. The magnitudes are of the surface flux;
+            for a star of radius R at distance d add \u{2212}5 log<sub>10</sub>(R/d). Vega system: CALSPEC's Vega has magnitude 0
+            in every band (Vega \u{2261} 0); tables that set Vega's V to 0.03 give Vega-system BCs 0.03 mag lower.
+            Files: <a href="${photUrl(grid)}">points.json</a> \u{b7} <a href="${photUrl(grid, instrument)}">${escapeHtml(instrument)}.json</a>
+            \u{b7} <a href="omni-grid/">how the grids compare</a>.</p>`;
+        view.innerHTML = html;
+        view.querySelector('.phot-rows').addEventListener('toggle', event => { state.table = event.target.open; });
+    };
+    view.onchange = event => {
+        const control = event.target.dataset.phot;
+        if (!control) return;
+        if (control === 'axis') state.fixed[event.target.dataset.axis] = Number(event.target.value);
+        else state[control] = control === 'variant' ? Number(event.target.value) : event.target.value;
+        render();
+    };
+    render();
+}
+
+// One series against the x axis (log when it spans more than a factor of 10). Hollow yellow markers: part of the
+// band lies outside the spectrum. Red ticks along the bottom: points with no value.
+function photPlot(rows, xOf, value, outside, xLabel, yLabel, flip, tip) {
+    const shown = rows.filter(i => value(i) !== null);
+    if (!rows.length) return '<span class="metadata-missing">No points.</span>';
+    const xs = rows.map(xOf), ys = shown.map(value);
+    let [x0, x1] = [Math.min(...xs), Math.max(...xs)];
+    let [y0, y1] = ys.length ? [Math.min(...ys), Math.max(...ys)] : [0, 1];
+    if (x1 === x0) { x0 -= 1; x1 += 1; }
+    if (y1 - y0 < 0.02) { y0 -= 0.01; y1 += 0.01; }
+    const log = x0 > 0 && x1 / x0 > 10, ypad = (y1 - y0) * 0.06;
+    y0 -= ypad; y1 += ypad;
+    const W = 900, H = 300, L = 70, R = 14, T = 14, B = 44;
+    const x = v => L + (W - L - R) * (log ? Math.log(v / x0) / Math.log(x1 / x0) : (v - x0) / (x1 - x0));
+    const y = v => flip ? T + (H - T - B) * (v - y0) / (y1 - y0) : H - B - (H - T - B) * (v - y0) / (y1 - y0);
+    let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+    (log ? logTicks(x0, x1) : niceTicks(x0, x1)).forEach(v => {
+        svg += `<line x1="${x(v)}" x2="${x(v)}" y1="${T}" y2="${H - B}" stroke="#003300"/>` +
+               `<text x="${x(v)}" y="${H - B + 16}" text-anchor="middle">${Number(v.toPrecision(4))}</text>`;
+    });
+    niceTicks(y0, y1, 6).forEach(v => {
+        svg += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#003300"/>` +
+               `<text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${Number(v.toPrecision(4))}</text>`;
+    });
+    svg += `<rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}" fill="none" stroke="#00FF00"/>`;
+    svg += `<text x="${(L + W - R) / 2}" y="${H - 6}" text-anchor="middle">${xLabel.replace(/<\/?su[bp]>/g, '')}${log ? ', log scale' : ''}</text>`;
+    svg += `<text transform="translate(14 ${(T + H - B) / 2}) rotate(-90)" text-anchor="middle">${escapeHtml(yLabel)}${flip ? ', brighter up' : ''}</text>`;
+    let run = [];
+    const flush = () => {
+        if (run.length > 1) svg += `<polyline points="${run.join(' ')}" fill="none" stroke="#00FF00" stroke-width="1.2" stroke-opacity="0.6"/>`;
+        run = [];
+    };
+    rows.forEach(i => {
+        const v = value(i);
+        if (v === null) {
+            flush();
+            svg += `<g><title>${escapeHtml(tip(i))}</title><line x1="${x(xOf(i)).toFixed(1)}" x2="${x(xOf(i)).toFixed(1)}" y1="${H - B - 8}" y2="${H - B}" stroke="#FF0000" stroke-width="2"/></g>`;
+            return;
+        }
+        run.push(`${x(xOf(i)).toFixed(1)},${y(v).toFixed(1)}`);
+        const partial = outside && outside[i] > 0;
+        svg += `<g><title>${escapeHtml(tip(i))}</title><circle cx="${x(xOf(i)).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3.5" ` +
+               (partial ? 'fill="none" stroke="#FFFF00" stroke-width="1.5"' : 'fill="#00FF00"') + '/></g>';
+    });
+    flush();
+    return svg + '</svg>';
+}
+
 function openFromHash() {
     let key = '';
     try { key = decodeURIComponent(location.hash.slice(1)); } catch (error) { return; }
@@ -1223,7 +1527,8 @@ fetch('index.json')
                 const tr = document.createElement('tr');
 
 		tr.innerHTML = `
-		    <td><a href="stellar_models/${modelName}/">${modelName}</a></td>
+		    <td><a href="stellar_models/${modelName}/">${modelName}</a>
+		        <button class="details-button phot-grid-button" data-grid="${escapeHtml(modelName)}">[+] PHOTOMETRY</button></td>
 		    <td align="center">${model.spectra_count || 0}</td>
 		    <td align="center" class="${model.has_flux_cube ? 'status-yes' : 'status-no'}">${model.has_flux_cube ? '\u{2713} YES' : '\u{2717} NO'}</td>
 		    <td align="center" class="${model.has_lookup_table ? 'status-yes' : 'status-no'}">${model.has_lookup_table ? '\u{2713}YES' : '\u{2717} NO'}</td>
@@ -1233,6 +1538,24 @@ fetch('index.json')
 		`;
 
                 tbody.appendChild(tr);
+                const details = document.createElement('tr');
+                details.className = 'details-row';
+                details.style.display = 'none';
+                details.innerHTML = '<td colspan="7"></td>';
+                tbody.appendChild(details);
+            });
+            tbody.addEventListener('click', event => {
+                const button = event.target.closest('.phot-grid-button');
+                if (!button) return;
+                const row = button.closest('tr').nextElementSibling;
+                const open = row.style.display === 'none';
+                row.style.display = open ? '' : 'none';
+                button.textContent = open ? '[-] PHOTOMETRY' : '[+] PHOTOMETRY';
+                if (open && !row.dataset.loaded) {
+                    row.dataset.loaded = '1';
+                    row.firstElementChild.innerHTML = '<div class="details-panel"><div class="phot-box"></div></div>';
+                    photSection(row.querySelector('.phot-box'), {grid: button.dataset.grid, open: true});
+                }
             });
         } else {
             tbody.innerHTML = '<tr><td colspan="6" align="center">No models available</td></tr>';
@@ -1316,69 +1639,6 @@ fetch('index.json')
             '<center style="color:red;">ERROR LOADING FILTERS</center>';
     });
 
-
-// Banner: moving the pointer across it leaves a long, pixelated ribbon striped like a
-// spectrum, red on one edge to violet on the other, fading in steps over ~4 s.
-// Off for visitors who prefer reduced motion.
-(function bannerTrail() {
-    const header = document.querySelector('.header');
-    if (!header || !window.matchMedia || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext && canvas.getContext('2d');
-    if (!ctx) return;
-    canvas.className = 'banner-trail';
-    canvas.setAttribute('aria-hidden', 'true');
-    header.prepend(canvas);
-    const SPECTRUM = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#00ffff', '#0080ff', '#8f00ff'];
-    const PIXEL = 3;     // screen px per trail pixel; the canvas is scaled up without smoothing
-    const FADE = 0.004;  // life lost per frame (~4 s at 60 fps)
-    let points = [], frame = null;
-
-    function resize() {
-        const box = header.getBoundingClientRect();
-        canvas.width = Math.ceil(box.width / PIXEL);
-        canvas.height = Math.ceil(box.height / PIXEL);
-    }
-
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        points.forEach(p => { p.life -= FADE; });
-        points = points.filter(p => p.life > 0);
-        const half = SPECTRUM.length / 2, painted = new Set();
-        // Newest segments first, so they own the pixels they cover.
-        for (let i = points.length - 1; i > 0; i--) {
-            const a = points[i - 1], b = points[i];
-            if (b.start) continue;
-            const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
-            const nx = -dy / len, ny = dx / len;
-            ctx.globalAlpha = Math.ceil(Math.min(a.life, b.life) * 4) / 4;  // fade in four steps
-            for (let t = 0; t <= 1; t += 0.5 / len) {
-                for (let s = -half; s < half; s += 0.5) {
-                    const px = Math.round(a.x + dx * t + nx * s), py = Math.round(a.y + dy * t + ny * s);
-                    const key = py * canvas.width + px;
-                    if (painted.has(key)) continue;
-                    painted.add(key);
-                    ctx.fillStyle = SPECTRUM[Math.min(SPECTRUM.length - 1, Math.floor(s + half))];
-                    ctx.fillRect(px, py, 1, 1);
-                }
-            }
-        }
-        ctx.globalAlpha = 1;
-        frame = points.length ? requestAnimationFrame(draw) : null;
-    }
-
-    let lifted = true;
-    header.addEventListener('pointermove', event => {
-        const box = header.getBoundingClientRect();
-        if (canvas.width !== Math.ceil(box.width / PIXEL)) resize();
-        points.push({x: (event.clientX - box.left) / PIXEL, y: (event.clientY - box.top) / PIXEL, life: 1, start: lifted});
-        lifted = false;
-        if (!frame) frame = requestAnimationFrame(draw);
-    });
-    header.addEventListener('pointerleave', () => { lifted = true; });
-    window.addEventListener('resize', resize);
-    resize();
-})();
 
 // Contact address: kept out of the page source and assembled only when asked for, to deter scrapers.
 (function contactLink() {
