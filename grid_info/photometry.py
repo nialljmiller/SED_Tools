@@ -44,6 +44,7 @@ F0_BOL = L0_IAU / (4 * math.pi * (10 * PC_CM) ** 2)   # bolometric flux at 10 pc
 DECIMALS = 4                                    # 1e-4 mag
 CHECK_PAIRS = 300                               # random (spectrum, band) pairs checked against the reference
 CHECK_TOL = 1e-6                                # mag
+CHUNK = 256                                     # spectra read at once
 
 DEFINITIONS = {
     "m_st": "ST magnitude of the band-averaged surface flux F (erg/s/cm2/A): -2.5 log10(F / 3.631e-9); "
@@ -100,7 +101,7 @@ class Grid:
         self.extra = [k for k, v in (self.manifest.get("extra_axes") or {}).items() if len(v) > 1]
         self.h5 = self.dir / f"{name}.h5"
         cols = {k: [] for k in ["file", *self.axes, *self.extra]}
-        groups = {}                               # hash of the wavelengths -> (lambda, [point index])
+        groups = {}                               # hash of the wavelengths -> [point index]; arrays re-read later
         with h5py.File(self.h5, "r") as h5:
             for i, key in enumerate(sorted(h5["spectra"])):
                 item = h5["spectra"][key]
@@ -118,10 +119,14 @@ class Grid:
                 lam = item["lambda"][()]
                 if not np.all(np.diff(lam) > 0):
                     raise ValueError(f"{name}/{key}: wavelengths are not strictly increasing")
-                groups.setdefault(hashlib.sha256(lam.tobytes()).digest(), (lam, []))[1].append(i)
+                groups.setdefault(hashlib.sha256(lam.tobytes()).digest(), []).append(i)
         self.points = cols
         self.groups = list(groups.values())
         self.n = len(cols["file"])
+
+    def wavelengths(self, i):
+        with h5py.File(self.h5, "r") as h5:
+            return h5["spectra"][self.points["file"][i]]["lambda"][()]
 
     def fluxes(self, indices):
         with h5py.File(self.h5, "r") as h5:
@@ -212,13 +217,16 @@ def photometry(grid: Grid, bands: Bands, vega):
     outside = np.empty((grid.n, bands.n))
     fbol = np.empty(grid.n)
     lam_range = np.empty((grid.n, 2))
-    for lam, members in grid.groups:
+    for group in grid.groups:
+        lam = grid.wavelengths(group[0])
         a = bands.operator(lam)
-        spectra = grid.fluxes(members)
-        flux[members] = (a @ spectra.T).T
-        outside[members] = 1 - a @ np.ones(lam.size)
-        fbol[members] = [integrate_flux(lam, s) for s in spectra]
-        lam_range[members] = lam[0], lam[-1]
+        outside[group] = 1 - a @ np.ones(lam.size)
+        lam_range[group] = lam[0], lam[-1]
+        for start in range(0, len(group), CHUNK):       # bounded memory for grids with long spectra
+            members = group[start:start + CHUNK]
+            spectra = grid.fluxes(members)
+            flux[members] = (a @ spectra.T).T
+            fbol[members] = [integrate_flux(lam, s) for s in spectra]
     vega_flux = bands.operator(vega[0]) @ vega[1]
     for b, m in enumerate(bands.meta):            # the operator reproduces the published Vega zero points
         if m["zp_vega"] is not None and abs(vega_flux[b] / m["zp_vega"] - 1) > 1e-9:
