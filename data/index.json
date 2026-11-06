@@ -1,13 +1,13 @@
 {
   "version": "1.0",
-  "generated": "2026-11-02T16:48:38.054975",
+  "generated": "2026-11-06T23:12:55.480990",
   "base_url": "http://nillmill.ddns.net/sed_tools",
   "statistics": {
-    "total_models": 6,
-    "complete_models": 5,
-    "total_spectra": 21676,
-    "total_size_bytes": 107958794469,
-    "total_size_human": "100.54 GB",
+    "total_models": 8,
+    "complete_models": 7,
+    "total_spectra": 24625,
+    "total_size_bytes": 110708778618,
+    "total_size_human": "103.11 GB",
     "total_facilities": 219,
     "total_filters": 12259
   },
@@ -17,7 +17,9 @@
     "Kurucz2003all",
     "NextGen2",
     "bbody",
-    "bt-cond"
+    "bt-cond",
+    "hres",
+    "tlusty_mergedbin"
   ],
   "models_detailed": {
     "Husfeld": {
@@ -79,6 +81,26 @@
       "size_bytes": 102631289521,
       "size_human": "95.58 GB",
       "manifest_passes": false
+    },
+    "hres": {
+      "name": "hres",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 1650,
+      "size_bytes": 1350290030,
+      "size_human": "1.26 GB",
+      "manifest_passes": true
+    },
+    "tlusty_mergedbin": {
+      "name": "tlusty_mergedbin",
+      "has_flux_cube": true,
+      "has_lookup_table": true,
+      "has_h5_bundle": true,
+      "spectra_count": 1299,
+      "size_bytes": 1399694119,
+      "size_human": "1.30 GB",
+      "manifest_passes": true
     }
   },
   "filters": {
@@ -31119,7 +31141,7 @@
       }
     },
     "properties_definitions": {
-      "module": "sed_tools.filter_properties (SED_Tools 0.4.1)",
+      "module": "sed_tools.filter_properties (SED_Tools 0.5.1)",
       "units": {
         "WavelengthMean": "Angstrom",
         "WavelengthPivot": "Angstrom",
