@@ -88,3 +88,23 @@ def test_compare_coinciding_and_interpolated(tmp_path):
     assert across["B_at_A_points"] == {"coinciding": 4, "interpolated": 1, "not_covered": 0}
     # Linear interpolation of a Planck band flux across 4000-6000 K: not exact, but bounded.
     assert 0 < across["bands"]["Fac/Inst:blue"]["interpolated"]["median_abs"] < 0.5
+
+
+def test_slice_and_label_axis(tmp_path):
+    data = make_data(tmp_path)
+    # A grid whose extra axis only labels Teff ranges (never two values at one node) is not split into variants.
+    folder = data / "stellar_models" / "G"
+    manifest = json.loads((folder / "manifest.json").read_text())
+    manifest["extra_axes"] = {"code": ["cool", "hot"]}
+    (folder / "manifest.json").write_text(json.dumps(manifest))
+    with h5py.File(folder / "G.h5", "r+") as h5:
+        for item in h5["spectra"].values():
+            item.attrs["raw:code"] = "cool" if item.attrs["teff"] < 5500 else "hot"
+    out = tmp_path / "out"
+    photometry.main([str(data), str(out), "--grids", "G", "G2", "--instruments", "Fac/Inst"])
+    points = json.loads((out / "G" / "points.json").read_text())
+    assert points["extra_axes"] == [] and points["label_axes"] == ["code"] and len(points["variants"]) == 1
+    # A node-axis value takes a slice: logg = 4 of G against logg = 4 of G2, on Teff alone.
+    r = compare.compare(out, tmp_path / "cmp", "G:logg=4", "G2:logg=4")
+    assert r["A"] == "G:logg=4" and r["points_A"] == 3
+    assert r["B_at_A_points"] == {"coinciding": 2, "interpolated": 1, "not_covered": 0}

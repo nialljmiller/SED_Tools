@@ -91,6 +91,13 @@ def json_number(x, decimals=DECIMALS):
 
 # ---------------------------------------------------------------------------------------------------- grids
 
+def _values_per_node(nodes, values):
+    out = {}
+    for node, v in zip(nodes, values):
+        out.setdefault(node, set()).add(v)
+    return out
+
+
 class Grid:
     """A published grid's spectra, read from its .h5 bundle and grouped by wavelength grid."""
 
@@ -122,6 +129,11 @@ class Grid:
                     raise ValueError(f"{name}/{key}: wavelengths are not strictly increasing")
                 groups.setdefault(hashlib.sha256(lam.tobytes()).digest(), []).append(i)
         self.points = cols
+        # An extra axis whose values never share a node is a label (e.g. which code made each Teff range), not a
+        # variant: it stays with each point but does not split the grid.
+        nodes = list(zip(*(cols[a] for a in self.axes)))
+        self.labels = [x for x in self.extra if all(len(v) == 1 for v in _values_per_node(nodes, cols[x]).values())]
+        self.extra = [x for x in self.extra if x not in self.labels]
         self.groups = list(groups.values())
         self.n = len(cols["file"])
 
@@ -297,6 +309,7 @@ def write_grid(out: Path, grid: Grid, bands: Bands, flux, outside, fbol, lam_ran
     sizes = {"points.json": write_json(out / grid.name / "points.json", {
         "schema": SCHEMA, "grid": grid.name, **stamp, "manifest_generated": grid.manifest.get("generated"),
         "default_variant": grid.manifest.get("default_variant"), "axes": grid.axes, "extra_axes": grid.extra,
+        **({"label_axes": grid.labels} if grid.labels else {}),
         "definitions": DEFINITIONS, "points": points, "variants": grid.variants()})}
     with np.errstate(divide="ignore", invalid="ignore"):
         m_st = -2.5 * np.log10(flux / ST_FLAM)

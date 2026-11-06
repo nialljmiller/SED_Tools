@@ -14,7 +14,10 @@ their Teff neighbours), the noise floor of the interpolated comparisons. For the
 <A>__<B>/<Facility>/<Instrument>.json with Delta BC at every A point. A pair with no overlap writes nothing.
 
 Usage: python -m grid_info.compare TABLES OUT A[:variant] B[:variant] [--instruments F/I ...] [--detail F/I ...]
-       [--summary F/I:b1,b2 ...]       (a variant by name, or by value as grid:axis=value,...)
+       [--summary F/I:b1,b2 ...]
+A[:variant]: a variant by name, or grid:axis=value,... where a variant axis (alpha=0) picks the variant and a node
+axis (metallicity=0) takes that slice of the grid and drops the axis (to compare grids whose metallicity axes are
+different quantities only where they correspond).
 """
 
 from __future__ import annotations
@@ -47,10 +50,13 @@ class Table:
         self.dir = tables / name
         self.doc = json.loads((self.dir / "points.json").read_text())
         variants = self.doc["variants"]
-        if "=" in variant:
-            want = {k: as_value(w) for k, w in (kv.split("=") for kv in variant.split(","))}
-            chosen = [v for v in variants if all(v["params"].get(k) == w for k, w in want.items())]
-        elif variant:
+        want = {k: as_value(w) for k, w in (kv.split("=") for kv in variant.split(","))} if "=" in variant else {}
+        # Values of node axes (metallicity=0) take a slice of the grid; values of variant axes (alpha=0) pick a variant.
+        slices = {k: w for k, w in want.items() if k in self.doc["axes"]}
+        params = {k: w for k, w in want.items() if k not in slices}
+        if params:
+            chosen = [v for v in variants if all(v["params"].get(k) == w for k, w in params.items())]
+        elif variant and not want:
             chosen = [v for v in variants if v["name"] == variant]
         elif len(variants) == 1:
             chosen = variants
@@ -62,10 +68,18 @@ class Table:
         self.name, self.variant = name, chosen[0]
         label = chosen[0]["name"] or ",".join(f"{k}={v}" for k, v in chosen[0]["params"].items())
         self.label = name if len(variants) == 1 else f"{name}:{label}"
-        self.axes = list(self.variant["axes"])
-        self.grid_axes = [np.asarray(v, dtype=float) for v in self.variant["axes"].values()]
-        self.nodes = np.array([-1 if j is None else j for j in self.variant["nodes"]]).reshape(
-            [len(v) for v in self.grid_axes])
+        axes = {k: list(v) for k, v in self.variant["axes"].items()}
+        nodes = np.array([-1 if j is None else j for j in self.variant["nodes"]]).reshape([len(v) for v in axes.values()])
+        for axis, w in slices.items():           # keep one value of the axis and drop the axis
+            if w not in axes[axis]:
+                raise ValueError(f"{name}: {axis} = {w} is not a node value ({axes[axis]})")
+            nodes = np.take(nodes, axes[axis].index(w), axis=list(axes).index(axis))
+            del axes[axis]
+        if slices:
+            self.label += ":" + ",".join(f"{k}={w:g}" for k, w in slices.items())
+        self.axes = list(axes)
+        self.grid_axes = [np.asarray(v, dtype=float) for v in axes.values()]
+        self.nodes = nodes
         self.members = self.nodes[self.nodes >= 0]
         self.params = {a: np.asarray(self.doc["points"][a], dtype=float) for a in self.axes}
         self.empty = np.asarray(self.doc["points"]["empty"])
