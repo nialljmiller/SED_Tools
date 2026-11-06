@@ -31,7 +31,7 @@ import h5py
 import numpy as np
 from scipy.sparse import csr_matrix
 
-from grid_info.check_grids import BOLO_FAIL, BOLO_WARN
+from grid_info.check_grids import BOLO_FAIL, BOLO_WARN, COVERED, pi_b, trapz
 from sed_tools.filters.properties import ST_FLAM, filter_properties, load_vega
 from sed_tools.photometry import (AB_ZERO_FLUX, SPEED_OF_LIGHT_ANG_PER_S, Spectrum, _band_magnitude,
                                   band_average_flux_lambda, filter_weight, integrate_flux, load_filter_curve)
@@ -61,8 +61,11 @@ DEFINITIONS = {
     "outside": "fraction of the band's weight integral (trapezoidal, on the curve's samples) lying outside the "
                "spectrum's tabulated wavelengths, where photometry counts zero flux; null when 0 for every point",
     "fbol_ratio": "integral of the tabulated spectrum / (sigma Teff^4): the guard's flux-conservation check",
-    "fbol_flag": f"'fail' where fbol_ratio is outside {list(BOLO_FAIL)}, 'warn' outside {list(BOLO_WARN)} "
-                 "(grid_info.check_grids' thresholds), else null",
+    "planck_cover": "integral of pi B_lambda(Teff) over the spectrum's tabulated wavelengths / (sigma Teff^4)",
+    "fbol_flag": f"the grid guard's check 5a (grid_info.check_grids) per spectrum: 'partial' where planck_cover < "
+                 f"{COVERED} (not judged: the spectrum covers too little of the flux), else the integral of the "
+                 f"spectrum / the integral of pi B_lambda over the same wavelengths: 'fail' outside {list(BOLO_FAIL)}, "
+                 f"'warn' outside {list(BOLO_WARN)}, null within",
 }
 
 
@@ -229,33 +232,33 @@ class Bands:
 
 # ---------------------------------------------------------------------------------------------------- photometry
 
-def photometry(grid: Grid, bands: Bands, vega):
-    """Band fluxes (points x bands), outside fractions (points x bands), and per-point bolometric quantities."""
-    flux = np.empty((grid.n, bands.n))
-    outside = np.empty((grid.n, bands.n))
-    fbol = np.empty(grid.n)
-    lam_range = np.empty((grid.n, 2))
+def photometry(grid: Grid, bands: Bands | None, vega=None):
+    """Band fluxes and outside fractions (points x bands; None without bands), and per point the integrated flux, the
+    integral of pi*B_lambda(Teff) over the same wavelengths (the guard's reference) and the wavelength range."""
+    flux = None if bands is None else np.empty((grid.n, bands.n))
+    outside = None if bands is None else np.empty((grid.n, bands.n))
+    fbol, planck, lam_range = np.empty(grid.n), np.empty(grid.n), np.empty((grid.n, 2))
+    teff = np.asarray(grid.points["teff"])
     for group in grid.groups:
         lam = grid.wavelengths(group[0])
         lam_range[group] = lam[0], lam[-1]
-        if len(group) < OPERATOR_MIN:                    # a wavelength grid of its own: no matrix
-            outside[group] = 1 - bands.apply(lam, np.ones(lam.size))
-            for i, s in zip(group, grid.fluxes(group)):
-                flux[i] = bands.apply(lam, s)
-                fbol[i] = integrate_flux(lam, s)
-            continue
-        a = bands.operator(lam)
-        outside[group] = 1 - a @ np.ones(lam.size)
+        a = None if bands is None or len(group) < OPERATOR_MIN else bands.operator(lam)   # few spectra: no matrix
+        if bands is not None:
+            outside[group] = 1 - (bands.apply(lam, np.ones(lam.size)) if a is None else a @ np.ones(lam.size))
         for start in range(0, len(group), CHUNK):       # bounded memory for grids with long spectra
             members = group[start:start + CHUNK]
             spectra = grid.fluxes(members)
-            flux[members] = (a @ spectra.T).T
-            fbol[members] = [integrate_flux(lam, s) for s in spectra]
-    vega_flux = bands.operator(vega[0]) @ vega[1]
-    for b, m in enumerate(bands.meta):            # the operator reproduces the published Vega zero points
-        if m["zp_vega"] is not None and abs(vega_flux[b] / m["zp_vega"] - 1) > 1e-9:
-            raise AssertionError(f"band {b}: operator Vega flux {vega_flux[b]} != zero point {m['zp_vega']}")
-    return flux, outside, fbol, lam_range
+            if bands is not None:
+                flux[members] = (a @ spectra.T).T if a is not None else [bands.apply(lam, f) for f in spectra]
+            for i, f in zip(members, spectra):
+                fbol[i] = integrate_flux(lam, f)
+                planck[i] = trapz(pi_b(lam, teff[i]), lam)
+    if bands is not None:
+        vega_flux = bands.operator(vega[0]) @ vega[1]
+        for b, m in enumerate(bands.meta):            # the operator reproduces the published Vega zero points
+            if m["zp_vega"] is not None and abs(vega_flux[b] / m["zp_vega"] - 1) > 1e-9:
+                raise AssertionError(f"band {b}: operator Vega flux {vega_flux[b]} != zero point {m['zp_vega']}")
+    return flux, outside, {"fbol": fbol, "planck": planck, "lam_range": lam_range}
 
 
 def check(grid: Grid, bands: Bands, flux, vega, rng):
@@ -294,23 +297,35 @@ def write_json(path: Path, doc) -> int:
     return len(text)
 
 
-def write_grid(out: Path, grid: Grid, bands: Bands, flux, outside, fbol, lam_range, stamp):
+def bolometric_flag(ratio, cover):
+    """The guard's check 5a per spectrum: None, 'warn', 'fail', or 'partial' where it covers under half of sigma T^4."""
+    if not cover >= COVERED:
+        return "partial"
+    return None if BOLO_WARN[0] <= ratio <= BOLO_WARN[1] else "warn" if BOLO_FAIL[0] <= ratio <= BOLO_FAIL[1] else "fail"
+
+
+def write_points(out: Path, grid: Grid, bolo, stamp) -> int:
     teff = np.asarray(grid.points["teff"])
-    m_bol = -2.5 * np.log10(SIGMA_SB * teff ** 4 / F0_BOL)
-    empty = ~(fbol > 0)
+    sigma_t4 = SIGMA_SB * teff ** 4
+    m_bol = -2.5 * np.log10(sigma_t4 / F0_BOL)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        in_range = bolo["fbol"] / bolo["planck"]
     points = {k: v for k, v in grid.points.items()}
-    ratio = fbol / (SIGMA_SB * teff ** 4)
     points.update({"m_bol": [json_number(x) for x in m_bol],
-                   "fbol_ratio": [json_number(x, 5) for x in ratio],
-                   "fbol_flag": [None if BOLO_WARN[0] <= r <= BOLO_WARN[1] else
-                                 "warn" if BOLO_FAIL[0] <= r <= BOLO_FAIL[1] else "fail" for r in ratio],
-                   "empty": [bool(e) for e in empty],
-                   "lambda_min": lam_range[:, 0].tolist(), "lambda_max": lam_range[:, 1].tolist()})
-    sizes = {"points.json": write_json(out / grid.name / "points.json", {
+                   "fbol_ratio": [json_number(x, 5) for x in bolo["fbol"] / sigma_t4],
+                   "planck_cover": [json_number(x, 5) for x in bolo["planck"] / sigma_t4],
+                   "fbol_flag": [bolometric_flag(r, c) for r, c in zip(in_range, bolo["planck"] / sigma_t4)],
+                   "empty": [bool(e) for e in ~(bolo["fbol"] > 0)],
+                   "lambda_min": bolo["lam_range"][:, 0].tolist(), "lambda_max": bolo["lam_range"][:, 1].tolist()})
+    return write_json(out / grid.name / "points.json", {
         "schema": SCHEMA, "grid": grid.name, **stamp, "manifest_generated": grid.manifest.get("generated"),
         "default_variant": grid.manifest.get("default_variant"), "axes": grid.axes, "extra_axes": grid.extra,
         **({"label_axes": grid.labels} if grid.labels else {}),
-        "definitions": DEFINITIONS, "points": points, "variants": grid.variants()})}
+        "definitions": DEFINITIONS, "points": points, "variants": grid.variants()})
+
+
+def write_tables(out: Path, grid: Grid, bands: Bands, flux, outside, stamp):
+    sizes = {}
     with np.errstate(divide="ignore", invalid="ignore"):
         m_st = -2.5 * np.log10(flux / ST_FLAM)
     for inst, members in bands.instruments.items():
@@ -364,6 +379,7 @@ def main(argv=None):
     ap.add_argument("out_dir", type=Path)
     ap.add_argument("--grids", nargs="+")
     ap.add_argument("--index-only", action="store_true", help="only rebuild OUT_DIR/index.json")
+    ap.add_argument("--points-only", action="store_true", help="only rewrite the grids' points.json (and index.json)")
     ap.add_argument("--instruments", nargs="+", help="Facility/Instrument folders (default: all)")
     ap.add_argument("--seed", type=int, default=1)
     args = ap.parse_args(argv)
@@ -372,9 +388,16 @@ def main(argv=None):
         return
     if not args.grids:
         ap.error("--grids is required")
-    instruments = args.instruments or all_instruments(args.data_dir)
     stamp = {"computed": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
              "code": f"SED_Tools server grid_info/photometry.py @ {git_revision()}"}
+    if args.points_only:
+        for name in args.grids:
+            grid = Grid(args.data_dir, name)
+            write_points(args.out_dir, grid, photometry(grid, None)[2], stamp)
+            print(f"{name}: points.json rewritten", flush=True)
+        write_index(args.out_dir)
+        return
+    instruments = args.instruments or all_instruments(args.data_dir)
     vega = load_vega(args.data_dir / "vega" / "vega_flam.csv")
     t0 = time.time()
     bands = Bands(args.data_dir, instruments, vega)
@@ -385,10 +408,11 @@ def main(argv=None):
         t = time.time()
         grid = Grid(args.data_dir, name)
         t_read = time.time() - t
-        flux, outside, fbol, lam_range = photometry(grid, bands, vega)
+        flux, outside, bolo = photometry(grid, bands, vega)
         t_phot = time.time() - t - t_read
         worst = check(grid, bands, flux, vega, np.random.default_rng(args.seed))
-        sizes = write_grid(args.out_dir, grid, bands, flux, outside, fbol, lam_range, stamp)
+        sizes = {"points.json": write_points(args.out_dir, grid, bolo, stamp),
+                 **write_tables(args.out_dir, grid, bands, flux, outside, stamp)}
         report[name] = {"spectra": grid.n, "wavelength_grids": len(grid.groups), "bands": bands.n,
                         "seconds": {"index": round(t_read, 1), "photometry": round(t_phot, 1),
                                     "total": round(time.time() - t, 1)},

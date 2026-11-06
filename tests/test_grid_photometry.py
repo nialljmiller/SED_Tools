@@ -71,6 +71,11 @@ def test_tables_match_sed_tools_photometry(tmp_path):
     assert table["blue"]["outside"] is None
     assert points["variants"][0]["nodes"].count(None) == 1                 # the hole at 5000 K, logg 5
     assert all(abs(r - 1) < 0.05 for r in points["points"]["fbol_ratio"])
+    assert set(points["points"]["fbol_flag"]) == {None} and min(points["points"]["planck_cover"]) > 0.9
+    # --points-only rewrites the same points (apart from the stamp) without the band tables
+    photometry.main([str(data), str(out), "--grids", "G", "--points-only"])
+    again = json.loads((out / "G" / "points.json").read_text())
+    assert again["points"] == points["points"] and again["variants"] == points["variants"]
     index = json.loads((out / "index.json").read_text())
     assert list(index["instruments"]["Fac/Inst"]) == ["G", "G2"] and list(index["grids"]["G"]["instruments"]) == ["Fac/Inst"]
     assert index["grids"]["G"]["points_bytes"] == (out / "G" / "points.json").stat().st_size
