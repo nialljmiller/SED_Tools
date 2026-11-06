@@ -17,6 +17,7 @@ Usage: python -m grid_info.photometry DATA_DIR OUT_DIR [--grids G ...] [--instru
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import subprocess
@@ -98,7 +99,7 @@ class Grid:
         self.extra = [k for k, v in (self.manifest.get("extra_axes") or {}).items() if len(v) > 1]
         self.h5 = self.dir / f"{name}.h5"
         cols = {k: [] for k in ["file", *self.axes, *self.extra]}
-        groups = {}                               # wavelength bytes -> (lambda, [point index])
+        groups = {}                               # hash of the wavelengths -> (lambda, [point index])
         with h5py.File(self.h5, "r") as h5:
             for i, key in enumerate(sorted(h5["spectra"])):
                 item = h5["spectra"][key]
@@ -116,7 +117,7 @@ class Grid:
                 lam = item["lambda"][()]
                 if not np.all(np.diff(lam) > 0):
                     raise ValueError(f"{name}/{key}: wavelengths are not strictly increasing")
-                groups.setdefault(lam.tobytes(), (lam, []))[1].append(i)
+                groups.setdefault(hashlib.sha256(lam.tobytes()).digest(), (lam, []))[1].append(i)
         self.points = cols
         self.groups = list(groups.values())
         self.n = len(cols["file"])
