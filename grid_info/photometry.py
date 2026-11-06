@@ -29,6 +29,7 @@ import h5py
 import numpy as np
 from scipy.sparse import csr_matrix
 
+from grid_info.check_grids import BOLO_FAIL, BOLO_WARN
 from sed_tools.filters.properties import ST_FLAM, filter_properties, load_vega
 from sed_tools.photometry import (AB_ZERO_FLUX, SPEED_OF_LIGHT_ANG_PER_S, Spectrum, _band_magnitude,
                                   band_average_flux_lambda, filter_weight, integrate_flux, load_filter_curve)
@@ -47,14 +48,17 @@ DEFINITIONS = {
             "null where F <= 0 (an empty point or a band wholly outside the spectrum)",
     "flux": "F = 3.631e-9 * 10**(-0.4 * m_st), the band average of sed_tools.photometry.band_average_flux_lambda",
     "AB": "m_AB = m_st + AB_minus_ST (AB_minus_ST from the band's pivot wavelength, exact)",
-    "Vega": "m_Vega = m_st + Vega_minus_ST; Vega_minus_ST is null where the Vega spectrum (data/vega/vega_flam.csv) "
-            "does not cover the band, as in properties.json",
+    "Vega": "m_Vega = m_st + Vega_minus_ST, with Vega = 0 in every band (CALSPEC alpha_lyr_mod_004 as "
+            "data/vega/vega_flam.csv; no V_Vega = 0.03 offset, so Vega-system BCs are 0.03 above that convention's); "
+            "Vega_minus_ST is null where the Vega spectrum does not cover the band, as in properties.json",
     "m_bol": "surface bolometric magnitude -2.5 log10(sigma Teff^4 / f0), f0 = L0 / (4 pi (10 pc)^2), "
              "L0 = 3.0128e35 erg/s (IAU 2015 B2, M_bol,sun = 4.74)",
     "BC": "BC_X = m_bol - m_X in system X (AB, Vega or ST): M_bol - M_X with the radius cancelled",
     "outside": "fraction of the band's weight integral (trapezoidal, on the curve's samples) lying outside the "
                "spectrum's tabulated wavelengths, where photometry counts zero flux; null when 0 for every point",
     "fbol_ratio": "integral of the tabulated spectrum / (sigma Teff^4): the guard's flux-conservation check",
+    "fbol_flag": f"'fail' where fbol_ratio is outside {list(BOLO_FAIL)}, 'warn' outside {list(BOLO_WARN)} "
+                 "(grid_info.check_grids' thresholds), else null",
 }
 
 
@@ -261,8 +265,11 @@ def write_grid(out: Path, grid: Grid, bands: Bands, flux, outside, fbol, lam_ran
     m_bol = -2.5 * np.log10(SIGMA_SB * teff ** 4 / F0_BOL)
     empty = ~(fbol > 0)
     points = {k: v for k, v in grid.points.items()}
+    ratio = fbol / (SIGMA_SB * teff ** 4)
     points.update({"m_bol": [json_number(x) for x in m_bol],
-                   "fbol_ratio": [json_number(x, 5) for x in fbol / (SIGMA_SB * teff ** 4)],
+                   "fbol_ratio": [json_number(x, 5) for x in ratio],
+                   "fbol_flag": [None if BOLO_WARN[0] <= r <= BOLO_WARN[1] else
+                                 "warn" if BOLO_FAIL[0] <= r <= BOLO_FAIL[1] else "fail" for r in ratio],
                    "empty": [bool(e) for e in empty],
                    "lambda_min": lam_range[:, 0].tolist(), "lambda_max": lam_range[:, 1].tolist()})
     sizes = {"points.json": write_json(out / grid.name / "points.json", {
@@ -289,6 +296,22 @@ def write_grid(out: Path, grid: Grid, bands: Bands, flux, outside, fbol, lam_ran
             "schema": SCHEMA, "grid": grid.name, "instrument": inst, **stamp, "points": "points.json",
             "bands": dict(sorted(table.items()))})
     return sizes
+
+
+def write_index(out: Path):
+    """index.json of a tables folder: grid -> its points file and instrument tables, instrument -> grids."""
+    grids, instruments = {}, {}
+    for points in sorted(out.glob("*/points.json")):
+        doc = json.loads(points.read_text())
+        name = points.parent.name
+        tables = sorted(str(p.relative_to(points.parent).with_suffix("")) for p in points.parent.glob("*/*.json"))
+        grids[name] = {"points": f"{name}/points.json", "computed": doc["computed"], "code": doc["code"],
+                       "spectra": len(doc["points"]["file"]), "instruments": tables}
+        for inst in tables:
+            instruments.setdefault(inst, []).append(name)
+    return write_json(out / "index.json", {
+        "schema": SCHEMA, "table": "<grid>/<Facility>/<Instrument>.json", "definitions": DEFINITIONS,
+        "grids": grids, "instruments": dict(sorted(instruments.items()))})
 
 
 def all_instruments(data_dir: Path):
@@ -326,7 +349,8 @@ def main(argv=None):
                         "check_worst": worst, "bytes": sum(sizes.values()),
                         "largest": max(sizes.items(), key=lambda kv: kv[1])}
         print(json.dumps({name: report[name]}), flush=True)
-    write_json(args.out_dir / "run.json", {**stamp, "instruments": instruments, "report": report})
+    write_index(args.out_dir)
+    print(json.dumps({**stamp, "instruments": len(instruments), "report": report}), flush=True)
 
 
 if __name__ == "__main__":
