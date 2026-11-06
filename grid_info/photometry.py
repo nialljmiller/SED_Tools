@@ -45,6 +45,7 @@ DECIMALS = 4                                    # 1e-4 mag
 CHECK_PAIRS = 300                               # random (spectrum, band) pairs checked against the reference
 CHECK_TOL = 1e-6                                # mag
 CHUNK = 256                                     # spectra read at once
+OPERATOR_MIN = 3                                # spectra sharing a wavelength grid before its matrix pays off
 
 DEFINITIONS = {
     "m_st": "ST magnitude of the band-averaged surface flux F (erg/s/cm2/A): -2.5 log10(F / 3.631e-9); "
@@ -208,6 +209,11 @@ class Bands:
         return csr_matrix((np.concatenate([cw * (1 - t), cw * t]),
                            (np.concatenate([rows, rows]), np.concatenate([i, i + 1]))), shape=(self.n, n))
 
+    def apply(self, lam, flux):
+        """The same band averages for one spectrum without building the matrix: interpolate, weight, sum per band."""
+        return np.bincount(self.rows, weights=self.cw * np.interp(self.x, lam, flux, left=0.0, right=0.0),
+                           minlength=self.n)
+
 
 # ---------------------------------------------------------------------------------------------------- photometry
 
@@ -219,9 +225,15 @@ def photometry(grid: Grid, bands: Bands, vega):
     lam_range = np.empty((grid.n, 2))
     for group in grid.groups:
         lam = grid.wavelengths(group[0])
+        lam_range[group] = lam[0], lam[-1]
+        if len(group) < OPERATOR_MIN:                    # a wavelength grid of its own: no matrix
+            outside[group] = 1 - bands.apply(lam, np.ones(lam.size))
+            for i, s in zip(group, grid.fluxes(group)):
+                flux[i] = bands.apply(lam, s)
+                fbol[i] = integrate_flux(lam, s)
+            continue
         a = bands.operator(lam)
         outside[group] = 1 - a @ np.ones(lam.size)
-        lam_range[group] = lam[0], lam[-1]
         for start in range(0, len(group), CHUNK):       # bounded memory for grids with long spectra
             members = group[start:start + CHUNK]
             spectra = grid.fluxes(members)
