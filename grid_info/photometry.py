@@ -11,7 +11,8 @@ rule. That is linear in the spectrum, so it is written here as one sparse matrix
 grid's spectra; one product then applies every band to every spectrum. ``check`` asserts that the product equals
 ``band_average_flux_lambda`` and ``_band_magnitude`` on random (spectrum, band) pairs before anything is written.
 
-Usage: python -m grid_info.photometry DATA_DIR OUT_DIR [--grids G ...] [--instruments Facility/Instrument ...]
+Usage: python -m grid_info.photometry DATA_DIR OUT_DIR --grids G ... [--instruments Facility/Instrument ...]
+       python -m grid_info.photometry DATA_DIR OUT_DIR --index-only     (rebuild OUT_DIR/index.json)
 """
 
 from __future__ import annotations
@@ -300,19 +301,24 @@ def write_grid(out: Path, grid: Grid, bands: Bands, flux, outside, fbol, lam_ran
 
 
 def write_index(out: Path):
-    """index.json of a tables folder: grid -> its points file and instrument tables, instrument -> grids."""
-    grids, instruments = {}, {}
+    """index.json of a tables folder, the catalogue the NJM pages read: grid -> instrument tables and instrument -> grids,
+    with file sizes; computed and code are the latest grid's (the format of omni-grid/website/REPORT.md section 3)."""
+    grids, instruments, stamps = {}, {}, []
     for points in sorted(out.glob("*/points.json")):
+        grid = points.parent
         doc = json.loads(points.read_text())
-        name = points.parent.name
-        tables = sorted(str(p.relative_to(points.parent).with_suffix("")) for p in points.parent.glob("*/*.json"))
-        grids[name] = {"points": f"{name}/points.json", "computed": doc["computed"], "code": doc["code"],
-                       "spectra": len(doc["points"]["file"]), "instruments": tables}
-        for inst in tables:
-            instruments.setdefault(inst, []).append(name)
+        stamps.append((doc["computed"], doc["code"]))
+        files = {}
+        for table in sorted(grid.glob("*/*.json")):
+            key = f"{table.parent.name}/{table.stem}"
+            files[key] = table.stat().st_size
+            instruments.setdefault(key, {})[grid.name] = table.stat().st_size
+        grids[grid.name] = {"points_bytes": points.stat().st_size, "instruments": files}
+    computed, code = max(stamps) if stamps else (None, None)
     return write_json(out / "index.json", {
-        "schema": SCHEMA, "table": "<grid>/<Facility>/<Instrument>.json", "definitions": DEFINITIONS,
-        "grids": grids, "instruments": dict(sorted(instruments.items()))})
+        "schema": SCHEMA, "computed": computed, "code": code,
+        "layout": {"points": "<grid>/points.json", "table": "<grid>/<Facility>/<Instrument>.json"},
+        "grids": grids, "instruments": {k: dict(sorted(v.items())) for k, v in sorted(instruments.items())}})
 
 
 def all_instruments(data_dir: Path):
@@ -323,10 +329,16 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("data_dir", type=Path)
     ap.add_argument("out_dir", type=Path)
-    ap.add_argument("--grids", nargs="+", required=True)
+    ap.add_argument("--grids", nargs="+")
+    ap.add_argument("--index-only", action="store_true", help="only rebuild OUT_DIR/index.json")
     ap.add_argument("--instruments", nargs="+", help="Facility/Instrument folders (default: all)")
     ap.add_argument("--seed", type=int, default=1)
     args = ap.parse_args(argv)
+    if args.index_only:
+        write_index(args.out_dir)
+        return
+    if not args.grids:
+        ap.error("--grids is required")
     instruments = args.instruments or all_instruments(args.data_dir)
     stamp = {"computed": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
              "code": f"SED_Tools server grid_info/photometry.py @ {git_revision()}"}

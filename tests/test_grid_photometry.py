@@ -72,7 +72,8 @@ def test_tables_match_sed_tools_photometry(tmp_path):
     assert points["variants"][0]["nodes"].count(None) == 1                 # the hole at 5000 K, logg 5
     assert all(abs(r - 1) < 0.05 for r in points["points"]["fbol_ratio"])
     index = json.loads((out / "index.json").read_text())
-    assert index["instruments"] == {"Fac/Inst": ["G", "G2"]} and index["grids"]["G"]["spectra"] == 5
+    assert list(index["instruments"]["Fac/Inst"]) == ["G", "G2"] and list(index["grids"]["G"]["instruments"]) == ["Fac/Inst"]
+    assert index["grids"]["G"]["points_bytes"] == (out / "G" / "points.json").stat().st_size
 
 
 def test_compare_coinciding_and_interpolated(tmp_path):
