@@ -217,7 +217,6 @@ def photometry(grid: Grid, bands: Bands, vega):
     for b, m in enumerate(bands.meta):            # the operator reproduces the published Vega zero points
         if m["zp_vega"] is not None and abs(vega_flux[b] / m["zp_vega"] - 1) > 1e-9:
             raise AssertionError(f"band {b}: operator Vega flux {vega_flux[b]} != zero point {m['zp_vega']}")
-    outside[np.abs(outside) < 1e-12] = 0.0
     return flux, outside, fbol, lam_range
 
 
@@ -276,13 +275,13 @@ def write_grid(out: Path, grid: Grid, bands: Bands, flux, outside, fbol, lam_ran
         table = {}
         for band, b in members:
             meta = bands.meta[b]
-            col = outside[:, b]
+            col = np.round(outside[:, b], DECIMALS)
             table[band] = {"detector_type": meta["detector_type"], "pivot": round(meta["pivot"], 3),
                            "AB_minus_ST": json_number(meta["AB_minus_ST"], 6),
                            "Vega_minus_ST": None if meta["Vega_minus_ST"] is None else
                            json_number(meta["Vega_minus_ST"], 6),
                            "m_st": [json_number(x) for x in m_st[:, b]],
-                           "outside": [json_number(x) for x in col] if col.any() else None}
+                           "outside": [float(x) for x in col] if col.any() else None}
         for (i, band), why in bands.errors.items():
             if i == inst:
                 table[band] = {"error": why}
