@@ -2,8 +2,8 @@
 Changelog
 =========
 
-Version 0.5.1 (unreleased)
---------------------------
+Version 0.5.1 (November 2026)
+-----------------------------
 
 - Removed: ``AtmosphereGrid.files()`` (``sed_tools.filters.manifest``, also
   reached as ``sed_tools.filter_components.AtmosphereGrid``), new in 0.5.0.
