@@ -504,7 +504,16 @@ product = Filters.fetch("LSST", "LSST", components="filter+optics+qe",
                         bands=["g", "r"], detector_type="energy")
 ```
 
-The detector override changes the integration convention applied to the selected throughput; replacing a physical detector's QE requires its actual QE component. An override records `DetectorTypeSource: user` and `DetectorTypeOriginal` in a separate `+detector_energy` or `+detector_photon` product directory. Source curves retain their original metadata. Without an override, each band's convention is preserved, including instruments with mixed detector conventions.
+The detector override changes the integration convention applied to the selected throughput; replacing a physical detector's QE requires its actual QE component. An override records `DetectorTypeSource: user` and `DetectorTypeOriginal` in a separate `+detector_energy` or `+detector_photon` product directory. Source curves retain their original metadata. Without an override, each band's convention is preserved, including instruments with mixed detector conventions. The `detector_type` override only relabels the product; it does not convert the curves.
+
+To change the detector type of installed curves (a published set or a product folder), edit them in place:
+
+```python
+Filters.correct_detector_type("SLOAN/SDSS", "energy")              # relabel only; the numbers are unchanged
+Filters.convert_detector_type("SLOAN/SDSS", "energy", bands=["g"])  # relabel and convert the numbers
+```
+
+A correction says the curves were always of that convention, for example a set used with a different detector. It writes `DetectorType`, `DetectorTypeSource: user` and `DetectorTypeOriginal` (the type before the first edit), and the manifest records it, so products composed later use it. A conversion also converts the numbers: T_E(λ) = T_P(λ)·λ to energy counting, or T_P(λ) = T_E(λ)/λ to photon counting, rescaled to the same peak. MESA divides an energy-counting curve by λ and restores its peak, so the converted curve gives the same photometry. The header records `DetectorTypeConversion` (`lambda` or `1/lambda`; none after converting back). The detector itself is unchanged, so the manifest is too, and composition starts from the unconverted numbers. The `info.json` and `properties.json` saved beside the curves are updated for the edited bands; their Vega- and Sun-based values are cleared until NJM's copies are fetched again. The interactive menu reports each downloaded set's and each new product's detector type and asks whether to correct or convert it (default no); `sed-tools filters-detector PATH --correct TYPE` or `--convert TYPE` (with optional `--bands`) does the same from the command line.
 
 Atmosphere requests use one of the instrument's own sites and exact observing conditions. Installed grids are used first, followed by NJM. During an NJM outage, team sites are rebuilt from their original files (`team_atmospheres`, or the instrument's own builder for `lsst_std` and `ctio_des`), and SkyCalc sites generate the requested grid point (through ESO's API, or its web form when the API host does not answer). SkyCalc generation requires PWV; an existing grid with several PWV values requires an explicit choice. SED_Tools does not substitute another site's atmosphere or interpolate between grid points.
 

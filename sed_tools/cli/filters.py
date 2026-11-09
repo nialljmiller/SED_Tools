@@ -12,6 +12,8 @@ from requests import RequestException
 from ..api import Filters, _listing_failures
 from ..cube.model import FILTER_DIR_DEFAULT
 from ..filters.compose import ATMOSPHERE, INSTRUMENT, ComponentError, archived_bands, index_listing, parse_components
+from ..filters.curve_metadata import normalize_detector_type, other_detector_type, read_filter_header
+from ..filters.detector_edit import FORMULAS, curve_files
 from ..filters.njm_catalogue import CatalogueError
 from ..terminal_plots import terminal_width
 from ..ui_utils import (NO_DEFAULT as _NO_DEFAULT, ask_number as _ask_number, ask_option, ask_yes, cut,
@@ -244,21 +246,21 @@ def _has_parts(info: dict) -> bool:
 
 
 def _compose_interactively(instrument_dir: Path, info: dict) -> None:
-    """Ask for the recipe, detector convention, large downloads and atmosphere, then build the product."""
+    """Ask for the recipe, large downloads and atmosphere, build the product, then review its detector type."""
     filter_root = instrument_dir.parent.parent
     review = info["component_availability"]
     roles = _ask_recipe(info)
     request = {
         "components": roles,
-        "detector_type": _ask_detector_type(),
         "allow_heavy": bool(review.get("large_download")
                             and ask_yes("Allow a large original-source download if needed? [y/N] ")),
         "atmosphere": _ask_atmosphere(info, filter_root),
     }
     try:
-        Filters.compose(instrument_dir, filter_root=filter_root, **request)
+        product = Filters.compose(instrument_dir, filter_root=filter_root, **request)
     except ComponentError as exc:
-        _compose_the_bands_that_work(instrument_dir, request, exc)
+        product = _compose_the_bands_that_work(instrument_dir, request, exc)
+    review_detector_types(product, "This product")
 
 
 def _ask_recipe(info: dict) -> List[str]:
@@ -285,10 +287,33 @@ def _ask_recipe(info: dict) -> List[str]:
             return list(roles)
 
 
-def _ask_detector_type() -> Optional[str]:
-    pick = ask_option("Detector convention [inherit], energy or photon: ",
-                       ["inherit", "energy", "photon"], default="inherit")
-    return None if pick == "inherit" else pick
+def review_detector_types(directory: Path, what: str = "This filter set") -> None:
+    """Say which detector type the curves at ``directory`` are known to be used with; on request, correct the
+    label or convert the curves, in place."""
+    by_type: Dict[Optional[str], Tuple[List[str], set]] = {}
+    for curve in curve_files(directory) if Path(directory).is_dir() else ():
+        header = read_filter_header(curve)
+        bands, sources = by_type.setdefault(normalize_detector_type(header.get("DetectorType")), ([], set()))
+        bands.append(curve.stem)
+        sources.add(header.get("DetectorTypeSource") or "unstated")
+    if not by_type:
+        return
+    known = " and ".join(
+        (f"{dtype}-counting detectors ({', '.join(sorted(sources))})" if dtype else "no stated detector type")
+        + (f" for {', '.join(bands)}" if len(by_type) > 1 else "")
+        for dtype, (bands, sources) in by_type.items())
+    if not ask_yes(f"{what} is known to be used with {known}. Do you wish to edit/correct this? [y/N] "):
+        return
+    action = ask_option("Correct the label only, or convert the curves? [correct/convert]: ", ["correct", "convert"])
+    current = next(iter(by_type))
+    target = (other_detector_type(current) if len(by_type) == 1 and current
+              else ask_option("Change them to energy or photon: ", ["energy", "photon"]))
+    if action == "convert":
+        print(f"  Converting to {target}-counting with {FORMULAS[target]}, rescaled to the same peak.")
+    try:
+        (Filters.convert_detector_type if action == "convert" else Filters.correct_detector_type)(directory, target)
+    except ValueError as exc:
+        print(f"  Not changed: {exc}")
 
 
 def _ask_atmosphere(info: dict, filter_root: Path) -> Optional[Dict]:
@@ -367,7 +392,7 @@ def _conditions_text(grid: dict) -> str:
     return "; ".join(parts) or "no conditions listed"
 
 
-def _compose_the_bands_that_work(instrument_dir: Path, request: Dict, error: ComponentError) -> None:
+def _compose_the_bands_that_work(instrument_dir: Path, request: Dict, error: ComponentError) -> Path:
     """When composing every band failed, offer the bands that can be composed; re-raise ``error`` otherwise."""
     working, failed = _composable_bands(instrument_dir, request)
     if not working or not failed:
@@ -377,7 +402,7 @@ def _compose_the_bands_that_work(instrument_dir: Path, request: Dict, error: Com
         print(wrap(why, indent=f"  {band}: ", hanging="    "))
     if not ask_yes(f"Build only {', '.join(working)}? [y/N] "):
         raise error
-    Filters.compose(instrument_dir, filter_root=instrument_dir.parent.parent, bands=working, **request)
+    return Filters.compose(instrument_dir, filter_root=instrument_dir.parent.parent, bands=working, **request)
 
 
 def _composable_bands(instrument_dir: Path, request: Dict) -> Tuple[List[str], Dict[str, str]]:
@@ -693,7 +718,8 @@ def _curve_contents(info: dict) -> str:
 
 def _fetch_instrument(library, facility: str, instrument: str, failures: List[str], *,
                       offer: bool = False) -> None:
-    """Download one instrument (then offer a composed product); a failure is printed and recorded.
+    """Download one instrument (then review its detector type and offer a composed product); a failure is
+    printed and recorded.
 
     The session's library is used, so an unreachable NJM is checked and reported once per session.
     """
@@ -706,6 +732,7 @@ def _fetch_instrument(library, facility: str, instrument: str, failures: List[st
     if not offer:
         return
     try:
+        review_detector_types(directory)
         _offer_composition(directory)
     except (ValueError, RequestException, OSError, RuntimeError) as exc:  # ComponentError is a ValueError
         print(f"Composed product of {facility}/{instrument} not built: {exc}")

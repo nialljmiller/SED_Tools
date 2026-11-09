@@ -14,8 +14,9 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Uni
 
 import numpy as np
 
-from .curve_metadata import (ENERGY, PHOTON, normalize_detector_type,
+from .curve_metadata import (ENERGY, PHOTON, detector_type_before_conversion, normalize_detector_type,
                               read_filter_header, write_filter_file)
+from .detector_edit import unconverted_transmission
 from .manifest import (  # noqa: F401 - every manifest name stays importable from here (filter_components)
     ATMOSPHERE, ATMOSPHERE_KINDS, AUXILIARY_DIRS, COMPONENTS_DIR, COMPOSABLE_ROLES, DERIVED, FILTER,
     FILTER_SIBLING_SUFFIXES, INSTRUMENT, MANIFEST_NAME, MANIFEST_SCHEMA, OPTICS, PRODUCTS_DIR, PUBLISHED, QE,
@@ -249,7 +250,7 @@ def _band_detector_type(instrument_dir: Path, band: str, roles: Sequence[str], m
         return manifest.detector_types[band]
     if PUBLISHED in roles and QE not in roles:
         # The product is the published curve times extra factors: same detector.
-        published = normalize_detector_type(read_filter_header(instrument_dir / f"{band}.dat").get("DetectorType"))
+        published = detector_type_before_conversion(read_filter_header(instrument_dir / f"{band}.dat"))
         if published:
             return published
     if QE not in roles:
@@ -347,6 +348,8 @@ def compose_band(
         elif not path.resolve().is_relative_to(instrument_dir.resolve()):
             raise ComponentError(f"{path}: component resolves outside its instrument directory")
         curve = read_curve(path)
+        # A curve converted in place for MESA (detector_edit) is composed from its own numbers.
+        curve.transmission = unconverted_transmission(curve.wavelength, curve.transmission, curve.header)
         # A file may itself already include other factors; never count one twice.
         if key == PUBLISHED:
             contains = parse_components(manifest.published_bands.get(band))

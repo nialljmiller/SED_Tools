@@ -236,6 +236,62 @@ class Filters:
         return rows
 
     @classmethod
+    def correct_detector_type(
+        cls,
+        path: Union[str, Path],
+        detector_type: str,
+        *,
+        bands: Optional[Sequence[str]] = None,
+    ) -> List[Dict[str, Any]]:
+        """Relabel installed curves as ``detector_type`` (``energy`` or ``photon``), in place.
+
+        Only the ``DetectorType`` label changes: use this when the curves were
+        always of that convention (e.g. the set is used with another detector).
+        ``path`` is a ``.dat`` file or a set's directory (a path, or
+        ``"Facility/Instrument"`` under the filter root, a product folder too);
+        ``bands`` limits a set to those bands.  Each changed curve gets
+        ``DetectorTypeSource=user`` and keeps its first type in
+        ``DetectorTypeOriginal``; the set's manifest records the correction, so
+        products composed later use it.  Returns one row per curve (``path``,
+        ``band``, ``detector_type``, ``previous``, ``changed``).
+        See :mod:`sed_tools.filters.detector_edit`.
+        """
+        return cls._edit_detector_type(path, detector_type, bands, convert=False)
+
+    @classmethod
+    def convert_detector_type(
+        cls,
+        path: Union[str, Path],
+        detector_type: str,
+        *,
+        bands: Optional[Sequence[str]] = None,
+    ) -> List[Dict[str, Any]]:
+        """Convert installed curves to ``detector_type`` (``energy`` or ``photon``), in place.
+
+        The label and the numbers change: T_E(λ) = T_P(λ)·λ to energy counting,
+        T_P(λ) = T_E(λ)/λ to photon counting, rescaled to the same peak, so the
+        photometry MESA computes stays the same.  The header records
+        ``DetectorTypeConversion`` (``lambda`` or ``1/lambda``; none after
+        converting back).  The detector itself is unchanged, so the manifest
+        is too.  Arguments and rows as for :meth:`correct_detector_type`.
+        """
+        return cls._edit_detector_type(path, detector_type, bands, convert=True)
+
+    @classmethod
+    def _edit_detector_type(cls, path, detector_type, bands, *, convert):
+        from ..filters.detector_edit import edit_detector_type
+
+        path = Path(path)
+        if not path.exists() and not path.is_absolute():
+            path = cls._filter_root / path
+        rows = edit_detector_type(path, detector_type, convert=convert, bands=bands)
+        how = "converted" if convert else "label only"
+        for row in rows:
+            if row["changed"]:
+                print(f"[filters]* {row['path']}: {row['previous'] or 'untagged'} -> {row['detector_type']} ({how})")
+        return rows
+
+    @classmethod
     def available(
         cls,
         facility: str,

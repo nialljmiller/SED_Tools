@@ -2,6 +2,38 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+Correcting or converting a detector type
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- ``Filters.correct_detector_type(path, detector_type, bands=None)`` relabels
+  installed curves in place: a ``.dat`` file, a set or a product folder. The
+  numbers are unchanged. The header gets ``DetectorTypeSource=user`` and
+  ``DetectorTypeOriginal``, and the manifest records the correction for
+  products composed later.
+- ``Filters.convert_detector_type(path, detector_type, bands=None)`` also
+  converts the numbers: T_E(λ) = T_P(λ)·λ to energy counting, T_P(λ) =
+  T_E(λ)/λ to photon counting, rescaled to the same peak, so MESA's photometry
+  is unchanged. The header records ``DetectorTypeConversion=lambda`` (or
+  ``1/lambda``; none after converting back). The manifest keeps the
+  detector's type, and composition starts from a curve's unconverted numbers.
+- Both update the ``info.json`` and ``properties.json`` saved beside the
+  curves for the edited bands. Vega- and Sun-based properties become unknown
+  until NJM's copies are fetched again.
+- ``sed-tools filters-detector PATH --correct TYPE`` or ``--convert TYPE``
+  (with ``--bands``) does the same from the command line.
+- The interactive menu reports the detector type of each downloaded set and
+  each new product ("This filter set is known to be used with
+  photon-counting detectors (svo). Do you wish to edit/correct this?
+  [y/N]"). The default is no; yes asks whether to correct or convert. This
+  replaces the compose menu's "Detector convention [inherit], energy or
+  photon" question. ``Filters.compose(detector_type=...)`` and
+  ``filters-compose --detector-type`` still write a relabelled
+  ``+detector_<type>`` product, as in 0.5.1; their help now says that they
+  only relabel.
+
 Version 0.5.1 (November 2026)
 -----------------------------
 
