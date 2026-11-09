@@ -269,6 +269,25 @@ def curve_properties(path: PathLike, vega: Optional[Spectrum] = None,
     return filter_properties(curve.wavelength, curve.transmission, curve.detector_type, vega, sun)
 
 
+def properties_record(path: PathLike, vega: Optional[Spectrum] = None,
+                      sun: Optional[Spectrum] = None) -> Dict[str, object]:
+    """The record NJM's ``properties.json`` gives the curve at ``path``.
+
+    :func:`curve_properties` to 7 significant figures (``{"error": ...}`` for a
+    curve that has none), with the ``DetectorType`` and ``DetectorTypeSource``
+    of its header.  The plotting colours are added per instrument.
+    """
+    try:
+        record: Dict[str, object] = {key: float(f"{value:.7g}") if isinstance(value, float) else value
+                                     for key, value in curve_properties(path, vega, sun).items()}
+    except ValueError as exc:
+        record = {"error": str(exc)}
+    header = read_filter_header(path)
+    record["DetectorType"] = header.get("DetectorType", "energy")
+    record["DetectorTypeSource"] = header.get("DetectorTypeSource", "assumed")
+    return record
+
+
 def instrument_properties(instrument_dir: PathLike, vega: Optional[Spectrum] = None,
                           sun: Optional[Spectrum] = None) -> Dict[str, dict]:
     """Properties of every published ``<band>.dat`` curve of an instrument, keyed by band.

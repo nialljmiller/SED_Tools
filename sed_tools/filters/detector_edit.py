@@ -13,8 +13,12 @@ records beside the curves follow: a correction is a statement about the
 detector, so the manifest takes it; a conversion is not, so the manifest
 keeps the detector's type, and composition undoes a conversion before
 multiplying a curve, so products built later are as they were.  NJM's
-``info.json`` and ``properties.json`` are updated for the edited bands
-(Vega- and Sun-based properties become unknown).
+``info.json`` and ``properties.json`` beside the curves take the new
+detector fields.  A converted curve describes the same instrument, so its
+other properties stay as they were; a corrected curve's properties are
+recomputed as NJM computes them (:func:`.properties.properties_record`), with
+the Vega and Sun spectra NJM serves (cached; their values are left unknown,
+with a note, when NJM cannot be reached and nothing is cached).
 """
 
 from __future__ import annotations
@@ -22,13 +26,18 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Dict, List, Mapping, Optional, Sequence
+import shutil
+from typing import Callable, Dict, List, Mapping, Optional, Sequence
 
 import numpy as np
 
-from .curve_metadata import (COLUMN_ROW, ENERGY, PHOTON, PathLike, _read_curve, conversion_label, conversion_power,
-                             format_metadata_field, normalize_detector_type, read_filter_header, write_filter_header)
+from .curve_metadata import (COLUMN_ROW, ENERGY, PHOTON, PathLike, _layout, _read_curve, _rewritten, conversion_label,
+                             conversion_power, format_metadata_field, normalize_detector_type, read_filter_header,
+                             write_filter_header)
 from .manifest import MANIFEST_NAME, archived_bands, index_listing
+
+#: Where NJM serves the reference spectra of ``properties.json``, when its ``definitions`` do not say.
+SPECTRA = {"vega_spectrum": "vega/vega_flam.csv", "sun_spectrum": "sun/sun_flam.csv"}
 
 #: The conversion to each convention, as the prompts show it.
 FORMULAS = {ENERGY: "T_E(λ) = T_P(λ)·λ", PHOTON: "T_P(λ) = T_E(λ)/λ"}
@@ -70,11 +79,15 @@ def curve_files(path: PathLike, bands: Optional[Sequence[str]] = None) -> List[P
 
 
 def edit_detector_type(path: PathLike, detector_type: str, *, convert: bool,
+                       spectrum: Callable[[str], PathLike],
                        bands: Optional[Sequence[str]] = None) -> List[Dict[str, object]]:
     """Set the detector type of the curve(s) at ``path``, converting their numbers if ``convert``.
 
-    Curves already of ``detector_type`` are left alone.  Returns one row per
-    curve: ``path``, ``band``, ``detector_type``, ``previous`` and ``changed``.
+    Curves already of ``detector_type`` are left alone.  ``spectrum`` gives
+    the local copy of a reference spectrum NJM serves at a relative URL (see
+    :meth:`.FilterCatalogue.spectrum`), for the properties of corrected
+    curves.  Returns one row per curve: ``path``, ``band``,
+    ``detector_type``, ``previous`` and ``changed``.
     """
     target = normalize_detector_type(detector_type)
     if target is None:
@@ -102,24 +115,49 @@ def edit_detector_type(path: PathLike, detector_type: str, *, convert: bool,
         rows.append({"path": str(curve), "band": curve.stem, "detector_type": target, "previous": previous,
                      "changed": previous != target})
     for directory, bands_edited in edited.items():
-        _update_set_records(directory, bands_edited, corrected=not convert)
+        _update_set_records(directory, bands_edited, corrected=not convert, spectrum=spectrum)
     return rows
 
 
 def _write_converted(path: Path, fields: Mapping[str, Optional[str]], target: str) -> None:
+    """Convert the samples of ``path`` to ``target``; the lines before them keep their text, ``fields`` on the
+    column row."""
     wavelength, transmission = _read_curve(path)
-    converted = converted_transmission(wavelength, transmission, target)
-    meta = format_metadata_field(fields)
+    samples = [f"{float(w)!r},{float(t)!r}\n".encode()
+               for w, t in zip(wavelength, converted_transmission(wavelength, transmission, target))]
+    layout = _layout(path)
+    if layout.column_row is None:  # metadata only on 0.3.0 "#" lines: the curve gets a column row
+        head = [f"{COLUMN_ROW},{format_metadata_field(fields)}\n".encode()]
+    else:
+        head = _rewritten(layout, fields)[:layout.column_row + 1 - len(layout.legacy_rows)]
     tmp = f"{path}.tmp"
-    with open(tmp, "w", encoding="utf-8") as fh:
-        fh.write(COLUMN_ROW + ("," + meta if meta else "") + "\n")
-        fh.writelines(f"{float(w)!r},{float(t)!r}\n" for w, t in zip(wavelength, converted))
+    with open(tmp, "wb") as fh:
+        fh.writelines(head + samples)
+    shutil.copymode(path, tmp)
     os.replace(tmp, path)
 
 
-def _update_set_records(directory: Path, headers: Mapping[str, Mapping[str, str]], *, corrected: bool) -> None:
+def _reference_spectra(definitions: Mapping, spectrum: Callable[[str], PathLike]) -> List:
+    """The Vega and Sun spectra of ``properties.json`` (its ``definitions`` name them), each None when it cannot
+    be had."""
+    from .njm_catalogue import CatalogueError
+    from .properties import load_vega
+
+    spectra = []
+    for key, default in SPECTRA.items():
+        try:
+            spectra.append(load_vega(spectrum((definitions.get(key) or {}).get("url") or default)))
+        except CatalogueError as exc:
+            print(f"[filters] {exc}: the {key.split('_')[0].capitalize()}-based properties of the corrected "
+                  "curves are left unknown")
+            spectra.append(None)
+    return spectra
+
+
+def _update_set_records(directory: Path, headers: Mapping[str, Mapping[str, str]], *, corrected: bool,
+                        spectrum: Callable[[str], PathLike]) -> None:
     """Bring the manifest (corrections only), ``info.json`` and ``properties.json`` beside the curves into step."""
-    from .properties import curve_properties
+    from .properties import properties_record
 
     def edit(name, change):
         path = directory / name
@@ -145,11 +183,12 @@ def _update_set_records(directory: Path, headers: Mapping[str, Mapping[str, str]
                     del curve[key]
 
     def properties(data):
-        for band, header in headers.items():
-            record = (data.get("bands") or {}).get(band)
-            if record is not None:
-                record.update(curve_properties(directory / f"{band}.dat"))
-                record.update({key: header[key] for key in keys[:2]})
+        # A conversion keeps the instrument, so its properties; a correction recomputes them as NJM does.
+        records = {band: record for band, record in (data.get("bands") or {}).items() if band in headers}
+        spectra = _reference_spectra(data.get("definitions") or {}, spectrum) if corrected and records else ()
+        for band, record in records.items():
+            record.update(properties_record(directory / f"{band}.dat", *spectra) if corrected
+                          else {key: headers[band][key] for key in keys[:2]})
 
     if corrected:
         edit(MANIFEST_NAME, manifest)

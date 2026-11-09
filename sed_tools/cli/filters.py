@@ -260,7 +260,7 @@ def _compose_interactively(instrument_dir: Path, info: dict) -> None:
         product = Filters.compose(instrument_dir, filter_root=filter_root, **request)
     except ComponentError as exc:
         product = _compose_the_bands_that_work(instrument_dir, request, exc)
-    review_detector_types(product, "This product")
+    review_detector_types(product, filter_root, "This product")
 
 
 def _ask_recipe(info: dict) -> List[str]:
@@ -287,7 +287,7 @@ def _ask_recipe(info: dict) -> List[str]:
             return list(roles)
 
 
-def review_detector_types(directory: Path, what: str = "This filter set") -> None:
+def review_detector_types(directory: Path, filter_root: Path, what: str = "This filter set") -> None:
     """Say which detector type the curves at ``directory`` are known to be used with; on request, correct the
     label or convert the curves, in place."""
     by_type: Dict[Optional[str], Tuple[List[str], set]] = {}
@@ -311,7 +311,8 @@ def review_detector_types(directory: Path, what: str = "This filter set") -> Non
     if action == "convert":
         print(f"  Converting to {target}-counting with {FORMULAS[target]}, rescaled to the same peak.")
     try:
-        (Filters.convert_detector_type if action == "convert" else Filters.correct_detector_type)(directory, target)
+        edit = Filters.convert_detector_type if action == "convert" else Filters.correct_detector_type
+        edit(directory, target, filter_root=filter_root)
     except ValueError as exc:
         print(f"  Not changed: {exc}")
 
@@ -732,7 +733,7 @@ def _fetch_instrument(library, facility: str, instrument: str, failures: List[st
     if not offer:
         return
     try:
-        review_detector_types(directory)
+        review_detector_types(directory, library.root)
         _offer_composition(directory)
     except (ValueError, RequestException, OSError, RuntimeError) as exc:  # ComponentError is a ValueError
         print(f"Composed product of {facility}/{instrument} not built: {exc}")
