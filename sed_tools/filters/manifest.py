@@ -17,7 +17,7 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Uni
 
 import numpy as np
 
-from .curve_metadata import ENERGY, normalize_detector_type, read_filter_header
+from .curve_metadata import ENERGY, detector_type_before_conversion, normalize_detector_type, read_filter_header
 from .sites import instrument_sites, is_ground_based, own_site, platform
 
 logger = logging.getLogger("sed_tools.filter_components")
@@ -344,8 +344,13 @@ class InstrumentManifest:
                     filter_components[band] = f"{band}.dat"
             if header.get("ComponentsSource"):
                 sources.add(header["ComponentsSource"])
-            dtype = normalize_detector_type(header.get("DetectorType"))
-            band_detector_sources[band] = header.get("DetectorTypeSource", "unknown") if dtype else "assumed"
+            # A converted curve says nothing new about the detector: its products keep the type it had, the
+            # user's when they corrected it first.
+            dtype = detector_type_before_conversion(header)
+            converted = (header.get("DetectorTypeConversion")
+                         and dtype == normalize_detector_type(header.get("DetectorTypeOriginal")))
+            band_detector_sources[band] = ("converted" if converted
+                                           else header.get("DetectorTypeSource", "unknown")) if dtype else "assumed"
             if dtype:
                 detector_types.add(dtype)
                 band_detectors[band] = dtype

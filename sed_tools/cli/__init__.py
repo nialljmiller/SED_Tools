@@ -170,7 +170,8 @@ def _add_filter_product_options(parser, *, components=None):
                         help="Roles separated by commas or '+': filter, optics, qe, published")
     parser.add_argument("--bands", nargs="+", help="Compose only these bands")
     parser.add_argument("--detector-type", choices=["energy", "photon"],
-                        help="Override integration weighting in a derived copy; preserves published curves")
+                        help="Label the product with this type without converting its curves, in a separate "
+                             "+detector_<type> folder; to convert, use filters-detector --convert on the product")
     parser.add_argument("--airmass", type=_airmass_arg,
                         help="Add the instrument's own-site atmosphere at this airmass ('unstated' for a "
                              "team atmosphere whose source gives none)")
@@ -221,7 +222,8 @@ def _add_filter_download_parsers(sub) -> None:
                      help="How duplicate filter filenames are handled")
 
     fdp = sub.add_parser("filters-detector",
-                         help="Tag filter files as photon- or energy-counting (DetectorType header)")
+                         help="Tag filter files as photon- or energy-counting (DetectorType header), "
+                              "or correct or convert their type in place")
     fdp.add_argument("path", nargs="?", default=str(FILTER_DIR_DEFAULT),
                      help="Filter root, instrument directory or single .dat file")
     fdp.add_argument("--facility", default=None,
@@ -230,6 +232,13 @@ def _add_filter_download_parsers(sub) -> None:
                      help="Re-resolve files that are already tagged; a result never replaces a type "
                           "from a stronger source (original > inferred > svo > svo-curve-match > assumed)")
     fdp.add_argument("--dry-run", action="store_true", help="Report without modifying files")
+    edit = fdp.add_mutually_exclusive_group()
+    edit.add_argument("--correct", choices=["energy", "photon"],
+                      help="Relabel the curves at PATH as this type, in place; the numbers are unchanged")
+    edit.add_argument("--convert", choices=["energy", "photon"],
+                      help="Convert the curves at PATH to this type, in place: T_E = T_P*lambda or "
+                           "T_P = T_E/lambda, rescaled to the same peak")
+    fdp.add_argument("--bands", nargs="+", help="With --correct or --convert: only these bands of the set")
 
 
 def _add_filter_catalogue_parsers(sub) -> None:
@@ -448,6 +457,15 @@ def _cmd_filters_combine(args, parser):
 
 
 def _cmd_filters_detector(args, parser):
+    if args.correct or args.convert:
+        if args.facility or args.force or args.dry_run:
+            parser.error("--correct and --convert take only PATH and --bands")
+        edit = Filters.convert_detector_type if args.convert else Filters.correct_detector_type
+        rows = edit(args.path, args.convert or args.correct, bands=args.bands)
+        print(f"\n[filters] {len(rows)} files, {sum(r['changed'] for r in rows)} changed")
+        return 0
+    if args.bands:
+        parser.error("--bands needs --correct or --convert")
     # Each file is printed as it is tagged, so on failure main() has only the error left to say.
     rows = Filters.tag_detector_types(args.path, facility=args.facility, force=args.force, dry_run=args.dry_run)
     counts = Counter((r["detector_type"], r["source"]) for r in rows)

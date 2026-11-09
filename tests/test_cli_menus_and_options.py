@@ -131,9 +131,10 @@ def test_rebuild_uses_the_flux_unit_option_without_asking(tmp_path, monkeypatch,
 # variants
 # ----------------------------------------------------------------------
 @pytest.fixture
-def composed(monkeypatch):
+def composed(monkeypatch, tmp_path):
     calls = []
-    monkeypatch.setattr(Filters, "compose", classmethod(lambda cls, *a, **k: calls.append((a, k))))
+    monkeypatch.setattr(Filters, "compose",
+                        classmethod(lambda cls, *a, **k: calls.append((a, k)) or tmp_path / "product"))
     monkeypatch.setattr(Filters, "fetch", classmethod(lambda cls, *a, **k: calls.append((a, k)) or "dir"))
     return calls
 
@@ -171,14 +172,14 @@ def test_airmass_defaults_to_the_first_condition_the_site_has(monkeypatch, capsy
     assert prompts[0] == f"Airmass [{shown}]: "
 
 
-def test_composition_asks_again_after_a_bad_recipe_or_detector_type(tmp_path, monkeypatch, composed, capsys):
+def test_composition_asks_again_after_a_bad_recipe(tmp_path, monkeypatch, composed, capsys):
     monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: _availability()))
-    answer(monkeypatch, "y", "bogus", "9", "filter,atmosphere", "published,optics", "xyz", "photon")
+    answer(monkeypatch, "y", "bogus", "9", "filter,atmosphere", "published,optics")
     cli._offer_composition(tmp_path / "Fac" / "Cam")
     out = capsys.readouterr().out
     assert "Unknown filter component: 'bogus'" in out and "Choose 1 to 2" in out
-    assert "the atmosphere is asked about separately" in out and "Please enter one of: inherit, energy, photon" in out
-    assert composed[0][1]["components"] == ["published", "optics"] and composed[0][1]["detector_type"] == "photon"
+    assert "the atmosphere is asked about separately" in out
+    assert composed[0][1]["components"] == ["published", "optics"] and "detector_type" not in composed[0][1]
 
 
 def test_composable_bands_compose_in_memory(tmp_path, monkeypatch):
@@ -241,7 +242,7 @@ def sites(monkeypatch):
 def test_pressing_enter_at_the_atmosphere_choice_folds_in_none(tmp_path, monkeypatch, composed, sites, capsys):
     monkeypatch.setattr(Filters, "available", classmethod(lambda cls, *a, **k: _availability(
         atmosphere=True, atmosphere_site="lsst_std", atmosphere_sites=["lsst_std"])))
-    prompts = answer(monkeypatch, "y", "1", "", "")
+    prompts = answer(monkeypatch, "y", "1", "")
     cli._offer_composition(tmp_path / "LSST" / "LSST")
     assert [p for p in prompts if p.startswith("Atmosphere")] == ["Atmosphere [0, none]: "]
     assert composed[0][1]["atmosphere"] is None and sites == [True]  # one listing; installed sites are checked daily
@@ -371,7 +372,8 @@ def lsst(tmp_path, monkeypatch):
         {"key": "LSST", "label": "LSST", "sources": ["njm"]}], "errors": []})
     monkeypatch.setattr(FilterLibrary, "published", lambda self, f, i: tmp_path / f / i)
     composed = []
-    monkeypatch.setattr(Filters, "compose", classmethod(lambda cls, *a, **k: composed.append((a, k))))
+    monkeypatch.setattr(Filters, "compose",
+                        classmethod(lambda cls, *a, **k: composed.append((a, k)) or tmp_path / "product"))
     return composed
 
 
@@ -380,13 +382,13 @@ def test_menu_4_builds_a_curve_from_the_parts_of_a_picked_instrument(lsst, tmp_p
                           components=["filter", "optics", "qe"])
     _summary_inputs(monkeypatch, parts)
     monkeypatch.setattr(cli.filters, "_installed_availability", lambda directory: parts)
-    prompts = answer(monkeypatch, "4", "1", "1", "2", "", "q")
+    prompts = answer(monkeypatch, "4", "1", "1", "2", "q")
     assert cli._run_menu() == 0
     assert ("  3) Filter set information\n"
             "  4) Build a filter curve from its parts (filter, optics, camera, atmosphere)\n") in capsys.readouterr().out
-    assert prompts[3:5] == ["Choose a recipe [1]: ", "Detector convention [inherit], energy or photon: "]
+    assert prompts[3:] == ["Choose a recipe [1]: ", "> "]  # no detector question before building
     assert lsst == [((tmp_path / "LSST" / "LSST",), {"filter_root": tmp_path, "components": ["filter", "optics", "qe"],
-                                                     "detector_type": None, "allow_heavy": False, "atmosphere": None})]
+                                                     "allow_heavy": False, "atmosphere": None})]
 
 
 def test_menu_4_says_in_one_line_when_an_instrument_has_no_parts(lsst, monkeypatch, capsys):

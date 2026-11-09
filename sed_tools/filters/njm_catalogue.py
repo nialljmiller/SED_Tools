@@ -417,7 +417,10 @@ class FilterCatalogue:
     def vega(self, *, refresh: bool = False) -> Path:
         """Path to the cached Vega spectrum NJM's properties use (``vega/vega_flam.csv``, Å and f_λ)."""
         definitions = self.index()["filters"].get("properties_definitions") or {}
-        rel = (definitions.get("vega_spectrum") or {}).get("url") or VEGA_URL
+        return self.spectrum((definitions.get("vega_spectrum") or {}).get("url") or VEGA_URL, refresh=refresh)
+
+    def spectrum(self, rel: str, *, refresh: bool = False) -> Path:
+        """Path to the cached copy of a reference spectrum NJM serves at ``rel`` (e.g. ``sun/sun_flam.csv``)."""
         return self._fetched(rel, max_age=30 * 24 * 3600, refresh=refresh)
 
     # ---- Search

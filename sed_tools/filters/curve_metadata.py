@@ -53,6 +53,12 @@ SED_Tools' composition tools (``user`` overrides, ``composed`` products and
 ``component`` files, see :mod:`sed_tools.filter_components`) are outside
 this order and are never replaced by an SVO resolution.
 
+A ``user`` type set on a curve in place (:mod:`sed_tools.filters.detector_edit`)
+keeps the type it replaced in ``DetectorTypeOriginal``.  A curve converted
+to the other convention also has ``DetectorTypeConversion``: ``lambda`` when
+its transmission was multiplied by the wavelength (photon to energy),
+``1/lambda`` when divided (energy to photon), each rescaled to the same peak.
+
 ``WavelengthUnit`` is copied from SVO whenever the curve is identified, so
 the loader never has to guess the unit from the values.
 """
@@ -91,6 +97,7 @@ HEADER_KEYS = (
     "FilterID", "DetectorType", "DetectorTypeSource", "WavelengthUnit",
     # Component bookkeeping (see sed_tools.filter_components)
     "Role", "Components", "ComponentsSource", "Recipe", "Atmosphere", "Sources", "DetectorTypeOriginal",
+    "DetectorTypeConversion",
 )
 DETECTOR_KEYS = HEADER_KEYS[:4]
 
@@ -139,6 +146,35 @@ def normalize_detector_type(value: object) -> Optional[str]:
     if text in {"1", "1.0", "photon", "photon counter", "photon-counting", "photon_counting"}:
         return PHOTON
     return None
+
+
+def other_detector_type(detector_type: str) -> str:
+    return PHOTON if detector_type == ENERGY else ENERGY
+
+
+def conversion_power(value: Optional[str]) -> int:
+    """The power of lambda a ``DetectorTypeConversion`` value multiplied the curve by (0 when there is none)."""
+    if not value:
+        return 0
+    if value == "1/lambda":
+        return -1
+    base, _, power = value.partition("^")
+    if base != "lambda":
+        raise ValueError(f"Unknown DetectorTypeConversion: {value!r}")
+    return int(power or 1)
+
+
+def conversion_label(power: int) -> Optional[str]:
+    """The ``DetectorTypeConversion`` value of a curve multiplied by lambda**power; None for no conversion."""
+    return {0: None, 1: "lambda", -1: "1/lambda"}.get(power, f"lambda^{power}")
+
+
+def detector_type_before_conversion(header: Mapping[str, str]) -> Optional[str]:
+    """The convention of a curve's numbers before any conversion: its ``DetectorType``, the other type when an
+    odd power of lambda converted it."""
+    detector_type = normalize_detector_type(header.get("DetectorType"))
+    odd = conversion_power(header.get("DetectorTypeConversion")) % 2
+    return other_detector_type(detector_type) if detector_type and odd else detector_type
 
 
 # ---- Header I/O
