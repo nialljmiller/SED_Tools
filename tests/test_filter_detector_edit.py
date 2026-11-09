@@ -9,13 +9,13 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+import requests
 from numpy.testing import assert_allclose
 
 from helpers_cli_menus import answer
 from sed_tools import Filters
 from sed_tools.cli.filters import review_detector_types
 from sed_tools.combine_filters import write_filter_index
-from sed_tools.filters.njm_catalogue import FilterCatalogue
 from sed_tools.filters.properties import curve_properties, filter_properties, load_vega, properties_record
 from sed_tools.njm_mirror import cache_root
 from sed_tools.filters.compose import OPTICS, QE, InstrumentManifest, add_component, build_product, read_curve
@@ -176,8 +176,12 @@ def test_correct_then_convert_records_the_net_factor(root):
 
 
 def test_correct_without_njm_leaves_the_vega_and_sun_values_unknown(tmp_path, monkeypatch, capsys):
+    def unreachable(self, method, url, **kwargs):
+        raise requests.ConnectionError("NJM is down")
+
+    monkeypatch.setattr(requests.Session, "request", unreachable)
+    monkeypatch.setattr("time.sleep", lambda seconds: None)  # the client's retries
     root = tmp_path / "elsewhere"  # nothing cached under this filter root
-    monkeypatch.setattr(FilterCatalogue, "_online_mirror", lambda self, **kwargs: None)  # NJM unreachable
     inst = _set(root)
     Filters.correct_detector_type(inst, "energy", bands=["g"], filter_root=root)
     props = json.loads((inst / "properties.json").read_text())["bands"]["g"]
