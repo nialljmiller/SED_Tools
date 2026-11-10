@@ -9,7 +9,6 @@ config file, NJM and SVO state, and random state. No row uses the network: a rea
 from __future__ import annotations
 
 import gzip
-import hashlib
 import io
 import json
 import os
@@ -352,12 +351,6 @@ def njm_grids(t):
     return server
 
 
-def digests(directory):
-    """Each file's bytes and modification time."""
-    return {p.name: (hashlib.sha256(p.read_bytes()).hexdigest(), p.stat().st_mtime_ns)
-            for p in sorted(Path(directory).iterdir()) if p.is_file()}
-
-
 def copy_without_times(src, dst):
     """Copy a folder as ``cp -R`` or ``scp`` without ``-p`` do, then make every spectrum newer than the cube,
     bundle and lookup table, as a copy in the wrong order leaves them."""
@@ -374,13 +367,6 @@ def write_lookup(model_dir, header, rows):
     model_dir.mkdir(parents=True)
     lines = [",".join(header)] + [",".join(str(v) for v in row) for row in rows]
     (model_dir / "lookup_table.csv").write_text("\n".join(lines) + "\n")
-
-
-def flat_filter(name="V"):
-    from sed_tools.flux_cube_tool import FilterCurve
-
-    wavelength = np.arange(4000.0, 6001.0, 100.0)
-    return FilterCurve(name, wavelength, np.ones_like(wavelength), {})
 
 
 # ======================================================================
