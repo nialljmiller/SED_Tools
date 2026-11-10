@@ -43,6 +43,12 @@ Correcting or converting a detector type
   ``sed_tools.filters.properties.properties_record(path, vega, sun)``, a
   curve's ``properties.json`` record as NJM computes it.
 
+Fixed
+~~~~~
+
+- A curve row such as ``4500,abc`` put SVO matching and detector conversion out
+  of step; it now stops with ``<file>, line N: expected two numbers``.
+
 Version 0.5.1 (November 2026)
 -----------------------------
 

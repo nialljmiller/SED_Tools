@@ -202,6 +202,9 @@ def test_edit_refuses_unknown_bands_types_and_untagged_conversions(root):
     (inst / "u.dat").write_text("Wavelength,Transmission\n4000.0,0.1\n5000.0,0.5\n")
     with pytest.raises(ValueError, match="No DetectorType"):
         Filters.convert_detector_type(inst / "u.dat", "energy")
+    (inst / "u.dat").write_text("Wavelength,Transmission,DetectorType=photon\n4000.0,0.1\n4500.0,abc\n5000.0,0.5\n")
+    with pytest.raises(ValueError, match=r"u\.dat, line 3: expected two numbers, found '4500\.0,abc'"):
+        Filters.convert_detector_type(inst / "u.dat", "energy")
 
 
 def test_retagging_keeps_edited_types(root):
