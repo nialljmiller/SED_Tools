@@ -63,6 +63,10 @@ Changed
 - A wavelength unit a filter curve or spectrum declares that SED_Tools does
   not know (e.g. ``WavelengthUnit=nm (air)``) now stops with an error naming
   it; it was guessed from the values after a warning.
+- SkyCalc retries at one layer: an output that is not a FITS file reruns the
+  model, up to ``SkyCalcClient(retries=4)`` times like any other failure,
+  instead of also being polled 5 times within each attempt (at most 4
+  downloads per request, not 20).
 
 Fixed
 ~~~~~

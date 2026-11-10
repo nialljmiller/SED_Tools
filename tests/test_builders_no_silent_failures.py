@@ -89,9 +89,9 @@ class _SkyCalcSession:
 
     LINK = "<a href=/observing/etc/tmp/abc/skytable.fits>skytable.fits</a>"
 
-    def __init__(self, api_up=False, form_html=LINK, echo_override=None, rmtmp_error=None):
+    def __init__(self, api_up=False, form_html=LINK, echo_override=None, rmtmp_error=None, api_output=None):
         self.api_up, self.form_html, self.echo_override = api_up, form_html, echo_override or {}
-        self.rmtmp_error, self.form_posts = rmtmp_error, []
+        self.rmtmp_error, self.form_posts, self.api_output, self.api_gets = rmtmp_error, [], api_output, 0
 
     def post(self, url, data=None, json=None, timeout=None, **kw):
         if json is not None:
@@ -107,7 +107,8 @@ class _SkyCalcSession:
                 raise self.rmtmp_error
             return _SkyCalcResp(b"{}")
         if "/tmp/t1/" in url:
-            return _SkyCalcResp(_skytable({}))
+            self.api_gets += 1
+            return _SkyCalcResp(self.api_output or _skytable({}))
         return _SkyCalcResp(_skytable({**self.form_posts[-1], **self.echo_override}))
 
 
@@ -132,6 +133,12 @@ def test_skycalc_failure_after_a_fallback_names_both_errors(no_wait):
     assert "returned no skytable.fits" in message and "Service unavailable" in message  # the form's error
     assert "api host down" in message and skycalc.BASE_URL in message   # and why the form was used
     assert len(session.form_posts) == 2  # one attempt went to the switch
+    # An output that is not FITS reruns SkyCalc: one download per attempt (retried at one layer only)
+    session = _SkyCalcSession(api_up=True, api_output=b"<html>busy</html>")
+    with pytest.raises(RuntimeError, match=r"failed after 3 attempts: SkyCalc output \S+ was not a FITS file"):
+        skycalc.SkyCalcClient(session=session, interface="api", pause=0, retries=3).fetch(
+            "paranal", 1.0, 2.5, 1000.0, 1100.0, 2000)
+    assert session.api_gets == 3
 
 
 def test_skycalc_api_temporary_directory_left_behind_is_warned(caplog, no_wait):
