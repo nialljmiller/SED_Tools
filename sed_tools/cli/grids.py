@@ -152,7 +152,7 @@ def _ask_flux_unit(grid: str, txt_files: List[str], flux_unit: Optional[str] = N
 
 
 def _txt_files(model_dir: str) -> List[str]:
-    return sorted(glob.glob(os.path.join(model_dir, "*.txt")))
+    return sorted(glob.glob(os.path.join(model_dir, "*.[tT][xX][tT]")))
 
 
 def _clean_grid(name: str, model_dir: str, flux_unit: Optional[str]) -> Dict:

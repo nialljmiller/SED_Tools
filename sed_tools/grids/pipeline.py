@@ -186,7 +186,7 @@ def _import_sources(src: Path) -> Tuple[List[Path], Path]:
         raise FileNotFoundError(f"Source path not found: {src}")
 
     if src.is_dir():
-        files, src_dir = sorted(src.glob("*.txt")), src
+        files, src_dir = sorted(src.glob("*.[tT][xX][tT]")), src
     elif src.is_file() and src.suffix.lower() == ".txt":
         files, src_dir = [src], src.parent
     else:
