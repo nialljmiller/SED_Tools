@@ -50,6 +50,13 @@ Changed
   (``FileNotFoundError``), instead of using any other ``lookup_table*.csv``
   in the folder, such as a split grid's ``lookup_table_full.csv``, after a
   warning.
+- **One rule finds a lookup table's Teff, logg and [M/H] columns
+  everywhere**: ``find_teff_column``, ``find_logg_column`` and
+  ``find_metallicity_column`` (exact names, any case, in a preferred order).
+  The NJM grabber's parameter cuts, ``grid_coverage``, the grid combiner and
+  ``mesa_prepare``'s variant table each had a rule of their own, so a table
+  with e.g. ``T_eff``, ``[Fe/H]``, ``temperature`` or ``teff_err`` columns
+  could be read differently by each.
 
 Fixed
 ~~~~~
