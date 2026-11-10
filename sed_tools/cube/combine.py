@@ -18,6 +18,7 @@ from tqdm import tqdm
 from .build import resample_to_grid
 from .fileio import write_header
 from ..ui_utils import banner
+from ..grids.lookup import find_logg_column, find_metallicity_column, find_teff_column
 from ..grids.spectrum_io import read_text_spectrum
 
 logger = logging.getLogger("sed_tools.combine_stellar_atm")
@@ -117,17 +118,8 @@ def load_model_data(model_path):
     df = pd.read_csv(lookup_file, comment="#", names=columns, skiprows=1)
 
     file_col = columns[0]
-    teff_col = logg_col = meta_col = None
-
-    for col in columns:
-        col_lower = col.lower()
-        if "teff" in col_lower:
-            teff_col = col
-        elif "logg" in col_lower or "log(g)" in col_lower:
-            logg_col = col
-        elif "meta" in col_lower or "feh" in col_lower or "m/h" in col_lower:
-            meta_col = col
-
+    teff_col, logg_col, meta_col = (find_teff_column(columns), find_logg_column(columns),
+                                    find_metallicity_column(columns))
     return {
         "files": df[file_col].values,
         "teff": df[teff_col].values if teff_col else np.zeros(len(df)),

@@ -19,6 +19,7 @@ from tqdm import tqdm
 
 from ..filters.njm import NJMFilterGrabber  # noqa: F401 - importable from here since 0.5.0
 from ..njm_mirror import BASE_URL, NJM_CONNECT_TIMEOUT, USER_AGENT, pause, paused, plain_reason, skip_ssl_verification
+from .lookup import find_file_column, find_logg_column, find_metallicity_column, find_teff_column
 
 logger = logging.getLogger("sed_tools.njm_spectra_grabber")
 
@@ -269,14 +270,11 @@ class NJMSpectraGrabber:
         lines = response.text.splitlines()
         if not lines:
             raise RuntimeError(f"NJM mirror: {lookup_url} is empty")
-        header_line = lines[0].lstrip('#').strip()
-        reader = csv.DictReader([header_line] + lines[1:])
-        fieldnames_lower = {f.strip().lower(): f for f in (reader.fieldnames or [])}
-        file_col = _find_column(fieldnames_lower, ['file_name', 'filename', 'file'])
-        teff_col = _find_column(fieldnames_lower, ['teff', 't_eff'])
-        logg_col = _find_column(fieldnames_lower, ['logg', 'log_g', 'gravity'])
-        meta_col = _find_column(fieldnames_lower, ['metallicity', 'meta', 'feh', '[m/h]', '[fe/h]', 'm_h'])
-        
+        columns = [name.strip() for name in lines[0].lstrip('#').split(',')]
+        reader = csv.DictReader(lines[1:], fieldnames=columns)
+        file_col = find_file_column(columns)
+        params = {'teff': find_teff_column(columns), 'logg': find_logg_column(columns),
+                  'meta': find_metallicity_column(columns)}
         if not file_col:
             raise RuntimeError(f"NJM mirror: {lookup_url} has no recognizable filename column")
         
@@ -286,8 +284,7 @@ class NJMSpectraGrabber:
             if not fname:
                 continue
             
-            result[fname] = {key: _float_or_nan(row[col])
-                             for key, col in (('teff', teff_col), ('logg', logg_col), ('meta', meta_col)) if col}
+            result[fname] = {key: _float_or_nan(row[col]) for key, col in params.items() if col}
         
         if not result:
             raise RuntimeError(f"NJM mirror: {lookup_url} lists no spectra")
@@ -589,11 +586,6 @@ def _outside(params: Dict, key: str, rng: Optional[Tuple[float, float]]) -> bool
         return False
     value = params.get(key, float('nan'))
     return np.isfinite(value) and (value < rng[0] or value > rng[1])
-
-
-def _find_column(fieldnames_lower: Dict[str, str], candidates: List[str]) -> Optional[str]:
-    """Return the original name of the first candidate column present, or None."""
-    return next((fieldnames_lower[candidate] for candidate in candidates if candidate in fieldnames_lower), None)
 
 
 def _float_or_nan(value) -> float:

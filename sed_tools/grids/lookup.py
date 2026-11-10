@@ -173,7 +173,7 @@ def main():
     os.makedirs(base_dir, exist_ok=True)
     for model, files in scan_existing_files(base_dir).items():
         print(f"Processing spectral grid: {model}")
-        regenerate_lookup_table(model, files, os.path.join(base_dir, model))
+        regenerate_lookup_table(model, files, os.path.dirname(files[0]))  # a split grid's subgrids too
 
 
 if __name__ == "__main__":

@@ -154,11 +154,13 @@ def test_svo_regen_spectra_lookup_rewrites_every_grids_lookup_table(tmp_path, mo
     for name in ("A", "B"):
         (stellar / name).mkdir(parents=True)
         (stellar / name / "s.txt").write_text("# teff = 5000\n# logg = 4.5\n# metallicity = 0.0\n4000 1\n5000 2\n")
+    (stellar / "A" / "A_alpha_0p40").mkdir()  # a split grid's subgrid, which crashed it until 0.6.0
+    (stellar / "A" / "A_alpha_0p40" / "s.txt").symlink_to("../s.txt")
     monkeypatch.setattr("sed_tools.cube.model.STELLAR_DIR_DEFAULT", stellar)
     assert run_m(monkeypatch, "svo_regen_spectra_lookup") == 0
-    for name in ("A", "B"):
-        assert (stellar / name / "lookup_table.csv").read_text().splitlines()[1] == "s.txt,4.5,0.0,5000.0"
-    assert capsys.readouterr().out.count("Processing spectral grid:") == 2
+    for folder in ("A", "B", "A/A_alpha_0p40"):
+        assert (stellar / folder / "lookup_table.csv").read_text().splitlines()[1] == "s.txt,4.5,0.0,5000.0"
+    assert capsys.readouterr().out.count("Processing spectral grid:") == 3
 
 
 def test_msg_spectra_grabber_runs_the_grids_it_is_given(tmp_path, monkeypatch):
