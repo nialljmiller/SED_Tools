@@ -247,8 +247,7 @@ def _build_filtered_cube(cfg, groups: Dict, extra_cols: List[str], lookup: Dict[
 
     def selected(key: Tuple) -> bool:
         values = dict(key)
-        return all(col in values and str(values[col]).strip().lower() == str(val).strip().lower()
-                   for col, val in resolved.items())
+        return all(str(values[col]).strip().lower() == str(val).strip().lower() for col, val in resolved.items())
 
     matched_group = next((g for key, g in groups.items() if selected(key)), None)
 
