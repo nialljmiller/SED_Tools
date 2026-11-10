@@ -3,8 +3,8 @@ display colours, components and atmosphere sites, detector types, the filter lib
 failing, the SVO browser, the curve format released MESA reads, and wavelength units.
 
 Each row is one old test, or one case of a parametrized one, under the old name without ``test_``, in the old
-order. ``@row`` registers a scenario under its function's name; ``@cases(table)`` registers a check that each
-``name: data`` row of the table runs. NJM, SVO and the original sources are stand-ins: no row uses the network.
+order within its table. ``@row`` adds a scenario as the row named after it; a ``name: data`` table runs through
+its check. NJM, SVO and the original sources are stand-ins: no row uses the network.
 """
 
 from __future__ import annotations
@@ -18,7 +18,6 @@ import shutil
 import sys
 import time
 from dataclasses import asdict
-from functools import partial
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -61,31 +60,33 @@ from sed_tools.svo_filter_grabber import Facility, FilterRow, Instrument, SVOFil
 from sed_tools.ui_utils import prompt_choice
 
 from support import (CURVE, NJM, STALE, WL, Resp, Session, answer, atmosphere_site, derived, gauss, njm_index,
-                     published_set, run_cli, team_site)
+                     published_set, run_cli, scenarios, team_site)
 
-ROWS = []  # (table, check) in the old tests' order
-
-
-def row(fn=None, *, setup=None):
-    """Register ``fn(t)`` as the row named after it; ``setup(t)`` first does what its old file's autouse fixture
-    did."""
-    if fn is None:
-        return partial(row, setup=setup)
-    ROWS.append(({fn.__name__: fn if setup is None else lambda t: setup(t) or fn(t)}, None))
-    return fn
-
-
-def cases(table):
-    """Register the decorated ``check(t, *data)`` for each ``name: data`` row of ``table``."""
-    def add(check):
-        ROWS.append((table, check))
-        return check
-    return add
-
+SCENARIOS, row = scenarios()
+NJM_OFFLINE, njm_offline_row = scenarios()
+DEFAULT_SVO, default_svo_row = scenarios()
 
 def test_filters(rows):
-    for table, check in ROWS:
-        rows(table, check)
+    rows(SCENARIOS)
+    rows(NJM_OFFLINE, _offline_then)
+    rows(DEFAULT_SVO, _default_svo_then)
+    rows(QUERY_LOCAL, _query_local)
+    rows(BULK_DOWNLOAD, _bulk_download)
+    rows(PICKER, _picker)
+    rows(PUBLISHED_WITH_ATMOSPHERE, _published_with_atmosphere)
+    rows(CONVERT_TO_ENERGY, _convert_to_energy)
+    rows(INVALID_CONDITIONS, _invalid_conditions)
+    rows(COVERAGE_ERROR, _coverage_error)
+    rows(COMPONENTS_WITHOUT_A_BUILDER, _components_without_a_builder)
+    rows(OUTAGE_ANNOUNCED_ONCE, _outage_announced_once)
+    rows(FETCH_INFO_AND_COMPOSE, _fetch_info_and_compose)
+    rows(CLI_OLD_SPELLING, _cli_old_spelling)
+    rows(BUNDLED_AVAILABILITY, _bundled_availability)
+    rows(ARCHIVED_COPIES_APART, _archived_copies_apart)
+    rows(RELEASED_MESA_CHECK, _released_mesa_check)
+    rows(MIRROR_DOWNLOAD, _mirror_download)
+    rows(INFER_UNIT, _infer_unit)
+    rows(FILTER_CURVE_UNIT, _filter_curve_unit)
 
 
 # ======================================================================
@@ -259,12 +260,14 @@ def components_camera(root, ground_based=False):
 # ======================================================================
 # The filter API: installed sets and combined sets (test_filter_api)
 # ======================================================================
-@cases({
+QUERY_LOCAL = {
     "filters_query_local_ignores_empty_filter_dirs": ({"WISE": "W1.dat\nW2.dat\n"}, []),
     "filters_query_local_reports_dat_filter_dirs": (
         {"W1.dat": "Wavelength,Transmission\n1,1\n", "W2.dat": "Wavelength,Transmission\n2,1\n"},
         [{"facility": "WISE", "instrument": "WISE", "n_filters": 2, "is_local": True}]),
-})
+}
+
+
 def _query_local(t, files, expected):
     """An installed set is a folder of curves; an index file alone is none."""
     put(t.tmp / "WISE" / "WISE", files)
@@ -316,10 +319,12 @@ def combine_refuses_an_index_listing_a_missing_curve(t):
 # ======================================================================
 # Choosing several facilities, and the picker's input (test_filter_bulk_selection)
 # ======================================================================
-@cases({
+BULK_DOWNLOAD = {
     "multiple_facilities_download_every_instrument_piped_without_prompts": (False, ["1-3"]),  # as in 0.4.1
     "multiple_facilities_download_every_instrument_terminal_after_one_confirmation": (True, ["1-3", "y"]),
-})
+}
+
+
 def _bulk_download(t, terminal, answers):
     """Several facilities chosen: every instrument of each is downloaded, after one confirmation at most."""
     cameras = [{"key": "Camera1", "label": "Camera1"}, {"key": "Camera2", "label": "Camera2"}]
@@ -345,8 +350,10 @@ def _bulk_download(t, terminal, answers):
     assert offered == []
 
 
-@cases({"picker_reprompts_on_out_of_range_selection": (["1,99", "1,3"], [0, 2]),
-        "picker_id_command_returns_a_multi_selection": (["id 2"], [1])})
+PICKER = {"picker_reprompts_on_out_of_range_selection": (["1,99", "1,3"], [0, 2]),
+          "picker_id_command_returns_a_multi_selection": (["id 2"], [1])}
+
+
 def _picker(t, replies, chosen):
     answer(t.mp, *replies)
     assert prompt_choice(["A", "B", "C"], "Facilities", multi=True) == chosen
@@ -752,7 +759,7 @@ def compose_requires_filter_or_published(t):
         compose_band(argus_system(t.tmp), "b1", ["optics", "qe"])
 
 
-@cases({
+PUBLISHED_WITH_ATMOSPHERE = {
     "published_with_atmosphere_is_not_double_counted": (lambda root: with_site(svo_published(
         root / "2MASS" / "2MASS", "J", gauss(5000, 300), "filter+instrument+atmosphere")), "double count"),
     "space_instrument_refuses_atmosphere": (lambda root: svo_published(
@@ -760,7 +767,9 @@ def compose_requires_filter_or_published(t):
     "published_requires_known_contents": (lambda root: with_site(put(
         root / "Generic" / "Mystery", {"X.dat": "Wavelength,Transmission\n4000,1\n5000,1\n"})),
         "does not say what it contains"),
-})
+}
+
+
 def _published_with_atmosphere(t, instrument, refusal):
     """What a published curve holds, and where its instrument observes, decide whether an atmosphere is added."""
     inst = instrument(t.tmp)
@@ -894,8 +903,10 @@ def correct_changes_only_the_label(t):
         "DetectorType"] == ENERGY
 
 
-@cases({"convert_to_energy_keeps_mesa_photometry_and_products_with_manifest": True,
-        "convert_to_energy_keeps_mesa_photometry_and_products_without_manifest": False})
+CONVERT_TO_ENERGY = {"convert_to_energy_keeps_mesa_photometry_and_products_with_manifest": True,
+                     "convert_to_energy_keeps_mesa_photometry_and_products_without_manifest": False}
+
+
 def _convert_to_energy(t, manifest):
     inst = sdss(spectra_cached(t), manifest=manifest)
     manifest_before = (inst / "manifest.json").read_bytes() if manifest else None
@@ -1188,7 +1199,10 @@ def njm_offline(t):
     t.mp.setattr(filter_library.NJMFilterGrabber, "_check_availability", lambda self: False)
 
 
-njm_offline_row = row(setup=njm_offline)  # rows of test_filter_library
+def _offline_then(t, scenario):
+    """The rows of test_filter_library: its autouse fixture took NJM offline."""
+    njm_offline(t)
+    scenario(t)
 
 
 def skycalc_paranal(directory):
@@ -1274,8 +1288,10 @@ def manifest_role_must_match_component_header(t):
         build_product(instrument, "filter", bands=["g"])
 
 
-@cases({"invalid_atmosphere_conditions_are_rejected_nan_airmass": (float("nan"), 1),
-        "invalid_atmosphere_conditions_are_rejected_infinite_pwv": (1.2, float("inf"))})
+INVALID_CONDITIONS = {"invalid_atmosphere_conditions_are_rejected_nan_airmass": (float("nan"), 1),
+                      "invalid_atmosphere_conditions_are_rejected_infinite_pwv": (1.2, float("inf"))}
+
+
 def _invalid_conditions(t, airmass, pwv):
     with pytest.raises(ComponentError):
         AtmosphereSpec("paranal", airmass, pwv)
@@ -1657,12 +1673,14 @@ def coverage_tolerance_allows_faint_wings_only(t):
 
 
 # Atmosphere and coverage errors say what to choose, not Python syntax
-@cases({
+COVERAGE_ERROR = {
     "coverage_error_names_the_band_and_its_span": (
         {}, r"^Test/Camera band g: .* covers 4500-7000 A but the band spans"),
     "coverage_error_names_the_band_beyond_the_tolerance": (
         {"outside_range": "error", "coverage_tolerance": 1e-4}, r"^Test/Camera band g: .* lies beyond it"),
-})
+}
+
+
 def _coverage_error(t, site_kw, match):
     # Used to be "am1.00_pwv1.dat covers 9000-56000 A but 70.25% of the band lies beyond it".
     inst = site_camera(t.tmp / "filters", default_site="short_team")
@@ -1808,7 +1826,10 @@ def no_svo_url(t):
     t.mp.delenv(fm.SVO_FPS_URL_ENV, raising=False)
 
 
-default_svo_row = row(setup=no_svo_url)  # rows of test_filters_failures and test_svo_fail_fast
+def _default_svo_then(t, scenario):
+    """The rows of test_filters_failures and test_svo_fail_fast: their autouse fixture unset SVO's address."""
+    no_svo_url(t)
+    scenario(t)
 
 
 def three_samples(path, header="Wavelength,Transmission,WavelengthUnit=Angstrom"):
@@ -2485,11 +2506,13 @@ def a_curve_without_a_column_row_is_reported_once_by_its_caller(t):
     assert legacy.read_text() == "4000,0.1\n5000,0.9\n"
 
 
-@cases({
+COMPONENTS_WITHOUT_A_BUILDER = {
     "components_njm_says_it_does_not_have_are_not_announced_without_a_builder_none_served": (None, False),
     "components_njm_says_it_does_not_have_are_not_announced_without_a_builder_download_failed": (
         RuntimeError("2 component files failed"), True),
-})
+}
+
+
 def _components_without_a_builder(t, njm_answer, warned):
     directory = flat_published(t.tmp / "NoBuilderFac" / "Cam")
     download = raising(njm_answer) if njm_answer else lambda facility, instrument: 0  # NJM serves none for it
@@ -2528,8 +2551,10 @@ def a_manifest_answer_without_a_body_is_unreadable_not_absent(t):
         grabber.fetch_manifest("Fac", "Cam")
 
 
-@cases({"an_njm_outage_is_not_announced_again_for_each_fetch_njm_down": False,
-        "an_njm_outage_is_not_announced_again_for_each_fetch_njm_up": True})
+OUTAGE_ANNOUNCED_ONCE = {"an_njm_outage_is_not_announced_again_for_each_fetch_njm_down": False,
+                         "an_njm_outage_is_not_announced_again_for_each_fetch_njm_up": True}
+
+
 def _outage_announced_once(t, up):
     root = t.tmp / "filters"
     library = library_with(root, SimpleNamespace(is_available=lambda: up,
@@ -2851,7 +2876,10 @@ def the_shipped_catalogue_names_each_instrument_as_njm_does(t):
         assert inst in shipped[fac]["instruments"], f"{fac}/{inst}"
 
 
-@cases({f"fetch_info_and_compose_take_the_old_spelling_{name}": spellings for name, spellings in LEGACY.items()})
+FETCH_INFO_AND_COMPOSE = {f"fetch_info_and_compose_take_the_old_spelling_{name}": spellings
+                          for name, spellings in LEGACY.items()}
+
+
 def _fetch_info_and_compose(t, given, njm):
     root, served = legacy_sources(t)
     directory = Filters.fetch(*given, filter_root=root)
@@ -2867,7 +2895,9 @@ def _fetch_info_and_compose(t, given, njm):
     assert njm_curve_requests(served, njm)[0] == [njm_curve]  # nothing downloaded again
 
 
-@cases({f"the_cli_takes_the_old_spelling_{name}": spellings for name, spellings in LEGACY.items()})
+CLI_OLD_SPELLING = {f"the_cli_takes_the_old_spelling_{name}": spellings for name, spellings in LEGACY.items()}
+
+
 def _cli_old_spelling(t, given, njm):
     root, served = legacy_sources(t)
     target, base = "/".join(given), str(root)
@@ -3033,8 +3063,10 @@ def no_index_json_is_fetched_for_the_record_while_njm_is_paused(t):
 
 # filters-info before anything is installed and with no source answering: the detector is not known, never the
 # energy default
-@cases({"bundled_availability_leaves_the_detector_unknown_with_a_builder": True,
-        "bundled_availability_leaves_the_detector_unknown_without_a_builder": False})
+BUNDLED_AVAILABILITY = {"bundled_availability_leaves_the_detector_unknown_with_a_builder": True,
+                        "bundled_availability_leaves_the_detector_unknown_without_a_builder": False}
+
+
 def _bundled_availability(t, builder):
     bundled(t, {"GAIA": {"DR2": DR2}})
     if not builder:
@@ -3056,8 +3088,11 @@ HFI_INFO = {"bands": {"100": {"Description": "HFI 100"}, "100_svo": {"Descriptio
                       "857": {"Description": "HFI 857"}, "857_svo": {"Description": "PLANCK HFI 857GHz"}}}
 
 
-@cases({f"archived_copies_stay_apart_beside_an_installed_copy_under_other_band_names_as_{who}_spells_it": spelling
-        for who, spelling in (("njm", ("Planck", "HFI")), ("svo", ("PLANCK", "HFI")))})
+ARCHIVED_COPIES_APART = {
+    f"archived_copies_stay_apart_beside_an_installed_copy_under_other_band_names_as_{who}_spells_it": spelling
+    for who, spelling in (("njm", ("Planck", "HFI")), ("svo", ("PLANCK", "HFI")))}
+
+
 def _archived_copies_apart(t, *spelling):
     catalogue = hfi_catalogue(t, HFI_INFO, HFI_INFO, filter_ids=False)
     for kind in ("info", "properties"):
@@ -3332,7 +3367,7 @@ def migration_keeps_foreign_lines_and_crlf(t):
     assert "released MESA miscounts" in t.caplog.text
 
 
-@cases({f"released_mesa_check_matches_the_released_reader_{name}": case for name, case in {
+RELEASED_MESA_CHECK = {f"released_mesa_check_matches_the_released_reader_{name}": case for name, case in {
     "with_metadata": ("Wavelength,Transmission,DetectorType=photon\n1,2\n3,4\n", True),
     "without_a_final_newline": ("Wavelength,Transmission\n1,2\n3,4", True),
     "without_a_column_row": ("1,2\n3,4\n", False),  # MESA allocates correctly but skips the first sample
@@ -3341,7 +3376,9 @@ def migration_keeps_foreign_lines_and_crlf(t):
     "with_a_blank_line_before_the_column_row": ("\nWavelength,Transmission\n1,2\n", False),
     "with_a_blank_line_at_the_end": ("Wavelength,Transmission\n1,2\n\n", False),
     "with_a_blank_line_between_samples": ("Wavelength,Transmission\n1,2\n\n3,4\n", False),
-}.items()})
+}.items()}
+
+
 def _released_mesa_check(t, text, ok):
     path = t.tmp / "C.dat"
     path.write_text(text)
@@ -3474,8 +3511,10 @@ def combined_set_repairs_030_inputs_without_touching_them(t):
     assert sorted((out / "Mixed").read_text().split()) == sorted(p.name for p in out.glob("*.dat"))
 
 
-@cases({"mirror_download_is_legacy_either_way_030_mirror": TAGGED_030,
-        "mirror_download_is_legacy_either_way_migrated_mirror": ROW_G + "\n" + BODY_030})
+MIRROR_DOWNLOAD = {"mirror_download_is_legacy_either_way_030_mirror": TAGGED_030,
+                   "mirror_download_is_legacy_either_way_migrated_mirror": ROW_G + "\n" + BODY_030}
+
+
 def _mirror_download(t, served):
     def get(url, **kwargs):
         if url.endswith("/G.dat"):
@@ -3528,17 +3567,19 @@ def tree_migration_is_offline_and_idempotent(t):
 # ======================================================================
 # Wavelength units of filter curves and spectra (test_wavelength_units)
 # ======================================================================
-@cases({f"infer_unit_from_values_{unit}": (lo, hi, unit) for lo, hi, unit in [
+INFER_UNIT = {f"infer_unit_from_values_{unit}": (lo, hi, unit) for lo, hi, unit in [
     (3200.0, 10800.0, "angstrom"),  # Gaia G in A (was misread as nm)
     (460.0, 740.0, "nanometer"),  # Johnson V in nm
     (0.3, 28.0, "micrometer"),
     (5e-7, 1e-6, "meter"),
-]})
+]}
+
+
 def _infer_unit(t, lo, hi, expected):
     assert infer_unit_from_values(np.array([lo, hi])) == expected
 
 
-@cases({f"filter_curve_wavelength_unit_{name}": case for name, case in {
+FILTER_CURVE_UNIT = {f"filter_curve_wavelength_unit_{name}": case for name, case in {
     "optical_filter_without_header_in_angstrom": (
         "", None, [(4600.0, 0.0), (5500.0, 1.0), (7400.0, 0.0)], 1.0, "inferred", "declares no wavelength unit"),
     **{f"header_{name}": (f"# WavelengthUnit: {unit}\n", None, [(2.0, 1.0), (3.0, 1.0)], factor, "header", "")
@@ -3546,7 +3587,9 @@ def _infer_unit(t, lo, hi, expected):
                                   ("a_with_a_ring", "Å", 1.0), ("microns", "microns", 1e4)]},
     # A K-band curve in nm is indistinguishable from a UV curve in A by value alone.
     "argument_overrides_inference": ("", "nm", [(1950.0, 1.0), (2400.0, 1.0)], 10.0, "argument", ""),
-}.items()})
+}.items()}
+
+
 def _filter_curve_unit(t, header, argument, points, factor, source, warning):
     path = t.tmp / "f.dat"
     path.write_text(header + "Wavelength,Transmission\n" + "".join(f"{w},{tr}\n" for w, tr in points))

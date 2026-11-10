@@ -22,19 +22,15 @@ import pytest
 from sed_tools import ml, ml_sed_completer as mc, ml_sed_generator as mg
 from sed_tools.ml import Completer, model_info
 
-from support import KURUCZ, answer, cpu_torch, fixed_completer, fixed_generator, tiny_library, write_flux_cube
+from support import (KURUCZ, answer, cpu_torch, fixed_completer, fixed_generator, scenarios, tiny_library,
+                     write_flux_cube)
 
-SCENARIOS = {}
+SCENARIOS, row = scenarios()
+
 WL = np.logspace(np.log10(1000.0), np.log10(50000.0), 200)
 TINY = dict(batch_size=3, max_samples=12, hidden_layers=[8])  # training on tiny_library
 CM1 = {"version": "2.0.0", "framework": "pytorch",  # a completer model's config
        "architecture": {"input_dim": 400, "hidden_layers": [8], "output_dim": 1000}}
-
-
-def scenario(fn):
-    assert fn.__name__ not in SCENARIOS, fn.__name__
-    SCENARIOS[fn.__name__] = fn
-    return fn
 
 
 def write_config(directory, config):
@@ -247,43 +243,40 @@ def extend_catalog_raises_what_the_model_could_not_extend(t, error, message):
         completer.extend_catalog(str(catalog), str(t.tmp / "out"), verbose=False)
 
 
-TABLES = [
-    ({f"list_models_warns_naming_the_unreadable_config_{cls.__name__}": cls
-      for cls in (mc.SEDCompleter, mg.SEDGenerator)}, list_models_warns_naming_the_unreadable_config),
-    ({f"training_drops_a_last_batch_of_one_spectrum_{cls.__name__}": cls
-      for cls in (mc.SEDCompleter, mg.SEDGenerator)}, training_drops_a_last_batch_of_one_spectrum),
-    ({"completer_train_raises_before_saving_when_every_batch_is_nan": (
+LIST_MODELS_WARNS = {f"list_models_warns_naming_the_unreadable_config_{cls.__name__}": cls
+                     for cls in (mc.SEDCompleter, mg.SEDGenerator)}
+LAST_BATCH_OF_ONE = {f"training_drops_a_last_batch_of_one_spectrum_{cls.__name__}": cls
+                     for cls in (mc.SEDCompleter, mg.SEDGenerator)}
+ALL_NAN = {
+    "completer_train_raises_before_saving_when_every_batch_is_nan": (
         mc.SEDCompleterNetwork, lambda t, lib, out: mc.SEDCompleter().train(lib, out, epochs=2, **TINY)),
-      "generator_train_raises_before_saving_when_every_batch_is_nan": (
+    "generator_train_raises_before_saving_when_every_batch_is_nan": (
         mg.SEDGeneratorNetwork, lambda t, lib, out: mg.SEDGenerator().train(lib, out, epochs=2, **TINY)),
-      "auto_trainer_stops_on_a_trial_with_no_usable_epoch": (mg.SEDGeneratorNetwork, auto_train_best)},
-     train_raises_before_saving_when_every_batch_is_nan),
-    ({"completer_workflow_rejects_bad_answers_cancelled": (mc, ["1", "1", "abc", "", "", "", "n"], "Cancelled"),
-      "completer_workflow_rejects_bad_answers_invalid_choice": (mc, ["9"], "Invalid choice"),
-      "generator_workflow_rejects_zero_and_negative_menu_numbers_0": (mg, ["3", "0"], "Invalid selection"),
-      "generator_workflow_rejects_zero_and_negative_menu_numbers_minus_1": (mg, ["3", "-1"], "Invalid selection")},
-     workflow_ends_on_a_bad_answer),
-    ({f"extend_catalog_raises_when_a_column_is_missing_{name}": name for name in ("teff", "file_name")},
-     extend_catalog_raises_when_a_column_is_missing),
-    ({"extend_catalog_raises_what_the_model_could_not_extend_lists_a_spectrum_the_model_rejects": (
+    "auto_trainer_stops_on_a_trial_with_no_usable_epoch": (mg.SEDGeneratorNetwork, auto_train_best)}
+BAD_ANSWERS = {
+    "completer_workflow_rejects_bad_answers_cancelled": (mc, ["1", "1", "abc", "", "", "", "n"], "Cancelled"),
+    "completer_workflow_rejects_bad_answers_invalid_choice": (mc, ["9"], "Invalid choice"),
+    "generator_workflow_rejects_zero_and_negative_menu_numbers_0": (mg, ["3", "0"], "Invalid selection"),
+    "generator_workflow_rejects_zero_and_negative_menu_numbers_minus_1": (mg, ["3", "-1"], "Invalid selection")}
+MISSING_COLUMN = {f"extend_catalog_raises_when_a_column_is_missing_{name}": name for name in ("teff", "file_name")}
+NOT_EXTENDED = {
+    "extend_catalog_raises_what_the_model_could_not_extend_lists_a_spectrum_the_model_rejects": (
         ValueError("flux has NaNs"), r"row 0 \(a.txt\): flux has NaNs"),
-      "extend_catalog_raises_what_the_model_could_not_extend_stops_at_once_on_an_unexpected_error": (
-          RuntimeError("Tensor for argument weight is on cpu but expected on mps"), "expected on mps")},
-     extend_catalog_raises_what_the_model_could_not_extend),
-]
+    "extend_catalog_raises_what_the_model_could_not_extend_stops_at_once_on_an_unexpected_error": (
+        RuntimeError("Tensor for argument weight is on cpu but expected on mps"), "expected on mps")}
 
 
 # ======================================================================
 # The torch-free API, list_models and data preparation
 # ======================================================================
-@scenario
+@row
 def model_info_returns_full_config(t):
     config = {"version": "2.0.0", "framework": "pytorch", "architecture": {"input_dim": 10}}
     write_config(t.tmp / "m1", config)
     assert model_info(str(t.tmp / "m1")) == config
 
 
-@scenario
+@row
 def completer_default_construction_is_untrained(t):
     c = Completer()
     assert c.is_trained is False
@@ -292,13 +285,13 @@ def completer_default_construction_is_untrained(t):
     assert c.wavelength_grid is None
 
 
-@scenario
+@row
 def list_models_skips_dirs_without_config(t):
     (t.tmp / "not_a_model").mkdir()
     assert mc.SEDCompleter.list_models(str(t.tmp)) == []
 
 
-@scenario
+@row
 def list_models_leaves_out_generators(t):
     # 0.5.0: generators were listed too, and choosing one raised KeyError.
     # Completer configs have no model_type; SEDGenerator writes 'sed_generator'.
@@ -311,7 +304,7 @@ def list_models_leaves_out_generators(t):
 # ======================================================================
 # MPS, the two networks, extend_catalog on '#'-headed tables, the optuna auto-trainer
 # ======================================================================
-@scenario
+@row
 def train_complete_and_generate_run_on_mps(t):
     # Every train, complete_sed and generate used to raise "Tensor for
     # argument weight is on cpu but expected on mps" here.
@@ -351,7 +344,7 @@ def train_complete_and_generate_run_on_mps(t):
         assert np.all(np.isfinite(flux_out)) and len(flux_out) == len(wl_out) == 1000
 
 
-@scenario
+@row
 def both_networks_keep_their_defaults_model_pt_keys_and_move_with_to(t):
     # The two networks share one base class (ml/common.Network); SEDGeneratorNetwork gained .to().
     # model.pt is the mlp's state_dict, keyed by layer index as 0.4.1 and 0.5.0 wrote it.
@@ -372,7 +365,7 @@ def both_networks_keep_their_defaults_model_pt_keys_and_move_with_to(t):
     assert mg.SEDGeneratorNetwork(5).hidden_layers == [512, 512, 256, 256]
 
 
-@scenario
+@row
 def extend_catalog_extends_each_spectrum_with_its_own_parameters(t):
     # pd.read_csv(comment='#') used to drop the '#file_name,...' header, so the
     # first spectrum became the header and every other one was extended as
@@ -404,7 +397,7 @@ def extend_catalog_extends_each_spectrum_with_its_own_parameters(t):
     assert sorted(p.name for p in out_dir.glob("*.txt")) == names
 
 
-@scenario
+@row
 def auto_train_generator_saves_a_model_sedgenerator_and_the_api_load(t):
     # It used to save a ResidualMLP's weights as model_best.pt and overwrite
     # config.json with keys of its own, so nothing could load the model.
@@ -443,7 +436,7 @@ def auto_train_generator_saves_a_model_sedgenerator_and_the_api_load(t):
 # ======================================================================
 # Known answers: training and inference (torch, CPU)
 # ======================================================================
-@scenario
+@row
 def generator_train_values(t):
     torch = cpu_torch(t)
     generator = mg.SEDGenerator()
@@ -473,7 +466,7 @@ def generator_train_values(t):
     assert len(config["training_params"]) == 9
 
 
-@scenario
+@row
 def completer_complete_sed_values(t):
     completer = fixed_completer(cpu_torch(t))
     wl = np.logspace(np.log10(3000.0), np.log10(20000.0), 300)
@@ -497,7 +490,7 @@ def completer_complete_sed_values(t):
     ], rel=1e-5)
 
 
-@scenario
+@row
 def generate_check_bounds_prints_each_out_of_range_parameter(t):
     fixed_generator(cpu_torch(t)).generate(9000.0, 5.5, 0.6)
 
@@ -510,7 +503,7 @@ def generate_check_bounds_prints_each_out_of_range_parameter(t):
 # ======================================================================
 # The interactive workflows (training and inference stubbed)
 # ======================================================================
-@scenario
+@row
 def completer_workflow_extends_the_chosen_grid(t):
     stellar_dir = stellar_grids(t)
     models = t.tmp / "models"
@@ -528,7 +521,7 @@ def completer_workflow_extends_the_chosen_grid(t):
     assert "  2 SEDs extended successfully" in out
 
 
-@scenario
+@row
 def completer_workflow_lists_models(t):
     models = t.tmp / "models"
     write_config(models / "cm1", CM1)
@@ -542,7 +535,7 @@ def completer_workflow_lists_models(t):
     assert "    Architecture: 400 -> [8] -> 1000" in out
 
 
-@scenario
+@row
 def generator_workflow_trains_on_the_chosen_library(t):
     stellar_dir = stellar_grids(t)
     calls = []
@@ -556,7 +549,7 @@ def generator_workflow_trains_on_the_chosen_library(t):
     assert "TRAINING COMPLETE!" in t.capsys.readouterr().out
 
 
-@scenario
+@row
 def generator_workflow_lists_generators_only(t):
     models = t.tmp / "models"
     write_config(models / "gm1", {"model_type": "sed_generator",
@@ -573,7 +566,7 @@ def generator_workflow_lists_generators_only(t):
     assert "    Architecture: 3 → [8] → 1000" in out
 
 
-@scenario
+@row
 def generator_workflow_batch_writes_one_sed_per_grid_point(t):
     generator = fixed_generator(cpu_torch(t))
     stellar_dir = stellar_grids(t)
@@ -592,7 +585,7 @@ def generator_workflow_batch_writes_one_sed_per_grid_point(t):
                                   np.loadtxt([f"{w:.6e} {f:.6e}" for w, f in zip(wl, flux)]))
 
 
-@scenario
+@row
 def completer_workflow_warns_about_unreadable_lookup_tables(t):
     stellar_dir = stellar_grids(t)
     (stellar_dir / "gridA" / "lookup_table.csv").write_text("")
@@ -614,7 +607,7 @@ def completer_workflow_warns_about_unreadable_lookup_tables(t):
     assert "Not offering gridC: could not read" in t.caplog.text
 
 
-@scenario
+@row
 def generator_workflow_warns_about_an_unreadable_lookup_table(t):
     stellar_dir = stellar_grids(t)
     (stellar_dir / "gridA" / "lookup_table.csv").write_text("")
@@ -629,7 +622,7 @@ def generator_workflow_warns_about_an_unreadable_lookup_table(t):
 # ======================================================================
 # Training data, train_model and load_model: what they refuse and warn about
 # ======================================================================
-@scenario
+@row
 def completer_prepare_training_data_warns_how_many_spectra_it_dropped(t):
     flux = np.full((2, 1, 1, 200), 1e-10)
     flux[0, 0, 0, :150] = np.nan          # 4000 K: only 50 usable points
@@ -643,7 +636,7 @@ def completer_prepare_training_data_warns_how_many_spectra_it_dropped(t):
             in t.caplog.text)
 
 
-@scenario
+@row
 def generator_prepare_training_data_warns_how_many_spectra_it_dropped(t):
     flux = np.full((2, 1, 1, 200), 1e-10)
     flux[0, 0, 0, 5] = np.nan
@@ -653,13 +646,13 @@ def generator_prepare_training_data_warns_how_many_spectra_it_dropped(t):
     assert "dropped 1 of 2 sampled spectra (1 with non-positive or non-finite flux)" in t.caplog.text
 
 
-@scenario
+@row
 def prepare_training_data_raises_when_all_flux_invalid(t):
     with pytest.raises(ValueError, match="No valid training samples"):
         mg.SEDGenerator()._prepare_training_data(grid(t, [4000.0, 5000.0], 0.0))  # invalid: not > 0
 
 
-@scenario
+@row
 def completer_train_rejects_non_finite_grid_parameters(t):
     cpu_torch(t)
     with pytest.raises(ValueError, match="Non-finite Teff, logg or"):
@@ -667,7 +660,7 @@ def completer_train_rejects_non_finite_grid_parameters(t):
                                 batch_size=2, max_samples=2, hidden_layers=[8])
 
 
-@scenario
+@row
 def generator_train_rejects_a_grid_with_no_flux_above_the_floor(t):
     cpu_torch(t)
     with pytest.raises(ValueError, match="No valid data points for normalization"):
@@ -676,7 +669,7 @@ def generator_train_rejects_a_grid_with_no_flux_above_the_floor(t):
     assert not (t.tmp / "model").exists()
 
 
-@scenario
+@row
 def train_model_forwards_keywords_and_rejects_unknown_ones(t):
     calls = []
     t.mp.setattr(mc.SEDCompleter, "train", lambda self, **kw: calls.append(kw))
@@ -688,13 +681,13 @@ def train_model_forwards_keywords_and_rejects_unknown_ones(t):
     assert calls[0]["verbose"] is False and calls[0]["dropout"] == 0.1
 
 
-@scenario
+@row
 def train_model_rejects_keywords_train_does_not_take(t):
     with pytest.raises(TypeError, match="val_split"):
         mc.train_model("grid", str(t.tmp / "m"), val_split=0.2)
 
 
-@scenario
+@row
 def load_model_raises_the_load_error(t):
     with pytest.raises(ValueError, match="Model path must be a directory"):
         mc.load_model(str(t.tmp / "missing"))
@@ -703,13 +696,13 @@ def load_model_raises_the_load_error(t):
 # ======================================================================
 # ml.Completer.extend_catalog
 # ======================================================================
-@scenario
+@row
 def extend_catalog_requires_a_model(t):
     with pytest.raises(RuntimeError, match="No model loaded"):
         ml.Completer().extend_catalog("in", "out")
 
 
-@scenario
+@row
 def extend_catalog_raises_without_a_lookup_table(t):
     # It used to extend every *.txt file with Teff=5000, logg=4.5, [M/H]=0.
     (t.tmp / "cat").mkdir()
@@ -719,7 +712,7 @@ def extend_catalog_raises_without_a_lookup_table(t):
         stubbed_completer().extend_catalog(str(t.tmp / "cat"), str(t.tmp / "out"))
 
 
-@scenario
+@row
 def extend_catalog_reads_a_hash_prefixed_header(t):
     # sed_tools writes lookup tables with a '#file_name,...' header. It used
     # to be dropped (pd.read_csv(comment='#')) and the table refused; it now
@@ -738,7 +731,7 @@ def extend_catalog_reads_a_hash_prefixed_header(t):
         "file_name,teff,logg,meta,extra,extended_by_ml,wl_min,wl_max")
 
 
-@scenario
+@row
 def extend_catalog_writes_the_good_spectra_then_lists_every_failure(t):
     import pandas as pd
 
@@ -772,7 +765,7 @@ def extend_catalog_writes_the_good_spectra_then_lists_every_failure(t):
 # ======================================================================
 # Ranges: the completer keeps every original sample; menus ask again after a bad answer
 # ======================================================================
-@scenario
+@row
 def extend_catalog_keeps_every_sample_of_the_kurucz_grid(t):
     # Extension used to resample every spectrum onto 1,000 points in 100 Å-1e5 Å:
     # a 147 Å-1.6e6 Å Kurucz spectrum lost its own samples and everything above 1e5 Å.
@@ -796,7 +789,7 @@ def extend_catalog_keeps_every_sample_of_the_kurucz_grid(t):
         assert extended[-1, 0] == original[-1, 0] == 1.6e6
 
 
-@scenario
+@row
 def complete_sed_keeps_samples_outside_a_narrower_range(t):
     # The requested range ends inside the SED: nothing above it is cut.
     completer = fixed_completer(cpu_torch(t))
@@ -822,14 +815,14 @@ def extend_menu(t, *answers):
     return [call[2] for call in calls]
 
 
-@scenario
+@row
 def extend_menu_defaults_to_the_models_own_range(t):
     ranges = extend_menu(t, "2", "1", "1", "", "", "")
     assert ranges == [(100.0, 100000.0)]
     assert "the model covers 100-100000 Å" in t.capsys.readouterr().out
 
 
-@scenario
+@row
 def extend_menu_asks_for_the_range_again_on_a_bad_answer(t):
     # The menu used to extend to 100 Å-1e5 Å whatever the grid or model.
     ranges = extend_menu(t, "2", "1", "1", "abc", "50", "40", "50", "3e6", "")
@@ -839,7 +832,7 @@ def extend_menu_asks_for_the_range_again_on_a_bad_answer(t):
     assert "50 Å is not below 40 Å; try again." in out
 
 
-@scenario
+@row
 def completer_train_menu_asks_again_for_a_bad_number(t):
     # "abc" at Epochs used to end the menu with "Invalid parameters".
     base = t.tmp / "stellar"
@@ -854,7 +847,7 @@ def completer_train_menu_asks_again_for_a_bad_number(t):
     assert "'0' is not a positive whole number; try again." in out
 
 
-@scenario
+@row
 def completer_list_models_leaves_out_generators_so_choosing_cannot_raise(t):
     # A generator listed by the completer menu raised KeyError when chosen.
     write_config(t.tmp / "gen", {"model_type": "sed_generator"})
@@ -862,7 +855,7 @@ def completer_list_models_leaves_out_generators_so_choosing_cannot_raise(t):
     assert [g["name"] for g in mg.SEDGenerator.list_models(str(t.tmp))] == ["gen"]
 
 
-@scenario
+@row
 def generator_number_prompts_ask_again(t):
     # int(input()) / float(input()) used to raise ValueError and end the menu.
     answer(t.mp, "x", "1.5", "-3", "")
@@ -878,7 +871,7 @@ def generator_number_prompts_ask_again(t):
     assert "'5000,x' is not a comma-separated list of numbers; try again." in out
 
 
-@scenario
+@row
 def generator_generate_menu_asks_again_for_a_bad_teff(t):
     calls = []
     t.mp.setattr(mg.SEDGenerator, "list_models",
@@ -892,7 +885,7 @@ def generator_generate_menu_asks_again_for_a_bad_teff(t):
     assert "'warm' is not a positive number; try again." in t.capsys.readouterr().out
 
 
-@scenario
+@row
 def window_coverage_warns_below_the_80_percent_training_required(t):
     from sed_tools.ml_sed_completer import _warn_window_coverage
 
@@ -905,7 +898,7 @@ def window_coverage_warns_below_the_80_percent_training_required(t):
     assert "Training required at least 80% coverage" in t.caplog.text
 
 
-@scenario
+@row
 def complete_sed_warns_when_the_input_misses_most_of_the_window(t):
     completer = window_completer(pytest.importorskip("torch"))
     window = completer.wavelength_grid[300:700]
@@ -926,6 +919,10 @@ def complete_sed_warns_when_the_input_misses_most_of_the_window(t):
 
 
 def test_ml(rows):
-    for table, check in TABLES:
-        rows(table, check)
+    rows(LIST_MODELS_WARNS, list_models_warns_naming_the_unreadable_config)
+    rows(LAST_BATCH_OF_ONE, training_drops_a_last_batch_of_one_spectrum)
+    rows(ALL_NAN, train_raises_before_saving_when_every_batch_is_nan)
+    rows(BAD_ANSWERS, workflow_ends_on_a_bad_answer)
+    rows(MISSING_COLUMN, extend_catalog_raises_when_a_column_is_missing)
+    rows(NOT_EXTENDED, extend_catalog_raises_what_the_model_could_not_extend)
     rows(SCENARIOS)

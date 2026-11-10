@@ -42,16 +42,9 @@ from sed_tools.filters import svo
 from sed_tools.filters.curve_metadata import SVOMetadataClient, _param_text, svo_fps_url
 from sed_tools.grids import mast, msg, svo as svo_grid
 
-from support import TESTS, WL, Resp, Session, answer, derived, gauss, published_set, team_site
+from support import TESTS, WL, Resp, Session, answer, derived, gauss, published_set, scenarios, team_site
 
-SCENARIOS = {}
-
-
-def scenario(fn):
-    assert fn.__name__ not in SCENARIOS, fn.__name__
-    SCENARIOS[fn.__name__] = fn
-    return fn
-
+SCENARIOS, row = scenarios()
 
 # ======================================================================
 # Files as the sources serve them
@@ -443,7 +436,7 @@ def nm_table(name, column=1, skip=1):
     return table[:, 0] * 10.0, table[:, 1]
 
 
-@scenario
+@row
 def dr280_writes_mesa_readable_totals_and_index(t):
     dr280 = build_dr280(t)
     assert (dr280 / "DR280").read_text() == "beta.dat\nrho.dat\n"
@@ -465,7 +458,7 @@ def dr280_writes_mesa_readable_totals_and_index(t):
         assert np.all(np.diff(curve.wavelength) > 0) and curve.transmission.min() >= 0
 
 
-@scenario
+@row
 def dr280_components_are_the_inputs_in_angstrom(t):
     dr280 = build_dr280(t)
     expected = {
@@ -482,7 +475,7 @@ def dr280_components_are_the_inputs_in_angstrom(t):
         assert released_mesa_reads(dr280 / "components" / rel)
 
 
-@scenario
+@row
 def filters_compose_builds_an_energy_labelled_mesa_product_for_each_filter_variant(t):
     dr280 = build_dr280(t)
     for filt in ("production", "addem"):
@@ -503,7 +496,7 @@ def filters_compose_builds_an_energy_labelled_mesa_product_for_each_filter_varia
                 == (dr280 / f"{band}.dat").read_text().splitlines()[1:])
 
 
-@scenario
+@row
 def dr280_refuses_an_input_that_is_not_the_pinned_file(t):
     raw, session = argus_inputs(t)
     url = argus_url("argus_beta_ct446.csv")
@@ -513,7 +506,7 @@ def dr280_refuses_an_input_that_is_not_the_pinned_file(t):
     assert not (t.tmp / "filters").exists()
 
 
-@scenario
+@row
 def dr280_never_replaces_a_different_published_file(t):
     raw, session = argus_inputs(t)
     inst = t.tmp / "filters" / "Argus" / "DR280"
@@ -526,7 +519,7 @@ def dr280_never_replaces_a_different_published_file(t):
     assert [p.name for p in inst.iterdir()] == ["beta.dat"]
 
 
-@scenario
+@row
 def build_refuses_unknown_instruments_and_options(t):
     with pytest.raises(ValueError, match="available: DR280, System"):
         argus.build(t.tmp, instrument="ADDem")
@@ -534,7 +527,7 @@ def build_refuses_unknown_instruments_and_options(t):
         argus.build(t.tmp, instrument="System", archive_dir=t.tmp / "a")
 
 
-@scenario
+@row
 def system_builder_labels_line_1_and_keeps_every_sample(t):
     raw, session = argus_inputs(t)
     system_dir = argus_system(t)
@@ -560,7 +553,7 @@ def system_builder_labels_line_1_and_keeps_every_sample(t):
     assert {p.name: p.read_bytes() for p in system_dir.rglob("*") if p.is_file()} == labelled
 
 
-@scenario
+@row
 def system_curve_without_a_column_row_is_refused(t):
     raw, _ = argus_inputs(t)
     system_dir = argus_system(t)
@@ -571,7 +564,7 @@ def system_curve_without_a_column_row_is_refused(t):
     assert (system_dir / "beta.dat").read_text() == "".join(samples)
 
 
-@scenario
+@row
 def system_components_and_composition(t):
     raw, _ = argus_inputs(t)
     system_dir = argus_system(t)
@@ -598,7 +591,7 @@ def system_components_and_composition(t):
     assert {read_filter_header(out / f"{b}.dat")["DetectorType"] for b in ("beta", "rho")} == {"energy"}
 
 
-@scenario
+@row
 def system_without_raw_inputs_points_to_njm(t):
     argus_inputs(t)
     system_dir = argus_system(t)
@@ -607,7 +600,7 @@ def system_without_raw_inputs_points_to_njm(t):
     assert not (system_dir / "components").exists()
 
 
-@scenario
+@row
 def only_dr280_is_registered_and_njm_serves_its_curves(t):
     dr280 = catalog.builder_for("Argus", "DR280")
     assert (dr280.name, dict(dr280.kwargs), dr280.publishes) == ("argus", {"instrument": "DR280"}, False)
@@ -681,7 +674,7 @@ def nix_zip():
                       "nix-filters/ND.txt": text_table([1000, 5000], [0.19, 1.61])})
 
 
-@scenario
+@row
 def cfht_bands_get_their_own_generation_and_ignore_mislabelled_sibling(t):
     inst = t.tmp / "CFHT" / "Megaprime"
     wl = np.linspace(8000, 9500, 16)
@@ -714,7 +707,7 @@ def cfht_bands_get_their_own_generation_and_ignore_mislabelled_sibling(t):
         assert released_mesa_reads(p)
 
 
-@scenario
+@row
 def cfht_needs_published_curves(t):
     with pytest.raises(FileNotFoundError):
         cfht.build(t.tmp, instrument="MegaCam", session=Session({}))
@@ -722,20 +715,20 @@ def cfht_needs_published_curves(t):
         cfht.build(t.tmp, instrument="WIRCam", session=Session({}))
 
 
-@scenario
+@row
 def eris_unknown_band_is_refused(t):
     published(t.tmp / "ERIS" / "NIX", "Q", np.linspace(11500, 14000, 20), np.full(20, 0.8))
     with pytest.raises(ValueError, match="camera"):
         eris.build(t.tmp, session=Session({eris.ZIP_URL: nix_zip()}))
 
 
-@scenario
+@row
 def twomass_table_title_is_checked(t):
     with pytest.raises(ValueError, match="title"):
         twomass.micron_curve(ipac_page("SOMETHING ELSE", [1.0, 2.0], [0.5, 0.5]), "u", twomass.TITLES[1])
 
 
-@scenario
+@row
 def lsst_releases_are_separate_instruments(t):
     filters = t.tmp / "filters"
     old = filters / "LSST" / "LSST"
@@ -778,7 +771,7 @@ def lsst_releases_are_separate_instruments(t):
         assert released_mesa_reads(p)
 
 
-@scenario
+@row
 def earlier_manifest_note_is_carried_once(t):
     inst = t.tmp / "ERIS" / "NIX"
     published(inst, "J", np.linspace(11500, 14000, 20), np.full(20, 0.8))
@@ -800,7 +793,7 @@ def earlier_manifest_note_is_carried_once(t):
 GAIA3 = svo_fps_url().replace("fps.php", "index.php?mode=browse&gname=GAIA&gname2=GAIA3&asttype=")
 
 
-@scenario
+@row
 def browser_lists_an_instruments_filters_from_svos_page(t):
     session = Session(saved())
     browser = svo.SVOFilterBrowser(base_dir=str(t.tmp), session=session)
@@ -816,20 +809,20 @@ def browser_lists_an_instruments_filters_from_svos_page(t):
     assert browser.list_filters("GAIA", "GAIA3") is rows and len(session.calls) == 2  # both pages cached
 
 
-@scenario
+@row
 def browser_finds_no_filters_on_a_page_without_the_table(t):
     files = saved()
     files[GAIA3] = b"<html><body><table><tr><td>No filters</td></tr></table></body></html>"
     assert svo.SVOFilterBrowser(base_dir=str(t.tmp), session=Session(files)).list_filters("GAIA", "GAIA3") == []
 
 
-@scenario
+@row
 def band_from_filter_id(t):
     for filter_id, band in [("Generic/Bessell", "Bessell"), ("J", "J")]:
         assert svo._band_from_filter_id(filter_id) == band
 
 
-@scenario
+@row
 def metadata_client_reads_svos_votable(t):
     record = SVOMetadataClient(session=Session(saved())).get_filter("GAIA/GAIA3.Grvs")
     assert (record.filter_id, record.detector_type, record.wavelength_unit, record.components) == (
@@ -838,7 +831,7 @@ def metadata_client_reads_svos_votable(t):
     assert 0 < record.transmission.max() <= 1
 
 
-@scenario
+@row
 def param_text(t):
     assert _param_text(b"Angstrom") == "Angstrom"  # astropy gives char PARAMs as str, or bytes in older versions
 
@@ -855,7 +848,7 @@ PROBES = {"probe_finds_a_contiguous_grid": set(range(1, 61)),
           "probe_finds_a_contiguous_grid_short_block_beside_one_probed_fid": set(range(100, 106))}
 
 
-@scenario
+@row
 def mast_lists_every_bosz_resolution_and_accepts_each(t):
     grabber = mast.MASTSpectraGrabber(base_dir=str(t.tmp))
     names = grabber.discover_models()
@@ -866,7 +859,7 @@ def mast_lists_every_bosz_resolution_and_accepts_each(t):
     assert [grabber.get_model_metadata(n)["reskey"] for n in names] == [n.rsplit("-", 1)[1] for n in names]
 
 
-@scenario
+@row
 def msg_takes_the_most_complete_order_when_neither_is_plausible(t):
     grabber = msg.MSGSpectraGrabber(base_dir=str(t.tmp), max_workers=1)
     grabber.model_axes["sg-Cool"] = {
@@ -880,7 +873,7 @@ def msg_takes_the_most_complete_order_when_neither_is_plausible(t):
 # ======================================================================
 # ZTF, HSC, BASS/MzLS, GMOS and SDSS
 # ======================================================================
-@scenario
+@row
 def ztf_default_qe_is_multi_layer_and_coatings_are_variants(t):
     inst = t.tmp / "Palomar" / "ZTF"
     wl_nm = np.linspace(300, 1100, 81)
@@ -900,7 +893,7 @@ def ztf_default_qe_is_multi_layer_and_coatings_are_variants(t):
     assert single.transmission.max() == pytest.approx(0.6, rel=1e-3)
 
 
-@scenario
+@row
 def hsc_maps_r_i_to_r2_i2_and_publishes_user_filters(t):
     inst = t.tmp / "filters" / "Subaru" / "HSC"
     for band in hsc.BANDS:
@@ -946,7 +939,7 @@ BASS_TEXT = """# 90Prime SDSS g filter curve: ...
 """
 
 
-@scenario
+@row
 def bass_builder_adds_filter_qe_and_qe(t):
     inst = t.tmp / "BOK" / "BASS"
     for band in legacy_surveys.BASS_BANDS:
@@ -961,7 +954,7 @@ def bass_builder_adds_filter_qe_and_qe(t):
     assert m.primary_bands() == ["g", "r"]
 
 
-@scenario
+@row
 def mzls_publishes_the_corrected_curve_with_the_filter(t):
     wl = np.linspace(8000, 10500, 26)
     files = {f"{legacy_surveys.FILES}/kpzd.txt": "# Area weighted\n" + text_table(wl, 98 * gauss(9200, 500, wl),
@@ -974,7 +967,7 @@ def mzls_publishes_the_corrected_curve_with_the_filter(t):
     assert read_filter_header(inst / "z.dat")["FilterID"] == "KPNO/MzLS.z"
 
 
-@scenario
+@row
 def gmos_qe_epochs_are_variants_without_default(t):
     inst = t.tmp / "Gemini" / "GMOS_N"
     published_set(inst, "g", WL, gauss(5000, 300), "filter", filter_id="Gemini/GMOS-N.g")
@@ -993,7 +986,7 @@ def gmos_qe_epochs_are_variants_without_default(t):
     assert compose_band(inst, "g", "filter+qe", variants={"qe": "eev"}).transmission.max() == pytest.approx(0.8)
 
 
-@scenario
+@row
 def sdss_camera_response_left_out_of_build_all_products_is_named(t):
     # The primed filters are bands of their own (6c8739a), so filter+optics+qe
     # covers u ... z only and build_all_products builds no product for it (0.4.1
@@ -1027,7 +1020,7 @@ def sdss_camera_response_left_out_of_build_all_products_is_named(t):
 # ======================================================================
 # No silent failures: CALDB mirrors, SkyCalc, bands without a published curve
 # ======================================================================
-@scenario
+@row
 def caldb_names_every_mirror_when_all_fail(t):
     primary, mirror = (root + swift.FTRANS for root in swift.CALDB_ROOTS)
     fetch = Fetcher(Session({primary: b"not fits"}))  # the mirror answers 404
@@ -1082,7 +1075,7 @@ def no_wait(t):
     t.mp.setattr(skycalc.time, "sleep", lambda seconds: None)
 
 
-@scenario
+@row
 def skycalc_form_echo_is_checked_after_a_fallback(t):
     no_wait(t)
     client = skycalc.SkyCalcClient(session=SkyCalc({"SKYMODEL.TARGET.AIRMASS": "1.50"}), interface="auto", pause=0)
@@ -1090,7 +1083,7 @@ def skycalc_form_echo_is_checked_after_a_fallback(t):
         client.fetch("paranal", 1.0, 2.5, 1000.0, 1100.0, 2000)
 
 
-@scenario
+@row
 def skycalc_failure_after_a_fallback_names_both_errors(t):
     no_wait(t)
     session = SkyCalc(form_html="<p>Service unavailable</p>")
@@ -1109,7 +1102,7 @@ def skycalc_failure_after_a_fallback_names_both_errors(t):
     assert session.api_gets == 3
 
 
-@scenario
+@row
 def skycalc_api_temporary_directory_left_behind_is_warned(t):
     no_wait(t)
     session = SkyCalc(api_up=True, rmtmp_error=requests.exceptions.ReadTimeout("rmtmp timed out"))
@@ -1120,7 +1113,7 @@ def skycalc_api_temporary_directory_left_behind_is_warned(t):
     assert "Could not delete SkyCalc tmpdir t1" in t.caplog.text and "rmtmp timed out" in t.caplog.text
 
 
-@scenario
+@row
 def skycalc_version_change_leaves_no_unregistered_point(t):
     no_wait(t)
     site = t.tmp / "atmospheres" / "paranal"
@@ -1139,7 +1132,7 @@ def skycalc_version_change_leaves_no_unregistered_point(t):
     assert [e["file"] for e in grid.entries] == ["am1.00_pwv2.5.dat"] and grid.model_version == "2.0.8"
 
 
-@scenario
+@row
 def twomass_warns_about_bands_without_a_published_curve(t):
     inst = t.tmp / "2MASS" / "2MASS"
     published(inst, "J", np.linspace(10600, 14600, 30), np.ones(30), "filter+instrument+atmosphere", ENERGY,
@@ -1156,7 +1149,7 @@ def twomass_warns_about_bands_without_a_published_curve(t):
 # ======================================================================
 # Builders that used to skip a band or file and still report success now stop
 # ======================================================================
-@scenario
+@row
 def ensure_published_raises_for_ids_svo_lacks_and_writes_no_index(t):
     inst = t.tmp / "Fac" / "Cam"
     client = SVOClient({"Fac/Cam.g": record("Fac/Cam.g")}.get)
@@ -1166,14 +1159,14 @@ def ensure_published_raises_for_ids_svo_lacks_and_writes_no_index(t):
     assert not (inst / "Cam").exists()  # no MESA index for an incomplete set
 
 
-@scenario
+@row
 def ensure_published_writes_index_when_complete(t):
     inst = t.tmp / "Fac" / "Cam"
     ensure_published(inst, {"g": "Fac/Cam.g"}, SVOClient({"Fac/Cam.g": record("Fac/Cam.g")}.get))
     assert (inst / "Cam").read_text() == "g.dat\n"
 
 
-@scenario
+@row
 def build_simple_refuses_a_filter_band_without_a_published_curve(t):
     inst = t.tmp / "Fac" / "Cam"
     published(inst, "g", source=None)
@@ -1183,7 +1176,7 @@ def build_simple_refuses_a_filter_band_without_a_published_curve(t):
     assert not (inst / "manifest.json").exists() and not (inst / "components").exists()
 
 
-@scenario
+@row
 def build_simple_refuses_a_composite_band_without_a_published_curve(t):
     inst = t.tmp / "Fac" / "Cam"
     published(inst, "g", source=None)
@@ -1217,7 +1210,7 @@ def hst_published(root, bands=("F122M", "FR388N")):
     return inst
 
 
-@scenario
+@row
 def hst_build_records_bands_it_cannot_decompose_in_the_notes(t):
     inst = hst_published(t.tmp)
     with t.caplog.at_level("INFO", logger="sed_tools.component_sources.hst"):
@@ -1229,7 +1222,7 @@ def hst_build_records_bands_it_cannot_decompose_in_the_notes(t):
     assert set(manifest.components["filter"]) == {"F122M"}
 
 
-@scenario
+@row
 def hst_build_raises_after_building_the_others_for_instruments_without_curves(t):
     inst = hst_published(t.tmp)
     with pytest.raises(FileNotFoundError, match="no published curves for ACS_WFC.*Built: ACS_SBC"):
@@ -1238,7 +1231,7 @@ def hst_build_raises_after_building_the_others_for_instruments_without_curves(t)
     assert not (t.tmp / "HST" / "ACS_WFC").exists()  # no empty directory left behind
 
 
-@scenario
+@row
 def hst_build_refuses_an_unreadable_published_curve(t):
     inst = hst_published(t.tmp, bands=())
     inst.mkdir(parents=True)
@@ -1266,7 +1259,7 @@ def pandeia_raw(root):
     return root
 
 
-@scenario
+@row
 def jwst_build_raises_after_building_the_others_for_instruments_without_curves(t):
     from sed_tools.component_sources import jwst
 
@@ -1278,7 +1271,7 @@ def jwst_build_raises_after_building_the_others_for_instruments_without_curves(t
     assert set(InstrumentManifest.load(inst).components) == {"filter", "optics", "qe"}
 
 
-@scenario
+@row
 def tabular_raw_inventory_warns_when_a_file_is_downloaded_instead(t):
     from sed_tools.component_sources import tabular
 
@@ -1300,7 +1293,7 @@ def tabular_raw_inventory_warns_when_a_file_is_downloaded_instead(t):
 # ======================================================================
 # The observatories' Keck workbooks
 # ======================================================================
-@scenario
+@row
 def keck_workbooks_need_xlrd(t):
     xlrd_stand_in(t)
     t.mp.setitem(sys.modules, "xlrd", None)  # not installed
@@ -1322,7 +1315,7 @@ def nisp_table(neg=False):
     return "# WAVE T_TOTAL T_FILTER T_TELESCOPE T_NI-OA T_QE\n" + rows + "\n", wave, total
 
 
-@scenario
+@row
 def euclid_parse_checks_columns_and_product(t):
     from sed_tools.component_sources import euclid
 
@@ -1340,7 +1333,7 @@ def euclid_parse_checks_columns_and_product(t):
         euclid.parse_table("\n".join(bad))
 
 
-@scenario
+@row
 def euclid_build_writes_components_and_compares(t):
     from sed_tools.component_sources import euclid
 
@@ -1357,7 +1350,7 @@ def euclid_build_writes_components_and_compares(t):
     assert all(released_mesa_reads(inst / rel) for rel in (m.components[r]["Y"] for r in (FILTER, OPTICS, QE)))
 
 
-@scenario
+@row
 def euclid_build_writes_missing_published_curves(t):
     from sed_tools.component_sources import euclid
 
@@ -1399,7 +1392,7 @@ def roman_summary(below, above):
             f"<900, {below}, {below}\n900 <= wave <= 2200, {above}, {above}\n")
 
 
-@scenario
+@row
 def roman_qe_is_the_detector_mean(t):
     from sed_tools.component_sources import roman
 
@@ -1427,7 +1420,7 @@ def roman_qe_is_the_detector_mean(t):
     assert "F062" in m.notes and "mean of the 18 detectors" in m.notes and m.buildable() == []
 
 
-@scenario
+@row
 def hst_pins_replace_only_the_named_component(t):
     tables = hst.SynphotTables.__new__(hst.SynphotTables)
     tables.tmg_name = "x_tmg.fits"
@@ -1451,7 +1444,7 @@ def hst_pins_replace_only_the_named_component(t):
     assert prod[-1] == pytest.approx(0.909 * 0.2)
 
 
-@scenario
+@row
 def jwst_refdata_is_checked_and_filtered(t):
     from sed_tools.component_sources import jwst
 
@@ -1467,7 +1460,7 @@ def jwst_refdata_is_checked_and_filtered(t):
         jwst.fetch_refdata(t.tmp / "b", url="u", session=session)
 
 
-@scenario
+@row
 def jwst_read_rejects_non_micron_wavelengths(t):
     from sed_tools.component_sources.jwst import _read
 
@@ -1477,7 +1470,7 @@ def jwst_read_rejects_non_micron_wavelengths(t):
         _read(path)
 
 
-@scenario
+@row
 def status_of_2mass_and_ps1_and_new_builders(t):
     info = catalog.component_availability("PAN-STARRS", "PS1")
     assert info["status"] == catalog.NOT_BUILT, info
@@ -1553,7 +1546,7 @@ def cassini_files(camera):
     return files, nm, pairs
 
 
-@scenario
+@row
 def uvot_falls_back_to_the_mirror_and_keeps_one_absolute_scale(t):
     session = Session(uvot_files(swift.CALDB_ROOTS[1]))  # the primary host serves nothing
     out = swift.build(t.tmp, instrument="UVOT", session=session)
@@ -1581,7 +1574,7 @@ def uvot_falls_back_to_the_mirror_and_keeps_one_absolute_scale(t):
     assert all(released_mesa_reads(p) for p in out.rglob("*.dat"))
 
 
-@scenario
+@row
 def uvot_rejects_a_wrong_filter_extension(t):
     files = uvot_files(swift.CALDB_ROOTS[0])
     v = swift.BANDS["V"][1]
@@ -1615,7 +1608,7 @@ def csp_package():
     return tar_gz({**members, "._README": "resource fork"}, "CSP_filter_package")
 
 
-@scenario
+@row
 def csp1_epochs_atmosphere_and_per_band_components(t):
     out = csp.build(t.tmp, instrument="CSP", session=Session({csp.PACKAGE: csp_package()}))
     m = InstrumentManifest.load(out)
@@ -1640,7 +1633,7 @@ def csp1_epochs_atmosphere_and_per_band_components(t):
     assert all(released_mesa_reads(p) for p in out.rglob("*.dat"))
 
 
-@scenario
+@row
 def csp2_reads_the_linked_files(t):
     wl = np.arange(3000.0, 20000.0, 50.0)
     files = {csp.DATA + name: text_table(wl, np.exp(-0.5 * ((wl - 9000.0) / 3000.0) ** 2), " {:.1f} {:.8f}")
@@ -1653,7 +1646,7 @@ def csp2_reads_the_linked_files(t):
     assert catalog.builder_for("LCO", "CSP2").components is False
 
 
-@scenario
+@row
 def cassini_publishes_pds_curves_and_keeps_svo_copies_apart(t):
     files, nm, pairs = cassini_files("ISS_NAC")
     inst = t.tmp / "Cassini" / "ISS_NAC"
@@ -1690,7 +1683,7 @@ def cassini_publishes_pds_curves_and_keeps_svo_copies_apart(t):
     assert all(released_mesa_reads(p) for p in out.rglob("*.dat"))
 
 
-@scenario
+@row
 def cassini_band_names_map_to_filter_pairs(t):
     assert cassini.filter_pair("ISS_NAC", "Clear") == ("cl1", "cl2")
     assert cassini.filter_pair("ISS_NAC", "BL2") == ("cl1", "bl2")
@@ -1721,7 +1714,7 @@ def cassini_recipes_describe_each_camera(t, camera):
 CASSINI_CAMERAS = {f"cassini_recipes_describe_each_camera_{camera}": camera for camera in sorted(cassini.CAMERAS)}
 
 
-@scenario
+@row
 def decam_instrument_response_is_the_des_band_over_its_atmosphere(t):
     from astropy.io import fits
 
@@ -1758,7 +1751,7 @@ def decam_instrument_response_is_the_des_band_over_its_atmosphere(t):
         "between 8635 and 9260 A). A physical throughput cannot")
 
 
-@scenario
+@row
 def vista_components_come_from_the_eso_bundle(t):
     t.mp.setattr(vista, "_CACHE", {})
     session = Session(saved())
@@ -1784,7 +1777,7 @@ def vista_components_come_from_the_eso_bundle(t):
 SITES = ["haleakala_ps1", "paranal_vircam"]
 
 
-@scenario
+@row
 def team_atmospheres_build_writes_archives_and_resumes(t):
     root, archive = t.tmp / "atmospheres", t.tmp / "evidence"
     session = Session(saved())
@@ -1809,14 +1802,14 @@ def team_atmospheres_build_writes_archives_and_resumes(t):
     assert again.calls == [team.PS1_TABLE3]
 
 
-@scenario
+@row
 def team_atmospheres_build_refuses_unknown_sites(t):
     with pytest.raises(ValueError, match="Unknown team atmosphere site.s. nowhere"):
         team.build(t.tmp, sites=["haleakala_ps1", "nowhere"], session=Session(saved()))
     assert not any(t.tmp.iterdir())
 
 
-@scenario
+@row
 def hst_tables_take_the_newest_graph_and_walk_it(t):
     session = Session(saved())
     tables = hst.SynphotTables(session=session)
@@ -1835,7 +1828,7 @@ def hst_tables_take_the_newest_graph_and_walk_it(t):
         tables.chain("acs,sbc,f999w")
 
 
-@scenario
+@row
 def hst_tables_need_a_listed_table(t):
     files = saved()
     files[f"{hst.TRDS}/mtab/"] = files[f"{hst.TRDS}/mtab/"].replace(b"_tmc.fits", b"_tmx.fits")
@@ -1843,7 +1836,7 @@ def hst_tables_need_a_listed_table(t):
         hst.SynphotTables(session=Session(files))
 
 
-@scenario
+@row
 def lsst_validate_compares_with_rubins_curves(t):
     session = Session(lsst_files("v1.9.2", scale=0.5))
     lsst.build(t.tmp / "filters", instrument="LSSTv19", session=session)
@@ -1855,7 +1848,7 @@ def lsst_validate_compares_with_rubins_curves(t):
     assert lsst._url("hardware_r", "v1.9.2") in session.calls
 
 
-@scenario
+@row
 def twomass_validate_compares_with_the_supplement_totals(t):
     inst = t.tmp / "2MASS" / "2MASS"
     for band, lo in (("J", 10600), ("H", 15000), ("Ks", 19500)):
@@ -1873,7 +1866,7 @@ def twomass_validate_compares_with_the_supplement_totals(t):
     assert result["Ks"]["dmag"] == pytest.approx(-2.5 * np.log10(2.0), abs=1e-3)
 
 
-@scenario
+@row
 def skycalc_transmission_is_the_fetched_curve(t):
     client = skycalc.SkyCalcClient(session=SkyCalc(), interface="form", pause=0)
     wl, tr = client.transmission("paranal", 1.5, 2.5, 1000.0, 1100.0, 2000)
@@ -1882,7 +1875,7 @@ def skycalc_transmission_is_the_fetched_curve(t):
     assert client.session.posts[-1]["SKYMODEL.TARGET.AIRMASS"] == "1.50"
 
 
-@scenario
+@row
 def write_site_refuses_a_bad_curve_before_writing(t):
     bad = team_site(entries=[(1.2, None, DerivedCurve("u", derived([0.5, 1.2, 0.9]), "x"))])
     with pytest.raises(ValueError, match="not a transmission"):
@@ -1894,7 +1887,7 @@ PS1_ROWS = (" 500 0.500 0.400 0.000 0.000 0.000 0.000 0.000 0.970 0.880 0.990\n"
             " 501 0.500 0.410 0.000 0.000 0.000 0.000 0.000 0.970 0.881 0.980\n")
 
 
-@scenario
+@row
 def ps1_build_registers_its_team_site(t):
     session = Session({surveys.PS1_URL: PS1_ROWS, surveys.PS1_BASE + "table4.dat": "g_P1|0.4|481|414|551|24.6\n"})
     t.mp.setattr(surveys, "ps1", lambda fetch: surveys.Instrument(
@@ -1910,7 +1903,7 @@ def ps1_build_registers_its_team_site(t):
     assert grid.kind == TEAM and grid.entries[0]["airmass"] == 1.2 and "Aero" in grid.entries[0]["derivation"]
 
 
-@scenario
+@row
 def csp_atmosphere_raises_the_one_airmass_transmission_to_1p2(t):
     raw = tar_gz({"atm_ext_ctio.dat": b"3000. 0.5\n5000. 0.8\n11000. 1.0\n",
                   "atm_ext_lines.dat": b"2950. 1.\n4000. 0.9\n6000. 1.0\n12000. 1.\n"}, "CSP_filter_package")
@@ -1919,7 +1912,7 @@ def csp_atmosphere_raises_the_one_airmass_transmission_to_1p2(t):
     np.testing.assert_allclose(tr[wl == 5000.0], 0.8 ** 1.2 * 0.95)
 
 
-@scenario
+@row
 def vircam_atmosphere_skips_its_title_lines(t):
     member = gzip.compress(b"1.0mm H2O, airmass=1.0\n\n0.900000   0.97\n0.900500   0.96\n")
     raw = tar_gz({"trans_10_10.dat.gz": member}, "Filters_QE_Atm_curves")
@@ -1929,7 +1922,7 @@ def vircam_atmosphere_skips_its_title_lines(t):
         team.vircam_atmosphere(raw, "trans_10_10.dat.gz", "3.0mm H2O, airmass=2.0")
 
 
-@scenario
+@row
 def twomass_table_refuses_a_truncated_copy(t):
     page = ("<html><head><title>ATMOSPHERIC TRANSMISSION AT 2MASS NORTH SITE</title></head><pre>\n"
             "|n  |xlam     |yval     |\n   1    1.0000    0.8948\n   2    1.0001    0.8922\n</pre>")
@@ -1939,7 +1932,7 @@ def twomass_table_refuses_a_truncated_copy(t):
         team.twomass_table(page.replace("   2 ", "   3 ").encode(), "ATMOSPHERIC TRANSMISSION AT 2MASS NORTH SITE")
 
 
-@scenario
+@row
 def gemini_atran_refuses_a_truncated_file(t):
     wl, _ = team.gemini_atran(b".900000 0.99\n3.0 0.5\n5.59998 0.1\n", "u")
     assert wl[-1] == pytest.approx(55999.8)
@@ -1947,7 +1940,7 @@ def gemini_atran_refuses_a_truncated_file(t):
         team.gemini_atran(b".900000 0.99\n1.2 0.5\n", "u")
 
 
-@scenario
+@row
 def sdss_transparency_merges_bands_and_refuses_conflicts(t):
     head = "# assumed\n# atmospheric\n# extinction\n# through\n# 1.0 airmasses\n"
     files = {url: head + "3000 0 0 0 0.10\n3025 0 0 0 0.12\n" for url in team.SDSS_FILES.values()}
@@ -1958,7 +1951,7 @@ def sdss_transparency_merges_bands_and_refuses_conflicts(t):
         team.sdss_transparency(Session(files))
 
 
-@scenario
+@row
 def bass_ratio_keeps_only_well_measured_rows(t):
     head = "# ... atmospheric extinction at airmass of 1.0.\n"
     files = {team.BASS_FILES["g"]: head + "4000 0.5 0.400 0.300\n4010 0.1 0.050 0.040\n",
@@ -1968,7 +1961,7 @@ def bass_ratio_keeps_only_well_measured_rows(t):
     np.testing.assert_allclose(tr, [0.75, 0.9])
 
 
-@scenario
+@row
 def form_fields_follow_skycalc_spelling(t):
     params = dict(skycalc._BASE_PARAMS, airmass=2.0, pwv=0.5, observatory="2400")
     fields = skycalc._form_fields(params)
@@ -1980,7 +1973,7 @@ def form_fields_follow_skycalc_spelling(t):
         skycalc.pwv_option(2.0)
 
 
-@scenario
+@row
 def form_client_checks_the_echo(t):
     client = skycalc.SkyCalcClient(session=SkyCalc(), interface="form", pause=0)
     result = client.fetch("paranal", 1.5, 2.5, 1000.0, 1100.0, 2000)
@@ -1991,7 +1984,7 @@ def form_client_checks_the_echo(t):
         bad.fetch("paranal", 1.5, 2.5, 1000.0, 1100.0, 2000)
 
 
-@scenario
+@row
 def skycalc_grid_is_labelled_derived_and_archived(t):
     client = skycalc.SkyCalcClient(session=SkyCalc(), interface="form", pause=0)
     root = skycalc.build(t.tmp / "filters", sites=["lasilla"], airmasses=[1.0], pwvs=[2.5],
@@ -2010,7 +2003,7 @@ def skycalc_grid_is_labelled_derived_and_archived(t):
     assert hashlib.sha256(raw).hexdigest() == record["sha256"] and record["skycalc_version"] == "2.0.9"
 
 
-@scenario
+@row
 def skycalc_resume_leaves_a_complete_grid_untouched(t):
     client = skycalc.SkyCalcClient(session=SkyCalc(), interface="form", pause=0)
     kw = dict(sites=["paranal"], airmasses=[1.0], pwvs=[2.5], chunks=2, client=client)
@@ -2024,7 +2017,7 @@ def skycalc_resume_leaves_a_complete_grid_untouched(t):
         skycalc.build(t.tmp / "filters", fetch_resolution=2000, store_resolution=400, **dict(kw, airmasses=[1.5]))
 
 
-@scenario
+@row
 def hsc_builder_and_team_registry_write_the_same_site(t):
     assert team.SITES["maunakea_hsc"] is hsc.SPEC.site and hsc.SPEC.site.kind == TEAM
 
@@ -2032,20 +2025,20 @@ def hsc_builder_and_team_registry_write_the_same_site(t):
 # ======================================================================
 # The builders' shared machinery
 # ======================================================================
-@scenario
+@row
 def table_floors_negative_measured_transmission(t):
     wl, tr = Table("u").parse(b"4000,-0.0001\n5000,0.8\n")
     np.testing.assert_allclose(wl, [4000, 5000])
     np.testing.assert_allclose(tr, [0.0, 0.8])
 
 
-@scenario
+@row
 def percent_component_is_rejected(t):
     with pytest.raises(ComponentError, match="percent"):
         add_component(t.tmp, FILTER, [4000.0, 5000.0], [10.0, 95.0], band="g")
 
 
-@scenario
+@row
 def panic_br_gamma_uses_existing_mirror_band_name(t):
     from sed_tools.component_sources.tabular import SOURCES
 
@@ -2053,7 +2046,7 @@ def panic_br_gamma_uses_existing_mirror_band_name(t):
     assert "BrGamma" not in SOURCES["PANIC"].filters
 
 
-@scenario
+@row
 def jwst_reference_negative_tail_is_zero(t):
     from sed_tools.component_sources.jwst import _read
 
@@ -2064,7 +2057,7 @@ def jwst_reference_negative_tail_is_zero(t):
     np.testing.assert_allclose(tr, [0.0, 0.7])
 
 
-@scenario
+@row
 def jwst_band_factors(t):
     from sed_tools.component_sources.jwst import _band_factors
 
@@ -2075,7 +2068,7 @@ def jwst_band_factors(t):
     assert _band_factors("miri", "F444W", paths) == {FILTER: ["f444w"], OPTICS: [], QE: ["miri_imager_qe"]}
 
 
-@scenario
+@row
 def ensure_components_runs_own_builder_and_skips_heavy(t):
     calls = []
     t.mp.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam"), catalog.BuilderRef("fake"))
@@ -2117,7 +2110,7 @@ SHARED_NAMES = {f"svo_instruments_that_share_a_name_get_their_own_directory_{cas
 ]}
 
 
-@scenario
+@row
 def njm_instrument_match_is_exact(t):
     from sed_tools.njm_filter_grabber import NJMFilterGrabber
 
@@ -2129,14 +2122,14 @@ def njm_instrument_match_is_exact(t):
     assert njm.find_instrument("HST", "ACS-WFC") == "ACS_WFC"
 
 
-@scenario
+@row
 def facility_wide_status_applies_to_every_instrument(t):
     assert catalog.status_for("GAIA", "GAIA0")[0] == catalog.TOTAL_ONLY
     assert catalog.status_for("GAIA", "GAIA3")[0] == catalog.TOTAL_ONLY
     assert catalog.status_for("LSST", "LSST") is None
 
 
-@scenario
+@row
 def tabular_names_its_instruments_for_an_unknown_one(t):
     from sed_tools.component_sources import tabular
 
@@ -2151,7 +2144,7 @@ MODULES = {"surveys": surveys, "space": space, "observatories": obs, "standards"
            "swift": swift, "csp": csp, "cassini": cassini}
 
 
-@scenario
+@row
 def original_sources_do_not_shadow_other_builders(t):
     original = {(f, i) for entries in catalog.ORIGINAL_SOURCES.values() for f, i, _ in entries}
     others = {k for k, ref in catalog.BUILDERS_FOR.items() if ref.name not in MODULES}
@@ -2160,7 +2153,7 @@ def original_sources_do_not_shadow_other_builders(t):
     assert all(ref.publishes for ref in catalog.BUILDERS_FOR.values() if ref.name == "tabular")
 
 
-@scenario
+@row
 def unknown_instrument_and_wrong_facility_are_rejected(t):
     with pytest.raises(ValueError, match="No original-source recipe"):
         surveys.build(t.tmp, instrument="Nope")
@@ -2168,7 +2161,7 @@ def unknown_instrument_and_wrong_facility_are_rejected(t):
         surveys.build(t.tmp, instrument="ATLAS", facility="Keck")
 
 
-@scenario
+@row
 def units_and_cleaning(t):
     np.testing.assert_allclose(to_angstrom([1.0], "micron"), [1e4])
     np.testing.assert_allclose(to_angstrom([1.0], "1/cm"), [1e8])
@@ -2181,7 +2174,7 @@ def units_and_cleaning(t):
         clean_curve([1, 2], [0.0, -1.0])
 
 
-@scenario
+@row
 def fetcher_rejects_html_unless_allowed(t):
     fetch = Fetcher(Session({"u": b"<!DOCTYPE html><p>moved</p>"}))
     with pytest.raises(ValueError, match="HTML"):
@@ -2195,7 +2188,7 @@ def ogle_files():
             surveys.OGLE_QE: fx("OGLE-IV-QE-curve-from-specification.dat")}
 
 
-@scenario
+@row
 def published_rebuilds_from_original_sources_when_njm_is_down(t):
     t.mp.setattr(filter_library.NJMFilterGrabber, "_check_availability", lambda self: False)
     session = Session(ogle_files())
@@ -2226,7 +2219,7 @@ def published_rebuilds_from_original_sources_when_njm_is_down(t):
     assert library.published("OGLE", "OGLE-IV") == directory and not session.calls
 
 
-@scenario
+@row
 def builder_keeps_existing_published_curves(t):
     directory = t.tmp / "OGLE" / "OGLE-IV"
     directory.mkdir(parents=True)
@@ -2236,7 +2229,7 @@ def builder_keeps_existing_published_curves(t):
     assert (directory / "I.dat").is_file() and (directory / "components" / "qe" / "qe.dat").is_file()
 
 
-@scenario
+@row
 def ogle_header_is_checked(t):
     files = ogle_files()
     files[surveys.OGLE_FILT["V"]] = files[surveys.OGLE_FILT["I"]]
@@ -2244,7 +2237,7 @@ def ogle_header_is_checked(t):
         surveys.build(t.tmp, instrument="OGLE-IV", session=Session(files))
 
 
-@scenario
+@row
 def ukirt_tar_members_refuse_unsafe_names(t):
     member = fx("ukirt_Table02_online.dat")
     text = surveys.tar_members(tar_gz({"Table02_online.dat": member}), {"Table02_online.dat"})
@@ -2255,7 +2248,7 @@ def ukirt_tar_members_refuse_unsafe_names(t):
         surveys.tar_members(tar_gz({"other.dat": member}), {"Table02_online.dat"})
 
 
-@scenario
+@row
 def lco_zip_member_and_checksum(t):
     raw = zip_bytes({"SDSS.up.txt": fx("lco_SDSS.up.txt")})
     with zipfile.ZipFile(io.BytesIO(raw)) as zf:
@@ -2265,7 +2258,7 @@ def lco_zip_member_and_checksum(t):
         surveys.sinistro(Fetcher(Session({surveys.LCO_URL: raw})))
 
 
-@scenario
+@row
 def herschel_and_planck_fits(t):
     from astropy.io import fits
 
@@ -2290,7 +2283,7 @@ def herschel_and_planck_fits(t):
         space.planck_bandpass(rimo, "BANDPASS_F100", "GHz")
 
 
-@scenario
+@row
 def iras_html_table(t):
     page = fx("iras_tabC5.html")
     with pytest.raises(ValueError, match="rows of 4"):  # the excerpt ends inside a row
@@ -2301,7 +2294,7 @@ def iras_html_table(t):
     assert tables["60"].shape == (2, 4)
 
 
-@scenario
+@row
 def msx_ipac_table(t):
     a = space.msx_table(fx("msx_rsr_a.tbl"))
     assert a.shape == (4, 2) and a[0].tolist() == [5.8, 0.0]
@@ -2309,7 +2302,7 @@ def msx_ipac_table(t):
         space.msx_table(fx("msx_rsr_a.tbl").replace("microns", "nm"))
 
 
-@scenario
+@row
 def omegacam_centre_scan(t):
     wl, tr = obs.ocam_centre(fx("ocam_u_with_ccd.txt"))
     assert wl.tolist() == [479.916, 482.905, 485.894] and tr[0] == 0.000042
@@ -2317,7 +2310,7 @@ def omegacam_centre_scan(t):
         obs.ocam_centre(fx("ocam_u_with_ccd.txt").replace("# x_pos 0.000000", "# x_pos 2.0"))
 
 
-@scenario
+@row
 def keck_xls_sheets(t):
     a = obs.nirc2_sheet(Book({"J": [["Wavelength", "Transmission"], [1.1, 1.0], [1.2, 90.0], [1.3, 2.0]]}), "J")
     assert a[:, 1].max() == 90.0
@@ -2328,7 +2321,7 @@ def keck_xls_sheets(t):
     np.testing.assert_allclose(obs.lris_i_sheet(Book({"s": rows})), [[7000, 0.1], [7600, 0.9]])
 
 
-@scenario
+@row
 def keck_width_check(t):
     wl = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
     obs.check_width("x", wl, np.array([0, 1, 1, 1, 0.0]), 3.0, 2.0, tol=0.01)
@@ -2336,7 +2329,7 @@ def keck_width_check(t):
         obs.check_width("x", wl, np.array([0, 1, 1, 1, 0.0]), 3.5, 2.0)
 
 
-@scenario
+@row
 def not_scan_header_and_scale(t):
     a = obs.not_curve(109, fx("not_109.txt"), False, "u' SDSS")
     assert a.shape == (5, 2) and a[:, 1].max() < 1
@@ -2346,7 +2339,7 @@ def not_scan_header_and_scale(t):
         obs.not_curve(109, fx("not_109.txt"), True, "u' SDSS")
 
 
-@scenario
+@row
 def subaru_and_odi_tables(t):
     qe = obs.subaru_table(fx("subaru_QE_Hamamatsu.txt"), 300, 1100, 0.2, 1.0, "qe")
     assert qe.shape == (5, 2)
@@ -2360,7 +2353,7 @@ def subaru_and_odi_tables(t):
     assert 0.5 < obs.odi_leak(wl, np.array([0.0, 0.0, 1.0, 1.0])) < 1.0
 
 
-@scenario
+@row
 def bessell_and_mko_parsers(t):
     curves = space.fixed_width_pairs(fx("bessell_table1.dat"), standards.B12_COLS)
     assert list(curves) == ["U", "B", "V", "R", "I"] and all(len(w) == 4 for w, _ in curves.values())
@@ -2372,7 +2365,7 @@ def bessell_and_mko_parsers(t):
         standards.mko_scan("WL\tT\n1 2\n")
 
 
-@scenario
+@row
 def usno_reads_only_the_wayback_snapshots(t):
     text = fx("usno_u.res")
     assert standards.usno_table(text, "u").shape == (4, 6)
@@ -2387,7 +2380,7 @@ def usno_reads_only_the_wayback_snapshots(t):
     assert not (t.tmp / "Generic").exists()
 
 
-@scenario
+@row
 def naco_band_names_have_no_inner_dot(t):
     from sed_tools.component_sources.tabular import NACO
 

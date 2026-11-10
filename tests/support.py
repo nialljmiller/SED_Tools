@@ -8,8 +8,6 @@ config file, NJM and SVO state, and random state. No row uses the network: a rea
 
 from __future__ import annotations
 
-import gzip
-import io
 import json
 import os
 import random
@@ -17,25 +15,19 @@ import re
 import shutil
 import struct
 import sys
-import tarfile
 import time
 from contextlib import ExitStack, contextmanager
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
-from types import SimpleNamespace
 
 import numpy as np
 import pytest
 import requests
 
 from sed_tools.combine_filters import write_filter_index
-from sed_tools.component_sources import cassini, lsst, swift, twomass
 from sed_tools.component_sources._common import DerivedCurve, SiteAtmosphere
-from sed_tools.filter_components import TEAM, InstrumentManifest
-from sed_tools.filter_library import instrument_catalogue
-from sed_tools.filter_metadata import PHOTON, read_filter_header, released_mesa_reads, write_filter_file
-from sed_tools.njm_filter_grabber import NJMFilterGrabber
-from sed_tools.svo_filter_grabber import Facility, FilterRow, Instrument, SVOFilterBrowser
+from sed_tools.filter_components import TEAM
+from sed_tools.filter_metadata import PHOTON, write_filter_file
 
 TESTS = Path(__file__).resolve().parent
 
@@ -101,6 +93,18 @@ class Rows:
                           self._caplog, stack)
         finally:
             _set_random_state(rng)
+
+
+def scenarios():
+    """An empty table of scenarios, and the decorator that adds a function to it as a row named after it."""
+    table = {}
+
+    def row(function):
+        assert function.__name__ not in table, f"two scenarios are named {function.__name__!r}"
+        table[function.__name__] = function
+        return function
+
+    return table, row
 
 
 def _reset_sources():
@@ -550,15 +554,3 @@ def filters_api(t):
 
 CLEAN = {"total": 1, "converted": [], "skipped_already": [], "skipped_invalid": [], "skipped_index": [],
          "error": [], "recovered": [], "detection_stats": {}, "catalog_units": None}
-
-
-def scenarios():
-    """An empty table of scenarios, and the decorator that adds a function to it as a row named after it."""
-    table = {}
-
-    def row(function):
-        assert function.__name__ not in table, f"two scenarios are named {function.__name__!r}"
-        table[function.__name__] = function
-        return function
-
-    return table, row
