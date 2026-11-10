@@ -299,13 +299,10 @@ class SkyCalcClient:
         return self._result(content, url, "form", {"form_url": self.form_url, **fields})
 
     def _download(self, url: str) -> bytes:
-        content = b""
-        for _ in range(5):
-            content = self.session.get(url, timeout=self.timeout).content
-            if content[:6] == b"SIMPLE":
-                return content
-            time.sleep(2)
-        raise RuntimeError(f"SkyCalc output {url} was not a FITS file")
+        content = self.session.get(url, timeout=self.timeout).content
+        if content[:6] != b"SIMPLE":  # fetch() retries the whole run
+            raise RuntimeError(f"SkyCalc output {url} was not a FITS file")
+        return content
 
     @staticmethod
     def _result(content: bytes, url: str, interface: str, request: Dict[str, object]) -> SkyCalcResult:

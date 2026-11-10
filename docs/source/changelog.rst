@@ -43,6 +43,14 @@ Correcting or converting a detector type
   ``sed_tools.filters.properties.properties_record(path, vega, sun)``, a
   curve's ``properties.json`` record as NJM computes it.
 
+Changed
+~~~~~~~
+
+- SkyCalc retries at one layer: an output that is not a FITS file reruns the
+  model, up to ``SkyCalcClient(retries=4)`` times like any other failure,
+  instead of also being polled 5 times within each attempt (at most 4
+  downloads per request, not 20).
+
 Version 0.5.1 (November 2026)
 -----------------------------
 
