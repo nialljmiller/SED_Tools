@@ -169,7 +169,8 @@ class SpectralGrid:
         """Return a DataFrame of all spectrum parameters."""
         if self._parameters_df is None:
             self._parameters_df = pd.DataFrame([
-                {'file_name': spec.filename or f"teff{spec.teff}_logg{spec.logg}_meta{spec.metallicity}.txt",
+                {'file_name': spec.filename
+                 or f"teff{spec.teff:.0f}_logg{spec.logg:.2f}_meta{spec.metallicity:.2f}.txt",
                  'teff': spec.teff, 'logg': spec.logg, 'metallicity': spec.metallicity}
                 for spec in self.spectra])
         return self._parameters_df

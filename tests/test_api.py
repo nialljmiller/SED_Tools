@@ -173,6 +173,15 @@ def grid_write_raises_when_there_is_nothing_to_bundle(t):
 
 
 @row
+def grid_write_lists_in_its_lookup_table_the_files_it_writes(t):
+    grid = SpectralGrid(name="Grid", source="local", spectra=[_spectrum(), _spectrum(teff=5500.0, logg=4.5)])
+    out = grid.write(t.tmp / "out", build_flux_cube=False, build_h5=False)
+    listed = [line.split(",")[0] for line in (out / "lookup_table.csv").read_text().splitlines()[1:]]
+    assert listed == ["teff5000_logg4.00_meta0.00.txt", "teff5500_logg4.50_meta0.00.txt"]
+    assert all((out / name).is_file() for name in listed)
+
+
+@row
 def import_dry_run_counts_spectra_lacking_a_parameter(t):
     src = t.tmp / "src"
     src.mkdir()
