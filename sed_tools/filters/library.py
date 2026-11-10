@@ -712,7 +712,7 @@ class FilterLibrary:
         if remote:
             try:
                 facilities = self.svo.list_facilities()
-            except (ComponentError, RequestException, RuntimeError) as exc:
+            except (RequestException, RuntimeError) as exc:
                 errors.append(f"SVO: {exc}")
             else:
                 if facilities:
@@ -750,7 +750,7 @@ class FilterLibrary:
                 instruments = self.svo.list_instruments(fac.key) if fac is not None else None
             except SVOUnreachableError as exc:
                 errors.append(f"SVO: {exc}")  # as facilities() words it: one outage, reported once
-            except (ComponentError, RequestException, RuntimeError) as exc:
+            except (RequestException, RuntimeError) as exc:
                 errors.append(f"SVO {facility}: {exc}")
             else:
                 if instruments:

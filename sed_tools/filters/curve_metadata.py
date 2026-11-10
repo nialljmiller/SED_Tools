@@ -410,7 +410,7 @@ def _read_curve(path: PathLike) -> Tuple[np.ndarray, np.ndarray]:
     with open(path, "r", encoding="utf-8") as fh:
         for line in fh:
             parts = line.strip().replace(",", " ").split()
-            if len(parts) < 2 or parts[0].startswith("#"):
+            if len(parts) < 2:
                 continue
             try:
                 wl.append(float(parts[0]))
@@ -709,11 +709,10 @@ def _resolved_fields(header: Mapping[str, str], client: SVOMetadataClient, detec
     """``header`` with the resolved type, plus the unit and components SVO records for ``filter_id``."""
     wavelength_unit = header.get("WavelengthUnit")
     published_components = None
-    if filter_id and source != SOURCE_ASSUMED:
-        record = client.get_filter(filter_id)  # cached by the resolution
-        if record is not None and record.wavelength_unit:
-            wavelength_unit = record.wavelength_unit
-        if record is not None and not header.get("Components"):
+    if source != SOURCE_ASSUMED:  # resolved from SVO's record of filter_id, cached by the resolution
+        record = client.get_filter(filter_id)
+        wavelength_unit = record.wavelength_unit or wavelength_unit
+        if not header.get("Components"):
             published_components = svo_components_header(record.components)
     new_fields: Dict[str, Optional[str]] = {**header, "FilterID": filter_id, "DetectorType": detector_type,
                                             "DetectorTypeSource": source, "WavelengthUnit": wavelength_unit}
