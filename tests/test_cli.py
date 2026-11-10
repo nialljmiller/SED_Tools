@@ -18,6 +18,7 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import h5py
 import numpy as np
 import pytest
 import requests
@@ -282,6 +283,23 @@ def rebuild_asks_again_for_an_out_of_range_selection(t):
     cli.run_rebuild_flow(base_dir=str(t.tmp))
     assert rebuilt == ["A", "C"]
     assert "Selection out of bounds: 7" in t.capsys.readouterr().out
+
+
+@row
+def rebuild_never_writes_its_bundle_over_a_downloaded_grid_file(t):
+    _rebuild(t)
+    t.mp.setattr(cli.grids, "build_h5_bundle_from_txt", cli.build_h5_bundle_from_txt)  # the real bundle
+    msg = t.tmp / "sg-Test"
+    msg.mkdir()
+    (msg / "s.txt").write_text("1000 1\n")
+    with h5py.File(msg / "sg-Test.h5", "w") as fh:  # the grid file as MSG serves it: no 'spectra' group
+        fh.create_group("specsource")
+    downloaded = (msg / "sg-Test.h5").read_bytes()
+    cli.run_rebuild_flow(base_dir=str(t.tmp), models=["sg-Test", "A", "A"])
+    assert (msg / "sg-Test.h5").read_bytes() == downloaded
+    with h5py.File(msg / "sg-Test_bundle.h5", "r") as fh:
+        assert list(fh["spectra"]) == ["s.txt"]
+    assert sorted(p.name for p in (t.tmp / "A").glob("*.h5")) == ["A.h5"]  # a bundle is rebuilt in place
 
 
 @row

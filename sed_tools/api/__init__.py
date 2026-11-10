@@ -21,7 +21,7 @@ from requests import RequestException
 
 from ..grids.lookup import (find_file_column, find_logg_column, find_metallicity_column, find_teff_column,
                            regenerate_lookup_table)
-from ..grids.spectrum_io import build_h5_bundle
+from ..grids.spectrum_io import _bundle_path, build_h5_bundle
 from ..cube.model import (
     FILTER_DIR_DEFAULT,
     STELLAR_DIR_DEFAULT,
@@ -253,9 +253,10 @@ class SpectralGrid:
                 print(f"[write] Built one flux cube per extra-axis variant, listed in {written}")
 
         if build_h5 and len(self.spectra) > 0:
-            if not build_h5_bundle(str(path), str(path / f"{self.name}.h5")):
-                raise RuntimeError(f"No .txt spectra in {path} to bundle into {self.name}.h5")
-            print(f"[write] Built {self.name}.h5")
+            bundle = _bundle_path(path, self.name)
+            if not build_h5_bundle(str(path), str(bundle)):
+                raise RuntimeError(f"No .txt spectra in {path} to bundle into {bundle.name}")
+            print(f"[write] Built {bundle.name}")
 
         return path
 
@@ -788,7 +789,7 @@ class SED:
         regenerate_lookup_table(str(dest))
 
         if build_h5:
-            build_h5_bundle(str(dest), str(dest / f"{name}.h5"))  # dest holds the .txt files copied above
+            build_h5_bundle(str(dest), str(_bundle_path(dest, name)))  # dest holds the .txt files copied above
 
         if build_cube:
             _build_flux_cube(dest)

@@ -15,7 +15,7 @@ from ..ui_utils import wrap
 from . import mast, msg, njm, svo
 from .header_parser import parse_header
 from .lookup import regenerate_lookup_table
-from .spectrum_io import build_h5_bundle
+from .spectrum_io import _bundle_path, build_h5_bundle
 
 
 def spectra_grabber(src: str, base_dir: str, **kwargs):
@@ -110,7 +110,7 @@ def _build_data_products(name: str, model_dir: str, src: str, force_bundle_h5: b
 
     A bundle or cube lacking spectra beside it is rebuilt; with ``build_flux_cube`` False such a cube is a problem.
     """
-    out_h5 = os.path.join(model_dir, f"{name}_bundle.h5" if src == "msg" else f"{name}.h5")
+    out_h5 = str(_bundle_path(model_dir, name))
     fresh = force_bundle_h5 or not os.path.exists(out_h5)
     stale = None if fresh else _bundle_shortfall(Path(out_h5), Path(model_dir))
     if fresh or stale:

@@ -56,6 +56,18 @@ def bundled_spectra(bundle_path: PathLike) -> list[str]:
         return sorted(h5["spectra"].keys())
 
 
+def _bundle_path(model_dir: PathLike, name: str) -> Path:
+    """Where grid ``name``'s HDF5 bundle goes: ``{name}.h5``, unless a file there is not a bundle (MSG's downloaded
+    grid has that name), which is never written over; then ``{name}_bundle.h5``."""
+    path = Path(model_dir) / f"{name}.h5"
+    if path.exists():
+        try:
+            bundled_spectra(path)
+        except (OSError, ValueError):
+            return path.with_name(f"{name}_bundle.h5")
+    return path
+
+
 def build_h5_bundle(model_dir: PathLike, output_path: PathLike) -> bool:
     """Bundle text spectra and canonical header metadata; return whether written."""
     spectra = list_text_spectra(model_dir)
