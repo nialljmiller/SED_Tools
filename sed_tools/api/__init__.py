@@ -52,7 +52,7 @@ _CUTTING_SOURCES = ("njm", "msg")
 
 # How SED.query describes the grids each remote source lists.
 _LISTED_AS = {"svo": {"url": "http://svo2.cab.inta-csic.es/theory/newov2/"}, "msg": {"description": "MSG HDF5 format"},
-              "mast": {"description": "BOSZ spectral grids"}, "njm": {"description": "NJM pre-processed mirror"}}
+              "mast": {"description": "BOSZ spectral grids"}, "njm": {"description": "NJM mirror"}}
 
 # What a remote source raises when it is unreachable or serves something unexpected.
 _SOURCE_ERRORS = (RequestException, OSError, ValueError, RuntimeError)

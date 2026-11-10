@@ -53,6 +53,13 @@ Changed
   not know (e.g. ``WavelengthUnit=nm (air)``) now stops with an error naming
   it; it was guessed from the values after a warning.
 
+Fixed
+~~~~~
+
+- ``SED.query()`` described NJM's grids as from an "NJM pre-processed
+  mirror". They are cleaned like any other source's; the description is now
+  "NJM mirror".
+
 Version 0.5.1 (November 2026)
 -----------------------------
 
