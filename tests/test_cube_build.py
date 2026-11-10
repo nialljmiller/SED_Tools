@@ -373,3 +373,7 @@ def test_an_ml_extended_grid_with_different_wavelength_ends_is_one_cube(tmp_path
     assert not (grid / "variants_index.csv").exists()
     assert not [p for p in grid.iterdir() if p.is_dir()]
     assert "No extra axes detected" in capsys.readouterr().out
+    # A file column under another name (the first column is taken) gave one subgrid per spectrum until 0.6.0
+    (grid / "lookup_table.csv").write_text((grid / "lookup_table.csv").read_text().replace("#file_name,", "#spectrum,"))
+    pcf.precompute_flux_cube(str(grid), str(grid / "flux_cube.bin"))
+    assert not [p for p in grid.iterdir() if p.is_dir()] and "No extra axes detected" in capsys.readouterr().out

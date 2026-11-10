@@ -434,7 +434,7 @@ def precompute_flux_cube(
     teff_vals, logg_vals, meta_vals = _parse_axes(lookup, lookup_file, file_col)
     _require_spectra(model_dir, file_names, lookup_file)
 
-    extra_cols = discover_extra_axes(list(lookup.keys()))
+    extra_cols = discover_extra_axes([col for col in lookup if col != file_col])  # the file column is no axis
     if extra_cols:
         print(f"Extra axes detected: {', '.join(extra_cols)}")
     else:

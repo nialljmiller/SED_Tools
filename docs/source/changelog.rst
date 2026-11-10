@@ -62,6 +62,10 @@ Fixed
   into subgrids (``FileNotFoundError`` for ``<stellar models>/<subgrid>/``):
   it looked for each subgrid at the top level. Each folder's table is now
   written in that folder, subgrids included.
+- **A flux cube built from a lookup table whose file column has another
+  name** (e.g. ``spectrum``; the first column is taken) came out as one
+  subgrid per spectrum, because that column was read as a varying extra
+  axis. It is now one cube.
 
 Version 0.5.1 (November 2026)
 -----------------------------
