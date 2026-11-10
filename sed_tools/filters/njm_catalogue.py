@@ -146,13 +146,14 @@ class FilterCatalogue:
             return path
         mirror = self._online_mirror(have_copy=path.is_file() and not refresh)
         if mirror is None:
+            if not path.is_file():
+                return None
             # Offline, the cache is what was asked for; only a refresh it cannot honour is reported.
-            if path.is_file() and (refresh or not self.offline):
+            if refresh or not self.offline:
                 logger.warning("Cannot ask NJM (%s); using the cached %s, which may be out of date",
                                "offline" if self.offline else "unreachable", rel)
-            if path.is_file():
-                self._came_from(rel, "cache", meta.get("checked"), njm_unreachable=not self.offline)
-            return path if path.is_file() else None
+            self._came_from(rel, "cache", meta.get("checked"), njm_unreachable=not self.offline)
+            return path
         conditional = (("If-None-Match", "etag"), ("If-Modified-Since", "last_modified"))
         headers = {header: meta[key] for header, key in conditional if path.is_file() and meta.get(key)}
         url = f"{mirror.base_url}/{quote(rel, safe='/')}"
