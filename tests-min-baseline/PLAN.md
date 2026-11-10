@@ -120,7 +120,7 @@ Before each row, what the old autouse fixtures did per test is redone:
 
 | part | owner | what is in it |
 |---|---|---|
-| cubes and grids | C | `GRID`, `GOLDEN_MODELS`, `KURUCZ`, `NJM`, `write_flux_cube`, `AffineCube`, `affine_cube`, `GridServer`, `njm_grid`, `njm_grids`, `digests`, `copy_without_times`, `write_lookup`, `flat_filter` |
+| cubes and grids (`njm_grid` is built once per session and shared by grids and API rows; rows only read it, as every old test did) | C | `GRID`, `GOLDEN_MODELS`, `KURUCZ`, `NJM`, `write_flux_cube`, `AffineCube`, `affine_cube`, `GridServer`, `njm_grid`, `njm_grids`, `digests`, `copy_without_times`, `write_lookup`, `flat_filter` |
 | filters | A | `CURVE`, `njm_index`, `write_set`, `njm_up`, `njm_filters`, `NJM_DOWN`, `bundled`, `GAIA`, `svo_stub`, `svo_browser`, `atmosphere_site`, `STALE` |
 | builders | B | `FIX`, `WL`, `SWIFT_GRID`, `saved`, `curve`, `check_published`, `tar_gz`, `gauss`, `published`, `published_set`, `text_table`, `ipac_page`, `twomass_files`, `lsst_files`, `fits_file`, `fits_table`, `uvot_files`, `pds_table`, `cassini_files`, `derived`, `team_site`, `skytable`, `SkyCalcForm` |
 | ML | B | `cpu_torch(t)`, `tiny_library(t)`, `fixed_completer`, `fixed_generator` |
@@ -178,6 +178,10 @@ Before each row, what the old autouse fixtures did per test is redone:
 - **What a 4xx or 5xx raises.** `Resp` raises `requests.HTTPError("<status> for <url>", response=self)`. The old builder `_Resp` in cfht_lsst and ground raised `RuntimeError`; pass `error=RuntimeError` there if a row or the coverage differs. `swift.py` and `skycalc.py` fall back only on a `RequestException`.
 - **Text encoding.** `.text` decodes as utf-8 with `replace`. The old SkyCalc, swift and cassini fakes used latin-1; pass `encoding="latin-1"` for non-ASCII bytes.
 - **Running out of answers.** `answer` raises `AssertionError` when the replies run out. The old `_feed_input` raised `StopIteration`.
+
+**Two limits of the harness.**
+- **Output in a failure report.** `rows` takes `capsys`, so a failing row's report doesn't carry its own captured output. The whole test's report does. Assert on the output, or put it in the assertion message.
+- **pytest version.** The suite needs pytest 9 or later for the built-in `subtests`; on pytest 8 it stops with "fixture 'subtests' not found". CI's unpinned `pip install pytest` gets 9.2.0 today.
 
 ## 3. The 9 areas
 
@@ -333,7 +337,7 @@ The inventory is in `inventory/design.tsv`. It runs in 2.2 s, as the old 7 did.
    - Use only `t.tmp`, `t.mp`, `t.capsys`, `t.caplog` and `t.stack`.
    - Log levels: `with t.caplog.at_level(...)`, or `t.stack.enter_context(t.caplog.at_level(...))`. Never `set_level`: it leaks to later rows.
    - A file-local autouse fixture becomes setup that only that file's rows get: one line in their check, or a helper in the area file. The tables in section 3 list them.
-   - `narrow_terminal(t)` is for rows from files that imported helpers_cli_menus.
+   - `narrow_terminal(t)` is for rows from the files that imported it: `test_cli_menus_and_options.py` and `test_ui_utils.py`.
    - `cpu_torch(t)` is for rows that requested it.
 5. **Network.** Every row refuses a real request with `NetworkUsed`.
    - The one old test that reached the network (section 1) must fake NJM unreachable. Raise `requests.ConnectionError` with a long message that contains "(", so `plain_reason` runs `njm_mirror.py` 64–69.
@@ -356,6 +360,13 @@ The inventory is in `inventory/design.tsv`. It runs in 2.2 s, as the old 7 did.
 10. **Fakes.**
     - Use `support.py`. A fake only your area uses lives in your area file.
     - A new shared fake goes only in your package's part of `support.py`. Use other parts, but never edit them.
+    - `support.py` now holds every old helper. Move the fakes only one area used out of your part and into that area's file:
+      - **B (builders):** `saved`, `check_published`, `curve`, `tar_gz`, `FIX`, `published`, `text_table`, `ipac_page`, `lsst_files`, `twomass_files`, `fits_file`, `fits_table`, `uvot_files`, `pds_table`, `cassini_files`, `SWIFT_GRID`, `skytable`, `SkyCalcForm`.
+      - **B keeps** `WL`, `gauss`, `published_set`, `derived` and `team_site`; filters uses them.
+      - **A (filters):** `GAIA`, `NJM_DOWN`, `bundled`, `njm_up`, `njm_filters`, `svo_stub`, `svo_browser`, `write_set`.
+      - **C:** `digests` (grids), `flat_filter` and `affine_cube`/`AffineCube` (cubes). `affine_cube` stays in `support.py` until the merge step, because conftest's old `make_affine_cube` uses it.
+      - **D:** `GAIA_INSTRUMENTS`, `Stdin`, `availability`, `summary_inputs`, `gaia`, `catalogue` (CLI), and `tagged` (API).
+    - Everything else in `support.py` is used by two or more areas (`tools/areas.json`), so it stays.
 11. **Deleting the old files.** Delete each old file once its rows pass and the area check passes.
 12. **Files not to touch:**
     - `sed_tools/`;
