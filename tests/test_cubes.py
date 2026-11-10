@@ -1,0 +1,1476 @@
+"""Flux cubes: reading and building them, their variants and mesa_prepare, combining and densifying grids, the
+combine, densifier and flux-cube-tool prompts, extra-axis collisions, interpolation, and synthetic photometry.
+
+One test walks tables of named rows; each row runs as a test of its own (support.Rows).
+"""
+
+from __future__ import annotations
+
+import importlib
+import io
+import logging
+import math
+import shutil
+import struct
+import sys
+import types
+import warnings
+
+import numpy as np
+import pytest
+
+from sed_tools import _constants, flux_cube_tool as tool, grid_densifier as gd, mesa_prepare
+from sed_tools import models as sed_models
+from sed_tools._flux import FluxCube
+from sed_tools._resample import resample_to_grid
+from sed_tools.api import SED, _build_flux_cube, _flux_cube_shortfall
+from sed_tools.collision_config import (CollisionConfig, copy_global_config_to_model, load_config,
+                                        match_filter_value, write_default_config)
+from sed_tools.flux_cube_tool import bolometric_magnitude
+from sed_tools.mesa_prepare import list_variants
+from sed_tools.models import SEDModel, _build_filter_index
+from sed_tools.photometry import PC_TO_M, RSUN_TO_M
+from sed_tools.precompute_flux_cube import _extra_key_to_filename, spectra_not_in_cube
+from sed_tools.spectra_cleaner import clean_model_dir
+from sed_tools.svo_regen_spectra_lookup import regenerate_lookup_table
+
+from support import (GOLDEN_MODELS, GRID, KURUCZ, affine_cube, answer, copy_without_times, wide_lines,
+                     write_flux_cube, write_lookup)
+
+# sed_tools re-exports the function precompute_flux_cube under the module's name.
+pcf = importlib.import_module("sed_tools.precompute_flux_cube")
+ALPHA_04 = f"{GRID}__alpha_04"
+COLUMNS = ("file_name", "teff", "logg", "metallicity")
+ANGSTROM = "# WavelengthUnit = Angstrom"
+
+
+# ----------------------------------------------------------------------
+# Grids, cubes and filters the rows build
+# ----------------------------------------------------------------------
+def _write_grid(model_dir, rows, columns=COLUMNS, *, missing=(), lookup_name="lookup_table.csv"):
+    """One flat spectrum per row (except those in ``missing``) and a lookup table."""
+    model_dir.mkdir(parents=True, exist_ok=True)
+    for row in rows:
+        if row[0] not in missing:
+            (model_dir / row[0]).write_text("".join(f"{w:.1f} {1e-10:.6e}\n" for w in np.linspace(1000.0, 1e4, 20)))
+    (model_dir / lookup_name).write_text("\n".join(",".join(map(str, r)) for r in [columns, *rows]) + "\n")
+    return model_dir
+
+
+def _simple_grid(model_dir, **kwargs):
+    """Teff 5000 and 6000 K at log g 4.0 and 4.5."""
+    return _write_grid(model_dir, [("a.txt", 5000.0, 4.0, 0.0), ("b.txt", 6000.0, 4.0, 0.0),
+                                   ("c.txt", 5000.0, 4.5, 0.0), ("d.txt", 6000.0, 4.5, 0.0)], **kwargs)
+
+
+def _two_variant_grid(model_dir):
+    return _write_grid(model_dir, [("a0.txt", 5000.0, 4.0, 0.0, "0.0"), ("b0.txt", 6000.0, 4.0, 0.0, "0.0"),
+                                   ("a4.txt", 5000.0, 4.0, 0.0, "0.4"), ("b4.txt", 6000.0, 4.0, 0.0, "0.4")],
+                       (*COLUMNS, "alpha"))
+
+
+def _build(model_dir, **kwargs):
+    """precompute_flux_cube into ``model_dir``/flux_cube.bin."""
+    pcf.precompute_flux_cube(str(model_dir), str(model_dir / "flux_cube.bin"), **kwargs)
+    return model_dir
+
+
+def _raw_cube(path, teff, logg, meta, wavelengths, body=()):
+    """A flux_cube.bin's header and axes, then ``body``: no flux at all unless given."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("wb") as fh:
+        fh.write(struct.pack("4i", len(teff), len(logg), len(meta), len(wavelengths)))
+        for values in (teff, logg, meta, wavelengths, body):
+            np.asarray(values, dtype=np.float64).tofile(fh)
+    return path
+
+
+def _small_cube(path, teff=(5000.0, 7000.0), nw=40):
+    write_flux_cube(path, teff, [4.0], [0.0], np.linspace(3000.0, 10000.0, nw), np.ones((len(teff), 1, 1, nw)))
+
+
+def _box_filter(path, *header, edges=(3000.0, 4000.0, 5000.0, 6000.0)):
+    """A filter file: ``header`` lines, then transmission 1 between the middle two edges and 0 at the outer two."""
+    path.write_text("".join(f"{line}\n" for line in header)
+                    + "".join(f"{w:.1f} {tr}\n" for w, tr in zip(edges, (0.0, 1.0, 1.0, 0.0))))
+    return path
+
+
+def flat_filter(name="V"):
+    wavelength = np.arange(4000.0, 6001.0, 100.0)
+    return tool.FilterCurve(name, wavelength, np.ones_like(wavelength), {})
+
+
+def _kurucz_alpha(folder, build=False):
+    """Both golden Kurucz grids ([alpha/M] 0 and 0.4) as one grid; lh and vtur are the same throughout. Built,
+    it is split into one subgrid per alpha, listed in variants_index.csv."""
+    import pandas as pd
+
+    folder.mkdir(parents=True)
+    for name in (GRID, ALPHA_04):
+        for path in (GOLDEN_MODELS / name).glob("*.txt"):
+            shutil.copy2(path, folder / path.name)
+    regenerate_lookup_table(str(folder))
+    assert sorted(set(pd.read_csv(folder / "lookup_table.csv", dtype=str)[" vtur"])) == ["2 km/s"]  # a ' ' and '/'
+    if build:
+        assert _build_flux_cube(folder).name == "variants_index.csv"
+        assert not (folder / "flux_cube.bin").exists()
+    return folder
+
+
+def _golden_pair(t):
+    """The golden Kurucz grids at [alpha/M] 0 and 0.4, side by side in the row's models folder."""
+    for name in (GRID, ALPHA_04):
+        shutil.copytree(GOLDEN_MODELS / name, t.tmp / "models" / name)
+    return t.tmp / "models"
+
+
+def _combine(models, output="combined"):
+    np.random.seed(0)
+    SED.combine([GRID, ALPHA_04], output=output, model_root=models, visualization=False)
+
+
+def _collision_grid(model_dir):
+    """Two Teff nodes x two alpha variants, in Jansky over 400-700 nm, cleaned: two real collisions."""
+    model_dir.mkdir()
+    for name, teff, alpha, flux_jy in (("a1.txt", 5000.0, 0.0, 100.0), ("a2.txt", 5000.0, 0.4, 300.0),
+                                       ("b1.txt", 6000.0, 0.0, 400.0), ("b2.txt", 6000.0, 0.4, 600.0)):
+        (model_dir / name).write_text(
+            f"# source = synthetic\n# teff = {teff}\n# logg = 4.0\n# metallicity = 0.0\n# alpha = {alpha}\n"
+            "# wavelength_unit = nm\n# flux in Jansky\n"
+            + "".join(f"{w:.6f} {flux_jy:.8e}\n" for w in np.linspace(400.0, 700.0, 8)))
+    clean_model_dir(str(model_dir))
+    return model_dir
+
+
+# ----------------------------------------------------------------------
+# Reading flux_cube.bin: truncated header or body, trailing bytes
+# ----------------------------------------------------------------------
+def _truncated_header(t):
+    (t.tmp / "cube.bin").write_bytes(b"\x00" * 10)  # the header is 16 bytes (4 int32s)
+    with pytest.raises(ValueError, match="truncated"):
+        FluxCube.from_file(str(t.tmp / "cube.bin"))
+
+
+def _truncated_body(t):
+    bad = _raw_cube(t.tmp / "cube.bin", [4000.0, 6000.0], [3.0], [0.0], [4000.0, 5000.0], body=[1.0, 2.0])
+    with pytest.raises(ValueError) as excinfo:  # 2 x 1 x 1 x 2 = 4 values, 2 of them written
+        FluxCube.from_file(str(bad))
+    message = str(excinfo.value)
+    assert "4" in message  # expected count
+    assert "2" in message  # actual count found
+
+
+def _trailing_bytes(t):
+    cube = affine_cube(t.tmp)
+    with cube.path.open("ab") as fh:
+        fh.write(b"\x00")
+    fc = FluxCube.from_file(str(cube.path))  # does not raise
+    np.testing.assert_allclose(fc.flux[0, 0, 0, :], cube.expected(cube.teff[0], cube.logg[0], cube.meta[0]),
+                               rtol=1e-10)
+    assert "trailing data" in t.capsys.readouterr().out.lower()
+
+
+BINARY_IO = {
+    "truncated_header_raises_low_level": _truncated_header,
+    "truncated_body_raises_with_expected_and_found_counts": _truncated_body,
+    "trailing_bytes_emit_warning_but_do_not_raise": _trailing_bytes,
+}
+
+
+# ----------------------------------------------------------------------
+# Building a cube: lookup values, spectra, the split strategy, the RAM probe
+# ----------------------------------------------------------------------
+#: name: (lookup rows, their columns, what the ValueError says); no cube is written.
+UNUSABLE_LOOKUP = {
+    # regenerate_lookup_table writes "nan" when a header lacks logg/[M/H] (blackbodies); every spectrum used to
+    # be skipped and an all-zero cube written.
+    "unusable_lookup_values_raise_and_write_no_cube_nan_logg_and_metallicity": (
+        [("bb1.txt", 5000.0, "nan", "nan"), ("bb2.txt", 6000.0, "nan", "nan")], COLUMNS,
+        r"logg = 'nan' for bb1\.txt is not a finite number"),
+    "unusable_lookup_values_raise_and_write_no_cube_blank_teff": (
+        [("a.txt", 5000.0, 4.0, 0.0), ("b.txt", "", 4.0, 0.0)], COLUMNS, r"teff = '' for b\.txt"),
+    "unusable_lookup_values_raise_and_write_no_cube_missing_teff_column": (
+        [("a.txt", 4.0, 0.0), ("b.txt", 4.5, 0.0)], ("file_name", "logg", "metallicity"), "has no Teff column"),
+}
+
+
+def _unusable_lookup(t, rows, columns, message):
+    model = _write_grid(t.tmp / "grid", rows, columns)
+    with pytest.raises(ValueError, match=message):
+        pcf.precompute_flux_cube(str(model), str(model / "flux_cube.bin"))
+    assert not (model / "flux_cube.bin").exists()
+
+
+#: name: (/proc/meminfo's text, or None when there is none; sysconf's page count; the RAM measured; the warning's
+#: words). Without psutil the RAM is MemAvailable, else half the physical RAM, else 2 GiB with a warning.
+RAM = {
+    "meminfo_is_read_when_psutil_is_missing_memavailable": (
+        "MemTotal:  1000 kB\nMemAvailable:  512 kB\n", 1000, 512 * 1024, ()),
+    "meminfo_is_read_when_psutil_is_missing_half_the_physical_ram_without_memavailable": (
+        "MemTotal:  1000 kB\n", 1000, 4096 * 1000 // 2, ()),
+    "ram_probe_failure_warns_and_assumes_2_gib": (None, -1, 2 * 1024**3, (
+        "Could not measure available RAM", "psutil is not installed", "no_meminfo could not be read",
+        "SC_PHYS_PAGES is -1")),
+}
+
+
+def _ram(t, meminfo, pages, available, warned):
+    path = t.tmp / ("meminfo" if meminfo else "no_meminfo")
+    if meminfo:
+        path.write_text(meminfo)
+    t.mp.setattr(_constants, "psutil", None)  # the golden venv has psutil
+    t.mp.setattr(_constants, "_MEMINFO", str(path))
+    t.mp.setattr(_constants.os, "sysconf", {"SC_PAGE_SIZE": 4096, "SC_PHYS_PAGES": pages}.__getitem__)
+    with t.caplog.at_level(logging.WARNING, logger=_constants.__name__):
+        assert _constants.available_memory_bytes() == available
+    assert [w for w in warned if w not in t.caplog.text] == [] and bool(t.caplog.records) == bool(warned)
+
+
+#: name: (the flux cube tool's search, what it says it was searching for)
+SEARCHES = {
+    "a_search_warns_when_a_directory_cannot_be_searched_for_vega_spectra": ("discover_vega_candidates", "Vega spectra"),
+    "a_search_warns_when_a_directory_cannot_be_searched_for_flux_cubes": ("discover_flux_cube_files", "flux cubes"),
+}
+
+
+def _unsearchable(t, search, what):
+    def unreadable(self, pattern):
+        raise PermissionError(13, "Permission denied", str(self))
+
+    t.mp.setattr(tool.Path, "rglob", unreadable)
+    with t.caplog.at_level(logging.WARNING, logger=tool.__name__):
+        assert getattr(tool, search)([t.tmp]) == []
+    assert f"Could not finish searching {t.tmp.resolve()} for {what}" in t.caplog.text
+
+
+def _missing_columns_read_as_zero(t):
+    # Unchanged convention: MESA's bbody lookup has only file_name and teff.
+    model = _build(_write_grid(t.tmp / "bbody", [("bb1.txt", 5000.0), ("bb2.txt", 6000.0)], ("file_name", "teff")))
+    cube = FluxCube.from_file(str(model / "flux_cube.bin"))
+    assert (list(cube.teff_grid), list(cube.logg_grid), list(cube.meta_grid)) == ([5000.0, 6000.0], [0.0], [0.0])
+    assert np.all(cube.flux > 0)
+
+
+def _missing_spectra(t):
+    model = _simple_grid(t.tmp / "grid", missing=("b.txt", "d.txt"))
+    with pytest.raises(FileNotFoundError, match="2 spectra listed") as excinfo:
+        _build(model)
+    assert "b.txt" in str(excinfo.value) and "d.txt" in str(excinfo.value)
+    assert not (model / "flux_cube.bin").exists()
+
+
+def _empty_spectrum(t):
+    model = _simple_grid(t.tmp / "grid")
+    (model / "c.txt").write_text("# no data\n")
+    t.mp.setattr(pcf, "_available_ram_bytes", lambda: 1)  # the disk-backed cube, with its temporary memmap
+    with pytest.raises(ValueError, match="1 spectra hold no numeric data") as excinfo:
+        _build(model)
+    assert "c.txt" in str(excinfo.value)
+    assert not (model / "flux_cube.bin").exists() and not (model / "flux_cube.bin.tmp.memmap").exists()
+
+
+def _split_over_threshold(t):
+    model = _two_variant_grid(t.tmp / "Grid")
+    t.mp.setattr(pcf, "SPLIT_THRESHOLD", 1)
+    t.mp.setattr("sys.stdin", io.StringIO())
+    with pytest.raises(RuntimeError, match="exceed the auto-split threshold"):
+        _build(model)
+    assert not list(model.glob("Grid_*"))
+
+
+def _symlink_failure(t):
+    model = _two_variant_grid(t.tmp / "Grid")
+
+    def refuse(src, dst):
+        raise OSError("symlinks not permitted")
+
+    t.mp.setattr(pcf.os, "symlink", refuse)
+    with t.caplog.at_level(logging.WARNING, logger=pcf.__name__):
+        _build(model)
+    messages = [r.getMessage() for r in t.caplog.records if r.levelno == logging.WARNING]
+    assert any("Could not link 2 spectra" in m and "symlinks not permitted" in m for m in messages)
+    assert all((model / f"Grid_alpha_{a}" / "flux_cube.bin").exists() for a in ("0p00", "0p40"))
+
+
+def _other_lookup_table_file(t):
+    # Until 0.6.0 any lookup_table*.csv was used, after a warning, when lookup_table.csv was missing.
+    model = _simple_grid(t.tmp / "grid", lookup_name="lookup_table_full.csv")
+    with pytest.raises(FileNotFoundError, match="lookup_table.csv not found in"):
+        pcf.precompute_flux_cube(str(model), str(model / "flux_cube.bin"))
+    assert not (model / "flux_cube.bin").exists()
+
+
+def _list_variants_of_a_truncated_cube(t):
+    # An unreadable cube header used to be logged at debug level and shown as n/a.
+    model = _simple_grid(t.tmp / "grid")
+    (model / "flux_cube.bin").write_bytes(b"\x00" * 10)
+    with pytest.raises(ValueError, match="Flux cube header truncated"):
+        mesa_prepare.list_variants(model)
+
+
+def _list_variants_without_a_cube(t):
+    # Unchanged: a grid whose cube has not been built yet lists with n/a wavelengths.
+    (variant,) = mesa_prepare.list_variants(_simple_grid(t.tmp / "grid"))
+    assert variant.wavelength_n == 0 and np.isnan(variant.wavelength_min)
+
+
+def _export_with_missing_spectra(t):
+    (variant,) = mesa_prepare.list_variants(_simple_grid(t.tmp / "grid", missing=("c.txt",)))
+    with pytest.raises(FileNotFoundError, match="1 spectra of variant 'full_grid' are missing") as excinfo:
+        mesa_prepare.export_variant(variant, t.tmp / "export")
+    assert "c.txt" in str(excinfo.value)
+    assert not (t.tmp / "export").exists()
+
+
+def _mesa_exits(t, base, *replies, **kwargs):
+    """mesa_prepare's menu over ``base``, answered with ``replies``: the message it exits with."""
+    answer(t.mp, *replies)
+    with pytest.raises(SystemExit) as excinfo:
+        mesa_prepare.run_interactive(base_dir=str(base), **kwargs)
+    return str(excinfo.value.code)
+
+
+def _no_lookup_exits(t):
+    (t.tmp / "Empty").mkdir()
+    assert "lookup_table.csv not found" in _mesa_exits(t, t.tmp, model="Empty", output=str(t.tmp / "out"))
+
+
+def _non_numeric_vega_zero_point(t):
+    # It used to be skipped, so the magnitude silently came from the Vega spectrum instead.
+    model = _build(_simple_grid(t.tmp / "grid"))
+    sed = SEDModel(name="grid", flux_cube_path=model / "flux_cube.bin")(5500.0, 4.25, 0.0)
+    band = str(_box_filter(t.tmp / "Band.dat", "# zp_vega = 3.6e-9 erg/s/cm2/A", ANGSTROM))
+    vega = str(_box_filter(t.tmp / "vega.dat", ANGSTROM))
+    with pytest.raises(ValueError, match=r"Filter 'Band': metadata zp_vega = '3.6e-9 erg/s/cm2/A' is not a number"):
+        sed.photometry(band, system="Vega", vega_spectrum=vega)
+
+
+def _run_tool(tmp, mp, filters_dir):
+    model = _build(_simple_grid(tmp / "grid"))
+    mp.setattr("builtins.input", lambda *args: "")  # no distance scaling
+    return tool.main(["--flux-cube", str(model / "flux_cube.bin"), "--teff", "5500", "--logg", "4.25",
+                      "--metallicity", "0", "--filters", str(filters_dir), "--filter-system", "all",
+                      "--photometric-system", "AB", "--plot", str(tmp / "sed.png")])
+
+
+def _tool_exits_non_zero_when_a_filter_fails(t):
+    # A failing filter used to print an error and the tool still exited 0.
+    filters = t.tmp / "filters"
+    filters.mkdir()
+    _box_filter(filters / "Good.dat", ANGSTROM)
+    (filters / "Dark.dat").write_text(f"{ANGSTROM}\n4000.0 0.0\n5000.0 0.0\n")
+    assert _run_tool(t.tmp, t.mp, filters) == 1
+    out = t.capsys.readouterr().out
+    assert "Photometry failed for 1 filter(s):" in out
+    assert "Dark: Filter transmission integrates to zero" in out
+    assert "Good" in out and "mag=" in out
+
+
+def _variants_compared_one_by_one(t):
+    folder = _kurucz_alpha(t.tmp / "a" / GRID, build=True)
+    assert _flux_cube_shortfall(folder) is None
+    assert _flux_cube_shortfall(copy_without_times(folder, t.tmp / "b" / GRID)) is None
+    # One more spectrum, at a Teff no variant's cube has
+    text = (KURUCZ / "Kurucz2003all_fid16515.txt").read_text().replace("# teff = 5750.0", "# teff = 6500.0")
+    (folder / "Kurucz2003all_fid99999.txt").write_text(text)
+    regenerate_lookup_table(str(folder))
+    assert _flux_cube_shortfall(folder) == "does not include 1 of the 25 spectra beside it"
+
+
+def _zero_at_every_sampled_wavelength(t):
+    """A spectrum covering only part of the cube's wavelengths is zero elsewhere (resample_to_grid)."""
+    flux = np.zeros((3, 1, 1, 20))  # the sampled wavelength planes are 2, 4, 6, 8, 11, 13, 15, 17
+    flux[0, 0, 0] = 1.0  # covers every wavelength
+    flux[1, 0, 0, [0, 19]] = 1.0  # only at wavelengths no sampled plane has
+    write_flux_cube(t.tmp / "flux_cube.bin", [5000.0, 6000.0, 7000.0], [4.0], [0.0], np.linspace(1e3, 2e4, 20), flux)
+    (t.tmp / "lookup_table.csv").write_text(
+        "#file_name,teff,logg,metallicity\na.txt,5000,4.0,0.0\nb.txt,6000,4.0,0.0\nc.txt,7000,4.0,0.0\n")
+    names, missing = spectra_not_in_cube(t.tmp / "flux_cube.bin", t.tmp / "lookup_table.csv")
+    assert names == ["a.txt", "b.txt", "c.txt"] and missing == ["c.txt"]  # 7000 K: zero throughout
+
+
+def _densifier_line_fits(t):
+    write_flux_cube(t.tmp / "src.bin", [4000.0, 8000.0], [4.0], [0.0], np.linspace(3000.0, 9000.0, 7),
+                    np.ones((2, 1, 1, 7)))
+    gd.densify_grid(str(t.tmp / "src.bin"), str(t.tmp / "dense.bin"), teff_spacing=1000.0)
+    lines = t.capsys.readouterr().out.splitlines()
+    at = next(i for i, line in enumerate(lines) if line.startswith("Generating"))
+    assert lines[at:at + 2] == ["Generating 3 synthetic Teff points (0 by ML, 3 blackbody)",
+                                "  in 1 wavelength block(s)..."]
+
+
+def _ml_extended_grid_is_one_cube(t):
+    # Each row's wl_max differs, so these columns used to split the grid into one "variant" per spectrum, with no
+    # flux_cube.bin in the grid itself.
+    grid = t.tmp / "Kurucz_extended"
+    grid.mkdir()
+    rows = []
+    for i, (teff, logg) in enumerate([(5000.0, 4.0), (6000.0, 4.0), (5000.0, 4.5), (6000.0, 4.5)]):
+        wl_max = 20000.0 + 5000.0 * i
+        (grid / f"s{i}.txt").write_text("".join(f"{w:.1f} {1e-10:.6e}\n" for w in np.linspace(1000.0, wl_max, 30)))
+        rows.append(f"s{i}.txt,{teff},{logg},0.0,True,1000.0,{wl_max}")
+    (grid / "lookup_table.csv").write_text(
+        "#file_name,teff,logg,metallicity,extended_by_ml,wl_min,wl_max\n" + "\n".join(rows) + "\n")
+    pcf.precompute_flux_cube(str(grid), str(grid / "flux_cube.bin"))
+    assert (grid / "flux_cube.bin").is_file()
+    assert not (grid / "variants_index.csv").exists()
+    assert not [p for p in grid.iterdir() if p.is_dir()]
+    assert "No extra axes detected" in t.capsys.readouterr().out
+    # A file column under another name (the first column is taken) gave one subgrid per spectrum until 0.6.0
+    (grid / "lookup_table.csv").write_text((grid / "lookup_table.csv").read_text().replace("#file_name,", "#spectrum,"))
+    pcf.precompute_flux_cube(str(grid), str(grid / "flux_cube.bin"))
+    assert not [p for p in grid.iterdir() if p.is_dir()] and "No extra axes detected" in t.capsys.readouterr().out
+
+
+BUILD = {
+    "missing_logg_and_metallicity_columns_still_read_as_zero": _missing_columns_read_as_zero,
+    "missing_spectra_raise_listing_every_file": _missing_spectra,
+    "empty_spectrum_raises_and_leaves_no_cube_or_temp_file": _empty_spectrum,
+    "non_interactive_split_over_threshold_raises": _split_over_threshold,
+    "symlink_failure_warns_and_still_builds_the_subgrid_cube": _symlink_failure,
+    "other_lookup_table_file_is_not_used": _other_lookup_table_file,
+    "list_variants_raises_on_a_truncated_flux_cube": _list_variants_of_a_truncated_cube,
+    "list_variants_without_a_built_cube_shows_no_wavelengths": _list_variants_without_a_cube,
+    "export_variant_raises_on_missing_spectra_before_writing": _export_with_missing_spectra,
+    "run_interactive_exits_non_zero_when_the_grid_has_no_lookup": _no_lookup_exits,
+    "non_numeric_vega_zero_point_in_a_filter_file_raises": _non_numeric_vega_zero_point,
+    "flux_cube_tool_exits_non_zero_when_a_filter_fails": _tool_exits_non_zero_when_a_filter_fails,
+    "a_variants_grid_is_compared_variant_by_variant": _variants_compared_one_by_one,
+    "a_spectrum_zero_at_every_sampled_wavelength_is_still_found": _zero_at_every_sampled_wavelength,
+    "the_densifier_line_fits_80_columns": _densifier_line_fits,
+    "an_ml_extended_grid_with_different_wavelength_ends_is_one_cube": _ml_extended_grid_is_one_cube,
+}
+
+
+# ----------------------------------------------------------------------
+# Combining grids: stop on spectra that cannot be read or placed
+# ----------------------------------------------------------------------
+#: name: the grid whose lookup table lists a spectrum that is not there. Its normalisation factor used to be 1
+#: (alpha_04), or its node was left empty for nearest-neighbour filling (Kurucz), silently.
+COMBINE_MISSING = {"combine_stops_on_a_missing_spectrum_kurucz2003all": GRID,
+                   "combine_stops_on_a_missing_spectrum_kurucz2003all_alpha_04": ALPHA_04}
+
+
+def _combine_missing(t, grid):
+    models = _golden_pair(t)
+    with open(models / grid / "lookup_table.csv", "a") as fh:
+        fh.write("missing.txt,0,999.9,2,1.25,4.0,0.0,999.9,999.9,999.9,9000.0,999.9,2,999.9\n")
+    with pytest.raises(ValueError, match=r"No such file or directory: '.*missing\.txt'"):
+        _combine(models)
+    assert not (models / "combined").exists()
+
+
+def _combine_row_without_parameters(t):
+    # A NaN Teff used to land on grid node [0, ...] and overwrite it.
+    models = _golden_pair(t)
+    with open(models / GRID / "lookup_table.csv", "a") as fh:
+        fh.write("Kurucz2003all_fid16515.txt,0,999.9,2,1.25,4.0,-0.5,999.9,999.9,999.9,,999.9,2,999.9\n")
+    with pytest.raises(ValueError, match=r"non-finite parameters \(teff=nan"):
+        _combine(models)
+
+
+def _combine_copy_fails(t):
+    # Copy failures used to be printed and the run reported success.
+    import sed_tools.combine_stellar_atm as csa
+
+    models = _golden_pair(t)
+    real_copy = shutil.copy2
+
+    def flaky_copy(src, dst):
+        if src.endswith("Kurucz2003all_fid16516.txt"):
+            raise PermissionError(13, "Permission denied", src)
+        return real_copy(src, dst)
+
+    t.mp.setattr(csa.shutil, "copy2", flaky_copy)
+    with pytest.raises(OSError, match=r"(?s)Could not copy 1 spectra.*fid16516"):
+        _combine(models)
+    assert (models / "combined" / "lookup_table.csv").exists()
+
+
+def _native_scale_warning(t):
+    from sed_tools.combine_stellar_atm import compute_normalization_factors, load_model_data
+
+    models = _golden_pair(t)
+    ref, target = (load_model_data(str(models / name)) for name in (GRID, ALPHA_04))
+    coarse = np.linspace(3000.0, 10000.0, 50)  # fewer than 100 points in any overlap
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.combine_stellar_atm"):
+        factors = compute_normalization_factors(target, ref, coarse)
+    np.testing.assert_array_equal(factors, np.ones(len(target["files"])))
+    assert f"{len(target['files'])} spectra of Kurucz2003all__alpha_04 keep their native flux scale" in t.caplog.text
+
+
+def _common_grid_needs_a_usable_spectrum(t):
+    # Used to fail with OverflowError (int of -inf).
+    from sed_tools.combine_stellar_atm import create_common_wavelength_grid
+
+    (t.tmp / "far_ir.txt").write_text("".join(f"{w} 1.0\n" for w in np.linspace(3e4, 9e4, 50)))
+    with pytest.raises(ValueError, match="between 3000 and 25000"):
+        create_common_wavelength_grid([{"files": np.array(["far_ir.txt"]), "model_dir": str(t.tmp)}])
+
+
+COMBINE = {
+    "combine_stops_on_a_row_without_parameters": _combine_row_without_parameters,
+    "combine_raises_after_writing_when_a_copy_fails": _combine_copy_fails,
+    "normalisation_warns_when_spectra_keep_native_scale": _native_scale_warning,
+    "common_wavelength_grid_needs_a_usable_spectrum": _common_grid_needs_a_usable_spectrum,
+}
+
+
+# ----------------------------------------------------------------------
+# The grid densifier: the Kurucz slice's axes, spectra and sigma*T^4; ML failures; its menu; block sizes
+# ----------------------------------------------------------------------
+_DENSIFIED = {}
+
+
+def _kurucz_cubes(t):
+    """(source, densified) FluxCubes of the golden Kurucz slice (Teff 5750-6250 K) at 125 K spacing: built once,
+    as the old module-scoped fixture was, and only read."""
+    if not _DENSIFIED:
+        work = t.tmp.parent / "densify"
+        shutil.copytree(KURUCZ, work / GRID)
+        _build(work / GRID)
+        gd.densify_grid(str(work / GRID / "flux_cube.bin"), str(work / "dense.bin"), teff_spacing=125.0)
+        _DENSIFIED["cubes"] = (FluxCube.from_file(str(work / GRID / "flux_cube.bin")),
+                               FluxCube.from_file(str(work / "dense.bin")))
+    return _DENSIFIED["cubes"]
+
+
+def _densified_axes(t):
+    source, dense = _kurucz_cubes(t)
+    np.testing.assert_array_equal(source.teff_grid, [5750.0, 6000.0, 6250.0])
+    np.testing.assert_array_equal(dense.teff_grid, [5750.0, 5875.0, 6000.0, 6125.0, 6250.0])
+    for axis in ("logg_grid", "meta_grid", "wavelengths"):
+        np.testing.assert_array_equal(getattr(dense, axis), getattr(source, axis))
+
+
+def _densified_copies(t):
+    # Before the fix the copied rows differed from the source by up to 2.6e9.
+    source, dense = _kurucz_cubes(t)
+    for i_src, teff in enumerate(source.teff_grid):
+        np.testing.assert_array_equal(dense.flux[int(np.flatnonzero(dense.teff_grid == teff)[0])], source.flux[i_src])
+
+
+def _densified_sigma_t4(t):
+    # Before the fix every node integrated to 64-89 times sigma*T^4.
+    for cube in _kurucz_cubes(t):
+        for i_t, i_l, i_m in np.ndindex(cube.flux.shape[:3]):
+            ratio = np.trapezoid(cube.flux[i_t, i_l, i_m], cube.wavelengths) / (
+                _constants.SIGMA * cube.teff_grid[i_t] ** 4)
+            assert ratio == pytest.approx(1.0, rel=0.02), (cube.teff_grid[i_t], i_l, i_m)
+
+
+def _ml_generator(t, generate):
+    """sed_tools.ml.generator's SEDGenerator replaced by one whose ``generate`` is this function."""
+    fake = types.ModuleType("sed_tools.ml_sed_generator")
+    fake.SEDGenerator = type("SEDGenerator", (), {"__init__": lambda self, path: None, "generate": generate})
+    t.mp.setitem(sys.modules, "sed_tools.ml.generator", fake)
+
+
+def _densify_stops_on_ml_failure(t):
+    # Used to log a warning and write a blackbody in place of the ML SED.
+    def generate(self, **kwargs):
+        raise ValueError("network produced NaN")
+
+    _ml_generator(t, generate)
+    _small_cube(t.tmp / "src.bin")
+    with pytest.raises(RuntimeError, match=r"Teff=6000 logg=4\.00 meta=0\.00.*network produced NaN"):
+        gd.densify_grid(str(t.tmp / "src.bin"), str(t.tmp / "dense.bin"), teff_spacing=1000.0, ml_model="fake")
+
+
+#: name: the cube chosen from a menu of two. "0" and negative numbers used to pick cubes from the end of the list.
+DENSIFIER_CHOICES = {f"densifier_menu_rejects_out_of_range_choice_{name}": reply
+                     for name, reply in (("0", "0"), ("minus_1", "-1"), ("3", "3"), ("x", "x"))}
+
+
+def _densifier_rejects(t, reply):
+    for name in ("a", "b"):
+        _small_cube(t.tmp / name / "flux_cube.bin")
+    t.mp.setattr("builtins.input", lambda prompt="": reply)
+    t.mp.setattr(gd, "densify_grid", lambda **kw: pytest.fail("must not run"))
+    gd.run_interactive_workflow(str(t.tmp))
+    assert "Invalid selection." in t.capsys.readouterr().out
+
+
+def _ml_nodes_do_not_depend_on_the_block_size(t):
+    model_wl = np.geomspace(900.0, 60000.0, 200)
+
+    def generate(self, teff, logg, meta, check_bounds=True):
+        return model_wl.copy(), 1e-3 * teff * (model_wl / 5000.0) ** (-2.0 - 0.1 * logg + meta)
+
+    def densify(name, ram):
+        """Densify src.bin into <name>.bin as if ``ram`` bytes of RAM were available; its bytes."""
+        t.mp.setattr(gd, "_available_ram_bytes", lambda: ram)
+        gd.densify_grid(str(t.tmp / "src.bin"), str(t.tmp / f"{name}.bin"), teff_spacing=1000.0, ml_model="fake")
+        return (t.tmp / f"{name}.bin").read_bytes()
+
+    _ml_generator(t, generate)
+    # 3 Teff x 3 logg x 2 [M/H] x 30 wavelengths, a different spectrum at every node
+    teff, wl, rng = [4000.0, 6000.0, 9000.0], np.geomspace(1000.0, 50000.0, 30), np.random.default_rng(3)
+    flux = np.array([_constants.planck_flam(wl, te) * rng.uniform(0.5, 1.5, size=(3, 2, 30)) for te in teff])
+    write_flux_cube(t.tmp / "src.bin", teff, [3.0, 4.0, 5.0], [-1.0, 0.0], wl, flux)
+    # 6 dense Teffs: each wavelength holds (3 + 6) x 3 x 2 doubles = 432 bytes, of which a block may use half the
+    # RAM, so 2 x 7 x 432 bytes gives blocks of 7 wavelengths: 7, 7, 7, 7, 2.
+    one_block = densify("one", 2**40)
+    assert densify("five", 2 * 7 * 432) == one_block
+    dense = FluxCube.from_file(str(t.tmp / "five.bin"))
+    for i_t, te in ((1, 5000.0), (3, 7000.0), (4, 8000.0)):
+        for i_l, logg in enumerate(dense.logg_grid):
+            for i_m, meta in enumerate(dense.meta_grid):
+                expected = resample_to_grid(*generate(None, te, logg, meta), te, dense.wavelengths)
+                np.testing.assert_array_equal(dense.flux[i_t, i_l, i_m], expected)
+
+
+DENSIFY = {
+    "densified_grid_keeps_source_axes_and_adds_teff_nodes": _densified_axes,
+    "densified_cube_copies_source_spectra_exactly": _densified_copies,
+    "every_densified_node_integrates_to_sigma_t4": _densified_sigma_t4,
+    "densify_stops_when_ml_generation_fails": _densify_stops_on_ml_failure,
+    "densified_ml_nodes_do_not_depend_on_the_block_size": _ml_nodes_do_not_depend_on_the_block_size,
+}
+
+
+# ----------------------------------------------------------------------
+# The menus: mesa_prepare exits non-zero whenever nothing was exported; combine and densifier prompts ask again
+# or go back; split, mean and combined grids; averaged rows; 80 columns
+# ----------------------------------------------------------------------
+def _variant_grid(t):
+    """``<base>/Grid`` with two alpha variants, each with its spectra and its cube; returns base."""
+    grid = t.tmp / "stellar" / "Grid"
+    write_lookup(grid, [*COLUMNS, "alpha"], [("a.txt", 5000, 4.0, 0.0, "0.0"), ("b.txt", 5000, 4.0, 0.0, "0.4")])
+    for name in ("a.txt", "b.txt"):
+        (grid / name).write_text("4000 1.0\n5000 2.0\n")
+    for alpha in ("0.0", "0.4"):
+        write_flux_cube(grid / "fluxcube_library" / f"flux_cube__alpha_{alpha}.bin", [5000.0], [4.0], [0.0],
+                        [4000.0, 5000.0], np.ones((1, 1, 1, 2)))
+    return grid.parent
+
+
+def _mesa_without_grids(t):
+    message = _mesa_exits(t, t.tmp)
+    assert message.startswith("Error: no spectral grids found in")
+
+
+def _mesa_invalid_grid(t):
+    message = _mesa_exits(t, _variant_grid(t), "9")
+    assert message.startswith("Error: invalid spectral grid selection '9'")
+
+
+def _mesa_single_grid_without_a_cube(t):
+    # It used to print "the existing flux_cube.bin already covers the full grid" and exit 0 even when no
+    # flux_cube.bin had been built.
+    write_lookup(t.tmp / "Plain", list(COLUMNS), [("a.txt", 5000, 4.0, 0.0)])
+    message = _mesa_exits(t, t.tmp, model="Plain", output=str(t.tmp / "out"))
+    assert "has no flux_cube.bin" in message and "Nothing was exported" in message
+    assert not (t.tmp / "out").exists()
+
+
+def _mesa_invalid_variant(t):
+    base = _variant_grid(t)
+    message = _mesa_exits(t, base, "3", model="Grid", output=str(base / "out"))
+    assert message.startswith("Error: invalid variant selection '3'")
+    assert not (base / "out").exists()
+
+
+def _mesa_overwrite_declined(t):
+    out = _variant_grid(t) / "out"
+    out.mkdir()
+    (out / "keep.txt").write_text("untouched")
+    message = _mesa_exits(t, out.parent, "1", "n", model="Grid", output=str(out))
+    assert message == f"Error: {out} already exists and was not overwritten; nothing was exported."
+    assert [p.name for p in out.iterdir()] == ["keep.txt"]
+
+
+def _mesa_exports_the_chosen_variant(t):
+    out = _variant_grid(t) / "out"
+    answer(t.mp, "2")
+    mesa_prepare.run_interactive(base_dir=str(out.parent), model="Grid", output=str(out))
+    assert sorted(p.name for p in out.iterdir()) == ["b.txt", "flux_cube.bin", "lookup_table.csv"]
+
+
+def _combine_menu_asks_again(t):
+    from sed_tools.combine_stellar_atm import select_models_interactive
+
+    grids = [(name, str(t.tmp / name)) for name in ("A", "B", "C")]
+    # Empty input and a bad token used to combine every grid; out-of-range numbers were dropped silently. A
+    # repeated grid is refused too.
+    answer(t.mp, "", "two", "1,", "0", "4", "1,9", "2,2", "3,1")
+    assert select_models_interactive(grids) == [grids[2], grids[0]]  # in the order typed
+    out = t.capsys.readouterr().out
+    for reply in ("''", "'two'", "'1,'", "'0'", "'4'", "'1,9'", "'2,2'"):
+        assert f"Invalid selection {reply}: enter distinct numbers from 1 to 3, comma-separated, or 'all'." in out
+    assert "Using all" not in out
+
+
+def _combine_menu_all(t):
+    from sed_tools.combine_stellar_atm import select_models_interactive
+
+    grids = [(name, str(t.tmp / name)) for name in ("A", "B")]
+    answer(t.mp, "ALL")
+    assert select_models_interactive(grids) == grids
+
+
+#: name: the reply that goes back from the combine menu; only Ctrl-C used to leave it.
+GOES_BACK = {"combine_grid_selection_goes_back_q": "q", "combine_grid_selection_goes_back_b": "b"}
+
+
+def _goes_back(t, reply):
+    from sed_tools.combine_stellar_atm import select_models_interactive
+
+    grids = [(name, str(t.tmp / name)) for name in ("A", "B")]
+    answer(t.mp, reply)
+    assert select_models_interactive(grids) == []
+
+
+def _filters_past_the_model(t):
+    cube = affine_cube(t.tmp, wavelengths=(3000.0, 4000.0, 5000.0))
+    sed = SEDModel(name="affine", flux_cube_path=cube.path)(4500.0, 2.5, -0.3)
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.flux_cube_tool"):
+        sed.photometry(flat_filter("V"), flat_filter("B"), system="AB")
+    [warning] = [r.getMessage() for r in t.caplog.records]
+    assert warning.endswith("so these bands are biased low: V (47.5%), B (47.5%).")
+
+
+def _averaged_rows(model_dir, caplog, **override):
+    """Build the grid's cube; the warnings that lookup rows were averaged onto one node."""
+    with caplog.at_level(logging.WARNING, logger="sed_tools.precompute_flux_cube"):
+        _build(model_dir, override_dict=override or None)
+    return [r.getMessage() for r in caplog.records if "lookup rows were averaged" in r.getMessage()]
+
+
+def _bosz_columns_named(t):
+    # am, cm and vturb are not extra axes, so rows differing only there share a node.
+    grid = _write_grid(t.tmp / "BOSZ", [
+        ("a.txt", 5000, 4.0, 0.0, 0.0, 0.0, 1), ("b.txt", 5000, 4.0, 0.0, 0.4, 0.0, 2),
+        ("c.txt", 6000, 4.0, 0.0, 0.0, 0.0, 1), ("d.txt", 6000, 4.0, 0.0, 0.0, 0.0, 1),
+        ("e.txt", 6000, 4.5, 0.0, 0.0, 0.0, 1)], (*COLUMNS, "am", "cm", "vturb"))
+    assert _averaged_rows(grid, t.caplog) == [
+        f"{grid / 'flux_cube.bin'}: 4 lookup rows were averaged onto 2 (Teff, logg, [M/H]) node(s), so each "
+        "of those nodes holds a mean spectrum. The averaged rows differ in: am, vturb."]
+
+
+def _duplicate_nodes(t):
+    grid = _write_grid(t.tmp / "Plain", [("a.txt", 5000, 4.0, 0.0), ("b.txt", 5000.0, 4.0, 0.0),
+                                         ("c.txt", 6000, 4.0, 0.0)])
+    (message,) = _averaged_rows(grid, t.caplog)
+    assert "2 lookup rows were averaged onto 1 (Teff, logg, [M/H]) node(s)" in message
+    assert message.endswith("differ in: no column but the file name (duplicate nodes).")
+
+
+def _one_row_per_node(t):
+    grid = _write_grid(t.tmp / "Plain", [("a.txt", 5000, 4.0, 0.0), ("b.txt", 6000, 4.0, 0.0)])
+    assert _averaged_rows(grid, t.caplog) == []
+
+
+def _split_and_filter_cubes(t):
+    columns = (*COLUMNS, "alpha", "vturb")
+    rows = [("a.txt", 5000, 4.0, 0.0, "0.0", 1), ("b.txt", 5000, 4.0, 0.0, "0.0", 2),
+            ("c.txt", 5000, 4.0, 0.0, "0.4", 1)]
+    split = _write_grid(t.tmp / "Split", rows, columns)
+    (message,) = _averaged_rows(split, t.caplog)
+    assert message.startswith(f"{split / 'Split_alpha_0p00' / 'flux_cube.bin'}: 2 lookup rows were averaged")
+    assert message.endswith("differ in: vturb.")
+
+    t.caplog.clear()
+    filtered = _write_grid(t.tmp / "Filtered", rows, columns)
+    strategy = {"on_collision": {"strategy": "filter", "filter": {"alpha": "0.4"}}}
+    assert _averaged_rows(filtered, t.caplog, **strategy) == []
+    strategy["on_collision"]["filter"]["alpha"] = "0.0"
+    (message,) = _averaged_rows(filtered, t.caplog, **strategy)
+    assert message.startswith(f"{filtered / 'flux_cube.bin'}: 2 lookup rows were averaged")
+
+
+def _combine_menu_q(t):
+    from sed_tools import cli
+
+    for name in ("A", "B"):
+        (t.tmp / name).mkdir()
+        (t.tmp / name / "lookup_table.csv").write_text("file_name,teff,logg,metallicity\na.txt,5000,4,0\n")
+    answer(t.mp, "q")
+    assert cli._run_menu_flow(lambda: cli.run_combine_flow(base_dir=str(t.tmp))) is True
+    assert "No spectral grids selected." in t.capsys.readouterr().out
+    assert not (t.tmp / "combined_models").exists()
+
+
+def _densifier_list_fits(t):
+    name = "a-rather-long-spectral-grid-name_dense"
+    write_flux_cube(t.tmp / name / "flux_cube.bin", [5750, 6000, 6250], [4.0], [0.0], [1000.0, 2000.0],
+                    np.ones((3, 1, 1, 2)))
+    answer(t.mp, "")
+    gd.run_interactive_workflow(base_dir=str(t.tmp))
+    out = t.capsys.readouterr().out
+    assert f"   1) {name}/flux_cube.bin\n      Teff 5750–6250 K  max gap 250 K  (3 pts)\n" in out
+    assert wide_lines(out, str(t.tmp)) == []  # was 92 wide with a short name
+
+
+def _mesa_invalid_choice_fits(t):
+    (t.tmp / "Kurucz").mkdir()
+    (t.tmp / "Kurucz" / "lookup_table.csv").write_text("file_name,teff,logg,metallicity\na.txt,5000,4,0\n")
+    message = _mesa_exits(t, t.tmp, "")
+    assert message == ("Error: invalid spectral grid selection ''.\n"
+                       "Enter a number from 1 to 1 or a grid name. Nothing was exported.")
+    assert wide_lines(message) == []  # was 107 wide
+
+
+def _densifier_spacing_asks_again(t):
+    write_flux_cube(t.tmp / "grid" / "flux_cube.bin", [5000.0, 7000.0], [4.0], [0.0], [1000.0, 2000.0],
+                    np.ones((2, 1, 1, 2)))
+    calls = []
+    t.mp.setattr(gd, "densify_grid", lambda **kw: calls.append(kw))
+    answer(t.mp, "1", "fine", "-5", "250", "", "")
+    gd.run_interactive_workflow(str(t.tmp))
+    assert [c["teff_spacing"] for c in calls] == [250.0]
+    out = t.capsys.readouterr().out
+    assert "'fine' is not a positive number; try again." in out
+    assert "'-5' is not a positive number; try again." in out
+
+
+def _split_grid(t):
+    """KuruczAlpha after a rebuild: one subgrid per alpha and variants_index.csv; what it printed is dropped."""
+    split_grid = _kurucz_alpha(t.tmp / "stellar" / "KuruczAlpha", build=True)
+    t.capsys.readouterr()
+    return split_grid
+
+
+def _subgrids_listed(t):
+    # Used to raise "No flux_cube.bin found in .../KuruczAlpha. Run 'sed-tools rebuild' first."
+    split_grid = _split_grid(t)
+    variants = list_variants(split_grid)
+    assert [v.label for v in variants] == ["alpha_0", "alpha_0.4"]
+    assert [v.extra_axes for v in variants] == [{"alpha": "0"}, {"alpha": "0.4"}]
+    assert [v.n_spectra for v in variants] == [12, 12]
+    sub = "KuruczAlpha_alpha_0p40_lh_1p25_vtur_2_km_s"
+    assert variants[1].flux_cube_path == split_grid / sub / "flux_cube.bin"
+    assert variants[1].source_model_dir == split_grid
+    assert variants[1].wavelength_n == 1199
+    assert set(variants[1].lookup_rows["alpha"]) == {"0.4"}
+
+
+def _mesa_exports_a_subgrid(t):
+    split_grid = _split_grid(t)
+    answer(t.mp, "2", "")
+    mesa_prepare.run_interactive(base_dir=str(split_grid.parent), model="KuruczAlpha")
+    out = t.capsys.readouterr().out
+    assert "Sub-variants of KuruczAlpha: 2 variants over alpha" in out
+    assert "lh" not in out.split("Sub-variants")[1] and "vtur" not in out
+    exported = split_grid.parent / "KuruczAlpha__alpha_0.4"
+    assert len(list(exported.glob("*.txt"))) == 12 and (exported / "flux_cube.bin").is_file()
+
+
+def _subgrid_without_its_cube(t):
+    sub = _split_grid(t) / "KuruczAlpha_alpha_0p00_lh_1p25_vtur_2_km_s"
+    (sub / "flux_cube.bin").rename(sub / "flux_cube.bin.moved")
+    with pytest.raises(FileNotFoundError, match="lists the subgrid KuruczAlpha_alpha_0p00_lh_1p25_vtur_2_km_s"):
+        list_variants(sub.parent)
+
+
+def _uniform_grid_says_one_thing(t):
+    # The golden Kurucz grid has alpha, lh and vtur columns with one value each. It used to print "the master
+    # flux_cube.bin averages all extra-axis variants (alpha, lh, vtur)" and then "This spectral grid has no
+    # extra-axis variants".
+    shutil.copytree(KURUCZ, t.tmp / GRID)
+    _build(t.tmp / GRID)
+    t.capsys.readouterr()
+    mesa_prepare.run_interactive(base_dir=str(t.tmp), model=GRID)
+    out = t.capsys.readouterr().out
+    assert "averages" not in out and "Note" not in out
+    assert "has one flux_cube.bin for all its spectra and no variants to choose between" in out
+    assert "already MESA-ready" in out
+
+
+def _mean_cube_note(t):
+    grid = _build(_kurucz_alpha(t.tmp / "KuruczAlpha"), override_dict={"on_collision": {"strategy": "mean"}})
+    t.capsys.readouterr()
+    (variant,) = mesa_prepare.list_variants(grid)
+    out = t.capsys.readouterr().out
+    assert "Note: KuruczAlpha has 2 variants over alpha, but no per-variant cubes" in out
+    assert "lh" not in out and "vtur" not in out
+    assert variant.label == "full_grid" and variant.flux_cube_path == grid / "flux_cube.bin"
+
+
+def _export_refuses_a_missing_cube(t):
+    grid = t.tmp / "Plain"
+    grid.mkdir()
+    (grid / "lookup_table.csv").write_text("file_name,teff,logg,metallicity\na.txt,5000,4.0,0.0\n")
+    (grid / "a.txt").write_text("4000 1.0\n5000 2.0\n")
+    (variant,) = mesa_prepare.list_variants(grid)
+    with pytest.raises(FileNotFoundError, match="does not exist; nothing was exported"):
+        mesa_prepare.export_variant(variant, t.tmp / "out")
+    assert not (t.tmp / "out").exists()
+
+
+def _earlier_combine_outputs_left_out(t):
+    from sed_tools.combine_stellar_atm import find_stellar_models
+
+    two_grids = _golden_pair(t)
+    _combine(two_grids, "omni")
+    # A combine output whose lookup was rebuilt since is still found by its default name.
+    shutil.copytree(KURUCZ, two_grids / "combined_models")
+    t.capsys.readouterr()
+    found = find_stellar_models(str(two_grids))
+    assert sorted(name for name, _ in found) == ["Kurucz2003all", "Kurucz2003all__alpha_04"]
+    assert ("Leaving out combined_models, omni: written by an earlier combine. "
+            "To combine one again, name it explicitly.") in t.capsys.readouterr().out
+
+
+def _combine_twice(t):
+    # The second run used to combine Kurucz2003all, Kurucz2003all__alpha_04 and combined_models: 48 spectra,
+    # each of the 24 twice.
+    import matplotlib
+    import pandas as pd
+
+    from sed_tools.cli import run_combine_flow
+
+    matplotlib.use("Agg")
+    two_grids = _golden_pair(t)
+    np.random.seed(0)
+    run_combine_flow(str(two_grids), interactive=False)
+    run_combine_flow(str(two_grids), output_name="combined2", interactive=False)
+    out = t.capsys.readouterr().out
+    assert "Selected 2 spectral grids to combine:" in out and "- combined_models" not in out
+    lookup = pd.read_csv(two_grids / "combined2" / "lookup_table.csv")
+    assert len(lookup) == 24
+    assert set(lookup["source_model"]) == {"Kurucz2003all", "Kurucz2003all__alpha_04"}
+
+
+def _combined_grid_as_it_is(t):
+    # source_model and original_file differ on every row of a combined grid's lookup; they say where each
+    # spectrum came from and are not variants of the grid.
+    two_grids = _golden_pair(t)
+    _combine(two_grids, "omni")
+    t.capsys.readouterr()
+    mesa_prepare.run_interactive(base_dir=str(two_grids), model="omni")
+    out = t.capsys.readouterr().out
+    assert "Note" not in out and "variants over" not in out
+    assert "has one flux_cube.bin for all its spectra and no variants to choose between" in out
+
+
+MENUS = {
+    "mesa_prepare_exits_1_without_spectral_grids": _mesa_without_grids,
+    "mesa_prepare_exits_1_on_an_invalid_grid_choice": _mesa_invalid_grid,
+    "mesa_prepare_exits_1_for_a_single_grid_without_a_flux_cube": _mesa_single_grid_without_a_cube,
+    "mesa_prepare_exits_1_on_an_invalid_variant_choice": _mesa_invalid_variant,
+    "mesa_prepare_exits_1_when_overwrite_is_declined": _mesa_overwrite_declined,
+    "mesa_prepare_still_exports_the_chosen_variant": _mesa_exports_the_chosen_variant,
+    "combine_menu_asks_again_until_the_selection_is_valid": _combine_menu_asks_again,
+    "combine_menu_all_still_selects_every_grid": _combine_menu_all,
+    "model_photometry_warns_once_about_filters_past_the_model": _filters_past_the_model,
+    "bosz_bookkeeping_columns_that_vary_are_named_when_averaged": _bosz_columns_named,
+    "duplicate_nodes_without_extra_axes_are_reported": _duplicate_nodes,
+    "a_grid_with_one_row_per_node_does_not_warn": _one_row_per_node,
+    "split_and_filter_cubes_report_their_own_averaged_rows": _split_and_filter_cubes,
+    "combine_menu_q_returns_to_the_menu_without_failing": _combine_menu_q,
+    "densifier_cube_list_fits_80_columns": _densifier_list_fits,
+    "mesa_prepare_invalid_choice_fits_80_columns": _mesa_invalid_choice_fits,
+    "densifier_spacing_prompt_asks_again": _densifier_spacing_asks_again,
+    "list_variants_reads_the_subgrids_rebuild_writes": _subgrids_listed,
+    "mesa_prepare_menu_exports_a_variant_of_a_split_grid": _mesa_exports_a_subgrid,
+    "list_variants_raises_for_a_subgrid_without_its_cube": _subgrid_without_its_cube,
+    "mesa_prepare_on_a_uniform_grid_says_one_thing": _uniform_grid_says_one_thing,
+    "mesa_prepare_notes_a_mean_cube_naming_only_the_varying_axes": _mean_cube_note,
+    "export_variant_refuses_a_missing_cube_before_writing": _export_refuses_a_missing_cube,
+    "find_stellar_models_leaves_out_earlier_combine_outputs": _earlier_combine_outputs_left_out,
+    "non_interactive_combine_does_not_fold_in_the_previous_output": _combine_twice,
+    "mesa_prepare_takes_a_combined_grid_as_it_is": _combined_grid_as_it_is,
+}
+
+
+# ----------------------------------------------------------------------
+# photometry() takes a (name, path) tuple as one filter, several such tuples, and plain paths as before
+# ----------------------------------------------------------------------
+def _evaluated(t):
+    """A SED at 5000 K, log g 4.5, [M/H] 0 from a 2 x 2 x 2 cube: one shape, scaled by Teff."""
+    teff, logg, meta = [4000.0, 6000.0], [4.0, 5.0], [-0.5, 0.5]
+    wave = np.arange(3000.0, 8001.0, 100.0)
+    shape = np.exp(-((wave - 5500.0) / 2000.0) ** 2) + 0.1
+    flux = np.array([[[te / 5000.0 * shape for _ in meta] for _ in logg] for te in teff])
+    write_flux_cube(t.tmp / "flux_cube.bin", teff, logg, meta, wave, flux)
+    return SEDModel(name="tiny", flux_cube_path=t.tmp / "flux_cube.bin")(5000.0, 4.5, 0.0)
+
+
+def _bands(t):
+    """Box filters johnson_v (5000-6000 Å) and johnson_b (4000-5000 Å)."""
+    return tuple(_box_filter(t.tmp / f"johnson_{band}.dat", ANGSTROM, edges=(lo - 100, lo, lo + 1000, lo + 1100))
+                 for band, lo in (("v", 5000.0), ("b", 4000.0)))
+
+
+def magnitudes(results):
+    return {name: result.magnitude for name, result in results.items()}
+
+
+def _one_name_path_tuple(t):
+    evaluated, (v, _) = _evaluated(t), _bands(t)
+    plain = magnitudes(evaluated.photometry(v))
+    assert magnitudes(evaluated.photometry(("V", v))) == {"V": plain["johnson_v"]}
+    assert magnitudes(evaluated.photometry(("V", str(v)))) == {"V": plain["johnson_v"]}
+
+
+def _several_name_path_tuples(t):
+    evaluated, (v, b) = _evaluated(t), _bands(t)
+    plain = magnitudes(evaluated.photometry(v, b))
+    expected = {"V": plain["johnson_v"], "B": plain["johnson_b"]}
+    assert magnitudes(evaluated.photometry(("V", v), ("B", b))) == expected
+    assert magnitudes(evaluated.photometry((("V", v), ("B", b)))) == expected  # one tuple of specs
+
+
+def _lone_pair_of_names(t):
+    # ("V", "B") must not become filter "B" labelled "V": only a path makes a (name, path) spec.
+    from sed_tools.models import _normalize_filter_sequence
+
+    v, _ = _bands(t)
+    assert _normalize_filter_sequence([("V", "B")]) == ["V", "B"]
+    assert _normalize_filter_sequence([("V", str(v))]) == [("V", str(v))]
+    assert _normalize_filter_sequence([("V", v)]) == [("V", v)]
+
+
+def _plain_paths(t):
+    evaluated, (v, b) = _evaluated(t), _bands(t)
+    plain = magnitudes(evaluated.photometry(str(v), str(b)))
+    assert set(plain) == {"johnson_v", "johnson_b"}
+    assert plain["johnson_v"] != plain["johnson_b"]
+    assert magnitudes(evaluated.photometry(v, b)) == plain
+    assert magnitudes(evaluated.photometry([str(v), str(b)])) == plain
+    assert magnitudes(evaluated.photometry((v, b))) == plain  # Paths, so not a (name, path) spec
+
+
+PHOTOMETRY_SPECS = {
+    "photometry_takes_a_single_name_path_tuple_as_one_filter": _one_name_path_tuple,
+    "photometry_takes_several_name_path_tuples": _several_name_path_tuples,
+    "a_lone_pair_of_names_stays_two_filters": _lone_pair_of_names,
+    "photometry_plain_paths_and_sequences_of_them_are_unchanged": _plain_paths,
+}
+
+
+# ----------------------------------------------------------------------
+# The flux cube tool's prompts: which cube, which Vega spectrum, the stellar radius; the whole tool
+# ----------------------------------------------------------------------
+TOOL_WL = np.linspace(3000.0, 9000.0, 61)
+
+
+def _searched_only_here(t):
+    """The cube and Vega searches see an empty working directory and data directory, and no environment hints."""
+    import matplotlib
+
+    matplotlib.use("Agg")
+    (t.tmp / "work").mkdir()
+    t.mp.chdir(t.tmp / "work")
+    t.mp.setattr("sed_tools.cube.model.DATA_DIR_DEFAULT", t.tmp / "data")
+    for variable in ("SED_FLUX_CUBE", "SED_FLUX_CUBE_DIR", "SED_VEGA_SPECTRUM"):
+        t.mp.delenv(variable, raising=False)
+
+
+def _tool_grid(t):
+    """grids/g/flux_cube.bin (flat spectra at two Teff and two log g), with filters B and V in grids/filters/Sys;
+    the searches look only in the row's folder."""
+    _searched_only_here(t)
+    flux = np.ones((2, 2, 1, TOOL_WL.size)) * np.array([1.0, 2.0])[:, None, None, None]
+    write_flux_cube(t.tmp / "grids" / "g" / "flux_cube.bin", [5000.0, 6000.0], [4.0, 4.5], [0.0], TOOL_WL, flux)
+    system = t.tmp / "grids" / "filters" / "Sys"
+    system.mkdir(parents=True)
+    for band, (lo, hi) in {"B": (4000, 5000), "V": (5000, 6000)}.items():
+        (system / f"{band}.dat").write_text(f"Wavelength,Transmission\n{lo - 100},0\n{lo},1\n{hi},1\n{hi + 100},0\n")
+    return t.tmp / "grids" / "g"
+
+
+def _write_vega(path):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    np.savetxt(path, np.column_stack([TOOL_WL, np.full(TOOL_WL.size, 3.0)]))
+    return path
+
+
+def _cubes_offered_by_number(t):
+    grid = _tool_grid(t)
+    other = t.tmp / "grids" / "h" / "flux_cube.bin"
+    other.parent.mkdir()
+    other.write_bytes((grid / "flux_cube.bin").read_bytes())
+    answer(t.mp, "", "3", "2")  # Enter lists them again; 3 is not listed
+    assert tool.prompt_for_flux_cube_path([t.tmp / "grids"]) == other.resolve()
+    out = t.capsys.readouterr().out
+    assert out.count("Discovered flux cube files:") == 3
+    assert "Invalid selection. Please choose one of the listed numbers." in out
+    answer(t.mp, str(grid))  # or a path: a folder holding one cube
+    assert tool.prompt_for_flux_cube_path([t.tmp / "grids"]) == grid / "flux_cube.bin"
+
+
+def _cube_path_asked_until_quit(t):
+    grid = _tool_grid(t)
+    answer(t.mp, "", "missing", str(grid / "flux_cube.bin"))
+    assert tool.prompt_for_flux_cube_path() == grid / "flux_cube.bin"
+    out = t.capsys.readouterr().out
+    assert "Please provide a path to a flux cube file." in out
+    assert "Flux cube path 'missing' does not exist" in out
+    answer(t.mp, "q")
+    with pytest.raises(SystemExit, match="No flux cube selected; aborting."):
+        tool.prompt_for_flux_cube_path()
+
+
+def _vega_given_or_hinted(t):
+    cube = _tool_grid(t) / "flux_cube.bin"
+    vega = _write_vega(t.tmp / "ref" / "my_vega.dat")
+    assert tool.resolve_vega_spectrum_path(str(vega), cube) == vega.resolve()
+    with pytest.raises(FileNotFoundError, match="Vega spectrum 'nope.dat' does not exist"):
+        tool.resolve_vega_spectrum_path("nope.dat", cube)
+    assert tool.resolve_vega_spectrum_path(None, cube, [vega]) == vega.resolve()
+    assert tool.resolve_vega_spectrum_path(None, cube, [vega.parent]) == vega.resolve()  # a folder is searched
+    band = vega.parent / "B.dat"
+    band.write_text("4000 1\n")
+    assert tool.resolve_vega_spectrum_path(None, cube, [band]) == vega.resolve()  # and a filter file's folder
+    t.mp.setenv("SED_VEGA_SPECTRUM", str(vega))
+    assert tool.resolve_vega_spectrum_path(None, cube) == vega.resolve()
+
+
+def _vega_near_the_cube(t):
+    grid = _tool_grid(t)
+    cube = grid / "flux_cube.bin"
+    with pytest.raises(FileNotFoundError, match="Could not locate a Vega reference spectrum."):
+        tool.resolve_vega_spectrum_path(None, cube)
+    first = _write_vega(grid / "vega.dat")
+    assert tool.resolve_vega_spectrum_path(None, cube) == first.resolve()
+    second = _write_vega(grid.parent / "alpha_lyr_vega.txt")
+    answer(t.mp, "x", "3", "2")  # listed nearest first
+    assert tool.resolve_vega_spectrum_path(None, cube) == second.resolve()
+    out = t.capsys.readouterr().out
+    assert "Discovered potential Vega spectra:" in out
+    assert out.count("Please select one of the listed Vega spectra.") == 2
+
+
+#: name: (what is typed, the radius in metres). A bare number is in R☉, as the prompt says (it was taken as metres).
+RADII = {"radius_prompt_takes_a_bare_number_in_solar_radii_1_5": ("1.5", 1.5 * RSUN_TO_M),
+         "radius_prompt_takes_a_bare_number_in_solar_radii_7e8_m": ("7e8 m", 7e8)}
+
+
+def _radius(t, typed, metres):
+    _searched_only_here(t)
+    answer(t.mp, typed)
+    assert tool.prompt_radius_m() == metres
+
+
+def _tool_scales_and_measures(t):
+    grid = _tool_grid(t)
+    _write_vega(grid / "vega.dat")
+    answer(t.mp, "y", "10 pc", "1 Rsun")  # scale for distance; the cube, filters and Vega are found
+    status = tool.main(["--model-dir", str(grid), "--teff", "5000", "--logg", "4.0", "--metallicity", "0",
+                        "--photometric-system", "Vega", "--plot", str(t.tmp / "sed.png"),
+                        "--save-sed", str(t.tmp / "sed.txt")])
+    assert status == 0
+    out = t.capsys.readouterr().out
+    scale = (RSUN_TO_M / (10 * PC_TO_M)) ** 2
+    assert f"Using flux cube: {(grid / 'flux_cube.bin').resolve()}" in out
+    assert f"[scaling] Applied geometric dilution: (R/d)^2 = {scale:.3e}" in out
+    assert out.count("Using Vega spectrum:") == 1  # read once for both filters
+    assert "Photometric system: Vega" in out and "(system: Sys)" in out
+    mag = -2.5 * np.log10(scale / 3.0)  # a flat SED of flux 1, scaled, against a flat Vega of flux 3
+    for band in ("Sys/B", "Sys/V"):
+        line = next(line for line in out.splitlines() if line.strip().startswith(band))
+        assert float(line.split("mag=")[1]) == pytest.approx(mag, abs=1e-3)
+    assert np.loadtxt(t.tmp / "sed.txt")[:, 1] == pytest.approx(np.full(TOOL_WL.size, scale))
+    assert (t.tmp / "sed.png").is_file()
+
+
+def _tool_without_vega(t):
+    grid = _tool_grid(t)
+    answer(t.mp, "n")
+    with pytest.raises(SystemExit, match="Could not locate a Vega reference spectrum. Provide a Vega spectrum "
+                                         "via --vega-sed or place one near the flux cube."):
+        tool.main(["--flux-cube", str(grid / "flux_cube.bin"), "--teff", "5000", "--logg", "4.0",
+                   "--metallicity", "0", "--photometric-system", "Vega", "--plot", str(t.tmp / "sed.png")])
+
+
+TOOL_PROMPTS = {
+    "several_flux_cubes_are_offered_by_number": _cubes_offered_by_number,
+    "with_no_flux_cube_found_a_path_is_asked_for_until_quit": _cube_path_asked_until_quit,
+    "a_vega_spectrum_given_or_hinted_is_used": _vega_given_or_hinted,
+    "vega_spectra_near_the_cube_are_found_and_offered_by_number": _vega_near_the_cube,
+    "tool_scales_and_measures_vega_magnitudes_with_the_cube_it_finds": _tool_scales_and_measures,
+    "tool_stops_when_vega_magnitudes_have_no_vega_spectrum": _tool_without_vega,
+}
+
+
+# ----------------------------------------------------------------------
+# Extra-axis collisions and collision_config
+# ----------------------------------------------------------------------
+def _filter_strategy_no_match(t):
+    model_dir = _collision_grid(t.tmp / "FilterGridBad")
+    with pytest.raises(ValueError, match="No exact match"):
+        _build(model_dir, override_dict={"on_collision": {"strategy": "filter", "filter": {"alpha": "0.9999"}}})
+
+
+def _variant_file_names(t):
+    name = _extra_key_to_filename((("[alpha/Fe]", "0.4"), ("f sed", "2.0")))
+    assert name == "alpha_Fe_0.4__f_sed_2.0" and "/" not in name and " " not in name
+
+
+def _variants_after_default_split(t):
+    # mesa_prepare used to read per-variant cubes only from fluxcube_library/ or a master flux_cube.bin, and the
+    # default split strategy writes neither, so list_variants() raised on a grid 'sed-tools rebuild' had split.
+    model_dir = _collision_grid(t.tmp / "CollisionGrid")
+    _build(model_dir)  # the default strategy: split
+    variants = list_variants(model_dir)
+    assert {v.label for v in variants} == {"alpha_0.0", "alpha_0.4"}
+
+
+#: name: (the filter spec, the values on offer, the axis; the value matched, and the words of the error, if any)
+MATCHES = {
+    "match_filter_value_min_numeric": ("min", [0.4, 0.0, -0.2], "alpha", -0.2, None),
+    "match_filter_value_max_numeric": ("max", [0.4, 0.0, -0.2], "alpha", 0.4, None),
+    "match_filter_value_min_max_string_fallback": ("min", ["h-rich", "he-rich"], "composition", "h-rich", None),
+    "match_filter_value_string_exact_match_case_insensitive": (
+        "H-RICH", ["h-rich", "he-rich"], "composition", "h-rich", None),
+    "match_filter_value_no_match_reports_available": (
+        "bogus", ["h-rich", "he-rich"], "composition", None, ("h-rich", "he-rich")),
+    "match_filter_value_empty_available_list": ("x", [], "alpha", None, ("No values found",)),
+}
+
+
+def _match(t, spec, values, axis, matched, words):
+    got, err = match_filter_value(spec, values, axis)
+    assert got == matched
+    assert err is None if words is None else all(w in err for w in words)
+
+
+def _invalid_strategy(t):
+    with pytest.raises(ValueError, match="Invalid strategy"):
+        CollisionConfig(strategy="bogus")
+
+
+def _unmatched_key(t):
+    cfg = CollisionConfig(strategy="filter", filter_specs={"bogus_key": "0.4"})
+    resolved, errors = cfg.resolve_filter_values({"alpha": [0.0, 0.4]})
+    assert resolved == {} and len(errors) == 1 and "bogus_key" in errors[0]
+
+
+def _root_and_model(t):
+    for name in ("root", "model"):
+        (t.tmp / name).mkdir()
+    return t.tmp / "root", t.tmp / "model"
+
+
+def _root_dir_overrides_builtin(t):
+    root, model = _root_and_model(t)
+    (root / "sed_tools.defaults").write_text('[on_collision]\nstrategy = "mean"\n')
+    cfg = load_config(model_dir=model, root_dir=root)
+    assert (cfg.strategy, cfg.source) == ("mean", str(root / "sed_tools.defaults"))
+
+
+def _default_config_copied(t):
+    root, model = _root_and_model(t)
+    path = write_default_config(root)
+    assert path.exists() and 'strategy = "split"' in path.read_text()
+    copy_global_config_to_model(root, model)
+    assert (model / "sed_tools.defaults").read_text() == path.read_text()
+
+
+def _default_config_kept(t):
+    root, _ = _root_and_model(t)
+    path = write_default_config(root)
+    path.write_text("# manually edited\n")
+    write_default_config(root, overwrite=False)
+    assert path.read_text() == "# manually edited\n"
+
+
+COLLISIONS = {
+    "filter_strategy_no_match_raises_clear_error": _filter_strategy_no_match,
+    "extra_key_to_filename_sanitizes_unsafe_characters": _variant_file_names,
+    "collision_config_rejects_invalid_strategy": _invalid_strategy,
+    "resolve_filter_values_reports_unmatched_key": _unmatched_key,
+    "load_config_root_dir_overrides_builtin": _root_dir_overrides_builtin,
+    "write_default_config_then_copy_to_model": _default_config_copied,
+    "write_default_config_does_not_overwrite_by_default": _default_config_kept,
+    "mesa_prepare_can_list_variants_after_default_split_build": _variants_after_default_split,
+}
+
+
+# ----------------------------------------------------------------------
+# Interpolation off the cube, and magnitudes of zero or negative flux or zero point
+# ----------------------------------------------------------------------
+#: name: (the affine cube's axes, fill_gaps, the parameters asked for); SEDModel raises ValueError. A NaN passes
+#: the fill_gaps clamp (every comparison is False), and FluxCube._hermite_interp_axis's bounds check raises.
+OFF_THE_CUBE = {
+    "singleton_axis_raises_with_fill_gaps_false": ({"logg": (3.0,)}, False, (4700.0, 999.0, -1.0)),
+    "nan_parameter_raises_even_with_fill_gaps": ({}, True, (float("nan"), 2.0, -0.3)),
+}
+
+
+def _off_the_cube(t, axes, fill_gaps, params):
+    model = SEDModel(name="affine", flux_cube_path=affine_cube(t.tmp, **axes).path, fill_gaps=fill_gaps)
+    with pytest.raises(ValueError):
+        model(teff=params[0], logg=params[1], metallicity=params[2])
+
+
+def _same(value, expected):
+    """``value`` is ``expected``, NaN included."""
+    if math.isnan(expected):
+        assert math.isnan(value)
+    else:
+        assert value == expected
+
+
+#: name: (the band's flux level, the system, the band's Vega zero point; the magnitude both EvaluatedSED.photometry
+#: and flux_cube_tool._band_magnitude give, without a warning)
+MAGNITUDES = {
+    # The Vega path used to raise ValueError from math.log10(0).
+    "magnitude_of_zero_flux_is_infinite_in_both_systems_ab": (0.0, "AB", 2.0e-10, math.inf),
+    "magnitude_of_zero_flux_is_infinite_in_both_systems_vega": (0.0, "Vega", 2.0e-10, math.inf),
+    # The AB path used to return inf for a negative flux.
+    "magnitude_of_negative_flux_is_nan_in_both_systems_ab": (-1e-12, "AB", 2.0e-10, math.nan),
+    "magnitude_of_negative_flux_is_nan_in_both_systems_vega": (-1e-12, "Vega", 2.0e-10, math.nan),
+    # A non-positive Vega zero point used to raise ValueError in both modules.
+    **{f"vega_magnitude_with_a_zero_or_negative_zero_point_is_computed_{case}": data for case, data in {
+        "zero_point_0": (1e-12, "Vega", 0.0, -math.inf), "zero_point_0_zero_flux": (0.0, "Vega", 0.0, math.nan),
+        "zero_point_negative": (1e-12, "Vega", -2.0e-10, math.nan),
+        "zero_point_negative_zero_flux": (0.0, "Vega", -2.0e-10, math.inf)}.items()},
+}
+
+
+def _magnitude(t, flux_level, system, zero_point, expected):
+    from sed_tools.flux_cube_tool import FilterCurve, _band_magnitude
+    from sed_tools.models import EvaluatedSED
+
+    def band():
+        return FilterCurve("Band", np.array([3000.0, 4000.0, 5000.0, 6000.0]), np.array([0.0, 1.0, 1.0, 0.0]),
+                           {"zp_vega": zero_point})
+
+    wl = np.linspace(2000.0, 8000.0, 300)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        sed = EvaluatedSED(wl, np.full(wl.size, flux_level), {"teff": 5000.0, "logg": 4.0, "meta": 0.0},
+                           types.SimpleNamespace(_resolve_filters=lambda filters, curve=band(): {"Band": curve}))
+        for magnitude in (sed.photometry("Band", system=system)["Band"].magnitude,
+                          _band_magnitude(wl, np.full(wl.size, flux_level), band(), system, None)[2]):
+            _same(magnitude, expected)
+
+
+#: name: (the flux's scale, the reference flux, the bolometric magnitude), computed without a warning
+BOLOMETRIC = {f"bolometric_magnitude_of_non_positive_flux_or_reference_is_computed_{case}": data for case, data in {
+    "zero_flux": (0.0, 1.0, math.inf),  # used to be inf by a special case
+    "negative_flux": (-1.0, 1.0, math.nan),  # used to be inf by a special case
+    "zero_reference": (1.0, 0.0, -math.inf),  # used to raise ZeroDivisionError
+    "negative_reference": (1.0, -1.0, math.nan),  # used to raise ValueError from math.log10
+    "zero_flux_and_reference": (0.0, 0.0, math.nan),  # used to be inf by a special case
+}.items()}
+
+
+def _bolometric(t, flux_scale, reference_flux, expected):
+    wl = np.linspace(2000.0, 8000.0, 300)
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        _, mbol = bolometric_magnitude(wl, flux_scale * 3e-12 * (1.0 + wl / 7000.0), reference_flux=reference_flux)
+    _same(mbol, expected)
+
+
+def _non_numeric_filter_line(t):
+    # Bad rows used to be dropped silently, removing points from the curve.
+    from sed_tools.flux_cube_tool import load_filter_curve
+
+    (t.tmp / "Band.dat").write_text("Wavelength,Transmission\n4000.0,0.5\n4500.0,O.9\n5000.0,0.5\n")
+    with pytest.raises(ValueError, match=r"Band\.dat, line 3: expected two numbers, found '4500\.0,O\.9'"):
+        load_filter_curve(str(t.tmp / "Band.dat"))
+
+
+def _header_lines_skipped(t):
+    from sed_tools.flux_cube_tool import load_two_column_file
+
+    path = t.tmp / "vega.csv"
+    path.write_text("Vega reference\nwavelength,flux\n4000.0,1e-9\n5000.0,2e-9\n")
+    assert load_two_column_file(str(path))[:2] == ([4000.0, 5000.0], [1e-9, 2e-9])
+
+
+# ----------------------------------------------------------------------
+# Resampling, grid coverage, the config's ui table, and finding atmospheres and filters
+# ----------------------------------------------------------------------
+def _teff_does_not_change_resampling(t):
+    # Documented: teff is kept for the interface, not used to extrapolate.
+    wl_src, fl_src, wl_tgt = np.linspace(4000.0, 8000.0, 20), np.linspace(1.0, 2.0, 20), np.linspace(4500.0, 7500.0, 15)
+    np.testing.assert_array_equal(resample_to_grid(wl_src, fl_src, teff=3000.0, wl_tgt=wl_tgt),
+                                  resample_to_grid(wl_src, fl_src, teff=50000.0, wl_tgt=wl_tgt))
+
+
+def _grid_nodes_have_paths(t):
+    from sed_tools.grid_coverage import read_grid_nodes
+
+    spectrum = t.tmp / "model.txt"
+    spectrum.write_text("# Teff = 5000\n# logg = 4.0\n# metallicity = 0.0\n1000 1.0\n2000 2.0\n3000 1.5\n")
+    nodes = read_grid_nodes(t.tmp)
+    assert nodes.loc[0, "filename"] == "model.txt"
+    assert nodes.loc[0, "path"] == str(spectrum.resolve())
+    # A lookup table's columns are found as everywhere else (lookup.find_*_column) since 0.6.0
+    (t.tmp / "lookup_table.csv").write_text("#file_name,T_eff,log_g,[Fe/H]\nmodel.txt,5000,4.0,-0.5\n")
+    assert read_grid_nodes(t.tmp).loc[0, ["teff", "logg", "metallicity"]].tolist() == [5000.0, 4.0, -0.5]
+
+
+def _set_data_dir_keeps_ui(t):
+    import sed_tools.config as config
+
+    config_file = t.tmp / "config.toml"
+    config_file.write_text('[ui]\nterminal_plots = "always"\nterminal_color = "never"\n')
+    t.mp.setattr(config, "_CONFIG_DIR", t.tmp)
+    t.mp.setattr(config, "_CONFIG_FILE", config_file)
+    config.set_data_dir(str(t.tmp / "data"))
+    loaded = config.load_user_config()
+    assert loaded["ui"] == {"terminal_plots": "always", "terminal_color": "never"}
+    assert loaded["data_dir"] == str(t.tmp / "data")
+
+
+def _atmospheres_covering_the_range(t):
+    root = t.tmp / "stellar_models"  # header-only cubes: find_atmospheres reads only the axes
+    _raw_cube(root / "model_a" / "flux_cube.bin", [4000.0, 5000.0, 6000.0], [1.0, 2.0, 3.0], [-1.0, 0.0, 1.0],
+              [4000.0, 5000.0])
+    _raw_cube(root / "model_b" / "flux_cube.bin", [4500.0, 5200.0], [1.5, 2.5], [-0.5, 0.2], [4000.0, 5000.0])
+    sed = sed_models.SED(model_root=root)
+    ranges = {"teff_range": (4600.0, 5500.0), "logg_range": (1.8, 2.4), "metallicity_range": (-0.3, 0.1)}
+    matches = sed.find_atmospheres(**ranges)
+    assert [m.name for m in matches] == ["model_a"] and matches[0].covers_range is True
+    partial = sed.find_atmospheres(**ranges, allow_partial=True)
+    assert {m.name for m in partial} == {"model_a", "model_b"} and any(not m.covers_range for m in partial)
+
+
+def _filter_index_of_a_string_root(t):
+    (t.tmp / "GAIA" / "GAIA").mkdir(parents=True)
+    (t.tmp / "GAIA" / "GAIA" / "Gbp.dat").write_text("Wavelength,Transmission\n5000,1\n")
+    index = _build_filter_index(str(t.tmp))
+    assert "gbp" in index and index["gbp"][0].name == "Gbp.dat"
+
+
+def _instrument_folder_from_its_name(t):
+    cube = _raw_cube(t.tmp / "flux_cube.bin", [5000.0], [4.0], [0.0], [5000.0, 6000.0])
+    filters = t.tmp / "filters" / "GAIA" / "GAIA"
+    filters.mkdir(parents=True)
+    for band in ("Gbp", "Grp"):
+        (filters / f"{band}.dat").write_text("Wavelength,Transmission\n5000,1\n6000,1\n")
+    model = SEDModel(name="test", flux_cube_path=str(cube), filters_dir=str(t.tmp / "filters"))
+    assert sorted(p.name for p in model._locate_filter_paths("GAIA")) == ["Gbp.dat", "Grp.dat"]
+
+
+ODDS_AND_ENDS = {
+    "a_non_numeric_line_inside_a_filter_curve_raises": _non_numeric_filter_line,
+    "header_lines_before_the_data_are_still_skipped": _header_lines_skipped,
+    "teff_argument_does_not_affect_output": _teff_does_not_change_resampling,
+    "read_grid_nodes_fallback_has_path": _grid_nodes_have_paths,
+    "set_data_dir_preserves_nested_ui": _set_data_dir_keeps_ui,
+    "find_atmospheres_prefers_full_coverage": _atmospheres_covering_the_range,
+    "build_filter_index_accepts_string_root": _filter_index_of_a_string_root,
+    "sedmodel_resolves_nested_instrument_directory_from_name": _instrument_folder_from_its_name,
+}
+
+
+def test_cubes(rows):
+    rows(BINARY_IO)
+    rows(UNUSABLE_LOOKUP, _unusable_lookup)
+    rows(RAM, _ram)
+    rows(SEARCHES, _unsearchable)
+    rows(BUILD)
+    rows(COMBINE_MISSING, _combine_missing)
+    rows(COMBINE)
+    rows(DENSIFY)
+    rows(DENSIFIER_CHOICES, _densifier_rejects)
+    rows(MENUS)
+    rows(GOES_BACK, _goes_back)
+    rows(PHOTOMETRY_SPECS)
+    rows(TOOL_PROMPTS)
+    rows(RADII, _radius)
+    rows(COLLISIONS)
+    rows(MATCHES, _match)
+    rows(OFF_THE_CUBE, _off_the_cube)
+    rows(MAGNITUDES, _magnitude)
+    rows(BOLOMETRIC, _bolometric)
+    rows(ODDS_AND_ENDS)
