@@ -24,10 +24,8 @@ dependencies = [
     "tqdm>=4.66",
     "requests>=2.31",
     "beautifulsoup4>=4.12",
-    "lxml>=4.9",
     "h5py>=3.10",
     "astropy>=6.1",
-    "astroquery>=0.4.7",
     "matplotlib>=3.7",
     "tomli>=2.0; python_version < '3.11'",
 ]
