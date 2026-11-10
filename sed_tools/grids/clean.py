@@ -202,7 +202,7 @@ def _bolometric_renorm_ratio(wl: np.ndarray, flux: np.ndarray, teff: float) -> O
 
 def rebuild_lookup_table(model_dir: str) -> str:
     """Rebuild lookup_table.csv from spectrum file headers."""
-    txt_files = sorted(glob.glob(os.path.join(model_dir, "*.txt")))
+    txt_files = sorted(glob.glob(os.path.join(model_dir, "*.[tT][xX][tT]")))  # .txt in any case
     if not txt_files:
         return ""
     
@@ -270,7 +270,7 @@ def clean_model_dir(
             Raised at once if rewriting a file fails.
     """
     _check_flux_unit_name(flux_unit)
-    txt_files = sorted(glob.glob(os.path.join(model_dir, "*.txt")))
+    txt_files = sorted(glob.glob(os.path.join(model_dir, "*.[tT][xX][tT]")))  # .txt in any case
     
     summary = {
         'total': len(txt_files),

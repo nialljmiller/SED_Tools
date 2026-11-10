@@ -51,6 +51,14 @@ Changed
   in the folder, such as a split grid's ``lookup_table_full.csv``, after a
   warning.
 
+Fixed
+~~~~~
+
+- **A spectrum named ``*.TXT`` was never cleaned,** yet it went into the
+  lookup table, the HDF5 bundle and the flux cube in its original units
+  (e.g. ``SED.import_grid('x.TXT')`` with wavelengths in nm). The cleaner
+  now takes ``.txt`` in any case, as the lookup table, bundle and cube do.
+
 Version 0.5.1 (November 2026)
 -----------------------------
 
