@@ -170,8 +170,6 @@ class SVOSpectraGrabber:
         """The SSAP response body; RuntimeError if it reaches ssap_max_bytes (the FID list would be cut short)."""
         buf = io.BytesIO()
         for chunk in r.iter_content(chunk_size=131072):
-            if not chunk:
-                break
             buf.write(chunk)
             if buf.tell() >= self.ssap_max_bytes:
                 raise RuntimeError(
@@ -230,10 +228,7 @@ class SVOSpectraGrabber:
                                       stream=True) as g:
                     if g.status_code != 200:
                         return False
-                    for chunk in g.iter_content(chunk_size=512):
-                        if chunk:
-                            return _is_spectral_content(chunk[:512])
-                    return False
+                    return _is_spectral_content(next(g.iter_content(chunk_size=512), b"")[:512])
             return int(cl) > 1024
         except requests.RequestException as e:
             # Treating this FID as absent would silently cut the FID list short

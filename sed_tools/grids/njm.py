@@ -372,8 +372,7 @@ class NJMSpectraGrabber:
             
             with open(output_path, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=65536):
-                    if chunk:
-                        f.write(chunk)
+                    f.write(chunk)
         except Exception:
             # A partial file larger than the skip threshold would pass as complete on the next run
             if os.path.exists(output_path):

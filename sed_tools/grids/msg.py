@@ -240,7 +240,6 @@ class MSGSpectraGrabber:
                     r.raise_for_status()
                     with open(h5_path, "wb") as f:
                         for chunk in r.iter_content(chunk_size=1<<20):
-                            if not chunk: break
                             f.write(chunk)
             except requests.RequestException as e:
                 raise RuntimeError(f"MSG: could not download {url} to {h5_path}: {e}. "
