@@ -552,79 +552,13 @@ CLEAN = {"total": 1, "converted": [], "skipped_already": [], "skipped_invalid": 
          "error": [], "recovered": [], "detection_stats": {}, "catalog_units": None}
 
 
-def tagged(path):
-    return SimpleNamespace(path=path, detector_type="photon", source="svo", filter_id="F", changed=True,
-                           migrated=False, note="", kept=False, resolved_type="photon", resolved_source="svo")
+def scenarios():
+    """An empty table of scenarios, and the decorator that adds a function to it as a row named after it."""
+    table = {}
 
+    def row(function):
+        assert function.__name__ not in table, f"two scenarios are named {function.__name__!r}"
+        table[function.__name__] = function
+        return function
 
-class Stdin:
-    def __init__(self, tty):
-        self.tty = tty
-
-    def isatty(self):
-        return self.tty
-
-
-def availability(**extra):
-    info = {"facility": "Fac", "instrument": "Cam", "bands": ["J", "H"], "published_source": "", "published": "",
-            "published_bands": {}, "components": ["filter"], "partial_components": {}, "buildable": ["filter"],
-            "component_status": "", "component_availability": {"status": "supported", "builder": None},
-            "missing_files": [], "errors": [], "atmosphere": False, "atmosphere_site": None,
-            "atmosphere_sites": [], "platform": "ground", "detector_type": "", "detector_type_sources": {},
-            "availability_source": "local", "variants": {}}
-    info.update(extra)
-    return info
-
-
-def summary_inputs(mp, info=None, catalogue=None):
-    """Stub what the picker's summary reads (FilterLibrary.available, NJM's catalogue entry); return the calls."""
-    from sed_tools import cli
-    from sed_tools.filter_library import FilterLibrary
-
-    calls = []
-    mp.setattr(FilterLibrary, "available",
-               lambda self, f, i, remote=True: calls.append(f"{f}/{i}") or (info or availability()))
-    mp.setattr(cli.filters, "_catalogue_entry", lambda *a, **k: catalogue or {
-        "info": None, "properties": None, "errors": ["NJM does not serve it"]})
-    return calls
-
-
-GAIA_INSTRUMENTS = [
-    {"key": name, "label": name, "fetch_key": name, "sources": sources, "description": description}
-    for name, sources, description in [
-        ("DR2", ["njm", "original"], "Gaia DR2 passbands (Evans et al. 2018)"),
-        ("DR2r", ["njm", "original"], "Gaia DR2 revised passbands (Evans et al. 2018)"),
-        ("GAIA", ["njm"], "Gaia DR3 passbands + BP bright/faint (Maíz Apellániz & Weiler 2018)"),
-        ("GAIA0", ["njm"], "Gaia pre-launch passbands (Jordi et al. 2010)"),
-        ("Gaia2m", ["svo"], "Revised passbands for Gaia DR2.")]]
-
-
-def _picker_library(t, facilities, instruments):
-    from sed_tools import cli
-    from sed_tools.filter_library import FilterLibrary
-
-    t.mp.setattr(FilterLibrary, "facilities", lambda self: {"entries": facilities, "errors": []})
-    t.mp.setattr(FilterLibrary, "instruments", lambda self, facility: {"entries": instruments, "errors": []})
-    fetched = []
-    t.mp.setattr(FilterLibrary, "published", lambda self, f, i: fetched.append(f"{f}/{i}") or t.tmp)
-    t.mp.setattr(cli.filters, "_offer_composition", lambda directory: None)
-    return fetched
-
-
-def gaia(t):
-    """The filter pickers over GAIA and its instruments, NJM up; returns the sets fetched."""
-    from sed_tools.filter_library import FilterLibrary
-
-    t.mp.setattr(FilterLibrary, "mirror", SimpleNamespace(is_available=lambda: True))
-    return _picker_library(t, [{"key": "GAIA", "label": "GAIA", "fetch_key": "GAIA", "sources": ["njm", "svo"],
-                                "description": "Gaia mission."}], GAIA_INSTRUMENTS)
-
-
-def catalogue(t):
-    """The filter pickers over GAIA and 2MASS from SVO, with the summary stubbed; returns the sets fetched."""
-    fetched = _picker_library(t, [{"key": "GAIA", "label": "GAIA", "fetch_key": "Gaia", "sources": ["svo"]},
-                                  {"key": "TWOMASS", "label": "2MASS", "sources": ["svo"]}],
-                              [{"key": "GAIA2", "label": "GAIA2", "fetch_key": "DR2", "sources": ["svo"]},
-                               {"key": "Cam", "label": "Cam", "sources": ["svo"]}])
-    summary_inputs(t.mp)
-    return fetched
+    return table, row
