@@ -406,9 +406,7 @@ def _download_from(name: str, src: str, g, model_dir: str, ranges: Optional[Dict
     except (ValueError, RequestException, OSError, RuntimeError) as exc:
         return meta, str(exc)
     print(f"{_download_count(n_written, before, _directory_state(model_dir))} → {model_dir}")
-    if not n_written and not _is_preprocessed(meta):
-        return meta, "no spectra downloaded"
-    return meta, None
+    return meta, (None if n_written else "no spectra downloaded")
 
 
 def _download_cuts(name: str, src: str, g, meta, ranges: Dict) -> Dict:
@@ -424,10 +422,6 @@ def _download_cuts(name: str, src: str, g, meta, ranges: Dict) -> Dict:
     return prompt_njm_axis_cuts(name, g, model_url=meta.get("model_url"))
 
 
-def _is_preprocessed(meta) -> bool:
-    return isinstance(meta, dict) and meta.get("pre_processed", False)
-
-
 def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_dir: str,
                              force_bundle_h5: bool, build_flux_cube: bool, *,
                              flux_unit: Optional[str] = None, ranges: Optional[Dict] = None) -> List[str]:
@@ -440,15 +434,7 @@ def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_di
     model_dir = os.path.join(base_dir, name)
     ensure_dir(model_dir)
 
-    src, meta = _download_from_first_source(name, sources, grabs, model_dir, ranges)
-
-    if _is_preprocessed(meta):
-        print("Pre-processed data (skipping cleaning)")
-        essential = ["flux_cube.bin", "lookup_table.csv"]
-        missing = [f for f in essential if not os.path.exists(os.path.join(model_dir, f))]
-        print(f"Missing: {', '.join(missing)}" if missing else "All essential files present")
-        return [f"missing {', '.join(missing)}"] if missing else []
-
+    src, _ = _download_from_first_source(name, sources, grabs, model_dir, ranges)
     _print_cleaning_report(_clean_grid(name, model_dir, flux_unit))
 
     if not _txt_files(model_dir):

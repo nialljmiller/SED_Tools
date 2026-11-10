@@ -472,7 +472,7 @@ class SED:
             Name of the spectral grid to fetch (e.g., 'Kurucz2003all')
         source : str, optional
             Force a specific source: 'svo', 'msg', 'mast', 'njm'.
-            If None, tries NJM first (pre-processed), then others
+            If None, tries NJM first, then others
         teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max : float, optional
             Download and return only spectra within these ranges (see Notes)
         workers : int
