@@ -2,8 +2,25 @@
 Changelog
 =========
 
-Version 0.6.0 (unreleased)
---------------------------
+Version 0.6.0 (November 2026)
+-----------------------------
+
+A filter set's ``DetectorType`` tag tells MESA how to read its curves. Changing
+only the tag (what ``--detector-type`` on ``filters-compose`` does) leaves the
+numbers in the other convention, so MESA reads a tilted curve: up to 20 % across
+SDSS g and 0.04 mag in g for a 3500 K blackbody. 0.6.0 adds *convert*, which
+rewrites the curve with the tag, and *correct*, for a set that was mislabelled.
+Loaded with MESA's own ``load_filter``, a converted file reads identically to the
+native one (to 4e-16); a relabelled one does not:
+
+.. figure:: _static/detector_convert_check.png
+   :width: 100%
+   :alt: SDSS g and 2MASS J, native, converted and relabel-only, as MESA reads them
+
+   SDSS g (photon to energy) and 2MASS J (energy to photon). Left: the files as
+   stored. Middle: what MESA's detector-branch ``load_filter`` reads. Right: the
+   shape difference from the native file, with blackbody AB magnitudes.
+
 
 Correcting or converting a detector type
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

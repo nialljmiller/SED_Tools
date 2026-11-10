@@ -59,7 +59,7 @@ from . import (_constants, _flux, _lookup_io, _resample, collision_config, confi
                parsing, spectra_cleaner, spectrum_io, svo_regen_spectra_lookup, svo_spectra_grabber,
                terminal_plots, ui_utils)
 
-__version__ = "0.5.1"
+__version__ = "0.6.0"
 
 
 def list_txt_spectra(model_dir: str) -> list[str]:
