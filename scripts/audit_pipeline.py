@@ -10,15 +10,18 @@ Audits every installed stellar atmosphere model for:
   5. Wien peak position sanity
   6. Wavelength coverage
 
-Run from SED_Tools root:
-    python audit_pipeline.py
+It audits the grids in $SED_STELLAR_DIR, else in the configured stellar_models folder:
+    python scripts/audit_pipeline.py
 
-Output:
+Output, in the working directory:
     audit_report.txt        — full per-model results
     audit_summary.png       — bolometric ratio bar chart per model
     wl_coverage.png         — wavelength range horizontal bars per model
     sed_comparison_hot.png  — overlaid SEDs near a hot Teff across all models
     sed_comparison_cold.png — overlaid SEDs near a cold Teff across all models
+    sed_bb_overlay.png      — one SED per model over the blackbody at its Teff
+    rawcube_diag_<model>_<spectrum>.png — for each raw-vs-cube node over the threshold
+                              (up to 3 per model without fluxcube_library/)
 """
 
 import os
@@ -32,27 +35,16 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 
+from sed_tools import STELLAR_DIR_DEFAULT
+from sed_tools._constants import SIGMA, planck_flam
+from sed_tools.cube.fileio import flux_offset, read_axes
+
 # ---------------------------------------------------------------------------
-SIGMA   = 5.670374419e-5   # erg s-1 cm-2 K-4
-H       = 6.62607015e-27   # erg s
-C_CGS   = 2.99792458e10    # cm/s
-HC_ANG  = H * C_CGS * 1e8  # erg·Å (hc with λ in Å)
-K_B     = 1.380649e-16     # erg/K
 FLOOR   = 1e-300
 N_SAMPLE = 30              # raw files to sample per model
 BOL_TOL  = 0.30            # 30% tolerance on bolometric ratio
 WIEN_TOL = 0.40            # 40% tolerance on Wien peak position ratio
 RAW_CUBE_TOL = 0.10        # 10% max relative error between raw file and cube node
-
-# Models where sigma*T^4 bolometric check is not applicable.
-# grams: distance-calibrated AGB dust shells — teff is central star but flux
-#        is whole system at standard distance, so sigma*T^4 is not applicable.
-# bbody: analytic blackbody — integral vs sigma*T^4 comparison is circular.
-BOL_CHECK_EXEMPT = {"grams_cgrid", "grams_ogrid", "bbody"}
-
-# Models where Wien peak position check is not applicable.
-# grams: dust shells have no photospheric Wien peak.
-WIEN_CHECK_EXEMPT = {"grams_cgrid", "grams_ogrid"}
 
 # Below this Teff the continuum is dominated by molecular bands; the smoothed
 # flux peak does not reliably locate the true Wien peak.
@@ -71,13 +63,6 @@ CUBE_MIN_NONZERO_FRAC = 0.5
 # ---------------------------------------------------------------------------
 
 
-def planck_flam(wl_ang, teff):
-    """π*B_λ in erg/cm²/s/Å. wl_ang in Å, teff in K."""
-    l   = wl_ang * 1e-8
-    exp = np.minimum(HC_ANG / (wl_ang * K_B * teff), 700.0)
-    return np.pi * (2 * H * C_CGS**2 / l**5) / (np.exp(exp) - 1.0) * 1e-8
-
-
 def wien_peak_ang(teff):
     """Wien peak wavelength in Å."""
     return 2.897771955e7 / teff
@@ -93,28 +78,14 @@ def expected_bol_in_range(teff, wl_min, wl_max, n=2000):
     return bol_range, fraction
 
 
-def read_cube_header(cube_path):
+def read_cube(cube_path):
+    """A flux_cube.bin's Teff, log g, [M/H] and wavelength axes, and its flux memory-mapped as stored:
+    flux[:, i_m, i_l, i_t] is one node's spectrum."""
     with open(cube_path, "rb") as f:
-        nt, nl, nm, nw = struct.unpack("4i", f.read(16))
-        teff = np.frombuffer(f.read(8*nt), dtype=np.float64)
-        logg = np.frombuffer(f.read(8*nl), dtype=np.float64)
-        meta = np.frombuffer(f.read(8*nm), dtype=np.float64)
-        wl   = np.frombuffer(f.read(8*nw), dtype=np.float64)
-    return teff, logg, meta, wl
-
-
-def read_cube_node(cube_path, teff_grid, logg_grid, meta_grid, wl_grid,
-                   i_t, i_l, i_m):
-    nt, nl, nm, nw = len(teff_grid), len(logg_grid), len(meta_grid), len(wl_grid)
-    header_bytes = 16 + 8*(nt + nl + nm + nw)
-    # File is written (W,M,L,T) layout
-    fl = np.empty(nw, dtype=np.float64)
-    with open(cube_path, "rb") as f:
-        for w in range(nw):
-            offset = header_bytes + (w*(nm*nl*nt) + i_m*(nl*nt) + i_l*nt + i_t) * 8
-            f.seek(offset)
-            fl[w] = struct.unpack("d", f.read(8))[0]
-    return fl
+        shape = struct.unpack("4i", f.read(16))
+        axes = read_axes(f, *shape)
+    flux = np.memmap(cube_path, dtype=np.float64, mode="r", offset=flux_offset(*shape), shape=shape[::-1])
+    return (*axes, flux)
 
 
 def parse_header_flags(filepath):
@@ -285,7 +256,7 @@ def audit_model(model_dir):
                 # Store for SED comparison plots and raw vs cube comparison
                 result["sampled_files"].append((teff, flags["logg"], flags["meta"], s))
 
-                if len(wl) > 10 and name not in BOL_CHECK_EXEMPT:
+                if len(wl) > 10:
                     bol = float(np.trapezoid(np.maximum(fl, 0), wl))
                     expected_in_range, frac = expected_bol_in_range(
                         teff, float(wl.min()), float(wl.max())
@@ -294,11 +265,11 @@ def audit_model(model_dir):
                     if frac >= 0.05 and expected_in_range > 0:
                         result["bol_ratios_raw"].append(bol / expected_in_range)
 
-                # Wien peak check — skip for exempt models, band-dominated Teffs,
-                # and UV/EUV opacity-dominated hot compact objects.
+                # Wien peak check — skip band-dominated Teffs and UV/EUV
+                # opacity-dominated hot compact objects.
                 wl_wien = wien_peak_ang(teff)
                 fl_pos  = np.maximum(fl, 0)
-                wien_exempt       = name in WIEN_CHECK_EXEMPT or teff < WIEN_BAND_DOMINATED_TEFF_MAX
+                wien_exempt       = teff < WIEN_BAND_DOMINATED_TEFF_MAX
                 wien_uv_dominated = wl_wien < WIEN_UV_OPACITY_WL_THRESHOLD
                 wien_in_range     = float(wl.min()) < wl_wien < float(wl.max())
                 if not wien_exempt and not wien_uv_dominated and fl_pos.max() > 0 and wien_in_range:
@@ -328,7 +299,7 @@ def audit_model(model_dir):
     result["library_exists"] = (model_dir / "fluxcube_library").is_dir()
 
     try:
-        teff_g, logg_g, meta_g, wl_g = read_cube_header(cube_path)
+        teff_g, logg_g, meta_g, wl_g, cube_flux = read_cube(cube_path)
         result["cube_grid"] = {
             "nt": len(teff_g), "nl": len(logg_g),
             "nm": len(meta_g), "nw": len(wl_g),
@@ -415,8 +386,7 @@ def audit_model(model_dir):
             if raw.ndim != 2 or raw.shape[1] < 2:
                 continue
             wl_raw, fl_raw = raw[:, 0], raw[:, 1]
-            fl_cube = read_cube_node(cube_path, teff_g, logg_g, meta_g, wl_g,
-                                     i_t, i_l, i_m)
+            fl_cube = np.array(cube_flux[:, i_m, i_l, i_t])
             if fl_cube.max() <= 0:
                 result["raw_vs_cube_snap_skipped"] += 1
                 result["raw_vs_cube_skip_reasons"]["zero_flux_cube_node"] += 1
@@ -522,13 +492,12 @@ def audit_model(model_dir):
     for i_t in t_indices:
         teff = float(teff_g[i_t])
         try:
-            fl_cube = read_cube_node(cube_path, teff_g, logg_g, meta_g, wl_g,
-                                     i_t, i_l, i_m)
+            fl_cube = np.array(cube_flux[:, i_m, i_l, i_t])
             n_neg = int(np.sum(fl_cube < 0))
             result["cube_neg_counts"].append(n_neg)
 
             bol = float(np.trapezoid(np.maximum(fl_cube, 0), wl_g))
-            if teff > 0 and name not in BOL_CHECK_EXEMPT:
+            if teff > 0:
                 expected_in_range, frac = expected_bol_in_range(
                     teff, float(wl_g[0]), float(wl_g[-1])
                 )
@@ -605,9 +574,7 @@ def format_report(results):
             lines.append(f"  Negative raw flux points: {r['n_negative_raw']} (across sampled files)")
 
         # Wien peak check
-        if r["name"] in WIEN_CHECK_EXEMPT:
-            lines.append("  Wien peak   : EXEMPT (non-photospheric model)")
-        elif r["wien_deviations"]:
+        if r["wien_deviations"]:
             wd = r["wien_deviations"]
             med_wd = float(np.median(wd))
             lines.append(f"  Wien peak   : median ratio={med_wd:.3f}  "
@@ -630,9 +597,7 @@ def format_report(results):
                          f"{WIEN_BAND_DOMINATED_TEFF_MAX:.0f} K (band-dominated continuum)")
 
         # Bolometric check (raw)
-        if r["name"] in BOL_CHECK_EXEMPT:
-            lines.append("  Bolometric check: EXEMPT (distance-calibrated model, σT⁴ not applicable)")
-        elif r["bol_ratios_raw"]:
+        if r["bol_ratios_raw"]:
             ratios = r["bol_ratios_raw"]
             med  = float(np.median(ratios))
             std  = float(np.std(ratios))
@@ -730,7 +695,7 @@ def format_report(results):
                 elif not (1 - BOL_TOL < med < 1 + BOL_TOL):
                     lines.append(f"  *** CUBE BOL RATIO MEDIAN OUT OF RANGE [{1-BOL_TOL:.1f}, {1+BOL_TOL:.1f}]")
                     ok = False
-            elif r["name"] not in BOL_CHECK_EXEMPT and r["cube_exists"]:
+            else:
                 lines.append("  Bol ratio (cube): skipped (wl coverage <5% of σT⁴ for all nodes)")
 
         for e in r["errors"]:
@@ -830,12 +795,11 @@ def _extract_cube_sed(cube_path, teff, logg, meta):
     Returns (wl_array, fl_array) or (None, None) on failure.
     """
     try:
-        teff_g, logg_g, meta_g, wl_g = read_cube_header(cube_path)
+        teff_g, logg_g, meta_g, wl_g, flux = read_cube(cube_path)
         i_t = int(np.argmin(np.abs(teff_g - teff)))
         i_l = int(np.argmin(np.abs(logg_g - logg)))
         i_m = int(np.argmin(np.abs(meta_g - meta)))
-        fl  = read_cube_node(cube_path, teff_g, logg_g, meta_g, wl_g, i_t, i_l, i_m)
-        return wl_g, fl
+        return wl_g, np.array(flux[:, i_m, i_l, i_t])
     except Exception:
         return None, None
 
@@ -1115,7 +1079,7 @@ def make_raw_cube_diag_plots(r, out_dir="."):
         return
 
     try:
-        teff_g, logg_g, meta_g, wl_g = read_cube_header(cube_path)
+        teff_g, logg_g, meta_g, wl_g, cube_flux = read_cube(cube_path)
     except Exception:
         return
 
@@ -1139,8 +1103,7 @@ def make_raw_cube_diag_plots(r, out_dir="."):
             i_t = int(np.argmin(np.abs(teff_g - teff_n)))
             i_l = int(np.argmin(np.abs(logg_g - logg_n)))
             i_m = int(np.argmin(np.abs(meta_g - meta_n)))
-            fl_cube = read_cube_node(cube_path, teff_g, logg_g, meta_g, wl_g,
-                                     i_t, i_l, i_m)
+            fl_cube = np.array(cube_flux[:, i_m, i_l, i_t])
 
             wl_lo = max(float(wl_raw.min()), float(wl_g.min()))
             wl_hi = min(float(wl_raw.max()), float(wl_g.max()))
@@ -1226,8 +1189,6 @@ def make_raw_cube_diag_plots(r, out_dir="."):
 
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
-    from sed_tools.models import STELLAR_DIR_DEFAULT
-
     stellar_dir = Path(os.environ.get("SED_STELLAR_DIR", STELLAR_DIR_DEFAULT))
     print(f"Auditing models in: {stellar_dir}")
 
