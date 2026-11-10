@@ -283,7 +283,7 @@ def detect_units_single_file(filepath: str) -> Optional[UnitInfo]:
     
     if header_units['wavelength_unit']:
         wl_unit = header_units['wavelength_unit']
-        wl_factor = WAVELENGTH_FACTORS.get(wl_unit, 1.0)
+        wl_factor = WAVELENGTH_FACTORS[wl_unit]
         wl_conf = 'high'
         wl_source = 'header'
     else:
@@ -370,7 +370,7 @@ def detect_catalog_units(txt_files: List[str], sample_fraction: float = 0.10) ->
     
     catalog_units = UnitInfo(
         wavelength_unit=consensus_wl,
-        wavelength_factor=WAVELENGTH_FACTORS.get(consensus_wl, 1.0),
+        wavelength_factor=WAVELENGTH_FACTORS[consensus_wl],
         flux_type=consensus_flux,
         flux_factor=_representative(detections, consensus_wl, consensus_flux).flux_factor,
         confidence=confidence,

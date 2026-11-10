@@ -85,7 +85,7 @@ def read_grid_nodes(model_dir: Union[str, Path]) -> pd.DataFrame:
     rows = []
     for f in txts:
         h = parse_header(str(f))
-        row = {axis: float(h.get(axis, float("nan"))) for axis in _AXES}
+        row = {axis: h[axis] for axis in _AXES}
         rows.append({**row, "filename": f.name, "path": str(f.resolve())})
     return pd.DataFrame(rows, columns=list(_AXES) + ["filename", "path"])
 

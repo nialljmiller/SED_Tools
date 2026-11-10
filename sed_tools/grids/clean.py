@@ -297,11 +297,11 @@ def clean_model_dir(
         logger.warning(
             "%s: the sampled files gave no grid-wide units (status: %s); %d spectra were "
             "converted using units detected file by file.",
-            model_dir, detection_stats.get('status', 'unknown'), n_per_file,
+            model_dir, detection_stats['status'], n_per_file,
         )
-    elif catalog_units is None and detection_stats.get('status') != 'already_standardized':
+    elif catalog_units is None and detection_stats['status'] != 'already_standardized':
         print(f"[clean] Warning: Could not determine spectral grid units. "
-              f"Status: {detection_stats.get('status', 'unknown')}")
+              f"Status: {detection_stats['status']}")
     if 'renormed' in summary:
         ratios = list(summary['renormed'].values())
         logger.warning(
@@ -328,11 +328,11 @@ _UNCONVERTED = ('skipped_invalid', 'skipped_index', 'error')
 def _print_detected_units(catalog_units: Optional[UnitInfo], stats: Dict) -> None:
     """The grid's units, or that the sample was already standardized; undetermined units are reported after cleaning."""
     if catalog_units:
-        print(f"[clean] Spectral grid units (from {stats.get('sample_size', '?')} samples): "
-              f"λ={catalog_units.wavelength_unit} ({stats.get('wavelength_agreement', '?')}), "
-              f"flux={catalog_units.flux_type} ({stats.get('flux_agreement', '?')})")
-    elif stats.get('status') == 'already_standardized':
-        print(f"[clean] Spectral grid already standardized (all {stats.get('sample_size', '?')} samples)")
+        print(f"[clean] Spectral grid units (from {stats['sample_size']} samples): "
+              f"λ={catalog_units.wavelength_unit} ({stats['wavelength_agreement']}), "
+              f"flux={catalog_units.flux_type} ({stats['flux_agreement']})")
+    elif stats['status'] == 'already_standardized':
+        print(f"[clean] Spectral grid already standardized (all {stats['sample_size']} samples)")
 
 
 def _clean_all_files(txt_files: List[str], catalog_units: Optional[UnitInfo],
