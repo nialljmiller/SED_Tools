@@ -1,12 +1,11 @@
 {
   "version": "1.0",
-  "generated": "2026-11-06T23:12:55.480990",
-  "base_url": "http://nillmill.ddns.net/sed_tools",
+  "generated": "2026-11-10T20:16:59.536740",
   "statistics": {
     "total_models": 8,
     "complete_models": 7,
     "total_spectra": 24625,
-    "total_size_bytes": 110708778618,
+    "total_size_bytes": 110708778338,
     "total_size_human": "103.11 GB",
     "total_facilities": 219,
     "total_filters": 12259
@@ -48,7 +47,7 @@
       "has_lookup_table": true,
       "has_h5_bundle": true,
       "spectra_count": 8092,
-      "size_bytes": 920213404,
+      "size_bytes": 920213139,
       "size_human": "877.58 MB",
       "manifest_passes": true
     },
@@ -68,7 +67,7 @@
       "has_lookup_table": true,
       "has_h5_bundle": true,
       "spectra_count": 588,
-      "size_bytes": 42284889,
+      "size_bytes": 42284874,
       "size_human": "40.33 MB",
       "manifest_passes": true
     },
@@ -19248,8 +19247,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 977587,
-            "size_human": "954.67 KB",
+            "size_bytes": 977521,
+            "size_human": "954.61 KB",
             "description": "Las Cumbres 1-m network Sinistro imager: Bessell and SDSS filters",
             "svo_instruments": []
           },
@@ -19290,8 +19289,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 970857,
-            "size_human": "948.10 KB",
+            "size_bytes": 970791,
+            "size_human": "948.04 KB",
             "description": "Spectral cameras on the Las Cumbres 2-m Faulkes Telescopes",
             "svo_instruments": []
           }
@@ -31141,7 +31140,7 @@
       }
     },
     "properties_definitions": {
-      "module": "sed_tools.filter_properties (SED_Tools 0.5.1)",
+      "module": "sed_tools.filter_properties (SED_Tools 0.6.0)",
       "units": {
         "WavelengthMean": "Angstrom",
         "WavelengthPivot": "Angstrom",
