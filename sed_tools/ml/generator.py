@@ -293,13 +293,12 @@ class SEDGenerator(Engine):
             teff = p_val[idx, 0] * self.scaler_params['teff_std'] + self.scaler_params['teff_mean']
             logg = p_val[idx, 1] * self.scaler_params['logg_std'] + self.scaler_params['logg_mean']
             meta = p_val[idx, 2] * self.scaler_params['meta_std'] + self.scaler_params['meta_mean']
-            valid = m_val[idx] > 0.5
-            if valid.sum() > 0:
-                ax.loglog(self.wavelength_grid[valid], true_flux[valid], 'b-', alpha=0.7, label='True', linewidth=1.5)
-                ax.loglog(self.wavelength_grid[valid], pred_flux[valid], 'r--', alpha=0.7, label='Generated',
-                          linewidth=1.5)
-                err = np.median(np.abs(pred[valid] - true[valid])) * 100
-                ax.set_title(f'T={teff:.0f}K, g={logg:.1f}, [M/H]={meta:.1f}\nErr={err:.1f}%', fontsize=10)
+            valid = m_val[idx] > 0.5  # at least 30% of the grid in every training sample
+            ax.loglog(self.wavelength_grid[valid], true_flux[valid], 'b-', alpha=0.7, label='True', linewidth=1.5)
+            ax.loglog(self.wavelength_grid[valid], pred_flux[valid], 'r--', alpha=0.7, label='Generated',
+                      linewidth=1.5)
+            err = np.median(np.abs(pred[valid] - true[valid])) * 100
+            ax.set_title(f'T={teff:.0f}K, g={logg:.1f}, [M/H]={meta:.1f}\nErr={err:.1f}%', fontsize=10)
             ax.set_xlabel('Wavelength (Å)')
             ax.set_ylabel('Flux')
             ax.legend(fontsize=8)

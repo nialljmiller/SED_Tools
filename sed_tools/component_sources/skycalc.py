@@ -472,7 +472,7 @@ def _build_site(site_dir: Path, site: str, client, points: Sequence[Tuple[float,
     grid = _load_grid(site_dir, site, parameters, fetch_resolution, store_resolution)
     known = {e["file"] for e in grid.entries}
     versions = set(filter(None, [grid.model_version]))
-    interfaces = set(filter(None, str((grid.parameters or {}).get("interface", "")).split("; ")))
+    interfaces = set(filter(None, grid.parameters.get("interface", "").split("; ")))
 
     for airmass, pwv in points:
         name = _file_name(airmass, pwv)

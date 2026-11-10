@@ -168,14 +168,13 @@ def clean_curve(wl, tr, *, sentinel: Optional[float] = None, normalize: bool = F
         notes.append(f"{dropped} undefined samples dropped")
     if merged:
         notes.append(f"{merged} duplicate wavelengths averaged")
-    if normalize:
-        peak = float(tr.max())
-        if peak > 0:
-            if peak != 1.0:
-                notes.append(f"scaled by {1.0 / peak:.6g} (peak normalised)")
-            tr = tr / peak
     if len(wl) < 2 or not (tr > 0).any():
         raise ValueError("curve has fewer than 2 samples or no positive transmission")
+    if normalize:
+        peak = float(tr.max())
+        if peak != 1.0:
+            notes.append(f"scaled by {1.0 / peak:.6g} (peak normalised)")
+        tr = tr / peak
     return wl, tr, "; ".join(notes)
 
 
