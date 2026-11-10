@@ -100,10 +100,11 @@ def zip_bytes(members):
 
 
 def fits_table(columns, name=None, header=None, fmt="D"):
-    """A FITS binary table of ``columns`` [(name, unit or None, values)]."""
+    """A FITS binary table of ``columns`` [(name, unit or None, values)], in ``fmt`` (TIME always "D")."""
     from astropy.io import fits
 
-    hdu = fits.BinTableHDU.from_columns([fits.Column(name=n, format=fmt, unit=u, array=np.asarray(v))
+    hdu = fits.BinTableHDU.from_columns([fits.Column(name=n, format="D" if n == "TIME" else fmt, unit=u,
+                                                     array=np.asarray(v))
                                          for n, u, v in columns], name=name)
     hdu.header.update(header or {})
     return hdu
@@ -1500,7 +1501,7 @@ SWIFT_GRID = np.arange(1600.0, 8001.0, 10.0)
 
 def uvot_files(root):
     """Swift/UVOT's CALDB files under ``root``: filter transmissions, mirror and instrument areas,
-    sensitivity corrections and the effective-area files."""
+    sensitivity corrections and the effective-area files, in single precision as CALDB writes them."""
     grid = SWIFT_GRID
     instea = 60.0 * gauss(3000.0, 1500.0, grid)
     filt = {f: 0.9 * gauss(c, 300.0, grid) for f, c in
@@ -1508,16 +1509,16 @@ def uvot_files(root):
     files = {
         root + swift.FTRANS: fits_file(*[
             fits_table([("ENERGY", "eV", 12398.4 / grid), ("WAVELENGTH", "angstrom", grid), ("TRANSMIS", "", t)],
-                       "TRANSMISSION" + f, {"FILTER": f}) for f, t in filt.items()]),
+                       "TRANSMISSION" + f, {"FILTER": f}, "E") for f, t in filt.items()]),
         root + swift.MIRROR: fits_file(fits_table([
             ("ENERGY", "eV", 12398.4 / grid[1:441]), ("WAVELENGTH", "angstrom", grid[1:441]),
-            ("EA", "cm**2", np.full(440, 590.0))], "MIRROREFFAREA")),
+            ("EA", "cm**2", np.full(440, 590.0))], "MIRROREFFAREA", fmt="E")),
         root + swift.INSTEA: fits_file(fits_table([
             ("ENERGY", "eV", 12398.4 / grid), ("WAVELENGTH", "angstrom", grid), ("EA", "cm**2", instea)],
-            "INSTEFFAREA")),
+            "INSTEFFAREA", fmt="E")),
         root + swift.SENSCORR: fits_file(*[
             fits_table([("TIME", "s", [1.2e8, 7.9e8]), ("OFFSET", "", [0.0, 0.2]), ("SLOPE", "", [0.01, 0.0])],
-                       "SENSCORR" + f, {"MJDREFI": 51910, "MJDREFF": 7.4287037e-4}) for f in filt]),
+                       "SENSCORR" + f, {"MJDREFI": 51910, "MJDREFF": 7.4287037e-4}, "E") for f in filt]),
     }
     for band, (f, arf) in swift.BANDS.items():
         scale = 0.9 if band == "white" else 1.0
@@ -1525,7 +1526,7 @@ def uvot_files(root):
             ("ENERG_LO", "keV", 12.3984 / (grid[::-1] + 5)), ("ENERG_HI", "keV", 12.3984 / (grid[::-1] - 5)),
             ("WAVE_MIN", "angstrom", grid[::-1] + 5), ("WAVE_MAX", "angstrom", grid[::-1] - 5),
             ("SPECRESP", "cm**2", (scale * filt[f] * instea)[::-1])], "SPECRESP" + f,
-            {"FILTER": f, "CONTENT": "SPECRESP"}))
+            {"FILTER": f, "CONTENT": "SPECRESP"}, "E"))
     return files
 
 
