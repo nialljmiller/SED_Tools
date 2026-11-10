@@ -317,13 +317,12 @@ class SEDCompleter(Engine):
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Fit self.scaler_params; (X_combined, y_norm, masks), float32: X_combined is the window, then the params."""
         print("Normalizing data...")
-        # Floor at 1e-20 so log10 has no -inf. The > -25 tests below keep the floor (log10 = -20).
+        # Floored at 1e-20, no log10 is below -20: the scalers use every input point, and every extension
+        # point (each sample has at least 50).
         X_log = np.log10(np.maximum(X, 1e-20))
         y_log = np.log10(np.maximum(y, 1e-20))
-        x_valid = X_log[X_log > -25]
-        y_valid = y_log[(masks > 0.5) & (y_log > -25)]
-        if len(x_valid) == 0 or len(y_valid) == 0:
-            raise ValueError("No valid data points for normalization")
+        x_valid = X_log.ravel()
+        y_valid = y_log[masks > 0.5]
 
         self.scaler_params = {
             **param_scaler(params),
