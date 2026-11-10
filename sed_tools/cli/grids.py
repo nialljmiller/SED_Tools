@@ -215,8 +215,8 @@ class _ModelOption:
 def _print_cleaning_report(summary: Dict) -> None:
     """Print the unit-detection and per-file outcome report after clean_model_dir."""
     n_total    = summary['total']
-    det_stats  = summary.get('detection_stats', {})
-    cat_units  = summary.get('catalog_units', {}) or {}
+    det_stats  = summary['detection_stats']
+    cat_units  = summary['catalog_units'] or {}
     det_status = det_stats.get('status', '')
     sample_size = det_stats.get('sample_size', '?')
     detected_wl   = cat_units.get('wavelength', 'unknown')
@@ -419,7 +419,7 @@ def _download_cuts(name: str, src: str, g, meta, ranges: Dict) -> Dict:
         print("  No terminal to ask for axis cuts: downloading the full grid "
               "(--teff, --logg, --meta and --wavelength cut it)")
         return {}
-    return prompt_njm_axis_cuts(name, g, model_url=meta.get("model_url"))
+    return prompt_njm_axis_cuts(name, g, model_url=meta["model_url"])
 
 
 def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_dir: str,

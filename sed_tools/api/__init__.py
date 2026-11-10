@@ -281,7 +281,7 @@ def _read_listed_spectra(lookup_path: Path, grid_name: str) -> List[Spectrum]:
             continue
         try:
             wl, fl = np.loadtxt(model_dir / filename, unpack=True, comments='#')
-            params = {name: float(row.get(col, np.nan)) if col else np.nan for name, col in param_cols.items()}
+            params = {name: float(row[col]) if col else np.nan for name, col in param_cols.items()}
             spectra.append(Spectrum(wavelength=wl, flux=fl, **params, filename=filename, source_catalog=grid_name))
         except (OSError, ValueError) as exc:
             raise ValueError(f"Cannot read spectrum {model_dir / filename} listed in {lookup_path}: {exc}") from exc
