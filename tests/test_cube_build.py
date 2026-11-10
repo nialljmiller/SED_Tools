@@ -178,12 +178,12 @@ def test_ram_probe_failure_warns_and_assumes_2_gib(monkeypatch, caplog, tmp_path
     assert "SC_PHYS_PAGES is -1" in caplog.text
 
 
-def test_other_lookup_table_file_is_used_with_a_warning(tmp_path, caplog):
+def test_other_lookup_table_file_is_not_used(tmp_path):
+    # Until 0.6.0 any lookup_table*.csv was used, after a warning, when lookup_table.csv was missing.
     model = _simple_grid(tmp_path / "grid", lookup_name="lookup_table_full.csv")
-    with caplog.at_level(logging.WARNING, logger=pcf.__name__):
+    with pytest.raises(FileNotFoundError, match="lookup_table.csv not found in"):
         pcf.precompute_flux_cube(str(model), str(model / "flux_cube.bin"))
-    assert "using" in caplog.text and "lookup_table_full.csv" in caplog.text
-    assert (model / "flux_cube.bin").exists()
+    assert not (model / "flux_cube.bin").exists()
 
 
 # ---------------------------------------------------------------- mesa_prepare

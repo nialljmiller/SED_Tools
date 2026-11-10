@@ -43,6 +43,14 @@ Correcting or converting a detector type
   ``sed_tools.filters.properties.properties_record(path, vega, sun)``, a
   curve's ``properties.json`` record as NJM computes it.
 
+Changed
+~~~~~~~
+
+- **A flux cube build stops when the grid has no ``lookup_table.csv``**
+  (``FileNotFoundError``), instead of using any other ``lookup_table*.csv``
+  in the folder, such as a split grid's ``lookup_table_full.csv``, after a
+  warning.
+
 Version 0.5.1 (November 2026)
 -----------------------------
 

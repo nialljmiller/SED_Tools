@@ -93,14 +93,8 @@ def resample_to_grid(
 
 def _find_lookup_file(model_dir: str) -> str:
     lookup_file = os.path.join(model_dir, "lookup_table.csv")
-    if os.path.isfile(lookup_file):
-        return lookup_file
-    cands = [p for p in os.listdir(model_dir)
-             if p.lower().startswith("lookup_table") and p.lower().endswith(".csv")]
-    if not cands:
+    if not os.path.isfile(lookup_file):
         raise FileNotFoundError(f"lookup_table.csv not found in {model_dir}")
-    lookup_file = os.path.join(model_dir, cands[0])
-    logger.warning("lookup_table.csv not found in %s; using %s instead", model_dir, lookup_file)
     return lookup_file
 
 
