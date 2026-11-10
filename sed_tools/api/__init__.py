@@ -398,7 +398,7 @@ class SED:
         for entry in sorted(cls._model_root.iterdir()):
             cube = entry / "flux_cube.bin"
             lookup = entry / "lookup_table.csv"
-            if not entry.is_dir() or not cube.is_file():
+            if not cube.is_file():
                 continue
             info = SpectralGridInfo(name=entry.name, source='local', is_local=True)
             try:
