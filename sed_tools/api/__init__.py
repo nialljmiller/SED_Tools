@@ -925,9 +925,7 @@ class SED:
     
     def parameter_ranges(self) -> Dict[str, Tuple[float, float]]:
         """Get the parameter ranges of the active model."""
-        if self._model is None:
-            raise RuntimeError("No model loaded")
-        return self._model.parameter_ranges()
+        return self.model().parameter_ranges()
 
 
 # ------------ ML ------------
