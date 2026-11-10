@@ -350,8 +350,7 @@ def _print_representative_seds(selected: List[Dict], plot_width: int, color: str
             skipped.append(f"SED {item['letter']}: spectrum file not found: {listed or '(none listed)'}")
             continue
         wavelength, flux = read_text_spectrum(path)
-        good = np.isfinite(wavelength) & np.isfinite(flux) & (flux > 0)
-        wavelength, flux = wavelength[good], flux[good]
+        wavelength, flux = wavelength[flux > 0], flux[flux > 0]
         if wavelength.size < 2:
             skipped.append(f"SED {item['letter']}: fewer than 2 positive flux points in {path}")
             continue

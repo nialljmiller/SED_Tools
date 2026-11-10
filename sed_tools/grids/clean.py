@@ -133,11 +133,10 @@ def _clean_spectrum(
     meta, _ = _load_header(filepath)
     if meta.units_standardized:
         return 'skipped_already', 'already standardized', None
-    wl, flux = read_spectrum_data(filepath)
-    if wl.size == 0 or flux.size == 0:
+    wl, flux = read_spectrum_data(filepath)  # finite pairs only
+    if wl.size == 0:
         return 'skipped_invalid', 'empty data', None
-    valid = np.isfinite(wl) & np.isfinite(flux) & (wl > 0)
-    wl, flux = wl[valid], flux[valid]
+    wl, flux = wl[wl > 0], flux[wl > 0]
     
     if wl.size < 2:
         return 'skipped_invalid', 'no valid data points', None

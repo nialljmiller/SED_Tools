@@ -274,8 +274,7 @@ def detect_units_single_file(filepath: str) -> Optional[UnitInfo]:
         return None
     
     wl, flux = read_spectrum_data(filepath)
-    valid = np.isfinite(wl) & np.isfinite(flux) & (wl > 0)
-    wl, flux = wl[valid], flux[valid]
+    wl, flux = wl[wl > 0], flux[wl > 0]
     
     if wl.size < 2:
         return None
