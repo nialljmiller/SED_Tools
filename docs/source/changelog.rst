@@ -58,6 +58,10 @@ Fixed
   lookup table, the HDF5 bundle and the flux cube in its original units
   (e.g. ``SED.import_grid('x.TXT')`` with wavelengths in nm). The cleaner
   now takes ``.txt`` in any case, as the lookup table, bundle and cube do.
+- **python -m sed_tools.svo_regen_spectra_lookup** crashed on a grid split
+  into subgrids (``FileNotFoundError`` for ``<stellar models>/<subgrid>/``):
+  it looked for each subgrid at the top level. Each folder's table is now
+  written in that folder, subgrids included.
 
 Version 0.5.1 (November 2026)
 -----------------------------
