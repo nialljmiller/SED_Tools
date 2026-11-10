@@ -18,13 +18,13 @@ rewritten properties.json); the swap of catalog.json is atomic.
 SVO-form IDs: ?ID= resolves, besides each curve's FilterID, (1) the NJM path
 ID Facility/Instrument.band, (2) every info.json bands.<b>.svo.filterID and
 bands.<b>.svo_filterID, and (3) the "aliases" of svo_aliases.json (SVO ID ->
-NJM Facility/Instrument/band, built by filter_expansion/phase4/tools/
-build_svo_aliases.py).  A FilterID always wins over an alias.
+NJM Facility/Instrument/band; a frozen map, its builder kept at tag
+filter-expansion-record-2026-10).  A FilterID always wins over an alias.
 
 Copies: every curve the instrument's MESA index file does not list (an
 archive copy kept beside the set, e.g. SVO's version of a curve NJM holds
-from the original source, or a superseded <band>_old), and every <band>_svo
-or <band>_old, is served under its own NJM path ID Facility/Instrument.<band>,
+from the original source, or a superseded <band>_old), and every <band>_old,
+is served under its own NJM path ID Facility/Instrument.<band>,
 never under its FilterID header, so SVO-form IDs reach NJM's current curve.
 The same applies to any curve whose FilterID header is another curve's NJM
 path ID (BOK/90prime.g carries BOK/BASS.g, the path ID of

@@ -13,10 +13,11 @@ Raw captures are listed in ``manifest.jsonl`` files, one JSON object per line
 (id, kind, capture_timestamp, original_url, wayback_url, sha256, status, and
 file relative to the manifest): the format of the phase-3 harvest.  ``fetch``
 writes the same format for small gap fills.  ``build`` parses every manifest
-into ``filter_info/svo/<Facility>.json``, which generate_index.py reads offline.
+into ``OUT_DIR/<Facility>.json`` (on NJM ``source_evidence/svo-archive/parsed``), which
+generate_index.py reads offline.
 
     python -m filter_info.svo_archive fetch QUEUE.json OUT_DIR [--ids FILE]
-    python -m filter_info.svo_archive build filter_info/svo MANIFEST.jsonl [...]
+    python -m filter_info.svo_archive build source_evidence/svo-archive/parsed MANIFEST.jsonl [...]
 
 ``build`` regenerates its output from exactly the manifests it is given, so
 pass every harvest each time.
@@ -317,7 +318,7 @@ def fetch(queue_path, out_dir, ids=None, delay=3.0, attempts=3):
 
 
 # --------------------------------------------------------------------------
-# build: every manifest -> filter_info/svo/<Facility>.json
+# build: every manifest -> OUT_DIR/<Facility>.json
 # --------------------------------------------------------------------------
 def build(out_dir, manifests):
     """Parse each manifest's captures; keep the distinct versions of every record."""
@@ -389,7 +390,7 @@ def main(argv=None):
     f.add_argument("out_dir")
     f.add_argument("--ids", help="file with one SVO filter ID per line")
     f.add_argument("--delay", type=float, default=3.0)
-    b = sub.add_parser("build", help="parse manifests into filter_info/svo/<Facility>.json")
+    b = sub.add_parser("build", help="parse manifests into OUT_DIR/<Facility>.json")
     b.add_argument("out_dir")
     b.add_argument("manifests", nargs="+")
     args = parser.parse_args(argv)

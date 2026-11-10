@@ -120,7 +120,7 @@ def prepared(samples, detector, photon_response):
 
 
 def compare(a, b):
-    """(overlap, relative pivot difference) of two prepared curves, as build_svo_aliases.py computes them."""
+    """(overlap, relative pivot difference) of two prepared curves, as build_svo_aliases.py computed them (tag filter-expansion-record-2026-10)."""
     grid = np.union1d(a[0], b[0])
     x = np.interp(grid, a[0], a[1], left=0, right=0)
     y = np.interp(grid, b[0], b[1], left=0, right=0)

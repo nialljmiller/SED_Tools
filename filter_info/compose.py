@@ -2,9 +2,9 @@
 
 Inputs, lowest to highest precedence:
 
-1. SVO's archived records (``filter_info/svo/<Facility>.json``), matched to each
-   curve by its FilterID, its provenance ``svo_id``, or its band name when the
-   SVO pivot wavelength agrees within 1 %;
+1. SVO's archived records (on NJM, ``source_evidence/svo-archive/parsed/<Facility>.json``),
+   matched to each curve by its FilterID, its provenance ``svo_id``, or its band
+   name when the SVO pivot wavelength agrees within 1 %;
 2. NJM's own provenance: the curve's header row, the instrument's manifest.json
    and ``filter_expansion/provenance/<Facility>__<Instrument>.json``;
 3. hand-checked files: ``filter_info/curated/instruments/<Facility>__<Instrument>.json``.

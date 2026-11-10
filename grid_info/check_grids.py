@@ -1,4 +1,4 @@
-"""Check a stellar grid before NJM lists it: the grid counterpart of check_manifests.py and fx_validate.py.
+"""Check a stellar grid before NJM lists it: the grid counterpart of check_manifests.py.
 
 A grid (data/stellar_models/<grid>/) is listed only if all eight checks pass (design §5):
   1 upload      no rsync temp (dot) files; folders 755, files 644; no dangling symlinks

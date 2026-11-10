@@ -78,8 +78,8 @@
   "notes": "",
   "archived_copies": {
     "Kurucz2003": {
-      "held_at": "grid_holding/Kurucz2003",
       "moved_utc": "2026-10-29T22:07:11Z",
+      "deleted": "2026-11-04",
       "is": "SVO's own model Kurucz2003 ('Kurucz ODFNEW /NOVER (2003) alpha:0.0'): the [alpha/Fe] = 0 half",
       "variant": "Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s",
       "spectra": 3808,
@@ -87,16 +87,16 @@
       "cube": "byte-identical to Kurucz2003all's flux_cube.bin as served before 29 Oct 2026 (now in backups/grids-clean-*/Kurucz2003all/)"
     },
     "Kurucz2003alp": {
-      "held_at": "grid_holding/Kurucz2003alp",
       "moved_utc": "2026-10-29T22:07:11Z",
+      "deleted": "2026-11-04",
       "is": "SVO's own model Kurucz2003alp ('Kurucz ODFNEW /NOVER (2003) alpha:0.4'): the [alpha/Fe] = +0.4 half",
       "variant": "Kurucz2003all_alpha_0p40_lh_1p25_vtur_2_km_s",
       "spectra": 4284,
       "identical": "4,284 of 4,284 spectra have the same data lines as Kurucz2003all files; 3,859 are byte-identical, and the other 425 now are too (their Kurucz2003all headers were restored from these files)"
     },
     "Kurucz2003all__alpha_04": {
-      "held_at": "grid_holding/Kurucz2003all__alpha_04",
       "moved_utc": "2026-10-29T22:07:11Z",
+      "deleted": "2026-11-04",
       "is": "an old SED_Tools variant split",
       "variant": "Kurucz2003all_alpha_0p40_lh_1p25_vtur_2_km_s",
       "spectra": 4284,
@@ -104,8 +104,8 @@
       "cube": "byte-identical to Kurucz2003alp's flux_cube.bin"
     },
     "Kurucz2003all__alpha_0.4__lh_1.25__vtur_2": {
-      "held_at": "grid_holding/Kurucz2003all__alpha_0.4__lh_1.25__vtur_2",
       "moved_utc": "2026-10-29T22:07:12Z",
+      "deleted": "2026-11-04",
       "is": "an old SED_Tools variant split",
       "variant": "Kurucz2003all_alpha_0p40_lh_1p25_vtur_2_km_s",
       "spectra": 4284,
@@ -113,8 +113,8 @@
       "cube": "its lookup and cube held 3,859 of the 4,284 (the 425 short-header spectra were left out)"
     },
     "Kurucz2003all__alpha_0__lh_1.25__vtur_2": {
-      "held_at": "grid_holding/Kurucz2003all__alpha_0__lh_1.25__vtur_2",
       "moved_utc": "2026-10-29T22:07:12Z",
+      "deleted": "2026-11-04",
       "is": "an old SED_Tools variant split",
       "variant": "Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s",
       "spectra": 3808,
@@ -122,24 +122,24 @@
       "cube": "byte-identical to Kurucz2003all's flux_cube.bin as served before 29 Oct 2026 (now in backups/grids-clean-*/Kurucz2003all/)"
     },
     "Kurucz2003all__alpha_00": {
-      "held_at": "grid_holding/Kurucz2003all__alpha_00",
       "moved_utc": "2026-10-29T22:07:12Z",
+      "deleted": "2026-11-04",
       "is": "a cube-only copy (its lookup names Kurucz2003all files not in the folder)",
       "variant": "Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s",
       "spectra": 0,
       "cube": "byte-identical to Kurucz2003all's flux_cube.bin as served before 29 Oct 2026 (now in backups/grids-clean-*/Kurucz2003all/)"
     },
     "Kurucz2003_dense": {
-      "held_at": "grid_holding/Kurucz2003_dense",
       "moved_utc": "2026-10-29T22:07:12Z",
+      "deleted": "2026-11-04",
       "is": "a cube-only 'dense' copy that was never densified (76 Teff nodes)",
       "variant": "Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s",
       "spectra": 0,
       "cube": "byte-identical to Kurucz2003's flux_cube.bin"
     },
     "Kurucz2003all__alpha_0__lh_1.25__vtur_2_dense": {
-      "held_at": "grid_holding/Kurucz2003all__alpha_0__lh_1.25__vtur_2_dense",
       "moved_utc": "2026-10-29T22:07:13Z",
+      "deleted": "2026-11-04",
       "is": "a cube-only 'dense' copy that was never densified (76 Teff nodes)",
       "variant": "Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s",
       "spectra": 0,
@@ -152,8 +152,8 @@
   },
   "withdrawn": {
     "Kurucz2003all__alpha_00_dense": {
-      "held_at": "grid_holding/Kurucz2003all__alpha_00_dense",
       "moved_utc": "2026-10-29T22:07:10Z",
+      "deleted": "2026-11-04",
       "is": "a densified [alpha/Fe] = 0 cube (485 Teff x 11 logg x 8 [M/H]) built on 5 Jul 2026, before the densifier fix f436560 (27 Oct)",
       "why": "scrambled: node integrals 0.39 to 15,000 times pi*B_lambda(Teff); not a copy of any served data"
     }

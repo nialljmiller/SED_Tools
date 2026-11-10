@@ -462,7 +462,6 @@ def generate_index(data_dir: str = None, allow_model_removal: bool = False):
     index = {
         "version": "1.0",
         "generated": datetime.utcnow().isoformat(),
-        "base_url": "http://nillmill.ddns.net/sed_tools",
         "statistics": {
             "total_models": len(models),
             "complete_models": complete_models,

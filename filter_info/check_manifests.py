@@ -5,7 +5,7 @@ lists, then requires a curve for every band in ``manifest.json`` ``bands``. A ba
 from the index file makes it fall back to SVO, which overwrites NJM's curves with SVO's
 copies under the same names and exits 1 (or fails outright when SVO is down).
 
-Archive copies kept beside the current curves (``<band>_svo``, ``<band>_old``) stay out of
+Archive copies kept beside the current curves (such as ``<band>_old``) stay out of
 the index file, so MESA does not load them, and out of ``bands``: they go under
 ``archived_bands``, which the clients ignore.
 
