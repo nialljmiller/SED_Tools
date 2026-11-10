@@ -158,8 +158,7 @@ class NJMFilterGrabber:
         timeouts = (NJM_CONNECT_TIMEOUT, timeout)
         for attempt in range(3):
             try:
-                response = (self.session.get(url, timeout=timeouts, headers=headers) if headers
-                            else self.session.get(url, timeout=timeouts))
+                response = self.session.get(url, timeout=timeouts, headers=headers)
                 response.raise_for_status()
                 _STATE.reported = False  # NJM answers: a later outage is news again
                 return response
@@ -173,7 +172,7 @@ class NJMFilterGrabber:
                     raise
                 delay = (1, 60)[attempt] if status == 403 else (1, 3)[attempt]
                 if status == 429:
-                    retry_after = getattr(exc.response, "headers", {}).get("Retry-After")
+                    retry_after = exc.response.headers.get("Retry-After")
                     if retry_after and retry_after.isdigit():
                         delay = min(int(retry_after), 60)
                 logger.warning("NJM request failed (%s); retrying in %s s: %s", status or type(exc).__name__, delay, url)

@@ -22,7 +22,7 @@ import pandas as pd
 from requests import RequestException
 
 from ..component_sources.catalog import name_key
-from ..njm_mirror import _body, _write_atomic, cache_root
+from ..njm_mirror import _body, _status, _write_atomic, cache_root
 from .curve_metadata import normalize_detector_type, read_filter_header
 from .manifest import index_names
 
@@ -159,7 +159,7 @@ class FilterCatalogue:
         try:
             response = mirror._get(url, timeout=60, headers=headers or None)
         except RequestException as exc:
-            status = getattr(getattr(exc, "response", None), "status_code", None)
+            status = _status(exc)
             if status == 404:
                 raise CatalogueError(f"NJM does not serve {rel}") from exc
             if path.is_file():
@@ -184,8 +184,7 @@ class FilterCatalogue:
     def _store(path: Path, rel: str, url: str, response, meta: dict, generation: Optional[str],
                validate: Optional[Callable[[str], None]]) -> None:
         """Save a fetched file (unless NJM answered 304 Not Modified) and record when it was checked."""
-        response_headers = getattr(response, "headers", None) or {}
-        if getattr(response, "status_code", 200) != 304:
+        if response.status_code != 304:
             content = _body(response)
             if validate is not None:
                 try:
@@ -196,8 +195,8 @@ class FilterCatalogue:
             _write_atomic(path, content)
             meta = {}
         meta.update(url=url, checked=time.time(), generation=generation,
-                    etag=response_headers.get("ETag") or meta.get("etag"),
-                    last_modified=(response_headers.get("Last-Modified") or meta.get("last_modified")
+                    etag=response.headers.get("ETag") or meta.get("etag"),
+                    last_modified=(response.headers.get("Last-Modified") or meta.get("last_modified")
                                    or formatdate(path.stat().st_mtime, usegmt=True)))
         path.with_name(path.name + ".http.json").write_text(json.dumps(meta, indent=1) + "\n")
 
