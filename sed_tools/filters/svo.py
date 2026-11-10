@@ -182,7 +182,7 @@ class SVOFilterBrowser:
                     # release is "GAIA"); file them under their unique key
                     # (GAIA/GAIA0, GAIA/GAIA3) so one never overwrites another.
                     instrument = instrument_key
-                description = cells[-1].get_text(strip=True) if cells else ""
+                description = cells[-1].get_text(strip=True)
                 rows.setdefault(filter_id, FilterRow(
                     filter_id=filter_id,
                     band=band or filter_id,
@@ -283,7 +283,7 @@ class SVOFilterBrowser:
 
     def _parse_params(self, href: str) -> Dict[str, str]:
         query = urllib.parse.urlparse(urllib.parse.urljoin(svo_fps_url(), href)).query
-        return {k: v[0] for k, v in urllib.parse.parse_qs(query).items() if v}
+        return {k: v[0] for k, v in urllib.parse.parse_qs(query).items()}
 
     def _find_filter_table(self, soup: BeautifulSoup) -> Optional[BeautifulSoup]:
         for table in soup.find_all("table"):

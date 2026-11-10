@@ -202,9 +202,9 @@ class FilterCatalogue:
         path.with_name(path.name + ".http.json").write_text(json.dumps(meta, indent=1) + "\n")
 
     @staticmethod
-    def _json_object(text: str, require_bands: bool = True) -> dict:
+    def _json_object(text: str) -> dict:
         data = json.loads(text)
-        if not isinstance(data, dict) or (require_bands and not isinstance(data.get("bands"), dict)):
+        if not isinstance(data, dict) or not isinstance(data.get("bands"), dict):
             raise ValueError("not an NJM catalogue file")
         return data
 
@@ -278,7 +278,7 @@ class FilterCatalogue:
         0.4.1 installed PLANCK/HFI from SVO as ``100GHz`` …, which NJM keeps as ``100_svo`` …; curves are
         matched by the FilterID of their header and of NJM's ``info.json``, only when no band name is installed.
         """
-        bands = data.get("bands") or {}
+        bands = data["bands"]
         directory = self._library.installed_directory(facility, instrument)
         listed = directory / directory.name if directory is not None else None
         if not bands or listed is None or not listed.is_file():
@@ -300,7 +300,7 @@ class FilterCatalogue:
         except (CatalogueError, OSError, ValueError):
             return data  # without info.json the curves cannot be matched; properties.json is still as served
         renamed = {}
-        for band, record in (info.get("bands") or {}).items():
+        for band, record in info["bands"].items():
             filter_id = ((record or {}).get("curve") or {}).get("FilterID")
             if band in bands and filter_id in by_id:
                 renamed[band] = by_id[filter_id]
@@ -342,7 +342,7 @@ class FilterCatalogue:
 
         The set is the first of the installed index file, NJM's and the bundled catalogue's that has any of its bands.
         """
-        bands = data.get("bands") or {}
+        bands = data["bands"]
         served = next((names for names in self._served_band_sets(facility, instrument)
                        if any(band in names for band in bands)), None)
         if served is None:

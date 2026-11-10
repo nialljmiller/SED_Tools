@@ -459,8 +459,6 @@ class NJMFilterGrabber:
     @staticmethod
     def _saved_verified(path: Path, record: str) -> Dict[str, int]:
         """The ``{curve file: size}`` saved at ``path`` under NJM's ``record``; empty for another record or bad file."""
-        if not path.is_file():
-            return {}
         try:
             saved = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, ValueError):
