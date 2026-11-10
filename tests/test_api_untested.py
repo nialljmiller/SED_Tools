@@ -247,8 +247,8 @@ def test_ui_settings_come_from_the_config_file():
     assert config.get_ui_config() == {"terminal_plots": "auto", "terminal_color": "auto"}  # the shipped defaults
     config._CONFIG_FILE.write_text('[ui]\nterminal_plots = "Always"\nterminal_color = "sometimes"\n')
     assert config.get_ui_setting("terminal_plots") == "always"
-    with pytest.warns(UserWarning, match="Invalid ui.terminal_color value 'sometimes'; using 'auto'."):
-        assert config.get_ui_setting("terminal_color") == "auto"
+    with pytest.raises(ValueError, match=r"ui.terminal_color = 'sometimes' in .*config.toml: use auto, always or never"):
+        config.get_ui_setting("terminal_color")
     assert config.get_ui_setting("unset", default="never") == "never"
     config._CONFIG_FILE.write_text('ui = "plain"\n')
     assert config.get_ui_config() == {}

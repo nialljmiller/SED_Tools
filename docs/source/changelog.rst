@@ -43,6 +43,13 @@ Correcting or converting a detector type
   ``sed_tools.filters.properties.properties_record(path, vega, sun)``, a
   curve's ``properties.json`` record as NJM computes it.
 
+Changed
+~~~~~~~
+
+- A ``ui.*`` setting in ``~/.sed_tools/config.toml`` other than ``auto``,
+  ``always`` or ``never`` now stops with an error naming the setting and the
+  three values; it was replaced by ``auto`` after a warning.
+
 Version 0.5.1 (November 2026)
 -----------------------------
 
