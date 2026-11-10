@@ -411,188 +411,21 @@ STALE = {"site": "lsst_std", "schema": 1, "source": "Rubin", "altitude_m": 2647.
 # ======================================================================
 # Builders: saved pages, sources' files, published curves (package B: builders + ML)
 # ======================================================================
-#: Saved upstream responses; tests/fixtures/builders/README says where each comes from and how it was cut.
-FIX = TESTS / "fixtures" / "builders"
 WL = np.linspace(4000.0, 6000.0, 201)
-SWIFT_GRID = np.arange(1600.0, 8001.0, 10.0)
-
-
-def saved():
-    """URL -> the bytes it served, for every saved response."""
-    out = {}
-    for url, spec in json.loads((FIX / "sources.json").read_text()).items():
-        out[url] = (FIX / spec).read_bytes() if isinstance(spec, str) else gzip.decompress(
-            (FIX / spec["gunzip"]).read_bytes())
-    return out
-
-
-def curve(path):
-    return np.loadtxt(path, delimiter=",", skiprows=1, usecols=(0, 1), ndmin=2).T
-
-
-def check_published(inst_dir, facility, instrument, bands, components, detector):
-    """Curves, headers, MESA index and manifest of an instrument built from its team's files."""
-    assert sorted(p.stem for p in inst_dir.glob("*.dat")) == sorted(bands)
-    assert (inst_dir / instrument).read_text().split() == sorted(f"{b}.dat" for b in bands)
-    manifest = InstrumentManifest.load(inst_dir)
-    assert (manifest.facility, manifest.instrument) == (facility, instrument)
-    for band in bands:
-        path = inst_dir / f"{band}.dat"
-        header = read_filter_header(path)
-        assert header["FilterID"] == f"{facility}/{instrument}.{band}"
-        assert (header["DetectorType"], header["DetectorTypeSource"]) == (detector, "original")
-        assert (header["Components"], header["ComponentsSource"]) == (components, "original")
-        assert header["Sources"].startswith("http")
-        wl, tr = curve(path)
-        assert released_mesa_reads(path) and np.all(np.diff(wl) > 0) and tr.min() >= 0 and tr.max() > 0
-        assert manifest.published_bands[band] == components
-    assert manifest.detector_type_sources == dict.fromkeys(bands, "original")
-    return manifest
-
-
-def tar_gz(members):
-    """A .tar.gz of text ``members`` {name: text}, in memory."""
-    buf = io.BytesIO()
-    with tarfile.open(fileobj=buf, mode="w:gz") as t:
-        for name, text in members.items():
-            data = text.encode("ascii")
-            info = tarfile.TarInfo(name)
-            info.size = len(data)
-            t.addfile(info, io.BytesIO(data))
-    return buf.getvalue()
 
 
 def gauss(centre, width, wl=WL):
     return np.exp(-0.5 * ((wl - centre) / width) ** 2)
 
 
-def published(directory, band, wl, tr, components, detector=PHOTON):
-    """A curve as SVO publishes it, with its components."""
-    directory.mkdir(parents=True, exist_ok=True)
-    write_filter_file(directory / f"{band}.dat", wl, tr, detector_type=detector, source="svo",
-                      wavelength_unit="Angstrom", extra={"Components": components, "ComponentsSource": "svo"})
-
-
 def published_set(directory, band, wl, tr, components, filter_id=None):
-    """:func:`published` with a FilterID, and the set's MESA index rewritten."""
+    """A curve as SVO publishes it, with its components and FilterID, and the set's MESA index rewritten."""
     directory.mkdir(parents=True, exist_ok=True)
     write_filter_file(directory / f"{band}.dat", wl, tr, detector_type=PHOTON, source="svo",
                       filter_id=filter_id or f"{directory.parent.name}/{directory.name}.{band}",
                       wavelength_unit="Angstrom",
                       extra={"Components": components, "ComponentsSource": "svo"})
     write_filter_index(directory, directory.name)
-
-
-def text_table(wl, tr, sep=" "):
-    return "".join(f"{w}{sep}{t}\n" for w, t in zip(wl, tr))
-
-
-def ipac_page(title, um, values):
-    """An IPAC table page as 2MASS serves its relative spectral responses."""
-    rows = "".join(f"  {i + 1:3d}  {w:.3f}  {v:.4f}\n" for i, (w, v) in enumerate(zip(um, values)))
-    return (f"<html><head><title>{title}</title></head><body><b><pre>\n\\CHAR TITLE = {title}\n"
-            f"|n  |xlam     |yval     |\n|i  |r        |r        |\n{rows}</pre></body></html>")
-
-
-def twomass_files():
-    um = np.linspace(1.0, 2.5, 31)
-    files = {}
-    values = {1: 0.9, 2: 0.95, 3: 0.97, 4: 0.99, 6: 0.98, 7: 0.97, 9: 0.96, 11: 0.6}
-    for n, title in twomass.TITLES.items():
-        if n in values:
-            files[twomass.TABLE.format(n=n)] = ipac_page(title, um, np.full(um.size, values[n]))
-    for n, (lo, hi) in ((5, (1.1, 1.4)), (8, (1.5, 1.8)), (10, (2.0, 2.3))):
-        x = np.linspace(lo - 0.05, hi + 0.05, 13)
-        files[twomass.TABLE.format(n=n)] = ipac_page(twomass.TITLES[n].replace("-BAND", "K<sub>s</sub>-BAND")
-                                                     if n == 10 else twomass.TITLES[n], x,
-                                                     np.where((x > lo) & (x < hi), 0.8, 0.0))
-    return files
-
-
-def lsst_files(tag, scale=1.0):
-    nm = np.arange(300.0, 1151.0, 50.0)
-    one = text_table(nm, np.full(nm.size, 0.9))
-    files = {}
-    for name in lsst.OPTICS_FILES + ("detector", "atmos_10", "atmos_std"):
-        files[lsst._url(name, tag)] = "# header\n" + one
-    for b in lsst.BANDS:
-        filt = np.where((nm >= 500) & (nm <= 700), 0.8 * scale, 0.0)
-        files[lsst._url(f"filter_{b}", tag)] = text_table(nm, filt)
-        files[lsst._url(f"total_{b}", tag)] = text_table(nm, filt * 0.9 ** 8)
-        files[lsst._url(f"hardware_{b}", tag)] = text_table(nm, filt * 0.9 ** 7)
-    return files
-
-
-def fits_file(*tables):
-    from astropy.io import fits
-
-    buf = io.BytesIO()
-    fits.HDUList([fits.PrimaryHDU(), *tables]).writeto(buf)
-    return buf.getvalue()
-
-
-def fits_table(name, columns, header):
-    from astropy.io import fits
-
-    cols = [fits.Column(name=n, format="E" if n != "TIME" else "D", unit=u, array=np.asarray(a))
-            for n, u, a in columns]
-    hdu = fits.BinTableHDU.from_columns(cols, name=name)
-    for k, v in header.items():
-        hdu.header[k] = v
-    return hdu
-
-
-def uvot_files(root):
-    """Swift/UVOT's CALDB files under ``root``: filter transmissions, mirror and instrument areas,
-    sensitivity corrections and the effective-area files."""
-    grid = SWIFT_GRID
-    instea = 60.0 * gauss(3000.0, 1500.0, grid)
-    filt = {f: 0.9 * gauss(c, 300.0, grid) for f, c in
-            (("U", 3500), ("B", 4400), ("V", 5400), ("UVW1", 2600), ("UVW2", 1950), ("UVM2", 2250), ("WHITE", 3800))}
-    files = {
-        root + swift.FTRANS: fits_file(*[
-            fits_table("TRANSMISSION" + f, [("ENERGY", "eV", 12398.4 / grid), ("WAVELENGTH", "angstrom", grid),
-                                            ("TRANSMIS", "", t)], {"FILTER": f}) for f, t in filt.items()]),
-        root + swift.MIRROR: fits_file(fits_table("MIRROREFFAREA", [
-            ("ENERGY", "eV", 12398.4 / grid[1:441]), ("WAVELENGTH", "angstrom", grid[1:441]),
-            ("EA", "cm**2", np.full(440, 590.0))], {})),
-        root + swift.INSTEA: fits_file(fits_table("INSTEFFAREA", [
-            ("ENERGY", "eV", 12398.4 / grid), ("WAVELENGTH", "angstrom", grid), ("EA", "cm**2", instea)], {})),
-        root + swift.SENSCORR: fits_file(*[
-            fits_table("SENSCORR" + f, [("TIME", "s", [1.2e8, 7.9e8]), ("OFFSET", "", [0.0, 0.2]),
-                                        ("SLOPE", "", [0.01, 0.0])], {"MJDREFI": 51910, "MJDREFF": 7.4287037e-4})
-            for f in filt]),
-    }
-    for band, (f, arf) in swift.BANDS.items():
-        scale = 0.9 if band == "white" else 1.0
-        files[root + "cpf/arf/" + arf] = fits_file(fits_table("SPECRESP" + f, [
-            ("ENERG_LO", "keV", 12.3984 / (grid[::-1] + 5)), ("ENERG_HI", "keV", 12.3984 / (grid[::-1] - 5)),
-            ("WAVE_MIN", "angstrom", grid[::-1] + 5), ("WAVE_MAX", "angstrom", grid[::-1] - 5),
-            ("SPECRESP", "cm**2", (scale * filt[f] * instea)[::-1])], {"FILTER": f, "CONTENT": "SPECRESP"}))
-    return files
-
-
-def pds_table(rows):
-    return "PDS_VERSION_ID = PDS3\nEND\n\\begindata\n" + "".join(" ".join(f"{x:.6f}" for x in r) + "\n" for r in rows)
-
-
-def cassini_files(camera):
-    """Cassini ISS's QE, optics and system-transmission tables for ``camera``; also the grid and each band's
-    filter pair."""
-    nm = np.arange(200.0, 1057.05, 0.1)
-    qe = np.clip(0.5 - np.abs(nm - 650.0) / 1000.0, 0.01, None)
-    optics = np.full(nm.size, 0.6)
-    grid = np.arange(200.0, 1101.0)
-    files = {cassini.QE_URL: pds_table(np.c_[grid, np.interp(grid, nm, qe), np.interp(grid, nm, qe)]),
-             cassini.EFFICIENCY + cassini.CAMERAS[camera][1]: pds_table(np.c_[np.arange(200.0, 1100.1, 2.5),
-                                                                              np.full(361, 0.6)])}
-    pairs = {}
-    for i, band in enumerate(cassini.BANDS[camera]):
-        centre = 1000.0 if band == "IR4" else 300.0 + 15.0 * i
-        pairs[band] = 0.9 * np.exp(-0.5 * ((nm - centre) / 20.0) ** 2)
-        system = qe * optics * pairs[band]
-        files[cassini.systrans_url(camera, band)] = pds_table(np.c_[nm, system, system])
-    return files, nm, pairs
 
 
 def derived(values):
@@ -604,38 +437,6 @@ def team_site(name="here_team", entries=None, **kw):
     entries = entries if entries is not None else [(1.2, None, DerivedCurve("u", derived([0.5, 0.8, 0.9]), "x"))]
     return SiteAtmosphere(site=name, altitude_m=1000.0, entries=entries, source="test team",
                           kind=TEAM, model="MODTRAN", model_version="not stated", citation="Someone 2001", **kw)
-
-
-def skytable(fields, lam, trans, version="2.0.9"):
-    """SkyCalc's skytable.fits, echoing ``fields`` in its header."""
-    from astropy.io import fits
-
-    primary = fits.PrimaryHDU()
-    primary.header.add_comment(f"SkyCalc version: {version}")
-    for key, value in fields.items():
-        primary.header.add_comment(f"{key}={value}")
-    table = fits.BinTableHDU.from_columns([fits.Column("lam", "D", array=lam), fits.Column("trans", "D", array=trans)])
-    buf = io.BytesIO()
-    fits.HDUList([primary, table]).writeto(buf)
-    return buf.getvalue()
-
-
-class SkyCalcForm:
-    """The SkyCalc form: a POST returns HTML linking skytable.fits, which echoes its inputs."""
-
-    def __init__(self, echo_override=None):
-        self.posts, self.echo_override = [], echo_override or {}
-
-    def post(self, url, data=None, timeout=None, **kw):
-        self.posts.append(dict(data))
-        return Resp(b"<h4><a href=/observing/etc/tmp/abc/skytable.fits> skytable.fits</a></h4>", encoding="latin-1")
-
-    def get(self, url, timeout=None, **kw):
-        fields = {**self.posts[-1], **self.echo_override}
-        lo, hi = float(fields["SKYMODEL.WAVELENGTH.MIN"]), float(fields["SKYMODEL.WAVELENGTH.MAX"])
-        lam = np.geomspace(lo, hi, 200)
-        return Resp(skytable(fields, lam, np.full_like(lam, 0.8 ** float(fields["SKYMODEL.TARGET.AIRMASS"]))),
-                    encoding="latin-1")
 
 
 # ----------------------------------------------------------------------
