@@ -168,7 +168,10 @@ def grabber(tmp_path, monkeypatch):
 def test_a_retry_after_a_partial_download_fetches_only_what_is_missing(grabber):
     partial = _njm_set()
     partial["filters/Fac/Cam/r.dat"] = 404
-    assert grabber(partial)._download_set("Fac", "Cam").curve_failures == ["r.dat: 404 for filters/Fac/Cam/r.dat"]
+    partial["filters/Fac/Cam/Cam"] = "g.dat\n#g_old.dat\nr.dat\n"  # a '#' line of NJM's index is not a band
+    first = grabber(partial)
+    assert first._download_set("Fac", "Cam").curve_failures == ["r.dat: 404 for filters/Fac/Cam/r.dat"]
+    assert InstrumentManifest.load(f"{first.base_dir}/Fac/Cam").bands == ["g", "r"]
     retry = grabber(_njm_set())
     assert retry._download_set("Fac", "Cam").downloaded == 1
     assert retry.session.curves_requested() == ["r.dat"]

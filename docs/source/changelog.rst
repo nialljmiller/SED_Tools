@@ -48,6 +48,8 @@ Fixed
 
 - A curve row such as ``4500,abc`` put SVO matching and detector conversion out
   of step; it now stops with ``<file>, line N: expected two numbers``.
+- A ``#`` line in NJM's index of a set (``#g_old.dat``) no longer becomes a
+  band of the manifest an NJM download writes.
 
 Version 0.5.1 (November 2026)
 -----------------------------
