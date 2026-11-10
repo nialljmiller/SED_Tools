@@ -3,7 +3,7 @@ MAST, SkyCalc and the other sources.
 
 Every row runs as a test of its own (``Rows``): its own folder, monkeypatch, output and log capture,
 config file, NJM and SVO state, and random state. No row uses the network: a real request raises
-``NetworkUsed``. Each part below is extended only by the package that owns it (tests-min/PLAN.md).
+``NetworkUsed``. The core comes first; each later part holds the fakes that two or more areas share.
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ TESTS = Path(__file__).resolve().parent
 
 
 # ======================================================================
-# Core: rows, isolation, the network guard, input(), the CLI (frozen)
+# Core: rows, isolation, the network guard, input(), the CLI
 # ======================================================================
 class NetworkUsed(BaseException):
     """Raised past every ``except Exception``, so a request a row forgot to fake cannot pass silently."""
@@ -236,7 +236,7 @@ class Session:
 
 
 # ======================================================================
-# Flux cubes and grids (package C: grids + cubes)
+# Flux cubes and grids
 # ======================================================================
 GRID = "Kurucz2003all"
 #: The golden test grids; Kurucz2003all has Teff 5750, 6000, 6250; logg 4.0, 4.5; [M/H] -0.5, 0.0.
@@ -374,7 +374,7 @@ def write_lookup(model_dir, header, rows):
 
 
 # ======================================================================
-# Filters: NJM and SVO stand-ins (package A: filters)
+# Filters: NJM and SVO stand-ins
 # ======================================================================
 CURVE = "Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=original\n4000,0\n5000,1\n6000,0\n"
 
@@ -399,7 +399,7 @@ STALE = {"site": "lsst_std", "schema": 1, "source": "Rubin", "altitude_m": 2647.
 
 
 # ======================================================================
-# Builders: saved pages, sources' files, published curves (package B: builders + ML)
+# Builders: published curves and team atmospheres
 # ======================================================================
 WL = np.linspace(4000.0, 6000.0, 201)
 
@@ -430,7 +430,7 @@ def team_site(name="here_team", entries=None, **kw):
 
 
 # ----------------------------------------------------------------------
-# ML (package B)
+# ML
 # ----------------------------------------------------------------------
 def cpu_torch(t):
     """torch on the CPU, single-threaded and seeded, and matplotlib on Agg; the row skips without torch or
@@ -499,7 +499,7 @@ def fixed_generator(torch):
 
 
 # ======================================================================
-# CLI and API: grabbers, the filters API, pickers and catalogues (package D: CLI + API + golden)
+# CLI and API: grabbers and the filters API
 # ======================================================================
 GRABBERS = {
     "njm": "sed_tools.njm_spectra_grabber.NJMSpectraGrabber",

@@ -1,4 +1,4 @@
-"""Filters, as one test that walks named rows (tests-min/PLAN.md): the filter API and pickers, NJM's catalogue,
+"""Filters, as one test that walks named rows: the filter API and pickers, NJM's catalogue,
 display colours, components and atmosphere sites, detector types, the filter library with NJM or SVO down or
 failing, the SVO browser, the curve format released MESA reads, and wavelength units.
 
