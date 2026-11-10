@@ -158,8 +158,7 @@ class NJMFilterGrabber:
         timeouts = (NJM_CONNECT_TIMEOUT, timeout)
         for attempt in range(3):
             try:
-                response = (self.session.get(url, timeout=timeouts, headers=headers) if headers
-                            else self.session.get(url, timeout=timeouts))
+                response = self.session.get(url, timeout=timeouts, headers=headers)
                 response.raise_for_status()
                 _STATE.reported = False  # NJM answers: a later outage is news again
                 return response
@@ -173,7 +172,7 @@ class NJMFilterGrabber:
                     raise
                 delay = (1, 60)[attempt] if status == 403 else (1, 3)[attempt]
                 if status == 429:
-                    retry_after = getattr(exc.response, "headers", {}).get("Retry-After")
+                    retry_after = exc.response.headers.get("Retry-After")
                     if retry_after and retry_after.isdigit():
                         delay = min(int(retry_after), 60)
                 logger.warning("NJM request failed (%s); retrying in %s s: %s", status or type(exc).__name__, delay, url)
@@ -459,8 +458,6 @@ class NJMFilterGrabber:
     @staticmethod
     def _saved_verified(path: Path, record: str) -> Dict[str, int]:
         """The ``{curve file: size}`` saved at ``path`` under NJM's ``record``; empty for another record or bad file."""
-        if not path.is_file():
-            return {}
         try:
             saved = json.loads(path.read_text(encoding="utf-8"))
         except (OSError, ValueError):
@@ -495,7 +492,7 @@ class NJMFilterGrabber:
             return None
 
     def _save_index(self, facility: str, instrument: str, output_dir: Path) -> List[str]:
-        """Save NJM's index of the instrument, named after ``output_dir`` as MESA looks for it; return its lines.
+        """Save NJM's index of the instrument, named after ``output_dir`` as MESA looks for it; return what it lists.
 
         Only NJM can declare the full set: an index of the files seen so far would certify a partial one.
         """
@@ -505,7 +502,7 @@ class NJMFilterGrabber:
             raise RuntimeError(f"NJM's index of {facility}/{instrument} could not be saved in {output_dir} "
                                f"({exc}); MESA cannot read the set without it, so run again") from exc
         (output_dir / output_dir.name).write_text(response.text, encoding="utf-8")
-        return [line.strip() for line in response.text.splitlines() if line.strip()]
+        return index_names(response.text)
 
     def download_all_filters(self, facility: Optional[str] = None) -> int:
         """Download every instrument's filters (of ``facility`` only, if given); returns how many were downloaded.

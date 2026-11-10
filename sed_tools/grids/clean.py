@@ -133,11 +133,10 @@ def _clean_spectrum(
     meta, _ = _load_header(filepath)
     if meta.units_standardized:
         return 'skipped_already', 'already standardized', None
-    wl, flux = read_spectrum_data(filepath)
-    if wl.size == 0 or flux.size == 0:
+    wl, flux = read_spectrum_data(filepath)  # finite pairs only
+    if wl.size == 0:
         return 'skipped_invalid', 'empty data', None
-    valid = np.isfinite(wl) & np.isfinite(flux) & (wl > 0)
-    wl, flux = wl[valid], flux[valid]
+    wl, flux = wl[wl > 0], flux[wl > 0]
     
     if wl.size < 2:
         return 'skipped_invalid', 'no valid data points', None
@@ -203,7 +202,7 @@ def _bolometric_renorm_ratio(wl: np.ndarray, flux: np.ndarray, teff: float) -> O
 
 def rebuild_lookup_table(model_dir: str) -> str:
     """Rebuild lookup_table.csv from spectrum file headers."""
-    txt_files = sorted(glob.glob(os.path.join(model_dir, "*.txt")))
+    txt_files = sorted(glob.glob(os.path.join(model_dir, "*.[tT][xX][tT]")))  # .txt in any case
     if not txt_files:
         return ""
     
@@ -271,7 +270,7 @@ def clean_model_dir(
             Raised at once if rewriting a file fails.
     """
     _check_flux_unit_name(flux_unit)
-    txt_files = sorted(glob.glob(os.path.join(model_dir, "*.txt")))
+    txt_files = sorted(glob.glob(os.path.join(model_dir, "*.[tT][xX][tT]")))  # .txt in any case
     
     summary = {
         'total': len(txt_files),
@@ -298,11 +297,11 @@ def clean_model_dir(
         logger.warning(
             "%s: the sampled files gave no grid-wide units (status: %s); %d spectra were "
             "converted using units detected file by file.",
-            model_dir, detection_stats.get('status', 'unknown'), n_per_file,
+            model_dir, detection_stats['status'], n_per_file,
         )
-    elif catalog_units is None and detection_stats.get('status') != 'already_standardized':
+    elif catalog_units is None and detection_stats['status'] != 'already_standardized':
         print(f"[clean] Warning: Could not determine spectral grid units. "
-              f"Status: {detection_stats.get('status', 'unknown')}")
+              f"Status: {detection_stats['status']}")
     if 'renormed' in summary:
         ratios = list(summary['renormed'].values())
         logger.warning(
@@ -329,11 +328,11 @@ _UNCONVERTED = ('skipped_invalid', 'skipped_index', 'error')
 def _print_detected_units(catalog_units: Optional[UnitInfo], stats: Dict) -> None:
     """The grid's units, or that the sample was already standardized; undetermined units are reported after cleaning."""
     if catalog_units:
-        print(f"[clean] Spectral grid units (from {stats.get('sample_size', '?')} samples): "
-              f"λ={catalog_units.wavelength_unit} ({stats.get('wavelength_agreement', '?')}), "
-              f"flux={catalog_units.flux_type} ({stats.get('flux_agreement', '?')})")
-    elif stats.get('status') == 'already_standardized':
-        print(f"[clean] Spectral grid already standardized (all {stats.get('sample_size', '?')} samples)")
+        print(f"[clean] Spectral grid units (from {stats['sample_size']} samples): "
+              f"λ={catalog_units.wavelength_unit} ({stats['wavelength_agreement']}), "
+              f"flux={catalog_units.flux_type} ({stats['flux_agreement']})")
+    elif stats['status'] == 'already_standardized':
+        print(f"[clean] Spectral grid already standardized (all {stats['sample_size']} samples)")
 
 
 def _clean_all_files(txt_files: List[str], catalog_units: Optional[UnitInfo],

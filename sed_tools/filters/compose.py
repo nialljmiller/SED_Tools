@@ -86,8 +86,6 @@ def multiply_curves(
     relax an ``"error"`` rule: the curve may miss at most that fraction of
     the throughput accumulated so far, and holds its edge values there.
     """
-    if allow_partial and outside == "error":
-        outside = "zero"
     if not curves:
         raise ComponentError("Nothing to compose")
     rules = [outside if p is None else p for p in (policies or [None] * len(curves))]
@@ -341,10 +339,9 @@ def compose_band(
     for key, path in steps:
         policies.append(None)
         tolerances.append(None)
-        if key == ATMOSPHERE:
+        if key == ATMOSPHERE:  # its manifest exists: atmosphere_file found the file through it
             grid = atmosphere_grid(atmosphere_root, spec.site)  # type: ignore[arg-type,union-attr]
-            if grid is not None:
-                policies[-1], tolerances[-1] = grid.outside_range, grid.coverage_tolerance
+            policies[-1], tolerances[-1] = grid.outside_range, grid.coverage_tolerance
         elif not path.resolve().is_relative_to(instrument_dir.resolve()):
             raise ComponentError(f"{path}: component resolves outside its instrument directory")
         curve = read_curve(path)

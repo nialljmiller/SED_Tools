@@ -16,6 +16,7 @@ from typing import Dict, List
 import numpy as np
 import pandas as pd
 
+from ..grids.lookup import find_logg_column, find_metallicity_column, find_teff_column
 from .collision import discover_extra_axes
 from .model import STELLAR_DIR_DEFAULT, _read_flux_cube_header
 
@@ -166,16 +167,16 @@ def _variant_from_rows(rows: pd.DataFrame, axes: Dict[str, str], cube_path: Path
     label = "__".join(f"{k}_{v}" for k, v in axes.items()) if axes else "full_grid"
 
     # Parameter ranges come from the lookup rows, the wavelengths from the cube's header.
-    def _range(col: str):
-        if col not in rows.columns:
+    def _range(col):
+        if col is None:
             return float("nan"), float("nan"), 0
         vals = pd.to_numeric(rows[col], errors="coerce").dropna()
         uniq = np.unique(vals)
         return (float(uniq[0]), float(uniq[-1]), len(uniq)) if len(uniq) else (float("nan"), float("nan"), 0)
 
-    teff_min, teff_max, teff_n   = _range("teff")
-    logg_min, logg_max, logg_n   = _range("logg")
-    meta_min, meta_max, meta_n   = _range("metallicity")
+    teff_min, teff_max, teff_n   = _range(find_teff_column(rows.columns))
+    logg_min, logg_max, logg_n   = _range(find_logg_column(rows.columns))
+    meta_min, meta_max, meta_n   = _range(find_metallicity_column(rows.columns))
 
     if cube_path.exists():
         wavelengths = _read_flux_cube_header(cube_path)["wavelengths"]

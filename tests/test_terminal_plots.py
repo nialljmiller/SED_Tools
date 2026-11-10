@@ -17,6 +17,9 @@ def test_read_grid_nodes_fallback_has_path(tmp_path):
     nodes = read_grid_nodes(tmp_path)
     assert nodes.loc[0, "filename"] == "model.txt"
     assert nodes.loc[0, "path"] == str(spectrum.resolve())
+    # A lookup table's columns are found as everywhere else (lookup.find_*_column) since 0.6.0
+    (tmp_path / "lookup_table.csv").write_text("#file_name,T_eff,log_g,[Fe/H]\nmodel.txt,5000,4.0,-0.5\n")
+    assert read_grid_nodes(tmp_path).loc[0, ["teff", "logg", "metallicity"]].tolist() == [5000.0, 4.0, -0.5]
 
 
 def test_set_data_dir_preserves_nested_ui(tmp_path, monkeypatch):

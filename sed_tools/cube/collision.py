@@ -204,11 +204,8 @@ def load_config(
             continue
         path = Path(folder) / filename
         if path.exists():
-            try:
-                data = merge_config(data, load_toml(path, strict=True))
-                source = str(path)
-            except Exception as e:
-                raise RuntimeError(f"Error reading {path}: {e}") from e
+            data = merge_config(data, load_toml(path, strict=True))  # ValueError naming the file if it cannot be parsed
+            source = str(path)
 
     if override_dict is not None:
         data = merge_config(data, override_dict)

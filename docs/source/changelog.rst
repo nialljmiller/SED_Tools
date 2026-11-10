@@ -43,6 +43,54 @@ Correcting or converting a detector type
   ``sed_tools.filters.properties.properties_record(path, vega, sun)``, a
   curve's ``properties.json`` record as NJM computes it.
 
+Changed
+~~~~~~~
+
+- **A flux cube build stops when the grid has no ``lookup_table.csv``**
+  (``FileNotFoundError``), instead of using any other ``lookup_table*.csv``
+  in the folder, such as a split grid's ``lookup_table_full.csv``, after a
+  warning.
+- **One rule finds a lookup table's Teff, logg and [M/H] columns
+  everywhere**: ``find_teff_column``, ``find_logg_column`` and
+  ``find_metallicity_column`` (exact names, any case, in a preferred order).
+  The NJM grabber's parameter cuts, ``grid_coverage``, the grid combiner and
+  ``mesa_prepare``'s variant table each had a rule of their own, so a table
+  with e.g. ``T_eff``, ``[Fe/H]``, ``temperature`` or ``teff_err`` columns
+  could be read differently by each.
+- A ``ui.*`` setting in ``~/.sed_tools/config.toml`` other than ``auto``,
+  ``always`` or ``never`` now stops with an error naming the setting and the
+  three values; it was replaced by ``auto`` after a warning.
+- A wavelength unit a filter curve or spectrum declares that SED_Tools does
+  not know (e.g. ``WavelengthUnit=nm (air)``) now stops with an error naming
+  it; it was guessed from the values after a warning.
+- SkyCalc retries at one layer: an output that is not a FITS file reruns the
+  model, up to ``SkyCalcClient(retries=4)`` times like any other failure,
+  instead of also being polled 5 times within each attempt (at most 4
+  downloads per request, not 20).
+
+Fixed
+~~~~~
+
+- A curve row such as ``4500,abc`` put SVO matching and detector conversion out
+  of step; it now stops with ``<file>, line N: expected two numbers``.
+- A ``#`` line in NJM's index of a set (``#g_old.dat``) no longer becomes a
+  band of the manifest an NJM download writes.
+- **A spectrum named ``*.TXT`` was never cleaned,** yet it went into the
+  lookup table, the HDF5 bundle and the flux cube in its original units
+  (e.g. ``SED.import_grid('x.TXT')`` with wavelengths in nm). The cleaner
+  now takes ``.txt`` in any case, as the lookup table, bundle and cube do.
+- **python -m sed_tools.svo_regen_spectra_lookup** crashed on a grid split
+  into subgrids (``FileNotFoundError`` for ``<stellar models>/<subgrid>/``):
+  it looked for each subgrid at the top level. Each folder's table is now
+  written in that folder, subgrids included.
+- **A flux cube built from a lookup table whose file column has another
+  name** (e.g. ``spectrum``; the first column is taken) came out as one
+  subgrid per spectrum, because that column was read as a varying extra
+  axis. It is now one cube.
+- ``SED.query()`` described NJM's grids as from an "NJM pre-processed
+  mirror". They are cleaned like any other source's; the description is now
+  "NJM mirror".
+
 Version 0.5.1 (November 2026)
 -----------------------------
 

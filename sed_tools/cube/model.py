@@ -499,8 +499,7 @@ class SED:
         flux_path = self._resolve_model_path(model)
         if flux_path.parent == self.model_root and flux_path.name != "flux_cube.bin":
             return flux_path, flux_path.stem  # a loose <name>.bin under the model root
-        name = flux_path.parent.name if flux_path.parent != flux_path else flux_path.stem
-        return flux_path, name
+        return flux_path, flux_path.parent.name
 
     def _resolve_model_path(self, model: Union[str, os.PathLike[str]]) -> Path:
         path = Path(model)
@@ -549,8 +548,6 @@ def _contains_point(teff: float, logg: float, meta: float, metadata: Mapping[str
 def _parameter_distance(*entries: Tuple[float, np.ndarray]) -> float:
     total = 0.0
     for value, grid in entries:
-        if grid.size == 0:
-            continue
         nearest = _nearest_on_grid(value, grid)
         span = float(max(grid) - min(grid)) or 1.0
         total += ((value - nearest) / span) ** 2
@@ -630,8 +627,6 @@ def _range_coverage(requested: Optional[Tuple[float, float]], available: Tuple[f
 def _range_center(requested: Optional[Tuple[float, float]], grid: np.ndarray) -> float:
     if requested is not None:
         return float((requested[0] + requested[1]) / 2.0)
-    if grid.size == 0:
-        return 0.0
     return float(grid[len(grid) // 2])
 
 

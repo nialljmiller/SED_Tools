@@ -46,12 +46,12 @@ SCRIPT_URL_RE = re.compile(r'https?://\S+?\.txt(?:\.gz)?', re.IGNORECASE)
 _SPECTRUM_ERRORS = (requests.RequestException, OSError, ValueError)
 
 # ----------------- small utils -----------------
-def _http_get(url: str, session: Optional[requests.Session] = None, timeout: int = 120) -> requests.Response:
-    r = (session or requests.Session()).get(url, timeout=timeout)
+def _http_get(url: str, session: requests.Session, timeout: int = 120) -> requests.Response:
+    r = session.get(url, timeout=timeout)
     r.raise_for_status()
     return r
 
-def _download_text(url: str, session: Optional[requests.Session] = None, timeout: int = 180) -> str:
+def _download_text(url: str, session: requests.Session, timeout: int = 180) -> str:
     """Fetch a text file; "" if the server says it does not exist (404). Raises on any other failure."""
     try:
         return _http_get(url, session, timeout).text
@@ -60,7 +60,7 @@ def _download_text(url: str, session: Optional[requests.Session] = None, timeout
             return ""
         raise
 
-def _download_text_gz(url: str, session: Optional[requests.Session] = None) -> str:
+def _download_text_gz(url: str, session: requests.Session) -> str:
     """Fetch a spectrum file and gunzip it if it is gzip data. Raises on failure."""
     raw = _http_get(url, session, timeout=300).content
     if raw[:2] != b"\x1f\x8b":  # served uncompressed

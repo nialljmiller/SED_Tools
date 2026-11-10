@@ -108,9 +108,8 @@ def standardize_wavelength_array(
     arr = arr[order]
     unit_key = (unit_hint or "").strip().lower() or infer_unit_from_values(arr)
     if unit_key not in UNIT_TO_ANGSTROM:
-        logger.warning("Unrecognised wavelength unit %r; inferring from values instead", unit_hint)
-        unit_key = infer_unit_from_values(arr)
-    return arr * UNIT_TO_ANGSTROM[unit_key], order, unit_key or "angstrom"
+        raise ValueError(f"Unknown wavelength unit {unit_hint!r}: declare WavelengthUnit as angstrom, nm, um, mm or m")
+    return arr * UNIT_TO_ANGSTROM[unit_key], order, unit_key
 
 
 def load_two_column_file(path: str) -> Tuple[List[float], List[float], Dict[str, object]]:
@@ -212,7 +211,7 @@ def _standardize_file_wavelengths(
             "%s declares no wavelength unit; assuming %s from its values. "
             "Declare WavelengthUnit (filter curves: on the column row, via "
             "sed_tools.filter_metadata.write_filter_header) or pass wavelength_unit= to be explicit.", path, unit_key)
-    metadata["wavelength_unit_inferred"] = unit_key or "angstrom"
+    metadata["wavelength_unit_inferred"] = unit_key
     metadata["wavelength_unit_resolved"] = "angstrom"
     return wavelength, order
 

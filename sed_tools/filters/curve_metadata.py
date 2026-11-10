@@ -405,19 +405,15 @@ def write_filter_file(
 
 
 def _read_curve(path: PathLike) -> Tuple[np.ndarray, np.ndarray]:
-    wl: List[float] = []
-    tr: List[float] = []
+    """A curve's samples in its own units; ValueError for a line after them that is not a sample, blank or ``#``."""
+    rows: List[List[str]] = []
     with open(path, "r", encoding="utf-8") as fh:
-        for line in fh:
-            parts = line.strip().replace(",", " ").split()
-            if len(parts) < 2 or parts[0].startswith("#"):
-                continue
-            try:
-                wl.append(float(parts[0]))
-                tr.append(float(parts[1]))
-            except ValueError:
-                continue
-    return np.asarray(wl), np.asarray(tr)
+        for number, line in enumerate(fh, 1):
+            if _is_sample_row(line):
+                rows.append(line.replace(",", " ").split()[:2])
+            elif rows and line.strip() and not line.lstrip().startswith("#"):
+                raise ValueError(f"{path}, line {number}: expected two numbers, found {line.strip()!r}")
+    return np.asarray([float(w) for w, _ in rows]), np.asarray([float(t) for _, t in rows])
 
 
 def _curves_match(a: Tuple[np.ndarray, np.ndarray], b: Tuple[np.ndarray, np.ndarray]) -> bool:
@@ -709,11 +705,10 @@ def _resolved_fields(header: Mapping[str, str], client: SVOMetadataClient, detec
     """``header`` with the resolved type, plus the unit and components SVO records for ``filter_id``."""
     wavelength_unit = header.get("WavelengthUnit")
     published_components = None
-    if filter_id and source != SOURCE_ASSUMED:
-        record = client.get_filter(filter_id)  # cached by the resolution
-        if record is not None and record.wavelength_unit:
-            wavelength_unit = record.wavelength_unit
-        if record is not None and not header.get("Components"):
+    if source != SOURCE_ASSUMED:  # resolved from SVO's record of filter_id, cached by the resolution
+        record = client.get_filter(filter_id)
+        wavelength_unit = record.wavelength_unit or wavelength_unit
+        if not header.get("Components"):
             published_components = svo_components_header(record.components)
     new_fields: Dict[str, Optional[str]] = {**header, "FilterID": filter_id, "DetectorType": detector_type,
                                             "DetectorTypeSource": source, "WavelengthUnit": wavelength_unit}

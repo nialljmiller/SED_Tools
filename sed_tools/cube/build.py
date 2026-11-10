@@ -93,14 +93,8 @@ def resample_to_grid(
 
 def _find_lookup_file(model_dir: str) -> str:
     lookup_file = os.path.join(model_dir, "lookup_table.csv")
-    if os.path.isfile(lookup_file):
-        return lookup_file
-    cands = [p for p in os.listdir(model_dir)
-             if p.lower().startswith("lookup_table") and p.lower().endswith(".csv")]
-    if not cands:
+    if not os.path.isfile(lookup_file):
         raise FileNotFoundError(f"lookup_table.csv not found in {model_dir}")
-    lookup_file = os.path.join(model_dir, cands[0])
-    logger.warning("lookup_table.csv not found in %s; using %s instead", model_dir, lookup_file)
     return lookup_file
 
 
@@ -440,7 +434,7 @@ def precompute_flux_cube(
     teff_vals, logg_vals, meta_vals = _parse_axes(lookup, lookup_file, file_col)
     _require_spectra(model_dir, file_names, lookup_file)
 
-    extra_cols = discover_extra_axes(list(lookup.keys()))
+    extra_cols = discover_extra_axes([col for col in lookup if col != file_col])  # the file column is no axis
     if extra_cols:
         print(f"Extra axes detected: {', '.join(extra_cols)}")
     else:

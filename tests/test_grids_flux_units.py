@@ -61,6 +61,7 @@ def test_clean_model_dir_uses_the_flux_unit_it_is_given(tmp_path):
     from sed_tools.spectrum_io import read_text_spectrum
 
     grid = _surface_flux_grid(tmp_path / "Cool")
+    (grid / "s2.txt").rename(grid / "s2.TXT")  # until 0.6.0 left uncleaned, yet bundled and in the cube
     summary = clean_model_dir(str(grid), sample_fraction=1.0, flux_unit="flam")
 
     assert len(summary["converted"]) == 3 and summary["catalog_units"]["flux"] == "flam"

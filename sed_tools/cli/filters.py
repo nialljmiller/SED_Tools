@@ -543,10 +543,6 @@ def _picker_labels(entries: List[dict]) -> List[str]:
     return [entry.get("label") or entry["key"] for entry in entries]
 
 
-def _source_rank(source: str) -> int:
-    return _SOURCE_ORDER.index(source) if source in _SOURCE_ORDER else len(_SOURCE_ORDER)
-
-
 def _print_listing_errors(errors: List[str], shown: set) -> None:
     """Print each listing failure once per browsing session."""
     for error in _listing_failures(errors):
@@ -657,9 +653,9 @@ def _download_origin(library, entry: dict, installed: Optional[Path]) -> str:
         if len(text) > terminal_width() - _FIELD_WIDTH:
             text = f"installed in the filter directory, as {installed.relative_to(library.root)}"
         return text
-    sources = sorted(set(entry.get("sources") or []) - {"local"}, key=_source_rank)
+    sources = sorted(set(entry.get("sources") or []) - {"local"}, key=_SOURCE_ORDER.index)
     njm_down = "njm" in sources and not library.mirror.is_available()
-    names = [_SOURCE_NAMES.get(source, source) for source in sources if not (source == "njm" and njm_down)]
+    names = [_SOURCE_NAMES[source] for source in sources if not (source == "njm" and njm_down)]
     if not names:
         return "only the installed copy, which is incomplete" if "local" in (entry.get("sources") or []) \
             else "no source lists it"
@@ -744,11 +740,7 @@ class _FilterSetOption:
     """Display wrapper for a local filter-set directory, used by run_filter_combine_flow."""
     def __init__(self, path: Path, root: Path) -> None:
         self.path = path
-        try:
-            rel = path.relative_to(root)
-        except ValueError:
-            rel = path
-        self.label = f"{rel} ({_set_curve_count(path)} filters)"
+        self.label = f"{path.relative_to(root)} ({_set_curve_count(path)} filters)"
 
 
 def _set_curve_count(directory: Path) -> int:

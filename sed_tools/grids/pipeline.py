@@ -186,7 +186,7 @@ def _import_sources(src: Path) -> Tuple[List[Path], Path]:
         raise FileNotFoundError(f"Source path not found: {src}")
 
     if src.is_dir():
-        files, src_dir = sorted(src.glob("*.txt")), src
+        files, src_dir = sorted(src.glob("*.[tT][xX][tT]")), src
     elif src.is_file() and src.suffix.lower() == ".txt":
         files, src_dir = [src], src.parent
     else:
@@ -202,8 +202,7 @@ def _report_import_headers(files: List[Path], src_dir: Path) -> List[str]:
     missing: List[str] = []
     for f in files:
         h = parse_header(str(f))
-        vals = [float(h.get(k, float("nan"))) for k in ("teff", "logg", "metallicity")]
-        if any(math.isnan(v) for v in vals):
+        if any(math.isnan(h[k]) for k in ("teff", "logg", "metallicity")):
             missing.append(f.name)
 
     print(f"[import] {len(files)} .txt files in {src_dir}")

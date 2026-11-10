@@ -317,13 +317,12 @@ class SEDCompleter(Engine):
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Fit self.scaler_params; (X_combined, y_norm, masks), float32: X_combined is the window, then the params."""
         print("Normalizing data...")
-        # Floor at 1e-20 so log10 has no -inf. The > -25 tests below keep the floor (log10 = -20).
+        # Floored at 1e-20, no log10 is below -20: the scalers use every input point, and every extension
+        # point (each sample has at least 50).
         X_log = np.log10(np.maximum(X, 1e-20))
         y_log = np.log10(np.maximum(y, 1e-20))
-        x_valid = X_log[X_log > -25]
-        y_valid = y_log[(masks > 0.5) & (y_log > -25)]
-        if len(x_valid) == 0 or len(y_valid) == 0:
-            raise ValueError("No valid data points for normalization")
+        x_valid = X_log.ravel()
+        y_valid = y_log[masks > 0.5]
 
         self.scaler_params = {
             **param_scaler(params),
@@ -384,8 +383,8 @@ class SEDCompleter(Engine):
         X_val: np.ndarray,
         y_val: np.ndarray,
         output_path: str,
+        masks: np.ndarray,
         n_examples: int = 6,
-        masks: np.ndarray = None,
     ):
         """Plot example predictions vs ground truth."""
         import matplotlib.pyplot as plt
@@ -397,21 +396,16 @@ class SEDCompleter(Engine):
         for i, (ax, idx) in enumerate(zip(axes, indices)):
             y_pred = predict(self.model, X_val[idx], self.device)
             y_true = y_val[idx]
-            mask = masks[idx] if masks is not None else np.ones_like(y_true)
             y_true_flux = 10 ** (y_true * self.scaler_params['ext_log_std'] + self.scaler_params['ext_log_mean'])
             y_pred_flux = 10 ** (y_pred * self.scaler_params['ext_log_std'] + self.scaler_params['ext_log_mean'])
             wl = self.wavelength_grid
-            # The extension points: valid and outside the input window
-            valid = mask > 0.5
-            if valid.sum() > 0:
-                ax.loglog(wl[valid], y_true_flux[valid], 'b-', alpha=0.7, label='True', linewidth=1.5)
-                ax.loglog(wl[valid], y_pred_flux[valid], 'r--', alpha=0.7, label='Predicted', linewidth=1.5)
-                rel_error = np.median(np.abs(y_pred[valid] - y_true[valid]) / (np.abs(y_true[valid]) + 1e-8)) * 100
-                coverage = valid.sum() / len(valid) * 100
-                ax.set_title(f'Sample {i+1}: Error={rel_error:.1f}%, Coverage={coverage:.0f}%')
-            else:
-                ax.text(0.5, 0.5, 'No valid data', ha='center', va='center', transform=ax.transAxes)
-                ax.set_title(f'Sample {i+1}: No valid extension data')
+            # The extension points: valid and outside the input window (at least 50 in every training sample)
+            valid = masks[idx] > 0.5
+            ax.loglog(wl[valid], y_true_flux[valid], 'b-', alpha=0.7, label='True', linewidth=1.5)
+            ax.loglog(wl[valid], y_pred_flux[valid], 'r--', alpha=0.7, label='Predicted', linewidth=1.5)
+            rel_error = np.median(np.abs(y_pred[valid] - y_true[valid]) / (np.abs(y_true[valid]) + 1e-8)) * 100
+            coverage = valid.sum() / len(valid) * 100
+            ax.set_title(f'Sample {i+1}: Error={rel_error:.1f}%, Coverage={coverage:.0f}%')
             ax.set_xlabel('Wavelength (Å)')
             ax.set_ylabel('Flux (erg/s/cm²/Å)')
             ax.legend()
@@ -449,8 +443,6 @@ class SEDCompleter(Engine):
         cols = 3
         rows = (n + cols - 1) // cols
         fig, axes = plt.subplots(rows, cols, figsize=(5*cols, 4*rows))
-        if n == 1:
-            axes = np.array([axes])
         ax_flat = axes.flatten()
 
         for i, (fname, wl_in, flux_in, wl_out, flux_out) in enumerate(examples):

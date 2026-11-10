@@ -15,6 +15,7 @@ import numpy as np
 import pandas as pd
 
 from .header_parser import parse_header
+from .lookup import find_logg_column, find_metallicity_column, find_teff_column
 from .spectrum_io import read_text_spectrum
 
 _AXES = ("teff", "logg", "metallicity")
@@ -61,8 +62,8 @@ def read_grid_nodes(model_dir: Union[str, Path]) -> pd.DataFrame:
         df.columns = [c.lstrip("#").strip().lower() for c in df.columns]
 
         out = pd.DataFrame(index=df.index)
-        for axis, parts in zip(_AXES, (("teff",), ("logg", "log(g)"), ("meta", "feh", "m/h"))):
-            col = next((c for c in df.columns if any(part in c for part in parts)), None)
+        for axis, find in zip(_AXES, (find_teff_column, find_logg_column, find_metallicity_column)):
+            col = find(df.columns)
             out[axis] = pd.to_numeric(df[col], errors="coerce") if col else np.nan
         path_col = next((c for c in _PATH_COLUMNS if c in df.columns), None)
         if path_col:
@@ -85,7 +86,7 @@ def read_grid_nodes(model_dir: Union[str, Path]) -> pd.DataFrame:
     rows = []
     for f in txts:
         h = parse_header(str(f))
-        row = {axis: float(h.get(axis, float("nan"))) for axis in _AXES}
+        row = {axis: h[axis] for axis in _AXES}
         rows.append({**row, "filename": f.name, "path": str(f.resolve())})
     return pd.DataFrame(rows, columns=list(_AXES) + ["filename", "path"])
 
@@ -350,8 +351,7 @@ def _print_representative_seds(selected: List[Dict], plot_width: int, color: str
             skipped.append(f"SED {item['letter']}: spectrum file not found: {listed or '(none listed)'}")
             continue
         wavelength, flux = read_text_spectrum(path)
-        good = np.isfinite(wavelength) & np.isfinite(flux) & (flux > 0)
-        wavelength, flux = wavelength[good], flux[good]
+        wavelength, flux = wavelength[flux > 0], flux[flux > 0]
         if wavelength.size < 2:
             skipped.append(f"SED {item['letter']}: fewer than 2 positive flux points in {path}")
             continue

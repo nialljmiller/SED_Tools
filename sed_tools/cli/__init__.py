@@ -767,7 +767,3 @@ def main():
     except KeyboardInterrupt:
         print("\nsed-tools: interrupted", file=sys.stderr)
         return 130
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

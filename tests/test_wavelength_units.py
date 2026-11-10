@@ -37,8 +37,6 @@ def _write(path, rows, header=""):
       for unit, factor in [("Angstrom", 1.0), ("nm", 10.0), ("um", 1e4), ("Å", 1.0), ("microns", 1e4)]],
     # A K-band curve in nm is indistinguishable from a UV curve in A by value alone.
     pytest.param("", "nm", [(1950.0, 1.0), (2400.0, 1.0)], 10.0, "argument", "", id="argument_overrides_inference"),
-    pytest.param("# WavelengthUnit: furlongs\n", None, [(4000.0, 1.0), (5000.0, 1.0)], 1.0, None,
-                 "Unrecognised wavelength unit", id="unknown_header_unit_falls_back_to_inference"),
 ])
 def test_filter_curve_wavelength_unit(tmp_path, caplog, header, argument, rows, factor, source, warning):
     path = _write(tmp_path / "f.dat", rows, header=header)
@@ -58,3 +56,5 @@ def test_spectrum_accepts_explicit_unit(tmp_path):
     spec = load_spectrum(str(path), wavelength_unit="angstrom")
 
     np.testing.assert_allclose(spec.wavelength, [500.0, 600.0])
+    with pytest.raises(ValueError, match="Unknown wavelength unit 'nm \\(air\\)': declare WavelengthUnit as"):
+        load_spectrum(str(path), wavelength_unit="nm (air)")

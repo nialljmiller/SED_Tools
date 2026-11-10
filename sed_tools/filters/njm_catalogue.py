@@ -22,7 +22,7 @@ import pandas as pd
 from requests import RequestException
 
 from ..component_sources.catalog import name_key
-from ..njm_mirror import _body, _write_atomic, cache_root
+from ..njm_mirror import _body, _status, _write_atomic, cache_root
 from .curve_metadata import normalize_detector_type, read_filter_header
 from .manifest import index_names
 
@@ -146,20 +146,21 @@ class FilterCatalogue:
             return path
         mirror = self._online_mirror(have_copy=path.is_file() and not refresh)
         if mirror is None:
+            if not path.is_file():
+                return None
             # Offline, the cache is what was asked for; only a refresh it cannot honour is reported.
-            if path.is_file() and (refresh or not self.offline):
+            if refresh or not self.offline:
                 logger.warning("Cannot ask NJM (%s); using the cached %s, which may be out of date",
                                "offline" if self.offline else "unreachable", rel)
-            if path.is_file():
-                self._came_from(rel, "cache", meta.get("checked"), njm_unreachable=not self.offline)
-            return path if path.is_file() else None
+            self._came_from(rel, "cache", meta.get("checked"), njm_unreachable=not self.offline)
+            return path
         conditional = (("If-None-Match", "etag"), ("If-Modified-Since", "last_modified"))
         headers = {header: meta[key] for header, key in conditional if path.is_file() and meta.get(key)}
         url = f"{mirror.base_url}/{quote(rel, safe='/')}"
         try:
             response = mirror._get(url, timeout=60, headers=headers or None)
         except RequestException as exc:
-            status = getattr(getattr(exc, "response", None), "status_code", None)
+            status = _status(exc)
             if status == 404:
                 raise CatalogueError(f"NJM does not serve {rel}") from exc
             if path.is_file():
@@ -184,8 +185,7 @@ class FilterCatalogue:
     def _store(path: Path, rel: str, url: str, response, meta: dict, generation: Optional[str],
                validate: Optional[Callable[[str], None]]) -> None:
         """Save a fetched file (unless NJM answered 304 Not Modified) and record when it was checked."""
-        response_headers = getattr(response, "headers", None) or {}
-        if getattr(response, "status_code", 200) != 304:
+        if response.status_code != 304:
             content = _body(response)
             if validate is not None:
                 try:
@@ -196,15 +196,15 @@ class FilterCatalogue:
             _write_atomic(path, content)
             meta = {}
         meta.update(url=url, checked=time.time(), generation=generation,
-                    etag=response_headers.get("ETag") or meta.get("etag"),
-                    last_modified=(response_headers.get("Last-Modified") or meta.get("last_modified")
+                    etag=response.headers.get("ETag") or meta.get("etag"),
+                    last_modified=(response.headers.get("Last-Modified") or meta.get("last_modified")
                                    or formatdate(path.stat().st_mtime, usegmt=True)))
         path.with_name(path.name + ".http.json").write_text(json.dumps(meta, indent=1) + "\n")
 
     @staticmethod
-    def _json_object(text: str, require_bands: bool = True) -> dict:
+    def _json_object(text: str) -> dict:
         data = json.loads(text)
-        if not isinstance(data, dict) or (require_bands and not isinstance(data.get("bands"), dict)):
+        if not isinstance(data, dict) or not isinstance(data.get("bands"), dict):
             raise ValueError("not an NJM catalogue file")
         return data
 
@@ -278,7 +278,7 @@ class FilterCatalogue:
         0.4.1 installed PLANCK/HFI from SVO as ``100GHz`` …, which NJM keeps as ``100_svo`` …; curves are
         matched by the FilterID of their header and of NJM's ``info.json``, only when no band name is installed.
         """
-        bands = data.get("bands") or {}
+        bands = data["bands"]
         directory = self._library.installed_directory(facility, instrument)
         listed = directory / directory.name if directory is not None else None
         if not bands or listed is None or not listed.is_file():
@@ -300,7 +300,7 @@ class FilterCatalogue:
         except (CatalogueError, OSError, ValueError):
             return data  # without info.json the curves cannot be matched; properties.json is still as served
         renamed = {}
-        for band, record in (info.get("bands") or {}).items():
+        for band, record in info["bands"].items():
             filter_id = ((record or {}).get("curve") or {}).get("FilterID")
             if band in bands and filter_id in by_id:
                 renamed[band] = by_id[filter_id]
@@ -342,7 +342,7 @@ class FilterCatalogue:
 
         The set is the first of the installed index file, NJM's and the bundled catalogue's that has any of its bands.
         """
-        bands = data.get("bands") or {}
+        bands = data["bands"]
         served = next((names for names in self._served_band_sets(facility, instrument)
                        if any(band in names for band in bands)), None)
         if served is None:
