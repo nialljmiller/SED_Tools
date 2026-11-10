@@ -49,6 +49,9 @@ Changed
 - A ``ui.*`` setting in ``~/.sed_tools/config.toml`` other than ``auto``,
   ``always`` or ``never`` now stops with an error naming the setting and the
   three values; it was replaced by ``auto`` after a warning.
+- A wavelength unit a filter curve or spectrum declares that SED_Tools does
+  not know (e.g. ``WavelengthUnit=nm (air)``) now stops with an error naming
+  it; it was guessed from the values after a warning.
 
 Version 0.5.1 (November 2026)
 -----------------------------
