@@ -57,6 +57,12 @@ Changed
   ``mesa_prepare``'s variant table each had a rule of their own, so a table
   with e.g. ``T_eff``, ``[Fe/H]``, ``temperature`` or ``teff_err`` columns
   could be read differently by each.
+- A ``ui.*`` setting in ``~/.sed_tools/config.toml`` other than ``auto``,
+  ``always`` or ``never`` now stops with an error naming the setting and the
+  three values; it was replaced by ``auto`` after a warning.
+- A wavelength unit a filter curve or spectrum declares that SED_Tools does
+  not know (e.g. ``WavelengthUnit=nm (air)``) now stops with an error naming
+  it; it was guessed from the values after a warning.
 
 Fixed
 ~~~~~
@@ -77,6 +83,9 @@ Fixed
   name** (e.g. ``spectrum``; the first column is taken) came out as one
   subgrid per spectrum, because that column was read as a varying extra
   axis. It is now one cube.
+- ``SED.query()`` described NJM's grids as from an "NJM pre-processed
+  mirror". They are cleaned like any other source's; the description is now
+  "NJM mirror".
 
 Version 0.5.1 (November 2026)
 -----------------------------
