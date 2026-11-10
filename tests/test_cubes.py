@@ -19,16 +19,16 @@ import warnings
 import numpy as np
 import pytest
 
-from sed_tools import _constants, flux_cube_tool as tool, grid_densifier as gd, mesa_prepare
-from sed_tools import models as sed_models
+from sed_tools import _constants, flux_cube_tool as tool, mesa_prepare
 from sed_tools._flux import FluxCube
 from sed_tools._resample import resample_to_grid
-from sed_tools.api import SED, _build_flux_cube, _flux_cube_shortfall
+from sed_tools.api import _build_flux_cube, _flux_cube_shortfall
 from sed_tools.collision_config import (CollisionConfig, copy_global_config_to_model, load_config,
                                         match_filter_value, write_default_config)
 from sed_tools.flux_cube_tool import bolometric_magnitude
+from sed_tools.grid_densifier import densify_grid
 from sed_tools.mesa_prepare import list_variants
-from sed_tools.models import SEDModel, _build_filter_index
+from sed_tools.models import SED, SEDModel, _build_filter_index
 from sed_tools.photometry import PC_TO_M, RSUN_TO_M
 from sed_tools.precompute_flux_cube import _extra_key_to_filename, spectra_not_in_cube
 from sed_tools.spectra_cleaner import clean_model_dir
@@ -126,6 +126,8 @@ def _golden_pair(t):
 
 
 def _combine(models, output="combined"):
+    from sed_tools.api import SED  # the API's, not the models' SED
+
     np.random.seed(0)
     SED.combine([GRID, ALPHA_04], output=output, model_root=models, visualization=False)
 
@@ -393,7 +395,7 @@ def _zero_at_every_sampled_wavelength(t):
 def _densifier_line_fits(t):
     write_flux_cube(t.tmp / "src.bin", [4000.0, 8000.0], [4.0], [0.0], np.linspace(3000.0, 9000.0, 7),
                     np.ones((2, 1, 1, 7)))
-    gd.densify_grid(str(t.tmp / "src.bin"), str(t.tmp / "dense.bin"), teff_spacing=1000.0)
+    densify_grid(str(t.tmp / "src.bin"), str(t.tmp / "dense.bin"), teff_spacing=1000.0)
     lines = t.capsys.readouterr().out.splitlines()
     at = next(i for i, line in enumerate(lines) if line.startswith("Generating"))
     assert lines[at:at + 2] == ["Generating 3 synthetic Teff points (0 by ML, 3 blackbody)",
@@ -530,7 +532,7 @@ def _kurucz_cubes(t):
         work = t.tmp.parent / "densify"
         shutil.copytree(KURUCZ, work / GRID)
         _build(work / GRID)
-        gd.densify_grid(str(work / GRID / "flux_cube.bin"), str(work / "dense.bin"), teff_spacing=125.0)
+        densify_grid(str(work / GRID / "flux_cube.bin"), str(work / "dense.bin"), teff_spacing=125.0)
         _DENSIFIED["cubes"] = (FluxCube.from_file(str(work / GRID / "flux_cube.bin")),
                                FluxCube.from_file(str(work / "dense.bin")))
     return _DENSIFIED["cubes"]
@@ -575,7 +577,7 @@ def _densify_stops_on_ml_failure(t):
     _ml_generator(t, generate)
     _small_cube(t.tmp / "src.bin")
     with pytest.raises(RuntimeError, match=r"Teff=6000 logg=4\.00 meta=0\.00.*network produced NaN"):
-        gd.densify_grid(str(t.tmp / "src.bin"), str(t.tmp / "dense.bin"), teff_spacing=1000.0, ml_model="fake")
+        densify_grid(str(t.tmp / "src.bin"), str(t.tmp / "dense.bin"), teff_spacing=1000.0, ml_model="fake")
 
 
 #: name: the cube chosen from a menu of two. "0" and negative numbers used to pick cubes from the end of the list.
@@ -584,11 +586,13 @@ DENSIFIER_CHOICES = {f"densifier_menu_rejects_out_of_range_choice_{name}": reply
 
 
 def _densifier_rejects(t, reply):
+    from sed_tools.grid_densifier import run_interactive_workflow
+
     for name in ("a", "b"):
         _small_cube(t.tmp / name / "flux_cube.bin")
     t.mp.setattr("builtins.input", lambda prompt="": reply)
-    t.mp.setattr(gd, "densify_grid", lambda **kw: pytest.fail("must not run"))
-    gd.run_interactive_workflow(str(t.tmp))
+    t.mp.setattr("sed_tools.grid_densifier.densify_grid", lambda **kw: pytest.fail("must not run"))
+    run_interactive_workflow(str(t.tmp))
     assert "Invalid selection." in t.capsys.readouterr().out
 
 
@@ -600,8 +604,8 @@ def _ml_nodes_do_not_depend_on_the_block_size(t):
 
     def densify(name, ram):
         """Densify src.bin into <name>.bin as if ``ram`` bytes of RAM were available; its bytes."""
-        t.mp.setattr(gd, "_available_ram_bytes", lambda: ram)
-        gd.densify_grid(str(t.tmp / "src.bin"), str(t.tmp / f"{name}.bin"), teff_spacing=1000.0, ml_model="fake")
+        t.mp.setattr("sed_tools.grid_densifier._available_ram_bytes", lambda: ram)
+        densify_grid(str(t.tmp / "src.bin"), str(t.tmp / f"{name}.bin"), teff_spacing=1000.0, ml_model="fake")
         return (t.tmp / f"{name}.bin").read_bytes()
 
     _ml_generator(t, generate)
@@ -793,11 +797,13 @@ def _combine_menu_q(t):
 
 
 def _densifier_list_fits(t):
+    from sed_tools.grid_densifier import run_interactive_workflow
+
     name = "a-rather-long-spectral-grid-name_dense"
     write_flux_cube(t.tmp / name / "flux_cube.bin", [5750, 6000, 6250], [4.0], [0.0], [1000.0, 2000.0],
                     np.ones((3, 1, 1, 2)))
     answer(t.mp, "")
-    gd.run_interactive_workflow(base_dir=str(t.tmp))
+    run_interactive_workflow(base_dir=str(t.tmp))
     out = t.capsys.readouterr().out
     assert f"   1) {name}/flux_cube.bin\n      Teff 5750–6250 K  max gap 250 K  (3 pts)\n" in out
     assert wide_lines(out, str(t.tmp)) == []  # was 92 wide with a short name
@@ -813,12 +819,14 @@ def _mesa_invalid_choice_fits(t):
 
 
 def _densifier_spacing_asks_again(t):
+    from sed_tools.grid_densifier import run_interactive_workflow
+
     write_flux_cube(t.tmp / "grid" / "flux_cube.bin", [5000.0, 7000.0], [4.0], [0.0], [1000.0, 2000.0],
                     np.ones((2, 1, 1, 2)))
     calls = []
-    t.mp.setattr(gd, "densify_grid", lambda **kw: calls.append(kw))
+    t.mp.setattr("sed_tools.grid_densifier.densify_grid", lambda **kw: calls.append(kw))
     answer(t.mp, "1", "fine", "-5", "250", "", "")
-    gd.run_interactive_workflow(str(t.tmp))
+    run_interactive_workflow(str(t.tmp))
     assert [c["teff_spacing"] for c in calls] == [250.0]
     out = t.capsys.readouterr().out
     assert "'fine' is not a positive number; try again." in out
@@ -1416,7 +1424,7 @@ def _atmospheres_covering_the_range(t):
     _raw_cube(root / "model_a" / "flux_cube.bin", [4000.0, 5000.0, 6000.0], [1.0, 2.0, 3.0], [-1.0, 0.0, 1.0],
               [4000.0, 5000.0])
     _raw_cube(root / "model_b" / "flux_cube.bin", [4500.0, 5200.0], [1.5, 2.5], [-0.5, 0.2], [4000.0, 5000.0])
-    sed = sed_models.SED(model_root=root)
+    sed = SED(model_root=root)
     ranges = {"teff_range": (4600.0, 5500.0), "logg_range": (1.8, 2.4), "metallicity_range": (-0.3, 0.1)}
     matches = sed.find_atmospheres(**ranges)
     assert [m.name for m in matches] == ["model_a"] and matches[0].covers_range is True

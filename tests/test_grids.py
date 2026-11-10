@@ -24,14 +24,13 @@ import requests
 import sed_tools.config as config
 from sed_tools import cli, njm_filter_grabber
 from sed_tools import mast_spectra_grabber as mast, msg_spectra_grabber as msg, njm_spectra_grabber as njm
-from sed_tools import spectra_cleaner as sc, svo_spectra_grabber as svo
+from sed_tools import svo_spectra_grabber as svo
 from sed_tools._constants import SIGMA, planck_flam
 from sed_tools.api import SED, _bundle_shortfall, _flux_cube_shortfall
 from sed_tools.models import _read_flux_cube_header
 from sed_tools.precompute_flux_cube import spectra_not_in_cube
 from sed_tools.spectra_cleaner import (FLUX_UNITS, clean_model_dir, clean_spectrum_file, detect_units_from_header,
-                                       rebuild_lookup_table, recover_wavelengths_from_hdf5, undeclared_flux_unit,
-                                       validate_converted_spectrum)
+                                       rebuild_lookup_table, validate_converted_spectrum)
 from sed_tools.spectrum_io import read_text_spectrum
 from sed_tools.svo_regen_spectra_lookup import regenerate_lookup_table
 
@@ -94,6 +93,8 @@ def terminal_coverage_reports_missing_representative_spectra(t):
 @into(CLEANING)
 def recovery_warns_about_unreadable_h5(t):
     """An unreadable .h5 used to be skipped with a DEBUG message only."""
+    from sed_tools.spectra_cleaner import recover_wavelengths_from_hdf5
+
     (t.tmp / "broken.h5").write_bytes(b"not an hdf5 file")
     with t.caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
         assert recover_wavelengths_from_hdf5(str(t.tmp), "g1", 10) is None
@@ -124,7 +125,7 @@ def clean_model_dir_records_unreadable_file_and_finishes_the_rest(t):
     _spectrum(t.tmp / "a.txt")
     (t.tmp / "b.txt").mkdir()  # matches *.txt but cannot be read as a file
     _spectrum(t.tmp / "c.txt")
-    t.mp.setattr(sc.random, "sample", lambda files, n: [str(t.tmp / "a.txt")])
+    t.mp.setattr("sed_tools.spectra_cleaner.random.sample", lambda files, n: [str(t.tmp / "a.txt")])
     with pytest.raises(RuntimeError, match=r"IsADirectoryError.*\(1\): b\.txt"):
         clean_model_dir(str(t.tmp), rebuild_lookup=False, sample_fraction=0.4)
     assert _is_standardized(t.tmp / "a.txt") and _is_standardized(t.tmp / "c.txt")
@@ -152,7 +153,7 @@ def clean_model_dir_stops_at_once_when_a_rewrite_fails(t):
         calls.append(filepath)
         raise OSError(28, "No space left on device")
 
-    t.mp.setattr(sc, "write_standardized_spectrum", disk_full)
+    t.mp.setattr("sed_tools.spectra_cleaner.write_standardized_spectrum", disk_full)
     with pytest.raises(RuntimeError, match=r"a\.txt.*only its new header"):
         clean_model_dir(str(t.tmp), sample_fraction=1.0)
     assert len(calls) == 1
@@ -166,7 +167,7 @@ def clean_model_dir_warns_when_units_come_from_each_file(t):
         _spectrum(t.tmp / f"raw_{i}.txt")
     done = t.tmp / "done.txt"
     done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
-    t.mp.setattr(sc.random, "sample", lambda files, n: [str(done)])
+    t.mp.setattr("sed_tools.spectra_cleaner.random.sample", lambda files, n: [str(done)])
     with t.caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
         summary = clean_model_dir(str(t.tmp), sample_fraction=0.1)
     assert len(summary["converted"]) == 9
@@ -249,6 +250,8 @@ RECOVERED = {
 
 
 def _recovered(t, build, group, n, expected):
+    from sed_tools.spectra_cleaner import recover_wavelengths_from_hdf5
+
     with h5py.File(t.tmp / "msg.h5", "w") as f:
         build(f)
     found = recover_wavelengths_from_hdf5(str(t.tmp), group, n)
@@ -309,6 +312,8 @@ def _terminal(t, *replies):
 
 @into(FLUX)
 def clean_model_dir_stops_on_an_undeclared_flux_unit_naming_the_best_guess(t):
+    from sed_tools.spectra_cleaner import undeclared_flux_unit
+
     grid = _grid(t.tmp / "Cool")
     before = _contents(grid)
     # The range detector reads these surface fluxes (1e5-1e6) as Jansky at Earth.
@@ -370,7 +375,7 @@ def files_cleaned_one_by_one_without_a_declared_flux_unit_are_listed(t):
     grid = _grid(t.tmp / "Cool")
     done = grid / "done.txt"
     done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
-    t.mp.setattr(sc.random, "sample", lambda files, n: [str(done)])
+    t.mp.setattr("sed_tools.spectra_cleaner.random.sample", lambda files, n: [str(done)])
     with pytest.raises(RuntimeError, match=r"(?s)3 of 4 spectra .*Flux unit of this spectrum is not declared; "
                                            r"best guess: 'fnu_jy'.* \(3\): s0.txt, s1.txt, s2.txt"):
         clean_model_dir(str(grid), sample_fraction=0.1)
