@@ -622,7 +622,7 @@ def main():
         print(f"No spectral grids found in {args.data_dir}")
         return
 
-    selected = select_models_interactive(model_dirs) if args.interactive else model_dirs
+    selected = select_models_interactive(model_dirs)  # --interactive is always on (store_true, default True)
     if not selected:
         print("No spectral grids selected.")
         return

@@ -154,8 +154,7 @@ def _print_summary(output_file, teff_vals, logg_vals, meta_vals):
     print(f"\nFlux cube: {output_file}")
     for label, values, fmt, unit in (("Teff ", teff_vals, ".0f", " K"), ("logg ", logg_vals, ".2f", ""),
                                      ("[M/H]", meta_vals, ".2f", "")):
-        if values.size:
-            print(f"  {label}: {values.min():{fmt}} – {values.max():{fmt}}{unit}")
+        print(f"  {label}: {values.min():{fmt}} – {values.max():{fmt}}{unit}")
 
 
 # --- The strategies ---
@@ -248,8 +247,7 @@ def _build_filtered_cube(cfg, groups: Dict, extra_cols: List[str], lookup: Dict[
 
     def selected(key: Tuple) -> bool:
         values = dict(key)
-        return all(col in values and str(values[col]).strip().lower() == str(val).strip().lower()
-                   for col, val in resolved.items())
+        return all(str(values[col]).strip().lower() == str(val).strip().lower() for col, val in resolved.items())
 
     matched_group = next((g for key, g in groups.items() if selected(key)), None)
 

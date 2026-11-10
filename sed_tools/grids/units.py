@@ -198,10 +198,8 @@ def detect_wavelength_unit_from_range(wl: np.ndarray) -> Tuple[str, float, str]:
         return 'index', 0.0, 'index_grid'
     
     # Near-index grid: starts at 0 or 1, uniform step ~1
-    if wl_min < 10 and wl_max < len(wl) * 2:
-        steps = np.diff(wl)
-        if len(steps) > 0 and np.allclose(steps, 1.0, rtol=0.1):
-            return 'index', 0.0, 'index_grid'
+    if wl_min < 10 and wl_max < len(wl) * 2 and np.allclose(np.diff(wl), 1.0, rtol=0.1):
+        return 'index', 0.0, 'index_grid'
     
     # Angstroms: typical optical/IR range 100 - 1,000,000 Å
     if 500 <= wl_max <= 1e6 and wl_min >= 10:
@@ -274,8 +272,7 @@ def detect_units_single_file(filepath: str) -> Optional[UnitInfo]:
         return None
     
     wl, flux = read_spectrum_data(filepath)
-    valid = np.isfinite(wl) & np.isfinite(flux) & (wl > 0)
-    wl, flux = wl[valid], flux[valid]
+    wl, flux = wl[wl > 0], flux[wl > 0]
     
     if wl.size < 2:
         return None
@@ -284,7 +281,7 @@ def detect_units_single_file(filepath: str) -> Optional[UnitInfo]:
     
     if header_units['wavelength_unit']:
         wl_unit = header_units['wavelength_unit']
-        wl_factor = WAVELENGTH_FACTORS.get(wl_unit, 1.0)
+        wl_factor = WAVELENGTH_FACTORS[wl_unit]
         wl_conf = 'high'
         wl_source = 'header'
     else:
@@ -371,7 +368,7 @@ def detect_catalog_units(txt_files: List[str], sample_fraction: float = 0.10) ->
     
     catalog_units = UnitInfo(
         wavelength_unit=consensus_wl,
-        wavelength_factor=WAVELENGTH_FACTORS.get(consensus_wl, 1.0),
+        wavelength_factor=WAVELENGTH_FACTORS[consensus_wl],
         flux_type=consensus_flux,
         flux_factor=_representative(detections, consensus_wl, consensus_flux).flux_factor,
         confidence=confidence,

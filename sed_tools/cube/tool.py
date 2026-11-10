@@ -114,7 +114,7 @@ def plot_sed(
     plt.grid(True, alpha=0.3)
 
     if out_path:
-        ensure_dir(os.path.dirname(out_path) or ".")
+        ensure_dir(os.path.dirname(out_path))
         plt.savefig(out_path, dpi=150)
     else:
         plt.show()
@@ -127,7 +127,7 @@ def ensure_dir(path: str) -> None:
 
 
 def save_sed(path: str, wavelength: np.ndarray, flux: np.ndarray) -> None:
-    ensure_dir(os.path.dirname(path) or ".")
+    ensure_dir(os.path.dirname(path))
     np.savetxt(path, np.column_stack((wavelength, flux)), header="wavelength flux")
 
 
