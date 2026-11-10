@@ -281,7 +281,7 @@ def _read_listed_spectra(lookup_path: Path, grid_name: str) -> List[Spectrum]:
             continue
         try:
             wl, fl = np.loadtxt(model_dir / filename, unpack=True, comments='#')
-            params = {name: float(row.get(col, np.nan)) if col else np.nan for name, col in param_cols.items()}
+            params = {name: float(row[col]) if col else np.nan for name, col in param_cols.items()}
             spectra.append(Spectrum(wavelength=wl, flux=fl, **params, filename=filename, source_catalog=grid_name))
         except (OSError, ValueError) as exc:
             raise ValueError(f"Cannot read spectrum {model_dir / filename} listed in {lookup_path}: {exc}") from exc
@@ -398,7 +398,7 @@ class SED:
         for entry in sorted(cls._model_root.iterdir()):
             cube = entry / "flux_cube.bin"
             lookup = entry / "lookup_table.csv"
-            if not entry.is_dir() or not cube.is_file():
+            if not cube.is_file():
                 continue
             info = SpectralGridInfo(name=entry.name, source='local', is_local=True)
             try:
@@ -472,7 +472,7 @@ class SED:
             Name of the spectral grid to fetch (e.g., 'Kurucz2003all')
         source : str, optional
             Force a specific source: 'svo', 'msg', 'mast', 'njm'.
-            If None, tries NJM first (pre-processed), then others
+            If None, tries NJM first, then others
         teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max : float, optional
             Download and return only spectra within these ranges (see Notes)
         workers : int
@@ -925,9 +925,7 @@ class SED:
     
     def parameter_ranges(self) -> Dict[str, Tuple[float, float]]:
         """Get the parameter ranges of the active model."""
-        if self._model is None:
-            raise RuntimeError("No model loaded")
-        return self._model.parameter_ranges()
+        return self.model().parameter_ranges()
 
 
 # ------------ ML ------------
