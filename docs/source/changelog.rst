@@ -18,6 +18,8 @@ Version 0.6.1 (unreleased)
   server-side cut, which it never made; the spectra are trimmed after
   download, as before.
 - The sdist no longer includes ``tests/``, which could not run from it.
+- The Las Cumbres builders' manifest note maps each filter code as
+  ``U=bssl-ux-022.txt (band U)``.
 - ``scripts/audit_pipeline.py`` runs every check on every grid (the
   ``grams_*`` and ``bbody`` grids were exempt by name) and uses the package's
   Planck function and flux cube layout.
