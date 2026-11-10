@@ -365,8 +365,6 @@ def _lookup_row(fpath: str, fname: str) -> dict:
 
 def _is_spectral_content(data: bytes) -> bool:
     """True if data starts like an SVO spectrum, with '#' or a number after any BOM or whitespace."""
-    if not data:
-        return False
     first = data.lstrip(b"\xef\xbb\xbf \t\r\n")[:1]
     return first in (b"#", b"-", b"+") or first.isdigit()
 

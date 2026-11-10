@@ -39,7 +39,7 @@ AXIS_ROLE_OVERRIDES = {
 def _dataset_if_exists(g, names):
     return next((g[n] for n in names if n in g and isinstance(g[n], h5py.Dataset)), None)
 
-def _recover_wavelengths(f, spec_g, expected_len=None):
+def _recover_wavelengths(f, spec_g, expected_len):
     # 1) direct dataset within spectrum group
     WAVE_KEYS = ("lambda","wavelength","wave","wl","wavelength_A")
     ds = _dataset_if_exists(spec_g, WAVE_KEYS)
@@ -105,12 +105,12 @@ def _recover_wavelengths(f, spec_g, expected_len=None):
         if key in f and isinstance(f[key], h5py.Dataset):
             wl = np.array(f[key][()]).astype(float).ravel()
             if wl.size > 1 and np.all(np.diff(wl) > 0) and _is_physical_wavelength(wl):
-                if expected_len is None or abs(wl.size - expected_len) <= 2:
+                if abs(wl.size - expected_len) <= 2:
                     return wl[:expected_len] if expected_len and expected_len < wl.size else wl
 
     # 5) Fallback: search entire file for a physically plausible wavelength array
     #    Only accept arrays that pass physical wavelength validation.
-    if expected_len and expected_len > 1:
+    if expected_len > 1:
         for d in _iter_datasets(f):
             try:
                 arr = np.array(d[()]).astype(float).ravel()
@@ -212,7 +212,7 @@ class MSGSpectraGrabber:
             if prod>0 and vlin.size>0:
                 if int(vlin.max()) == prod:  # 1-based
                     vlin = vlin - 1
-                vlin = np.clip(vlin, 0, max(prod-1, 0))
+                vlin = np.clip(vlin, 0, prod - 1)
         roles = _role_override_for_model(model_name) or _guess_roles_from_axes(axes)
         return {"axes": axes, "shape": shape, "vlin": vlin, "roles": roles}
 
