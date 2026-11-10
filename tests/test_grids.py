@@ -1011,9 +1011,7 @@ def njm_failed_downloads_raise_after_the_rest(t):
 
 @row
 def njm_wavelength_cut_failures_are_raised(t):
-    probe = requests.ConnectionError("probe refused")
-    grabber, _ = _grabber(t, "njm", {**ONLINE, GRID_URL + "a.txt": SPECTRUM, GRID_URL + "b.txt": SPECTRUM,
-                                     GRID_URL + "a.txt?wl_min=1100&wl_max=1200": probe})
+    grabber, _ = _grabber(t, "njm", {**ONLINE, GRID_URL + "a.txt": SPECTRUM, GRID_URL + "b.txt": SPECTRUM})
     real_trim = njm._trim_spectrum_file
 
     def trim(path, wl_range):
@@ -1023,10 +1021,8 @@ def njm_wavelength_cut_failures_are_raised(t):
 
     t.mp.setattr(njm, "_trim_spectrum_file", trim)
     metadata = {"model_url": GRID_URL, "txt_files": ["a.txt", "b.txt"]}
-    with t.caplog.at_level(logging.WARNING), \
-            pytest.raises(RuntimeError, match="b.txt: wavelength cut failed: read-only"):
+    with pytest.raises(RuntimeError, match="b.txt: wavelength cut failed: read-only"):
         grabber.download_model_spectra("Grid", metadata, wl_range=(1100, 1200))
-    assert any("probe refused" in m for m in warnings_from(t.caplog, "njm_spectra_grabber"))
     wl, _ = read_text_spectrum(t.tmp / "Grid" / "a.txt")
     assert wl.min() == 1100 and wl.max() == 1200
 

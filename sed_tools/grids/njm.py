@@ -379,39 +379,29 @@ class NJMSpectraGrabber:
         if os.path.getsize(output_path) == 0:
             raise ValueError(f"{url} returned an empty file")
 
-    def _fetch_file(self, model_dir: str, model_url: str, filename: str,
-                    wl_query: str = "", force: bool = False) -> Tuple[str, Optional[str]]:
+    def _fetch_file(self, model_dir: str, model_url: str, filename: str) -> Tuple[str, Optional[str]]:
         """Download one model file unless a complete copy is on disk: ('ok', 'skip' or 'fail', why it failed or None)."""
         output_path = os.path.join(model_dir, filename)
 
-        # force: re-download for a server-side wavelength cut
-        if not force and os.path.exists(output_path):
+        if os.path.exists(output_path):
             if os.path.getsize(output_path) > (100 if filename.endswith('.csv') else 1024):
                 return 'skip', None
 
-        # Server-side wl_cut: query params on the normal file URL — Apache rewrites to PHP
-        url = urljoin(model_url, filename)
-        if filename.endswith('.txt'):
-            url += wl_query
-
         try:
-            self._download_one_file(url, output_path)
+            self._download_one_file(urljoin(model_url, filename), output_path)
         except (requests.RequestException, OSError, ValueError) as exc:
             return 'fail', f"{filename}: {exc}"
         return 'ok', None
 
     def _download_files(self, model_dir: str, model_url: str, txt_files: List[str],
-                        aux_files: List[str], wl_query: str,
-                        force_txt: bool) -> Tuple[Dict[str, int], List[str]]:
+                        aux_files: List[str]) -> Tuple[Dict[str, int], List[str]]:
         """Download the spectra in parallel, then the auxiliary files: (count per status, 'file: error' per failure)."""
         counts = {'ok': 0, 'skip': 0, 'fail': 0}
         failures: List[str] = []
         
-        # force_txt: with a server-side cut, spectra already on disk may hold another wavelength range
         if txt_files:
             with ThreadPoolExecutor(max_workers=self.max_workers) as ex:
-                futures = [ex.submit(self._fetch_file, model_dir, model_url, f, wl_query, force_txt)
-                           for f in txt_files]
+                futures = [ex.submit(self._fetch_file, model_dir, model_url, f) for f in txt_files]
                 for fut in tqdm(as_completed(futures), total=len(futures), desc="  Spectra"):
                     status, error = fut.result()
                     counts[status] += 1
@@ -427,25 +417,6 @@ class NJMSpectraGrabber:
                 failures.append(error)
         
         return counts, failures
-
-    def _server_wl_cut_available(self, model_name: str, probe_file: str,
-                                 wl_range: Tuple[float, float]) -> bool:
-        """Ask for one spectrum with wl_min/wl_max; True if the mirror cuts server-side.
-
-        The mirror's wl_cut.php answers with an X-WL-Cut header; without it the raw file comes back.
-        Each file URL is distinct, so mod_evasive does not rate-limit them.
-        """
-        probe_url = (f"{self.stellar_models_url}/{model_name}/{probe_file}"
-                     f"?wl_min={wl_range[0]}&wl_max={wl_range[1]}")
-        try:
-            resp = self.session.get(probe_url, timeout=10, stream=True)
-        except requests.RequestException as exc:
-            logger.warning("NJM mirror: could not check for server-side wavelength cuts (%s); "
-                           "trimming spectra after download instead", exc)
-            return False
-        available = resp.status_code == 200 and 'X-WL-Cut' in resp.headers
-        resp.close()
-        return available
 
     def _select_spectra(self, model_name: str, model_url: str, txt_files: List[str],
                         teff_range, logg_range, meta_range) -> List[str]:
@@ -483,9 +454,8 @@ class NJMSpectraGrabber:
         meta_range : tuple of (min, max), optional
             Only download spectra with [M/H] in this range.
         wl_range : tuple of (min, max), optional
-            Trim downloaded spectra to this wavelength range (Angstroms).
-            Uses server-side wl_cut.php if available, otherwise trims
-            client-side after download.
+            Trim downloaded spectra to this wavelength range (Angstroms)
+            after download.
         
         Returns
         -------
@@ -537,20 +507,11 @@ class NJMSpectraGrabber:
         
         print(f"[njm] Downloading {len(txt_files)} spectra + {len(aux_files)} auxiliary for {model_name}...")
         
-        server_wl_cut = False
-        if wl_range and txt_files:
-            server_wl_cut = self._server_wl_cut_available(model_name, txt_files[0], wl_range)
-            if server_wl_cut:
-                print(f"  [njm] Server-side wavelength cut active ({wl_range[0]:.1f} – {wl_range[1]:.1f} Å)")
-        wl_query = f"?wl_min={wl_range[0]}&wl_max={wl_range[1]}" if server_wl_cut else ""
-
-        counts, failures = self._download_files(model_dir, model_url, txt_files, aux_files,
-                                                wl_query, force_txt=server_wl_cut)
+        counts, failures = self._download_files(model_dir, model_url, txt_files, aux_files)
         
         print(f"[njm] {model_name}: {counts['ok']} downloaded, {counts['skip']} skipped, {counts['fail']} failed")
         
-        # The client-side wavelength cut, when the mirror cannot cut
-        if wl_range and txt_files and not server_wl_cut:
+        if wl_range and txt_files:
             print(f"  [njm] Applying wavelength cut (client-side): {wl_range[0]:.1f} – {wl_range[1]:.1f} Å")
             trimmed, trim_failures = self._apply_wavelength_cut(model_dir, txt_files, wl_range)
             failures.extend(trim_failures)
