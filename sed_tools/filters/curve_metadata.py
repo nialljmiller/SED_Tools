@@ -188,12 +188,48 @@ _KEY_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 _ESCAPES = {c: f"%{ord(c):02X}" for c in '% \t\r\n,;"#'}
 
 
+#: The separator between the references a curve's ``Sources`` lists.
+SOURCES_SEPARATOR = " | "
+_URL_RE = re.compile(r"(?:https?|ftp)://[^\s|()<>]*[^\s|()<>.,;:]")
+_TRAILING_JOINER = re.compile(r"(?:\s*(?:[;,+&]|\band\b|\bx\b))+\s*$")
+
+
+def normalize_sources(value: str) -> str:
+    """``value`` as SED_Tools writes every ``Sources``: distinct references separated by ``" | "``.
+
+    A reference is a URL, path or citation, with any notes after it.  An item that runs references together
+    (two or more URLs outside its parentheses, as ``"product of URL1; URL2"``) is split before each further
+    URL.  An item that is not led by a URL, and whose URLs other items are led by, is dropped: it credits a
+    reference already listed (a Wayback capture's original URL, say).  Empty and repeated items are dropped.
+    """
+    items = [piece for item in str(value).split(SOURCES_SEPARATOR) for piece in _split_run_on(item.strip())]
+    leads = [m.group(0) for item in items if (m := _URL_RE.match(item))]
+    kept: List[str] = []
+    for item in items:
+        urls = _URL_RE.findall(item)
+        if urls and not _URL_RE.match(item) and all(any(url in lead for lead in leads) for url in urls):
+            continue
+        if item and item not in kept:
+            kept.append(item)
+    return SOURCES_SEPARATOR.join(kept)
+
+
+def _split_run_on(item: str) -> List[str]:
+    """``item`` split before each URL after the first that lies outside its parentheses."""
+    cuts = [m.start() for m in _URL_RE.finditer(item) if item.count("(", 0, m.start()) <= item.count(")", 0, m.start())]
+    if len(cuts) < 2:
+        return [item]
+    return [_TRAILING_JOINER.sub("", item[a:b]).strip() for a, b in zip([0] + cuts[1:], cuts[1:] + [len(item)])]
+
+
 def format_metadata_field(fields: Mapping[str, Optional[str]]) -> str:
     """Return the ``Key=value;...`` field SED_Tools appends to a column row.
 
     Known keys come first, in ``HEADER_KEYS`` order; any others (read from a
     file written by a newer version) follow as given, so a rewrite keeps them.
+    ``Sources`` is written as :func:`normalize_sources` gives it.
     """
+    fields = {key: normalize_sources(value) if key == "Sources" and value else value for key, value in fields.items()}
     keys = [key for key in HEADER_KEYS if fields.get(key)]
     keys += [key for key in fields if key not in HEADER_KEYS and fields.get(key)]
     for key in keys:

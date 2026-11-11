@@ -20,6 +20,7 @@ import time
 from dataclasses import asdict
 from pathlib import Path
 from types import SimpleNamespace
+from urllib.parse import quote
 
 import numpy as np
 import pandas as pd
@@ -70,6 +71,7 @@ DEFAULT_SVO, default_svo_row = scenarios()
 
 def test_filters(rows):
     rows(SCENARIOS)
+    rows(SOURCES, _sources)
     rows(NJM_OFFLINE, _offline_then)
     rows(DEFAULT_SVO, _default_svo_then)
     rows(QUERY_LOCAL, _query_local)
@@ -3539,6 +3541,33 @@ def svo_labels_hold_only_what_the_record_states(t):
     assert svo_components_header("Filter + Lens", "X/Y.b") == {}
 
 
+#: The Internet Archive ingest's Sources: the capture, a credit naming the record it archives, and a README.
+INGESTED = ("https://web.archive.org/web/2025id_/http://svo/fps.php?ID=LSST/LSST.g_filter | SVO Filter Profile "
+            "Service (Rodrigo et al. 2012, 2020; Rodrigo & Solano 2024), record LSST/LSST.g_filter recovered from "
+            "the Internet Archive capture 2025 of http://svo/fps.php?ID=LSST/LSST.g_filter | https://lsst/README.md")
+#: name: (Sources as found, as SED_Tools writes it)
+SOURCES = {
+    "sources_drop_a_credit_of_a_listed_reference": (
+        INGESTED, "https://web.archive.org/web/2025id_/http://svo/fps.php?ID=LSST/LSST.g_filter | https://lsst/README.md"),
+    "sources_split_references_run_together": (
+        "product of https://a/m.txt (mirror) and https://a/c.txt (corrector), nm; https://a/w.txt",
+        "product of https://a/m.txt (mirror) | https://a/c.txt (corrector), nm | https://a/w.txt"),
+    "sources_keep_notes_and_a_url_in_parentheses": (
+        "https://e/H.dat (T_FILTER; ESA V1.0, https://doi.org/10.5270/x) | Hewett et al. 2006 Table 1",
+        "https://e/H.dat (T_FILTER; ESA V1.0, https://doi.org/10.5270/x) | Hewett et al. 2006 Table 1"),
+    "sources_drop_empty_and_repeated_items": ("https://a |  | https://a | b", "https://a | b"),
+}
+
+
+def _sources(t, found, written):
+    from sed_tools.filters.curve_metadata import normalize_sources
+
+    assert normalize_sources(found) == written and normalize_sources(written) == written
+    write_filter_file(t.tmp / "c.dat", [1.0, 2.0], [1.0, 1.0], detector_type=PHOTON, source="user",
+                      extra={"Sources": found})
+    assert read_filter_header(t.tmp / "c.dat")["Sources"] == written
+
+
 @row
 def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
     import runpy
@@ -3560,6 +3589,8 @@ def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
     curve(ins / "z.dat", source="original", Components="filter+lens")             # rule 2
     curve(ins / "u.dat", source="user")
     curve(ins / "y.dat")                                                          # SVO reclassified it
+    curve(ins / "w.dat")                                                          # rule 6: the ingest's credit
+    (ins / "w.dat").write_text((ins / "w.dat").read_text().replace("\n", f";Sources={quote(INGESTED)}\n", 1))
     (ins / "bad.dat").write_text("Wavelength,Transmission\n4000,-1\n5000,1\n")
     (ins / "manifest.json").write_text(json.dumps({"components": {
         FILTER: {"g": "components/filter/g.dat"}, QE: {"*": "components/qe/flat.dat"},
@@ -3579,7 +3610,7 @@ def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
     found = {(path.name, message.split(" ")[0]) for path, message in label_check.problems(new, old)}
     assert found == {("r.dat", "DetectorType"), ("i.dat", "DetectorTypeSource"), ("z.dat", "Components"),
                      ("g_filter.dat", "named"), ("g_filter.dat", "is"), ("bad.dat", str(ins / "bad.dat") + ":"),
-                     ("g.dat", "DetectorType"), ("y.dat", "DetectorType")}, found
+                     ("g.dat", "DetectorType"), ("y.dat", "DetectorType"), ("w.dat", "Sources")}, found
     messages = [m for _, m in label_check.problems(new, old)]
     assert "DetectorType energy (manual) became photon (svo), which does not outrank it" in messages
     assert "DetectorType energy (svo) became photon (svo), which does not outrank it" in messages

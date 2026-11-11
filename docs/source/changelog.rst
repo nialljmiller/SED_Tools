@@ -52,13 +52,22 @@ Version 0.7.0 (unreleased)
   - detector types and their sources use SED_Tools' words;
   - components use known roles;
   - an SVO filter-only curve is labelled ``filter``;
-  - a curve equal to a registered component carries that component's role.
+  - a curve equal to a registered component carries that component's role;
+  - ``Sources`` is written as below.
 
   With ``--against``, it also checks that a changed ``DetectorType`` rests on
   stronger evidence than the old one, or on ``user``. A rebuild then cannot
   undo a correction, nor follow SVO reclassifying a curve, without a report.
   Run against the shipped ``colors_data``, it catches TESS returning from
   MESA's hand-set ``photon`` to SVO's ``energy``.
+- Every curve's ``Sources`` is written as one list of distinct references
+  separated by ``" | "`` (``sed_tools.filters.curve_metadata.normalize_sources``),
+  the form most served curves already had. An item that runs references
+  together (two or more URLs outside its parentheses) is split, and an item
+  that only credits a reference another item gives is dropped, such as the
+  Internet Archive ingest's sentence crediting the record a Wayback URL
+  already archives. Composed products list their components with ``" | "``;
+  before, with ``"; "``.
 - A filter set's folder holds one instrument's curves. An SVO download stops,
   before saving anything, when the folder already holds curves whose
   ``FilterID`` names another SVO instrument, or would receive the curves of

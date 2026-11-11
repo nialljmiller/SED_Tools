@@ -14,8 +14,8 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Uni
 
 import numpy as np
 
-from .curve_metadata import (ENERGY, PHOTON, detector_type_before_conversion, normalize_detector_type,
-                              read_filter_header, write_filter_file)
+from .curve_metadata import (ENERGY, PHOTON, SOURCES_SEPARATOR, detector_type_before_conversion,
+                              normalize_detector_type, read_filter_header, write_filter_file)
 from .detector_edit import unconverted_transmission
 from .manifest import (  # noqa: F401 - every manifest name stays importable from here (filter_components)
     ATMOSPHERE, ATMOSPHERE_KINDS, AUXILIARY_DIRS, COMPONENTS_DIR, COMPOSABLE_ROLES, DERIVED, FILTER,
@@ -373,7 +373,7 @@ def compose_band(
         "ComponentsSource": "composed",
         "Recipe": recipe + "".join(f" [{k}={v}]" for k, v in sorted((variants or {}).items()))
                   + (f" @ {spec.label}" if spec else ""),
-        "Sources": "; ".join(sources),
+        "Sources": SOURCES_SEPARATOR.join(sources),
     }
     if spec is not None:
         header["Atmosphere"] = spec.describe()

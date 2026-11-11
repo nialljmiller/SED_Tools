@@ -13,6 +13,9 @@ violation and exits 1, or prints a one-line summary and exits 0.  Each rule hold
 5. With ``against``, a curve whose ``DetectorType`` differs from the old tree's has a source that
    outranks the old one (:data:`DETECTOR_SOURCE_PRECEDENCE`), or ``user``: a rebuild cannot undo a
    correction with weaker evidence, nor follow SVO reclassifying a curve (``svo`` to ``svo``) unseen.
+6. ``Sources`` is as SED_Tools writes it (:func:`normalize_sources`): distinct references separated by
+   ``" | "``, none run together in one item, and no item crediting a reference another item already gives
+   (as the Internet Archive ingest's credit sentence did).
 """
 
 from __future__ import annotations
@@ -26,7 +29,7 @@ import numpy as np
 
 from .compose import read_curve
 from .curve_metadata import (DETECTOR_SOURCE_PRECEDENCE, SOURCE_ASSUMED, PathLike, normalize_detector_type,
-                             read_filter_header)
+                             normalize_sources, read_filter_header)
 from .manifest import FILTER, MANIFEST_NAME, ComponentError, filter_sibling_base, parse_components
 
 #: Every ``DetectorTypeSource`` SED_Tools writes.
@@ -68,6 +71,9 @@ def _label_problems(folder: Path, headers) -> Iterator[Problem]:
             parse_components(header.get("Components"))
         except ComponentError as exc:
             yield path, f"Components {header['Components']!r}: {exc}"
+        sources = header.get("Sources")
+        if sources and normalize_sources(sources) != sources:
+            yield path, f"Sources {sources!r} should read {normalize_sources(sources)!r}"
 
 
 def _sibling_problems(folder: Path, headers) -> Iterator[Problem]:
