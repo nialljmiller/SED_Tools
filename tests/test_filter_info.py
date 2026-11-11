@@ -285,11 +285,29 @@ def test_check_manifests_names_bands_outside_the_index_file(tmp_path, capsys):
     inst.mkdir(parents=True)
     (inst / "Cam").write_text("R.dat\nV.dat\n")
     (inst / "manifest.json").write_text(json.dumps({"bands": ["R", "R_old", "V"]}))
+    assert main(["check_manifests", str(tmp_path)]) == 1  # no curves at all
+    assert "Test/Cam/manifest.json declares 3 band(s) of a folder with no curves" in capsys.readouterr().err
+    for band in ("R", "V", "R_old"):
+        (inst / f"{band}.dat").write_text(f"Wavelength,Transmission,FilterID=Test/Cam.{band}\n5000,1\n")
+    (inst / "manifest.json").write_text(json.dumps({"facility": "Test", "instrument": "Cam",
+                                                    "bands": ["R", "R_old", "V"]}))
     assert main(["check_manifests", str(tmp_path)]) == 1
     err = capsys.readouterr().err
-    assert "Test/Cam/manifest.json" in err and "R_old" in err and "V," not in err
-    (inst / "manifest.json").write_text(json.dumps({"bands": ["R", "V"], "archived_bands": {"R_old": {}}}))
+    assert "Test/Cam/manifest.json declares R_old, which its index does not list" in err and "V," not in err
+    (inst / "manifest.json").write_text(json.dumps({"facility": "Test", "instrument": "Cam", "bands": ["R", "V"],
+                                                    "archived_bands": {"R_old": {}}}))
     assert main(["check_manifests", str(tmp_path)]) == 0
+    # One release in another's folder: GAIA/GAIA held GAIA/Gaia2m's Gbp_bright (svo_instruments.json claims)
+    gaia2m = tmp_path / "filters" / "GAIA" / "Gaia2m"
+    gaia2m.mkdir(parents=True)
+    (gaia2m / "Gbp_bright.dat").write_text("Wavelength,Transmission,FilterID=GAIA/Gaia2m.Gbp_bright\n5000,1\n")
+    (gaia2m / "Gaia2m").write_text("Gbp_bright.dat\n")
+    gaia = tmp_path / "filters" / "GAIA" / "GAIA"
+    gaia.mkdir()
+    (gaia / "Gbp_bright.dat").write_text((gaia2m / "Gbp_bright.dat").read_text())
+    (gaia / "GAIA").write_text("Gbp_bright.dat\n")
+    assert main(["check_manifests", str(tmp_path)]) == 1
+    assert "GAIA/GAIA/Gbp_bright.dat is GAIA/Gaia2m.Gbp_bright, a curve of GAIA/Gaia2m" in capsys.readouterr().err
 
 
 def test_curated_short_description_stays_out_of_info_json(tmp_path):
