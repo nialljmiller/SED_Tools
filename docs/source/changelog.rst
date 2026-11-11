@@ -26,6 +26,13 @@ Version 0.6.1 (unreleased)
 - ``build(..., raw=...)`` for PANIC, INGRID, NSFCam and IO:O reads the saved
   research inventory from ``round3/ground-1`` and ``round3/ground-2``, the
   folders' new names.
+- A curve written from an SVO record labels only what the record states. An
+  SVO filter-only curve (``<band>_filter``, ``<band>_fil``) whose components
+  string names more than the filter, such as ``LSST/LSST.g_filter`` listed as
+  "Filter + Instrument + Atmosphere", gets no ``Components`` label. Before,
+  it got the total band's label. The LSST and SVO-published builders record a
+  ``DetectorType`` that SVO does not give as ``assumed``. Before, they
+  recorded it as ``svo``.
 
 Version 0.6.0 (November 2026)
 -----------------------------

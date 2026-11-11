@@ -502,17 +502,29 @@ class SVOMetadataClient:
         return ids
 
 
-def svo_components_header(components: Optional[str]) -> Dict[str, str]:
-    """``Components``/``ComponentsSource`` header fields from SVO's components string."""
+def svo_detector(record: SVOFilterRecord, default: str) -> Tuple[str, str]:
+    """``(DetectorType, DetectorTypeSource)`` of a curve written from SVO's ``record``: SVO's type as ``svo``,
+    or ``default`` as ``assumed`` when the record states none (a default is never SVO's statement)."""
+    return (record.detector_type, SOURCE_SVO) if record.detector_type else (default, SOURCE_ASSUMED)
+
+
+def svo_components_header(components: Optional[str], filter_id: Optional[str] = None) -> Dict[str, str]:
+    """``Components``/``ComponentsSource`` header fields from SVO's components string for ``filter_id``.
+
+    SVO names a band's filter-only curve ``<band>_filter`` or ``<band>_fil``.  Such a record whose string
+    names more than the filter contradicts itself (SVO copied the total band's string to LSST/LSST.g_filter,
+    "LSST u filter (filter only)"), so, like an unrecognised string, it is left unrecorded.
+    """
     if not components:
         return {}
-    from .manifest import ComponentError, parse_components, recipe_name
+    from .manifest import FILTER, ComponentError, filter_sibling_base, parse_components, recipe_name
 
     try:
         roles = parse_components(components)
-    except ComponentError:
-        logger.warning("Unrecognised SVO components string %r; the curve's Components are left unrecorded",
-                       components)
+        if roles and roles != (FILTER,) and filter_id and filter_sibling_base(filter_id.rsplit(".", 1)[-1]):
+            raise ComponentError(f"{filter_id} is named as a filter-only curve")
+    except ComponentError as exc:
+        logger.warning("SVO components string %r not recorded: %s", components, exc)
         return {}
     return {"Components": recipe_name(roles), "ComponentsSource": SOURCE_SVO} if roles else {}
 
@@ -709,7 +721,7 @@ def _resolved_fields(header: Mapping[str, str], client: SVOMetadataClient, detec
         record = client.get_filter(filter_id)
         wavelength_unit = record.wavelength_unit or wavelength_unit
         if not header.get("Components"):
-            published_components = svo_components_header(record.components)
+            published_components = svo_components_header(record.components, filter_id)
     new_fields: Dict[str, Optional[str]] = {**header, "FilterID": filter_id, "DetectorType": detector_type,
                                             "DetectorTypeSource": source, "WavelengthUnit": wavelength_unit}
     if published_components:

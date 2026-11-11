@@ -3401,6 +3401,24 @@ def released_mesa_check_after_migration_sees_the_lost_first_sample(t):
 
 
 @row
+def svo_labels_hold_only_what_the_record_states(t):
+    from sed_tools.filters.curve_metadata import svo_components_header, svo_detector
+
+    # No DetectorType at SVO: the writer's default is an assumption, never SVO's value (the LSST and
+    # SVO-published builders wrote it as "svo").
+    assert svo_detector(svo_record("X/Y.b", None, [1, 2], [1, 1]), PHOTON) == (PHOTON, SOURCE_ASSUMED)
+    assert svo_detector(svo_record("X/Y.b", ENERGY, [1, 2], [1, 1]), PHOTON) == (ENERGY, SOURCE_SVO)
+    # SVO's LSST/LSST.g_filter, "LSST u filter (filter only)", lists the total band's components.
+    total = "Filter + Instrument + Atmosphere"
+    assert svo_components_header(total, "LSST/LSST.g_filter") == {}
+    assert "LSST/LSST.g_filter is named as a filter-only curve" in t.caplog.text
+    assert svo_components_header("Filter", "LSST/LSST.g_filter") == {"Components": FILTER, "ComponentsSource": "svo"}
+    assert svo_components_header(total, "LSST/LSST.g") == {"Components": "filter+instrument+atmosphere",
+                                                           "ComponentsSource": "svo"}
+    assert svo_components_header("Filter + Lens", "X/Y.b") == {}
+
+
+@row
 def keys_from_newer_writers_are_kept(t):
     path = t.tmp / "GAIA" / "GAIA" / "G.dat"
     path.parent.mkdir(parents=True)
