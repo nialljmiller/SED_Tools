@@ -2,7 +2,7 @@
 Changelog
 =========
 
-Version 0.6.1 (unreleased)
+Version 0.7.0 (unreleased)
 --------------------------
 
 - A grid's wavelengths are now checked against the bands they are used with
