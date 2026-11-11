@@ -1,6 +1,6 @@
 """Check a stellar grid before NJM lists it: the grid counterpart of check_manifests.py.
 
-A grid (data/stellar_models/<grid>/) is listed only if all eight checks pass (design §5):
+A grid (data/stellar_models/<grid>/) is listed only if all nine checks pass (design §5):
   1 upload      no rsync temp (dot) files; folders 755, files 644; no dangling symlinks
   2 spectra     every .txt declares teff, wavelength_unit, flux_unit = erg/cm2/s/A and units_standardized;
                 sampled data are finite, strictly increasing in wavelength, two columns
@@ -18,6 +18,10 @@ A grid (data/stellar_models/<grid>/) is listed only if all eight checks pass (de
   7 provenance  info.json (or grid_info/curated/<grid>.json) gives a description, sources, references and
                 the terms, quoted verbatim and found in the archived evidence file, or "none found"
   8 shrinkage   no fewer spectra and no narrower axes than the grid's previous manifest.json
+  9 bands       every served band (data/filters/<Facility>/<Instrument>/<band>.dat) against each cube's wavelengths,
+                by SED_Tools' sed_tools.photometry.band_sampling: a band one of the cube's sampled spectra samples but
+                the cube does not is an error (the cube's axis lost their wavelengths); the bands the grid itself does
+                not sample are recorded per cube and summarised as a warning, so clients can see them
 
 manifest_matches() is what generate_index.py asks before listing a grid: a manifest.json whose guard passed,
 and a folder whose top-level .txt/.csv/.h5/.bin files (and variant cubes) are exactly those it records, by
@@ -25,11 +29,13 @@ name, size and modification time, so files changed after the check (a re-upload,
 
 Usage: python3 -m grid_info.check_grids [DATA_DIR] [--only GRID ...] [--json OUT] [--cache FILE]
 Prints one line per grid (ok/FAIL, then its errors and warnings) and exits 1 if any grid fails, else 0.
-Reads only; never writes in DATA_DIR. Needs numpy; h5py for the .h5 check (a warning without it).
+Reads only; never writes in DATA_DIR. Needs numpy and sed_tools; h5py for the .h5 check (a warning without it).
 """
 import argparse
+import contextlib
 import csv
 import hashlib
+import io
 import json
 import math
 import os
@@ -885,6 +891,73 @@ def axes_of(headers):
     return out
 
 
+_BANDS = {}
+
+
+def served_bands(filters_dir):
+    """Every served band, {Facility/Instrument/band: FilterCurve}, read once per run; unreadable curves are left
+    to the filter guard."""
+    from sed_tools.photometry import load_filter_curve
+
+    filters_dir = Path(filters_dir)
+    if filters_dir not in _BANDS:
+        bands = {}
+        for path in sorted(filters_dir.glob("*/*/*.dat")):
+            try:
+                bands[str(path.relative_to(filters_dir).with_suffix(""))] = load_filter_curve(str(path))
+            except (OSError, ValueError):
+                continue
+        _BANDS[filters_dir] = bands
+    return _BANDS[filters_dir]
+
+
+def _cube_spectra(grid, cube_path, read):
+    """The wavelengths of the sampled spectra the cube at cube_path holds: its variant's, or all for a top-level cube."""
+    if cube_path.parent == grid:
+        return [wl for _, wl, _ in read]
+    cols, rows = read_lookup(cube_path.parent / "lookup_table.csv")
+    names = {r[file_column(cols)] for r in rows}
+    return [wl for p, wl, _ in read if p.name in names]
+
+
+def check_bands(grid, scans, read, listed=()):
+    """Check 9 (see the module docstring); without a cube, against the axis a client's cube would have, from the
+    spectra ``listed`` in lookup order (else the sampled ones)."""
+    from sed_tools.photometry import COARSE_RESOLVING_POWER, UNSAMPLED_WEIGHT_LIMIT, band_sampling
+
+    bands = served_bands(grid.parent.parent / "filters")
+    if not bands:
+        return _result([], ["no served bands to check against (data/filters)"])
+    axes = [(str(path.relative_to(grid)), scan["wavelengths"], _cube_spectra(grid, path, read)) for path, scan in scans]
+    if not axes and read:
+        from sed_tools.cube.build import compute_common_wavelengths
+        with contextlib.redirect_stdout(io.StringIO()):
+            axis = compute_common_wavelengths(str(grid), list(listed) or [p.name for p, _, _ in read])
+        axes = [("(cube a client builds)", axis, [wl for _, wl, _ in read])]
+    errors, warnings, record, seen = [], [], {}, {}
+    for label, axis, spectra in axes:
+        key = np.asarray(axis, dtype="<f8").tobytes()
+        if key not in seen:
+            seen[key] = {name: s for name, curve in bands.items() if not (s := band_sampling(axis, curve)).sampled}
+        unsampled = seen[key]
+        own = {(len(w), float(w[0]), float(w[-1]), float(w[len(w) // 2])): w for w in spectra}.values()
+        lost = sorted(n for n in unsampled if any(band_sampling(w, bands[n]).sampled for w in own))
+        if lost:
+            errors.append(f"{label}: does not sample {len(lost)} served band(s) that its spectra sample (its "
+                          f"wavelength axis lacks theirs): {_few(lost)}")
+        beyond = sum(s.outside >= 1 for s in unsampled.values())
+        if len(unsampled) > beyond:
+            warnings.append(f"{label}: {len(unsampled) - beyond} served bands lie within its wavelengths but are not "
+                            f"sampled by them (and {beyond} lie wholly beyond): "
+                            f"{_few(sorted(n for n, s in unsampled.items() if s.outside < 1))}")
+        record[label] = {name: {"inside": s.inside, "outside": round(s.outside, 4), "coarse": round(s.coarse, 4)}
+                         for name, s in sorted(unsampled.items())}
+    rule = (f"sed_tools.photometry.band_sampling: a band is sampled when two or more of the cube's wavelengths lie "
+            f"where it transmits and at most {UNSAMPLED_WEIGHT_LIMIT:g} of its weight lies beyond them or where "
+            f"lambda/delta-lambda < {COARSE_RESOLVING_POWER:g}")
+    return _result(errors, warnings, rule=rule, served_bands=len(bands), not_sampled=record)
+
+
 def check_grid(grid, others, cache, previous=None):
     """The guard's report for one grid folder (see the module docstring)."""
     grid = Path(grid)
@@ -898,6 +971,7 @@ def check_grid(grid, others, cache, previous=None):
     checks["6_duplicate"] = check_duplicates(grid, txt, others, cache)
     checks["7_provenance"], info = check_provenance(grid, previous)
     checks["8_shrinkage"] = check_shrinkage(previous, len(txt), axes_of(headers), grid, cache)
+    checks["9_bands"] = check_bands(grid, scans, read, list(rows or {}))
     errors = [f"{k[2:]}: {e}" for k, c in checks.items() for e in c["errors"]]
     warnings = [f"{k[2:]}: {w}" for k, c in checks.items() for w in c["warnings"]]
     return {"grid": grid.name, "checked": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),

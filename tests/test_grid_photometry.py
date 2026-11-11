@@ -6,7 +6,7 @@ import math
 import h5py
 import numpy as np
 
-from grid_info import compare, photometry
+from grid_info import check_grids, compare, photometry
 from sed_tools.filters.properties import ST_FLAM
 from sed_tools.photometry import band_average_flux_lambda, load_filter_curve
 
@@ -79,6 +79,15 @@ def test_tables_match_sed_tools_photometry(tmp_path):
     index = json.loads((out / "index.json").read_text())
     assert list(index["instruments"]["Fac/Inst"]) == ["G", "G2"] and list(index["grids"]["G"]["instruments"]) == ["Fac/Inst"]
     assert index["grids"]["G"]["points_bytes"] == (out / "G" / "points.json").stat().st_size
+    # Guard check 9 on the same bands: "far" lies beyond the spectra (recorded, a warning only when within them);
+    # a cube axis with a hole where its spectra sample "red" loses that band (an error).
+    grid, lam = data / "stellar_models" / "G", np.geomspace(100, 5e4, 3000)
+    read = [(grid / "G_0.txt", lam, planck(lam, 5000.0))]
+    for axis, errors in ((lam, []), (lam[(lam < 5500) | (lam > 8500)], ["Fac/Inst/red"])):
+        res = check_grids.check_bands(grid, [(grid / "flux_cube.bin", {"wavelengths": axis})], read)
+        assert [e.rsplit(": ", 1)[1] for e in res["errors"]] == errors
+        assert res["not_sampled"]["flux_cube.bin"]["Fac/Inst/far"] == {"inside": 0, "outside": 1.0, "coarse": 0.0}
+        assert ("Fac/Inst/red" in res["not_sampled"]["flux_cube.bin"]) == bool(errors)
 
 
 def test_compare_coinciding_and_interpolated(tmp_path):
