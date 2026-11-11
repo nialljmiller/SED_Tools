@@ -53,7 +53,11 @@ Version 0.7.0 (unreleased)
   - components use known roles;
   - an SVO filter-only curve is labelled ``filter``;
   - a curve equal to a registered component carries that component's role;
-  - ``Sources`` is written as below.
+  - ``Sources`` is written as below;
+  - curves with the same samples (after peak normalisation, to float32
+    precision) carry the same ``DetectorType`` across the whole tree. On NJM
+    it finds 31 groups (68 curves) served with both tags, e.g. SDSS g as
+    photon in ``SLOAN/SDSS`` and as energy in ``Misc/APASS``.
 
   With ``--against``, it also checks that a changed ``DetectorType`` rests on
   stronger evidence than the old one, or on ``user``. A rebuild then cannot

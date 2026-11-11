@@ -3626,6 +3626,31 @@ def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
 
 
 @row
+def label_check_finds_the_same_curve_served_with_two_detector_types(t):
+    from sed_tools.filters import label_check
+
+    wl, tr = np.array([4000.0, 4500.0, 5000.0, 5500.0]), np.array([0.1, 0.8312345678, 0.5, 0.05])
+    for rel, transmission, detector, source in (
+            ("SLOAN/SDSS/g.dat", tr, PHOTON, SOURCE_SVO),                   # rule 7: these three are one curve
+            ("Misc/UCAC/sdss_g.dat", tr.astype(np.float32), ENERGY, SOURCE_SVO),  # SDSS's values at float32
+            ("CTIO/CTIO/g.dat", 100 * tr, ENERGY, SOURCE_SVO_MATCH),        # in percent
+            ("LBT/MODS/g.dat", tr, PHOTON, SOURCE_SVO),                     # the same tag: no clash
+            ("Misc/APASS/r.dat", tr[::-1], ENERGY, SOURCE_SVO)):            # another curve
+        (t.tmp / rel).parent.mkdir(parents=True, exist_ok=True)
+        write_filter_file(t.tmp / rel, wl, [float(v) for v in transmission], detector_type=detector, source=source)
+    component = t.tmp / "Misc" / "APASS" / "components" / "filter" / "g.dat"   # components keep their own labels
+    component.parent.mkdir(parents=True)
+    write_filter_file(component, wl, tr, detector_type=ENERGY, source="component")
+    [(_, message)] = label_check.problems(t.tmp)
+    assert message == ("the same curve carries more than one DetectorType: "
+                       "CTIO/CTIO/g.dat (energy, svo-curve-match), LBT/MODS/g.dat (photon, svo), "
+                       "Misc/UCAC/sdss_g.dat (energy, svo), SLOAN/SDSS/g.dat (photon, svo)"), message
+    for rel in ("CTIO/CTIO/g.dat", "Misc/UCAC/sdss_g.dat"):   # one tag for the curve: no problem left
+        write_filter_header(t.tmp / rel, {**read_filter_header(t.tmp / rel), "DetectorType": PHOTON})
+    assert list(label_check.problems(t.tmp)) == []
+
+
+@row
 def keys_from_newer_writers_are_kept(t):
     path = t.tmp / "GAIA" / "GAIA" / "G.dat"
     path.parent.mkdir(parents=True)

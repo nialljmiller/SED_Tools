@@ -16,14 +16,19 @@ violation and exits 1, or prints a one-line summary and exits 0.  Each rule hold
 6. ``Sources`` is as SED_Tools writes it (:func:`normalize_sources`): distinct references separated by
    ``" | "``, none run together in one item, and no item crediting a reference another item already gives
    (as the Internet Archive ingest's credit sentence did).
+7. Curves with the same samples carry the same ``DetectorType``, across the whole tree: the same curve
+   served under two instruments cannot be read in two conventions.  Samples are the same when the
+   wavelengths agree and the peak-normalised transmissions agree to :data:`SAME_SAMPLES` (float32
+   precision, so a copy written at float32 is the same curve).
 """
 
 from __future__ import annotations
 
 import json
 import sys
+from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Iterator, Optional, Tuple
+from typing import Dict, Iterator, List, Optional, Tuple
 
 import numpy as np
 
@@ -37,12 +42,15 @@ DETECTOR_SOURCES = DETECTOR_SOURCE_PRECEDENCE + ("user", "composed", "component"
 #: A curve is a component when it follows it to SAME_CURVE of the component's peak on its own wavelengths and
 #: leaves out only wings below WING of that peak (copies are often trimmed there).
 SAME_CURVE, WING = 1e-4, 1e-2
+#: Rule 7's tolerance on wavelengths (relative) and on peak-normalised transmissions: float32 precision.
+SAME_SAMPLES = 1e-6
 
 Problem = Tuple[Path, str]
 
 
 def problems(filters_dir: PathLike, against: Optional[PathLike] = None) -> Iterator[Problem]:
     """Every rule broken in ``filters_dir`` (``Facility/Instrument/*.dat``), as (curve or folder, message)."""
+    labelled: Dict[int, List] = defaultdict(list)  # rule 7: (curve, path, DetectorType, source) by sample count
     for folder in sorted(p for p in Path(filters_dir).glob("*/*") if p.is_dir()):
         headers = {p.stem: read_filter_header(p) for p in sorted(folder.glob("*.dat"))}
         yield from _label_problems(folder, headers)
@@ -50,6 +58,16 @@ def problems(filters_dir: PathLike, against: Optional[PathLike] = None) -> Itera
         yield from _component_problems(folder, headers)
         if against is not None:
             yield from _regressions(folder, headers, Path(against) / folder.parent.name / folder.name)
+        for band, header in headers.items():
+            detector = normalize_detector_type(header.get("DetectorType"))
+            try:
+                curve = read_curve(folder / f"{band}.dat") if detector else None
+            except ComponentError:
+                continue  # an unreadable curve is no one's copy
+            if curve is not None and np.max(curve.transmission, initial=0.0) > 0:
+                labelled[len(curve.wavelength)].append((curve, folder / f"{band}.dat", detector,
+                                                        header.get("DetectorTypeSource") or "no source"))
+    yield from _clashes(Path(filters_dir), labelled)
 
 
 def _roles(header) -> Tuple[str, ...]:
@@ -123,6 +141,31 @@ def _same_curve(curve, component) -> bool:
         return False
     on_curve = np.interp(curve.wavelength, component.wavelength, component.transmission, left=0.0, right=0.0)
     return bool(np.max(np.abs(curve.transmission - on_curve)) <= SAME_CURVE * peak)
+
+
+def _clashes(filters_dir: Path, labelled: Dict[int, List]) -> Iterator[Problem]:
+    """Rule 7: each group of curves with the same samples (:func:`_same_samples`) and more than one DetectorType."""
+    for entries in labelled.values():
+        groups: List[List] = []
+        for entry in entries:
+            group = next((g for g in groups if _same_samples(g[0][0], entry[0])), None)
+            if group is None:
+                groups.append([entry])
+            else:
+                group.append(entry)
+        for group in groups:
+            if len({detector for _, _, detector, _ in group}) > 1:
+                yield group[0][1], "the same curve carries more than one DetectorType: " + ", ".join(
+                    f"{path.relative_to(filters_dir)} ({detector}, {source})" for _, path, detector, source in group)
+
+
+def _same_samples(a, b) -> bool:
+    """Whether curves ``a`` and ``b`` hold the same samples after peak normalisation, to SAME_SAMPLES."""
+    if not (np.allclose(a.wavelength[[0, -1]], b.wavelength[[0, -1]], rtol=SAME_SAMPLES, atol=0)
+            and np.allclose(a.wavelength, b.wavelength, rtol=SAME_SAMPLES, atol=0)):
+        return False
+    return bool(np.allclose(a.transmission / np.max(a.transmission), b.transmission / np.max(b.transmission),
+                            rtol=0, atol=SAME_SAMPLES))
 
 
 def _regressions(folder: Path, headers, old_folder: Path) -> Iterator[Problem]:
