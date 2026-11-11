@@ -33,6 +33,20 @@ Version 0.6.1 (unreleased)
   it got the total band's label. The LSST and SVO-published builders record a
   ``DetectorType`` that SVO does not give as ``assumed``. Before, they
   recorded it as ``svo``.
+- ``python -m sed_tools.filters.label_check FILTERS_DIR [--against OLD_DIR]``
+  checks the label rules every served filter tree must keep, and exits 1 on
+  any problem:
+
+  - detector types and their sources use SED_Tools' words;
+  - components use known roles;
+  - an SVO filter-only curve is labelled ``filter``;
+  - a curve equal to a registered component carries that component's role.
+
+  With ``--against``, it also checks that a changed ``DetectorType`` rests on
+  stronger evidence than the old one, or on ``user``. A rebuild then cannot
+  undo a correction, nor follow SVO reclassifying a curve, without a report.
+  Run against the shipped ``colors_data``, it catches TESS returning from
+  MESA's hand-set ``photon`` to SVO's ``energy``.
 
 Version 0.6.0 (November 2026)
 -----------------------------
