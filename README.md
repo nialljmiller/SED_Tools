@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/v0.5.0/docs/SED_Tools_Logo.jpeg" alt="SED_Tools Logo" width="200"/>
+  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/main/docs/SED_Tools_Logo.jpeg" alt="SED_Tools Logo" width="200"/>
 </p>
 
 <h1 align="center">SED_Tools</h1>
@@ -475,11 +475,6 @@ The NJM mirror runs the automatic builders ahead of time (`sed-tools filters-bui
 
 The CLI and Python API use the same acquisition and composition workflow. Availability distinguishes installed component files from registered source support. Missing files are reported, and `recipes_by_band` identifies combinations available for only part of an instrument's band set. Instruments whose separate components have not been reviewed are marked `unreviewed`; they remain available through the generic SVO passband downloader.
 
-The [component-source research inventory](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/docs/component_sources/README.md)
-tracks every SVO facility/instrument entry, research ownership and the evidence
-needed to add original component sources. Research findings are reviewed before
-they become supported downloaders or NJM mirror data.
-
 ```bash
 # Discover all SVO and NJM instruments, plus local and registered extra sources
 sed-tools filters-inventory --json
@@ -619,7 +614,7 @@ sed-tools combine --grids Kurucz2003all bt-settl --output my_combined_grid
 ### `sed-tools ml_completer`
 
 <p>
-  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/v0.5.0/docs/prediction_examples.png" alt="Prediction examples" width="200"/>
+  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/main/docs/prediction_examples.png" alt="Prediction examples" width="200"/>
 </p>
 
 
@@ -646,7 +641,7 @@ sed-tools ml_completer
 
 
 <p>
-  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/v0.5.0/docs/prediction_examples.png" alt="Prediction examples" width="200"/>
+  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/main/docs/prediction_examples.png" alt="Prediction examples" width="200"/>
 </p>
 
 Train and apply neural networks to generate complete SEDs from stellar parameters alone.
@@ -670,11 +665,11 @@ sed-tools ml_generator --auto --library data/stellar_models/Kurucz2003all --outp
 4. Generates diagnostic plots showing parameter space coverage
 
 <p>
-  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/v0.5.0/docs/sed_T6969_g4.20_m%2B0.02_params.png" alt="Prediction examples" width="200"/>
+  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/main/docs/sed_T6969_g4.20_m%2B0.02_params.png" alt="Prediction examples" width="200"/>
 </p>
 
 <p>
-  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/v0.5.0/docs/sed_T6969_g4.20_m%2B0.02_spectrum.png" alt="Prediction examples" width="200"/>
+  <img src="https://raw.githubusercontent.com/nialljmiller/SED_Tools/main/docs/sed_T6969_g4.20_m%2B0.02_spectrum.png" alt="Prediction examples" width="200"/>
 </p>
 
 ---
@@ -698,7 +693,7 @@ sed-tools densify \
   --ml-model data/stellar_models/models/sed_generator_Kurucz2003all
 ```
 
-See [notebook 10](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/jupyter_notebooks/10_grid_densification.ipynb) for a worked example including before/after comparison plots.
+See [notebook 10](https://github.com/nialljmiller/SED_Tools/blob/main/jupyter_notebooks/10_grid_densification.ipynb) for a worked example including before/after comparison plots.
 
 ---
 
@@ -1110,26 +1105,27 @@ When referencing filters in MESA, use the filename stem only:
 SED_Tools/
 ├── sed_tools/              # Package source
 │   ├── __init__.py
-│   ├── api.py              # Python API
-│   ├── cli.py              # CLI entry point
+│   ├── api/                # Python API
+│   ├── cli/                # CLI entry point
 │   └── ...
-├── data/                   # Downloaded data (created at runtime)
-│   ├── stellar_models/
-│   │   └── Kurucz2003all/
-│   │       ├── flux_cube.bin
-│   │       ├── lookup_table.csv
-│   │       ├── spectra.h5
-│   │       └── *.txt
-│   └── filters/
-│       └── Generic/
-│           └── Johnson/
-│               ├── B.dat
-│               ├── V.dat
-│               └── Johnson
 ├── docs/
 ├── tests/
 ├── pyproject.toml
 └── README.md
+
+~/.sed_tools/data/          # Downloaded data (the default; see `sed-tools config`)
+├── stellar_models/
+│   └── Kurucz2003all/
+│       ├── flux_cube.bin
+│       ├── lookup_table.csv
+│       ├── Kurucz2003all.h5
+│       └── *.txt
+└── filters/
+    └── Generic/
+        └── Johnson/
+            ├── B.dat
+            ├── V.dat
+            └── Johnson
 ```
 
 ---
@@ -1138,7 +1134,7 @@ SED_Tools/
 
 | Source | URL | Description |
 |--------|-----|-------------|
-| NJM Server | [data.nialljmiller.com/sed_tools/](https://data.nialljmiller.com/sed_tools/) | Pre-processed data host (fastest) |
+| NJM Server | [data.nialljmiller.com/sed_tools/](https://data.nialljmiller.com/sed_tools/) | Data host (fastest) |
 | SVO | [svo2.cab.inta-csic.es](http://svo2.cab.inta-csic.es/theory/fps/) | Spanish Virtual Observatory |
 | MSG | [astro.wisc.edu/~townsend](http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids) | MSG Stellar spectral grids |
 | MAST | [archive.stsci.edu/prepds/bosz](https://archive.stsci.edu/prepds/bosz/) | BOSZ Spectral Library, including BOSZ 2024 fixed-resolution and original-resolution grids |
@@ -1312,7 +1308,7 @@ All versions (resolves to the latest release): [10.5281/zenodo.18321943](https:/
 
 Version 0.4.1: [10.5281/zenodo.23634323](https://doi.org/10.5281/zenodo.23634323)
 
-Machine-readable citation metadata is available in [`CITATION.cff`](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/CITATION.cff).
+Machine-readable citation metadata is available in [`CITATION.cff`](https://github.com/nialljmiller/SED_Tools/blob/main/CITATION.cff).
 
 SED_Tools is also the designated data-preparation pipeline for the
 [MESA](https://docs.mesastar.org/) `colors` module — see
@@ -1323,13 +1319,13 @@ in the MESA repository.
 
 ## Contributing
 
-Bug reports, feature requests, and pull requests are welcome — see [CONTRIBUTING.md](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/CONTRIBUTING.md). Please also review our [Code of Conduct](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/CODE_OF_CONDUCT.md) and [Security Policy](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/SECURITY.md) (for reporting vulnerabilities).
+Bug reports, feature requests, and pull requests are welcome — see [CONTRIBUTING.md](https://github.com/nialljmiller/SED_Tools/blob/main/CONTRIBUTING.md). Please also review our [Code of Conduct](https://github.com/nialljmiller/SED_Tools/blob/main/CODE_OF_CONDUCT.md) and [Security Policy](https://github.com/nialljmiller/SED_Tools/blob/main/SECURITY.md) (for reporting vulnerabilities).
 
 ---
 
 ## License
 
-[MIT License](https://github.com/nialljmiller/SED_Tools/blob/v0.5.0/LICENSE)
+[MIT License](https://github.com/nialljmiller/SED_Tools/blob/main/LICENSE)
 
 ---
 

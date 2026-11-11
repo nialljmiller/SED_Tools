@@ -1,0 +1,2 @@
+# The tests need tests/support.py, conftest.py, fixtures/ and golden/, which an sdist would not carry
+prune tests

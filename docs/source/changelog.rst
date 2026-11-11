@@ -2,6 +2,28 @@
 Changelog
 =========
 
+Version 0.6.1 (unreleased)
+--------------------------
+
+- ``sed-tools rebuild``, ``SpectralGrid.write()`` and ``SED.import_grid()``
+  no longer write the HDF5 bundle over an MSG grid's downloaded ``<grid>.h5``:
+  a file there that is not a bundle is left alone and the bundle is
+  ``<grid>_bundle.h5``, as downloads already named it.
+- ``SpectralGrid.parameters`` names a spectrum without a file name as
+  ``write()`` saves it, so the ``lookup_table.csv`` that ``write()`` saves
+  lists files that exist.
+- Installing sed-tools no longer pulls in astroquery and lxml (nor html5lib,
+  keyring and pyvo); nothing imports them.
+- An NJM download with a wavelength range no longer first asks NJM for a
+  server-side cut, which it never made; the spectra are trimmed after
+  download, as before.
+- The sdist no longer includes ``tests/``, which could not run from it.
+- The Las Cumbres builders' manifest note maps each filter code as
+  ``U=bssl-ux-022.txt (band U)``.
+- ``scripts/audit_pipeline.py`` runs every check on every grid (the
+  ``grams_*`` and ``bbody`` grids were exempt by name) and uses the package's
+  Planck function and flux cube layout.
+
 Version 0.6.0 (November 2026)
 -----------------------------
 

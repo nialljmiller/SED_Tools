@@ -205,7 +205,7 @@ def wfcam(fetch: Fetcher) -> Instrument:
 LCO_URL = "https://lco.global/documents/2/lco_filter_curves.zip"
 LCO_PAGE = "https://lco.global/observatory/instruments/filters/"
 LCO_SHA256 = "4e9ecf215af1d1210c43342dd7604492d07cea588239b148836eff6f1bf727f0"
-# Published band name (case-insensitively unique; LCO filter codes) -> zip member, codex band.
+# Published band name (case-insensitively unique; LCO filter codes) -> zip member, band.
 LCO_FILES = {"U": ("bssl-ux-022.txt", "U"), "B": ("bssl-bx-004.txt", "B"), "V": ("bssl-vx-022.txt", "V"),
              "R": ("bssl-rx-007.txt", "R"), "I": ("bssl-ix-023.txt", "I"),
              "up": ("SDSS.up.txt", "u"), "gp": ("SDSS.gp.txt", "g"), "rp": ("SDSS.rp.txt", "r"),
@@ -232,7 +232,7 @@ def _lco(instrument: str, fetch: Fetcher, sha256: str = LCO_SHA256) -> Instrumen
     names = LCO_SETS[instrument]
     with zipfile.ZipFile(io.BytesIO(raw)) as zf:
         data = {n: lco_member(zf, LCO_FILES[n][0]) for n in names}
-    mapping = "; ".join(f"{b}={m} (codex band {c})" for b, (m, c) in LCO_FILES.items())
+    mapping = "; ".join(f"{b}={m} (band {c})" for b, (m, c) in LCO_FILES.items())
     bands = [make_band(n, data[n][:, 0], data[n][:, 1], unit="nm", detector_type=PHOTON,
                        components="filter", sources=f"{LCO_URL}#{LCO_FILES[n][0]} | {LCO_PAGE}")
              for n in names]

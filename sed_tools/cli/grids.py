@@ -17,6 +17,7 @@ from ..grids.lookup import regenerate_lookup_table
 from ..grids.pipeline import (_build_combined_grid, _build_data_products, _build_flux_cube, _directory_state,
                               _download_count, _import_sources, build_h5_bundle_from_txt, download_from_first_source,
                               local_grids, rebuildable_grids, spectra_grabber)
+from ..grids.spectrum_io import _bundle_path
 from ..ui_utils import ask_range, parse_multi_selection, prompt_choice, wrap
 
 logger = logging.getLogger("sed_tools.cli")
@@ -196,8 +197,7 @@ def _rebuild_grid(model_dir: str, model_name: str, rebuild_h5: bool, rebuild_flu
     regenerate_lookup_table(model_dir)
 
     if rebuild_h5:
-        out_h5 = os.path.join(model_dir, f"{model_name}.h5")
-        build_h5_bundle_from_txt(model_dir, out_h5)
+        build_h5_bundle_from_txt(model_dir, str(_bundle_path(model_dir, model_name)))
 
     if rebuild_flux_cube:
         _build_flux_cube(model_dir)

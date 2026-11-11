@@ -1,6 +1,10 @@
-# Python bytecode
+# Python bytecode and packaging
 __pycache__/
 *.py[cod]
+*.egg-info/
+*.egg
+build/
+dist/
 
 # Virtual environments
 .env/
@@ -8,68 +12,35 @@ __pycache__/
 env/
 venv/
 
-# Build artifacts
-*.egg-info/
-dist/
-build/
-*.egg
-*.manifest
-*.spec
-
-# Notebook checkpoints
+# Notebook checkpoints, editors, operating system, logs, caches and coverage
 .ipynb_checkpoints/
-
-# Operating system clutter
+.vscode/
+.idea/
 .DS_Store
 Thumbs.db
-
-# Logs and caches
 *.log
 .cache/
 .mypy_cache/
-
-# IDE settings
-.vscode/
-.idea/
-
-# Generated data products
-/data/
-SED_tools/data/
-*/data/**i
-data/*.txt
-
-/plots/
-SED_tools/plots/
-*/plots/**
-
-*.bin
-*.h5
-*.fits
-*.txz
-*.dat
-*.csv
-*.json
-*.pt
-*.json
-# Trained models / artifacts
-models/*.keras
-models/*.params
-models/*training*.png
-models/*prediction*.png
-
-# Archives / data dumps
-*.tar
-*.tar.gz
-*.tgz
-
-# Random output images
-*.png
-
-# Coverage artifacts
 .coverage
 .coverage.*
 coverage.xml
 htmlcov/
+
+# What SED_Tools writes when run from a checkout
+# the 0.4.1 data folder (the default is now ~/.sed_tools/data)
+/data/*
+# the flux cube tool's plots, trained ML models (--models-dir) and notebook 08's generated SEDs
+plots/
+models/
+output/
+# scripts/audit_pipeline.py, and notebook 12 which runs it, write to the working directory
+audit_report.txt
+audit_summary.png
+wl_coverage.png
+sed_comparison_*.png
+sed_bb_overlay.png
+rawcube_diag_*.png
+
 # server branch exceptions
 !data/count.txt
 !data/counter.php
