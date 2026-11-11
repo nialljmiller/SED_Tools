@@ -347,6 +347,9 @@ def _add_grid_tool_parsers(sub) -> None:
                       help="Spectral grid folder name(s); default: every local grid")
     covp.add_argument("--no-plot", action="store_true", help="Skip the coverage plot")
     covp.add_argument("--out", default=None, help="Output path for the plot PNG (single spectral grid only)")
+    covp.add_argument("--filters", nargs="+", default=None, metavar="FILTERS",
+                      help="Filter curves or instrument folders (e.g. JWST/MIRI) to check the grid's wavelengths "
+                           "against; exits 1 if the grid does not sample one of the bands")
 
     imp = sub.add_parser("import", help="Ingest a local grid of .txt spectra into the pipeline")
     imp.add_argument("--path", required=True, help="Directory of .txt spectra (or a single .txt file)")
@@ -623,10 +626,14 @@ def _cmd_coverage(args, parser):
     failed = []
     for nm in names:
         try:
-            SED.coverage(nm, model_root=args.base, plot=not args.no_plot,
-                         out_path=args.out if len(names) == 1 else None)
+            summary = SED.coverage(nm, model_root=args.base, plot=not args.no_plot,
+                                   out_path=args.out if len(names) == 1 else None, filters=args.filters)
         except (ValueError, OSError, RuntimeError) as exc:
             failed.append(f"{nm}: {exc}")
+            continue
+        if summary.get("bands_not_sampled"):
+            failed.append(f"{nm}: does not sample {len(summary['bands_not_sampled'])} band(s): "
+                          + ", ".join(summary["bands_not_sampled"]))
     return _failure_status("coverage", failed)
 
 

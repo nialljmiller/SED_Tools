@@ -702,6 +702,7 @@ class SED:
         model_root: Optional[Union[str, Path]] = None,
         plot: bool = True,
         out_path: Optional[Union[str, Path]] = None,
+        filters: Optional[Sequence[Union[str, Path]]] = None,
     ) -> Dict[str, Any]:
         """Report parameter-space coverage of a local grid (downloaded or built).
 
@@ -716,13 +717,17 @@ class SED:
         model_root : base stellar_models dir for resolving a bare name.
         plot : whether to write the coverage figure.
         out_path : plot output path.
+        filters : filter curves or instrument folders (paths, or Facility/Instrument under
+            the filter directory); the bands among them the grid's wavelengths do not sample
+            (sed_tools.photometry.band_sampling) are listed, and returned under
+            'bands_not_sampled'.
 
         Returns the summary dict.
         """
         from ..grids.coverage import grid_coverage
 
         base = Path(model_root) if model_root else cls._model_root
-        return grid_coverage(catalog, base_dir=base, plot=plot, out_path=out_path)
+        return grid_coverage(catalog, base_dir=base, plot=plot, out_path=out_path, filters=filters)
 
     @classmethod
     def import_grid(
