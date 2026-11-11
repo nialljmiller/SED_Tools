@@ -1,7 +1,9 @@
-"""Parameter-space coverage of a local grid: grid_coverage(name_or_dir, base_dir=..., plot=..., out_path=...).
+"""Parameter-space coverage of a local grid: grid_coverage(name_or_dir, base_dir=..., plot=..., out_path=...,
+filters=...).
 
 It reads lookup_table.csv (no flux cube needed), else the .txt headers, and reports each axis's range, values,
 spacing and Anderson-Darling normality, and how much of the Teff x logg x [M/H] product exists; plots optional.
+Given filters, it also lists the bands the grid's wavelengths do not sample (sed_tools.photometry.band_sampling).
 """
 
 from __future__ import annotations
@@ -9,13 +11,13 @@ from __future__ import annotations
 import math
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Sequence, Union
 
 import numpy as np
 import pandas as pd
 
 from .header_parser import parse_header
-from .lookup import find_logg_column, find_metallicity_column, find_teff_column
+from .lookup import find_file_column, find_logg_column, find_metallicity_column, find_teff_column
 from .spectrum_io import read_text_spectrum
 
 _AXES = ("teff", "logg", "metallicity")
@@ -425,6 +427,71 @@ def plot_coverage(
     return out_path
 
 
+# ---- Wavelength sampling of bands ----
+
+def grid_wavelength_axes(model_dir: Union[str, Path]) -> Dict[str, np.ndarray]:
+    """The wavelength axis of each flux cube in the grid folder (by path relative to it), or, without one, the axis
+    precompute_flux_cube would build."""
+    from ..cube.build import compute_common_wavelengths, load_lookup_table
+    from ..cube.fileio import load_axes
+
+    model_dir = Path(model_dir)
+    cubes = sorted(model_dir.rglob("flux_cube.bin"))
+    if cubes:
+        return {str(path.relative_to(model_dir)): load_axes(path)[3] for path in cubes}
+    lookup = load_lookup_table(str(model_dir / "lookup_table.csv"))
+    file_col = find_file_column(lookup.keys()) or next(iter(lookup))
+    return {"(cube to be built)": compute_common_wavelengths(str(model_dir), lookup[file_col])}
+
+
+def _filter_curves(filters: Sequence[Union[str, Path]]) -> List:
+    """The curves of each filter file, instrument folder, or Facility/Instrument folder under the filter directory."""
+    from ..cube.model import FILTER_DIR_DEFAULT, _filter_files_in_dir
+    from ..photometry import load_filter_curve
+
+    curves = []
+    for spec in filters:
+        path = Path(spec).expanduser()
+        if not path.exists():
+            path = FILTER_DIR_DEFAULT / str(spec)
+        files = [path] if path.is_file() else (_filter_files_in_dir(path) if path.is_dir() else [])
+        if not files:
+            raise FileNotFoundError(f"No filter curves found for {spec!r} (as a path or under {FILTER_DIR_DEFAULT})")
+        label = path.parent.name if path.is_file() else path.name
+        curves += [load_filter_curve(str(f), f"{label}/{f.stem}") for f in files]
+    return curves
+
+
+def bands_not_sampled(model_dir: Union[str, Path], filters: Sequence[Union[str, Path]]) -> Dict[str, Dict]:
+    """{band: {cube: BandSampling}} for each band of ``filters`` that a wavelength axis of the grid does not sample."""
+    return _not_sampled(grid_wavelength_axes(model_dir), _filter_curves(filters))
+
+
+def _not_sampled(axes: Dict[str, np.ndarray], curves: List) -> Dict[str, Dict]:
+    from ..photometry import band_sampling
+
+    out: Dict[str, Dict] = {}
+    for curve in curves:
+        for cube, axis in axes.items():
+            sampling = band_sampling(axis, curve)
+            if not sampling.sampled:
+                out.setdefault(curve.name, {})[cube] = sampling
+    return out
+
+
+def print_band_sampling(name: str, n_bands: int, unsampled: Dict[str, Dict]) -> None:
+    from ..photometry import COARSE_RESOLVING_POWER, UNSAMPLED_WEIGHT_LIMIT
+
+    print(f"\nBand sampling of {name}: {n_bands} bands, {len(unsampled)} not sampled (fewer than two grid "
+          f"wavelengths where the band transmits, or over {100 * UNSAMPLED_WEIGHT_LIMIT:g}% of its weight beyond "
+          f"the grid or where lambda/delta-lambda < {COARSE_RESOLVING_POWER:g}). A band average there, MESA's or "
+          "SED_Tools', is not determined by the grid:")
+    for band, per_cube in unsampled.items():
+        for cube, sampling in per_cube.items():
+            where = "" if len(per_cube) == 1 and cube in ("flux_cube.bin", "(cube to be built)") else f" [{cube}]"
+            print(f"  {band}{where}: {sampling.describe()}")
+
+
 # ---- Public entry point ----
 
 def grid_coverage(
@@ -432,6 +499,7 @@ def grid_coverage(
     base_dir: Optional[Union[str, Path]] = None,
     plot: bool = True,
     out_path: Optional[Union[str, Path]] = None,
+    filters: Optional[Sequence[Union[str, Path]]] = None,
 ) -> Dict:
     """
     Print a coverage summary for a grid and (optionally) write a coverage plot.
@@ -442,8 +510,11 @@ def grid_coverage(
     base_dir    : base stellar_models directory used to resolve a bare name.
     plot        : whether to write the coverage figure.
     out_path    : plot output path. Defaults to <model_dir>/coverage.png.
+    filters     : filter curves or instrument folders (paths, or Facility/Instrument under the filter
+                  directory) to check the grid's wavelengths against (bands_not_sampled).
 
-    Returns the summary dict (with the node DataFrame under key '_df').
+    Returns the summary dict (with the node DataFrame under key '_df', and, given filters, the bands not
+    sampled under 'bands_not_sampled').
     """
     base = Path(base_dir).expanduser() if base_dir is not None else None
     model_dir = _resolve_dir(name_or_dir, base)
@@ -463,5 +534,10 @@ def grid_coverage(
         written = plot_coverage(summary["_df"], summary["name"], target)
         print(f"\n  Plot written: {written}")
         summary["plot_path"] = str(written)
+
+    if filters:
+        curves = _filter_curves(filters)
+        summary["bands_not_sampled"] = _not_sampled(grid_wavelength_axes(model_dir), curves)
+        print_band_sampling(summary["name"], len(curves), summary["bands_not_sampled"])
 
     return summary

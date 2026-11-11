@@ -5,6 +5,7 @@ and bolometric flux. The flux-cube tool, the SED API, the filter modules and the
 from __future__ import annotations
 
 import logging
+import math
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -272,24 +273,115 @@ def band_average_flux_lambda_from_arrays(
     return float(numerator / denom)
 
 
+# ---- How a grid's wavelengths sample a band ----
+
+#: A stretch between two consecutive grid wavelengths is coarse where lambda/delta-lambda is below this: across it,
+#: linear and power-law interpolation of a Rayleigh-Jeans continuum (F_lambda ~ lambda^-4) differ by up to 1%, so
+#: the grid no longer fixes the flux there.
+COARSE_RESOLVING_POWER = 16.0
+#: The largest share of a band's weight that may lie beyond a grid or in its coarse stretches: 1% of the band average.
+UNSAMPLED_WEIGHT_LIMIT = 0.01
+
+
+@dataclass(frozen=True)
+class BandSampling:
+    """How a grid's wavelengths sample one band: see :func:`band_sampling`."""
+
+    inside: int                   # grid wavelengths where the band transmits
+    outside: float                # share of the band's weight beyond the grid's first and last wavelength
+    coarse: float                 # share of its weight in coarse stretches between grid wavelengths
+    stretch: Tuple[float, float]  # the coarse stretch (Å) under the band's heaviest coarse sample; (nan, nan) if none
+
+    @property
+    def sampled(self) -> bool:
+        """Two or more grid wavelengths where the band transmits, and at most UNSAMPLED_WEIGHT_LIMIT of its weight
+        beyond the grid or in coarse stretches.
+
+        A band average taken on the grid's own wavelengths (MESA's: the curve interpolated onto the SED) is empty
+        with no grid wavelength in the band and is one flux sample with one; elsewhere it is an interpolation across
+        the grid's gap, whatever the method.
+        """
+        return self.inside >= 2 and self.outside + self.coarse <= UNSAMPLED_WEIGHT_LIMIT
+
+    def describe(self) -> str:
+        parts = [f"{self.inside} grid wavelength{'' if self.inside == 1 else 's'} where it transmits"]
+        if self.outside > 0:
+            parts.append(f"{100 * self.outside:.3g}% of its weight beyond the grid")
+        if self.coarse > 0:
+            parts.append(f"{100 * self.coarse:.3g}% where lambda/delta-lambda < {COARSE_RESOLVING_POWER:g}, "
+                         f"as between {self.stretch[0]:.6g} and {self.stretch[1]:.6g} Å")
+        return ", ".join(parts)
+
+
+def band_sampling(grid_wavelength: Sequence[float], curve: FilterCurve) -> BandSampling:
+    """How the increasing wavelengths ``grid_wavelength`` (Å; a flux cube's axis or a spectrum's) sample ``curve``.
+
+    The band's weight is the curve's band-average weight (``curve.weight``), integrated on the curve's samples.
+    """
+    grid = np.asarray(grid_wavelength, dtype=float)
+    lam = curve.wavelength
+    weight = np.clip(curve.weight, 0.0, None)
+    total = np.trapezoid(weight, lam)
+    near = grid[np.searchsorted(grid, lam[0]):np.searchsorted(grid, lam[-1], side="right")]  # 0 elsewhere
+    inside = int(np.count_nonzero(np.interp(near, lam, np.clip(curve.transmission, 0.0, None)) > 0))
+    if not total > 0:
+        return BandSampling(inside, 0.0, 0.0, (math.nan, math.nan))  # the band average itself raises
+
+    def share(mask):
+        return float(np.trapezoid(np.where(mask, weight, 0.0), lam) / total)
+
+    beyond = (lam < grid[0]) | (lam > grid[-1])
+    if grid.size < 2:
+        return BandSampling(inside, share(beyond), 0.0, (math.nan, math.nan))
+    k = np.clip(np.searchsorted(grid, lam, side="right"), 1, grid.size - 1)  # each sample's stretch grid[k-1]..grid[k]
+    lo, hi = grid[k - 1], grid[k]
+    coarse = ~beyond & ((hi - lo) * 2 * COARSE_RESOLVING_POWER > hi + lo)
+    stretch = (math.nan, math.nan)
+    if coarse.any():
+        j = int(np.argmax(np.where(coarse, weight, -1.0)))
+        stretch = (float(lo[j]), float(hi[j]))
+    return BandSampling(inside, share(beyond), share(coarse), stretch)
+
+
+def coarse_stretches(grid_wavelength: Sequence[float]) -> List[Tuple[float, float]]:
+    """The stretches of the increasing wavelengths ``grid_wavelength`` where lambda/delta-lambda is below
+    COARSE_RESOLVING_POWER, adjacent ones joined: bands there are not sampled (:func:`band_sampling`)."""
+    grid = np.asarray(grid_wavelength, dtype=float)
+    lo, hi = grid[:-1], grid[1:]
+    coarse = (hi - lo) * 2 * COARSE_RESOLVING_POWER > hi + lo
+    out: List[Tuple[float, float]] = []
+    for a, b in zip(lo[coarse], hi[coarse]):
+        if out and out[-1][1] == a:
+            out[-1] = (out[-1][0], float(b))
+        else:
+            out.append((float(a), float(b)))
+    return out
+
+
 def _warn_outside_sed(sed_wavelength: np.ndarray, curves: Iterable[FilterCurve]) -> None:
-    """One warning naming the filters with transmission outside the SED, where band averages count zero flux."""
+    """One warning naming the bands the SED's wavelengths do not sample (:func:`band_sampling`): those that fall
+    between too few or too coarse SED wavelengths, and those with transmission outside the SED, where band averages
+    count zero flux."""
     lo, hi = np.min(sed_wavelength), np.max(sed_wavelength)
-    outside = []
+    outside, between = [], []
     for curve in curves:
-        total = np.trapezoid(curve.transmission, curve.wavelength)
-        if not total > 0:
+        if not np.trapezoid(np.clip(curve.weight, 0.0, None), curve.wavelength) > 0:
             continue  # the band average itself raises for a curve that integrates to zero
-        beyond = (curve.wavelength < lo) | (curve.wavelength > hi)
-        fraction = np.trapezoid(np.where(beyond, curve.transmission, 0.0), curve.wavelength) / total
-        if fraction > 0:
-            outside.append(f"{curve.name} ({100 * fraction:.3g}%)")
+        sampling = band_sampling(sed_wavelength, curve)
+        if sampling.outside > 0:
+            outside.append(f"{curve.name} ({100 * sampling.outside:.3g}%)")
+        elif not sampling.sampled:
+            between.append(f"{curve.name} ({sampling.describe()})")
+    messages = []
+    if between:
+        messages.append("The SED's wavelengths do not sample these bands, so their band averages interpolate across "
+                        f"the SED's gaps: {'; '.join(between)}.")
     if outside:
-        logger.warning(
-            "Filter transmission outside the SED's wavelength range (%.6g-%.6g Å), where the band "
-            "average counts the flux as zero, so these bands are biased low: %s.",
-            lo, hi, ", ".join(outside),
-        )
+        messages.append(f"Filter transmission outside the SED's wavelength range ({lo:.6g}-{hi:.6g} Å), where the "
+                        "band average counts the flux as zero, so these bands are biased low: "
+                        f"{', '.join(outside)}.")
+    if messages:
+        logger.warning(" ".join(messages))
 
 
 def band_average_flux_lambda(

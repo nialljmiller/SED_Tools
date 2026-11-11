@@ -5,6 +5,25 @@ Changelog
 Version 0.6.1 (unreleased)
 --------------------------
 
+- A grid's wavelengths are now checked against the bands they are used with
+  (``sed_tools.photometry.band_sampling``). A band is *sampled* when two or
+  more grid wavelengths lie where it transmits and at most 1 % of its weight
+  lies beyond the grid or where lambda/delta-lambda < 16. Otherwise a band
+  average, MESA's or SED_Tools', is not determined by the grid.
+
+  The case that showed this: ATLAS9 (Kurucz, Kurucz2003all) has no
+  wavelengths between 10.02 and 20 µm. In MESA, MIRI F1130W–F1550C and F2550W
+  came back as its "no data" placeholder; F1800W–F2300C and WISE W4 came back
+  as one flux sample. Nothing said so. Now:
+
+  - ``sed-tools coverage --filters ...`` (and ``SED.coverage(filters=...)``)
+    lists the bands a grid does not sample and exits 1;
+  - building a flux cube prints the wavelength stretches where no band is
+    sampled, and how many spectra were interpolated onto the cube's axis;
+  - synthetic photometry's warning about bands past the SED also names the
+    bands that fall between its wavelengths.
+
+  Band averages themselves are unchanged.
 - ``sed-tools rebuild``, ``SpectralGrid.write()`` and ``SED.import_grid()``
   no longer write the HDF5 bundle over an MSG grid's downloaded ``<grid>.h5``:
   a file there that is not a bundle is left alone and the bundle is
