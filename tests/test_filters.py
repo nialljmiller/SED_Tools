@@ -53,6 +53,8 @@ from sed_tools.filter_properties import (AB_JY, curve_properties, extinction_law
                                          instrument_properties)
 from sed_tools.filters import svo
 from sed_tools.filters.compose import read_curve
+from sed_tools.filters.manifest import check_sets, set_problems
+from sed_tools.filters.njm import drop_unlisted_bands
 from sed_tools.filters.properties import load_vega, properties_record
 from sed_tools.flux_cube_tool import infer_unit_from_values, load_filter_curve, load_spectrum, load_two_column_file
 from sed_tools.njm_filter_grabber import NJMFilterGrabber, SetDownload
@@ -2979,10 +2981,129 @@ def dropping_bands_njm_does_not_list_keeps_archived_bands(t):
     data = json.loads((inst / "manifest.json").read_text())
     data["bands"] = ["H", "J", "Y"]  # J: declared, but NJM's index does not list it and it is not installed
     (inst / "manifest.json").write_text(json.dumps(data))
-    filter_library._drop_unlisted_bands(inst, ["H.dat", "Y.dat"])
+    drop_unlisted_bands(inst, ["H.dat", "Y.dat"])
     saved = json.loads((inst / "manifest.json").read_text())
     assert saved["bands"] == ["H", "Y"] and saved["archived_bands"] == ARCHIVED
     assert FilterLibrary.published_complete(inst)
+
+
+# A set's records agree: one release per set, a MESA index named after the folder, a manifest naming it
+def curve_of(filter_id):
+    return FILTER_CURVE.replace("FilterID=X.b", f"FilterID={filter_id}")
+
+
+def gaia_as_served(root):
+    """GAIA/GAIA as NJM served it to 11 Nov 2026: GAIA3's G and Grvs with Gaia2m's Gbp_bright, all indexed."""
+    return put(root / "GAIA" / "GAIA", {"G.dat": curve_of("GAIA/GAIA3.G"), "Grvs.dat": curve_of("GAIA/GAIA3.Grvs"),
+                                       "Gbp_bright.dat": curve_of("GAIA/Gaia2m.Gbp_bright"),
+                                       "GAIA": "G.dat\nGbp_bright.dat\nGrvs.dat\n"})
+
+
+#: Which source instruments each set is made from, as NJM's svo_instruments.json says.
+GAIA_CLAIMS = {"GAIA/GAIA": ["GAIA/GAIA3"], "GAIA/Gaia2m": ["GAIA/Gaia2m"]}
+
+
+@row
+def set_problems_names_each_way_a_sets_records_drift(t):
+    def a_set(name, files):
+        return put(t.tmp / "Fac" / name, {"b.dat": FILTER_CURVE, **files})
+
+    named = json.dumps({"facility": "Fac", "instrument": "Stale", "bands": ["b", "c"]})
+    expected = {  # the old tarball's MIRI and NIRISS had no index, so MESA could not read them
+        a_set("NoIndex", {}): "Fac/NoIndex has no MESA index file NoIndex: MESA opens the index named after the folder",
+        a_set("Empty", {"Empty": ""}): "Fac/Empty holds b.dat, which its index does not list",
+        a_set("Gone", {"Gone": "b.dat\nc.dat\n"}): "Fac/Gone/Gone lists c.dat, not in the folder",
+        a_set("Stray", {"Stray": "b.dat\n", "c.dat": FILTER_CURVE}): "Stray holds c.dat, which its index does not list",
+        a_set("Unnamed", {"Unnamed": "b.dat\n", "manifest.json": '{"bands": ["b"]}'}): "manifest.json names no set",
+        a_set("Broken", {"Broken": "b.dat\n", "manifest.json": "{"}): "Broken/manifest.json cannot be read",
+        a_set("Stale", {"Stale": "b.dat\n", "manifest.json": named}): (
+            "Stale/manifest.json declares c, which its index does not list (an incomplete set, or a stale manifest)"),
+    }
+    write_set(t.tmp / "Fac" / "Good", ["b"])
+    found = check_sets(t.tmp)
+    assert sorted(found) == sorted(str(d) for d in expected)  # Fac/Good agrees with itself
+    for directory, line in expected.items():
+        assert len(found[str(directory)]) == 1 and line in found[str(directory)][0], (directory, found[str(directory)])
+    assert set_problems(put(t.tmp / "Fac" / "NoCurves", {})) == []
+
+
+@row
+def one_set_never_holds_another_release_of_its_instrument(t):
+    gaia = gaia_as_served(t.tmp)
+    assert set_problems(gaia) == []  # its records agree: only what each curve is shows the mix
+    assert set_problems(gaia, GAIA_CLAIMS) == [
+        f"{gaia}/Gbp_bright.dat is GAIA/Gaia2m.Gbp_bright, a curve of GAIA/Gaia2m, not of this set"]
+    # NJM moves Gbp_bright out: downloading the set again leaves the installed copy beside it, not in it
+    InstrumentManifest.from_published(gaia).save(gaia)
+    served = {f"filters/GAIA/GAIA/{name}": (gaia / name).read_text() for name in ("G.dat", "Grvs.dat")}
+    grabber = njm_filters(t, t.tmp, {**served, "filters/GAIA/GAIA/GAIA": "G.dat\nGrvs.dat\n"})
+    with t.caplog.at_level(logging.WARNING):
+        grabber.download_filters("GAIA", "GAIA")
+    assert (gaia / "GAIA").read_text().split() == ["G.dat", "Grvs.dat"]
+    saved = json.loads((gaia / "manifest.json").read_text())
+    assert saved["bands"] == ["G", "Grvs"] and saved["archived_bands"] == {"Gbp_bright": {}}
+    assert "does not list Gbp_bright; Gbp_bright kept in the folder under archived_bands" in t.caplog.text
+    assert InstrumentManifest.from_published(gaia).bands == ["G", "Grvs"] and set_problems(gaia) == []
+    assert len(set_problems(gaia, GAIA_CLAIMS)) == 1  # still another release's curve in the folder
+    (gaia / "Gbp_bright.dat").unlink()
+    assert set_problems(gaia, GAIA_CLAIMS) == []
+    mine = put(t.tmp / "GAIA" / "Mine", {"G.dat": curve_of("GAIA/GAIA3.G"), "Mine": "G.dat\n"})
+    assert set_problems(mine, GAIA_CLAIMS) == []  # a user's own set: no claim says what it is made from
+    drop_unlisted_bands(mine, [])  # no manifest: nothing declared, nothing changed
+    assert sorted(p.name for p in mine.iterdir()) == ["G.dat", "Mine"]
+
+
+@row
+def svo_never_saves_two_instruments_curves_into_one_set(t):
+    browser = svo_browser(t.tmp, {})
+
+    def rows(release, bands, folder="GAIA"):  # SVO labels every Gaia release "GAIA": 0.2.0 filed them all there
+        return [FilterRow(f"GAIA/{release}.{band}", band, "GAIA", folder, "") for band in bands]
+
+    browser.download_filters(rows("GAIA3", ["G", "Grvs"]))
+    gaia = t.tmp / "GAIA" / "GAIA"
+    with pytest.raises(ComponentError, match=r"GAIA holds G\.dat, Grvs\.dat of GAIA/GAIA3\. Saving GAIA/Gaia2m there "
+                                             r"would make one set of two instruments' curves"):
+        browser.download_filters(rows("Gaia2m", ["G", "Gbp_bright"]))
+    with pytest.raises(ComponentError, match="Other would receive the curves of 2 instruments"):
+        browser.download_filters(rows("GAIA0", ["G"], "Other") + rows("GAIA2", ["G"], "Other"))
+    assert browser.saved == ["GAIA/GAIA3.G", "GAIA/GAIA3.Grvs"]  # nothing of the others was fetched or written
+    assert (gaia / "GAIA").read_text().split() == ["G.dat", "Grvs.dat"] and not (t.tmp / "GAIA" / "Other").exists()
+    # Completing one of NJM's products from the SVO instruments it claims: its own bands, whatever their source
+    (gaia / "Gbp_bright.dat").write_text(curve_of("GAIA/Gaia2m.Gbp_bright"))
+    grp = {"Grp": FilterRow("GAIA/GAIA3.Grp", "Grp", "GAIA", "GAIA3", "")}
+    with pytest.raises(ComponentError, match="holds Gbp_bright.dat of GAIA/Gaia2m"):
+        browser.download_into(gaia, grp, expected=["G", "Grp", "Grvs"])
+    browser.download_into(gaia, grp, expected=["G", "Gbp_bright", "Grp", "Grvs"])
+    assert (gaia / "Grp.dat").is_file()
+
+
+@row
+def the_mesa_index_is_named_after_its_folder(t):
+    cam = put(t.tmp / "F" / "Cam", {"b.dat": FILTER_CURVE})
+    assert write_filter_index(cam) == cam / "Cam"  # where MESA opens it
+    out = combine_filter_sets(t.tmp / "Mine", [cam], filter_root=t.tmp, instrument="Other")  # 0.4.1 wrote Mine/Other
+    assert (out / "Mine").read_text().split() == ["b.dat"] and not (out / "Other").exists()
+
+
+@row
+def a_renamed_or_copied_set_is_not_described_by_the_manifest_it_carried(t):
+    sdss = write_set(t.tmp / "SLOAN" / "SDSS", ["g", "r"])
+    copy = t.tmp / "SLOAN" / "SDSS_E"
+    shutil.copytree(sdss, copy)
+    (copy / "SDSS").rename(copy / "SDSS_E")  # the MESA index renamed by hand, as MESA needs
+    with pytest.raises(ComponentError, match=r"SDSS_E/manifest.json describes SLOAN/SDSS, not SLOAN/SDSS_E: the "
+                                             r"folder was renamed or copied"):
+        Filters.available("SLOAN", "SDSS_E", filter_root=t.tmp, include_remote=False)
+    assert set_problems(copy) == [f"{copy}/manifest.json describes SLOAN/SDSS, not SLOAN/SDSS_E"]
+    data = json.loads((copy / "manifest.json").read_text())
+    (copy / "manifest.json").write_text(json.dumps(dict(data, instrument="SDSS_E")))  # what the error says to do
+    assert set_problems(copy) == []
+    assert Filters.available("SLOAN", "SDSS_E", filter_root=t.tmp, include_remote=False)["instrument"] == "SDSS_E"
+    gmos = write_set(t.tmp / "Gemini" / "GMOS-N", ["g"])  # NJM's Gemini/GMOS_N installed under another spelling
+    (gmos / "manifest.json").write_text(json.dumps(dict(json.loads((gmos / "manifest.json").read_text()),
+                                                        instrument="GMOS_N")))
+    assert set_problems(gmos) == [] and InstrumentManifest.load(gmos).instrument == "GMOS_N"
 
 
 # Compose refuses bands without the components before any download

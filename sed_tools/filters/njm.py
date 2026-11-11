@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Set, Tuple
 import requests
 from bs4 import BeautifulSoup
 
-from .manifest import InstrumentManifest, index_names
+from .manifest import InstrumentManifest, archived_bands, index_names
 from .curve_metadata import SOURCE_ASSUMED, SVOMetadataClient, migrate_filter_file, tag_filter_file
 from ..njm_mirror import (BASE_URL, NJM_CONNECT_TIMEOUT, NJM_PAUSE, USER_AGENT, _STATE, _body, _status, _write_atomic,
                          cache_root, pause, paused, plain_reason, skip_ssl_verification)
@@ -387,6 +387,8 @@ class NJMFilterGrabber:
             manifest = InstrumentManifest.from_published(output_dir)
             manifest.bands = sorted(name.removesuffix(".dat") for name in remote_index if name.endswith(".dat"))
             manifest.save(output_dir)
+        if all((output_dir / curve_file(name)).is_file() for name in remote_index):  # NJM's whole set is in place
+            drop_unlisted_bands(output_dir, {curve_file(name) for name in remote_index})
         return result
 
     def _download_curves(self, facility: str, instrument: str, filters: List[str],
@@ -738,6 +740,30 @@ def _update_atmosphere_manifest(site_dir: Path, served: str) -> None:
         logger.warning("Updated the %s atmosphere's manifest to NJM's, but kept the installed description of %s, "
                        "which NJM describes otherwise (remove those files to fetch NJM's)",
                        site_dir.name, ", ".join(kept))
+
+
+def drop_unlisted_bands(directory, listed):
+    """Once NJM has completed its set in ``directory``, what NJM's index does not list is not part of it.
+
+    Such a band is no longer declared (never downloaded, it would make the set look incomplete for
+    ever), and a curve of it still in the folder is kept beside the set under ``archived_bands`` (a
+    band NJM dropped or moved to another set): the folder's records then agree with NJM's index.
+    """
+    path = Path(directory) / "manifest.json"
+    if not path.is_file():
+        return
+    data = json.loads(path.read_text(encoding="utf-8"))
+    archived = archived_bands(directory)
+    stale = [band for band in data.get("bands", []) if band not in archived and f"{band}.dat" not in listed]
+    kept = sorted(p.stem for p in Path(directory).glob("*.dat") if p.name not in listed and p.stem not in archived)
+    if not stale and not kept:
+        return
+    data["bands"] = [band for band in data["bands"] if band not in stale]
+    if kept:
+        data["archived_bands"] = {**archived, **{band: {} for band in kept}}
+    path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    logger.warning("%s: NJM's index of the set does not list %s; %s", path, ", ".join(sorted({*stale, *kept})),
+                   f"{', '.join(kept)} kept in the folder under archived_bands" if kept else "no longer expected")
 
 
 def main():

@@ -441,7 +441,7 @@
    "instruments": {
     "DR2": {"bands": ["BP", "G", "RP"], "description": "Gaia DR2 passbands (Evans et al. 2018)", "svo_bands": {"GAIA/GAIA2": ["G", "Gbp=BP", "Grp=RP"]}, "svo_instruments": ["GAIA/GAIA2"]},
     "DR2r": {"bands": ["BP", "G", "RP"], "description": "Gaia DR2 revised passbands (Evans et al. 2018)", "svo_bands": {"GAIA/GAIA2r": ["G", "Gbp=BP", "Grp=RP"]}, "svo_instruments": ["GAIA/GAIA2r"]},
-    "GAIA": {"bands": ["G", "Gbp", "Gbp_bright", "Gbp_faint", "Grp", "Grvs"], "description": "Gaia DR3 passbands + BP bright/faint (Maíz Apellániz & Weiler 2018)", "svo_bands": {"GAIA/GAIA3": ["G", "Gbp", "Grp", "Grvs"]}, "svo_instruments": ["GAIA/GAIA3"]},
+    "GAIA": {"bands": ["G", "Gbp", "Grp", "Grvs"], "description": "Gaia (E)DR3 passbands: G, BP, RP and RVS", "svo_bands": {"GAIA/GAIA3": ["G", "Gbp", "Grp", "Grvs"]}, "svo_instruments": ["GAIA/GAIA3"]},
     "GAIA0": {"bands": ["G", "Gbp", "Grp"], "description": "Gaia pre-launch passbands (Jordi et al. 2010)", "svo_bands": {"GAIA/GAIA0": ["G", "Gbp", "Grp"]}, "svo_instruments": ["GAIA/GAIA0"]},
     "Gaia2m": {"bands": ["G", "Gbp_bright", "Gbp_faint", "Grp"], "description": "Gaia DR2 bands, BP split at G=10.87 (Maíz Apellániz & Weiler 2018)", "svo_bands": {"GAIA/Gaia2m": ["G", "Gbp_bright", "Gbp_faint", "Grp"]}, "svo_instruments": ["GAIA/Gaia2m"]}
    }

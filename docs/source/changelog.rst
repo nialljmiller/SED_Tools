@@ -47,6 +47,26 @@ Version 0.6.1 (unreleased)
   undo a correction, nor follow SVO reclassifying a curve, without a report.
   Run against the shipped ``colors_data``, it catches TESS returning from
   MESA's hand-set ``photon`` to SVO's ``energy``.
+- A filter set's folder holds one instrument's curves. An SVO download stops,
+  before saving anything, when the folder already holds curves whose
+  ``FilterID`` names another SVO instrument, or would receive the curves of
+  two (SED_Tools 0.2.0 and earlier filed every Gaia release in ``GAIA/GAIA``).
+  When NJM no longer lists a band of a set, a re-download keeps its installed
+  curve beside the set under ``archived_bands`` instead of declaring it.
+- A ``manifest.json`` that names another folder (the set was renamed or
+  copied, e.g. ``SLOAN/SDSS`` to ``SLOAN/SDSS_E``) stops, with the fix, instead
+  of describing the folder as the set it came from.
+- The MESA index file is named after its folder, where MESA opens it:
+  ``combine_filter_sets(output, ..., instrument=...)`` with an absolute
+  ``output`` wrote it under ``instrument``, and ``write_filter_index`` now
+  takes the folder's name when given none. An SVO download's index leaves
+  out ``archived_bands``.
+- ``sed_tools.filters.manifest.set_problems`` and ``check_sets`` say where a set
+  folder's records disagree: no index named after the folder, an index and
+  curves that differ, a manifest naming another set or declaring bands the
+  index does not list, and, for a set whose source instruments are known
+  (NJM's claims), a curve of another set's instrument. NJM runs it on every
+  refresh.
 
 Version 0.6.0 (November 2026)
 -----------------------------

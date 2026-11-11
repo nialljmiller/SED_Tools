@@ -436,7 +436,7 @@ def build_product(
     # Finish every band before replacing an existing product. A failed band
     # must not leave a partial product or overwrite a previously valid one.
     with tempfile.TemporaryDirectory(prefix=".compose-", dir=out_dir.parent) as tmp:
-        staging = Path(tmp) / "ready"
+        staging = Path(tmp) / name  # named as the product, so its index already is
         staging.mkdir()
         for band in selected:
             curve = compose_band(instrument_dir, band, roles, atmosphere=spec, atmosphere_root=atmosphere_root,
@@ -447,8 +447,8 @@ def build_product(
             write_filter_file(staging / f"{band}.dat", curve.wavelength, curve.transmission,
                               detector_type=override or original, source="user" if override else "composed",
                               wavelength_unit="Angstrom", extra=curve.header)
-        write_filter_index(staging, name)
-        previous = Path(tmp) / "previous"
+        write_filter_index(staging)
+        previous = Path(tmp) / ".previous"
         if out_dir.exists():
             out_dir.rename(previous)
         try:
