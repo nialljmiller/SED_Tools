@@ -199,18 +199,98 @@ def archived_bands(instrument_dir: PathLike) -> Dict[str, Dict[str, object]]:
     return {band: {} for band in archived} if isinstance(archived, list) else dict(archived)
 
 
-def write_filter_index(filter_dir: Path, instrument: str) -> Path:
-    """Write the MESA index file for all ``*.dat`` files in ``filter_dir``.
+def write_filter_index(filter_dir: Path, instrument: Optional[str] = None) -> Path:
+    """Write the MESA index file for all ``*.dat`` files in ``filter_dir``, as ``instrument``.
 
-    Bands its ``manifest.json`` lists under ``archived_bands`` (superseded
-    copies kept beside the set) are left out: MESA must not load them.
+    MESA opens ``<folder>/<folder name>``, so the name defaults to the folder's own; another is only
+    right for a folder that will be renamed to it.  Bands its ``manifest.json`` lists under
+    ``archived_bands`` (superseded copies kept beside the set) are left out: MESA must not load them.
     """
+    filter_dir = Path(filter_dir)
     archived = archived_bands(filter_dir)
     dat_files = sorted(child.name for child in filter_dir.glob("*.dat")
                        if child.is_file() and child.stem not in archived)
-    index_path = filter_dir / instrument
+    index_path = filter_dir / (instrument or filter_dir.name)
     index_path.write_text("\n".join(dat_files) + "\n", encoding="utf-8")
     return index_path
+
+
+def curve_source(filter_id: Optional[str]) -> str:
+    """The source instrument a curve's ``FilterID`` names (``GAIA/Gaia2m`` for ``GAIA/Gaia2m.Gbp_bright``), or ''."""
+    source, dot, _ = (filter_id or "").partition(".")
+    return source if dot else ""
+
+
+def describes_other_folder(directory: PathLike, facility: str, instrument: str) -> Optional[str]:
+    """Why a manifest naming ``facility/instrument`` is not the record of ``directory``, or None when it is.
+
+    Names are compared without case or punctuation: NJM's ``Gemini/GMOS_N`` installed as ``Gemini/GMOS-N`` is
+    the same set; a folder renamed or copied (``SLOAN/SDSS`` to ``SLOAN/SDSS_E``) is not.
+    """
+    from ..component_sources.catalog import name_key
+
+    directory = Path(directory)
+    if (name_key(facility), name_key(instrument)) == (name_key(directory.parent.name), name_key(directory.name)):
+        return None
+    return (f"{directory / MANIFEST_NAME} describes {facility}/{instrument}, not "
+            f"{directory.parent.name}/{directory.name}")
+
+
+def set_problems(directory: PathLike, claims: Optional[Mapping[str, Iterable[str]]] = None) -> List[str]:
+    """Where a set folder's records disagree, one line each; [] when they agree (or it holds no curves).
+
+    One rule for every set, served or installed: the MESA index, named after the folder as MESA opens
+    it, lists exactly the curves there less ``archived_bands``; ``manifest.json``, if any, names this
+    folder and declares no band the index does not list.  With ``claims`` ({"Facility/Instrument":
+    the source instruments the set is made from}, as NJM's ``svo_instruments.json``), a set they
+    describe holds no curve of a source instrument another set is made from and it is not: one
+    release in another's folder.
+    """
+    directory = Path(directory)
+    curves = sorted(p.name for p in directory.glob("*.dat") if p.is_file())
+    if not curves:
+        return []
+    found = []
+    try:
+        data = json.loads((directory / MANIFEST_NAME).read_text(encoding="utf-8")) \
+            if (directory / MANIFEST_NAME).is_file() else None
+        archived = archived_bands(directory)
+    except (OSError, ValueError, AttributeError) as exc:
+        return [f"{directory / MANIFEST_NAME} cannot be read ({exc})"]
+    index = directory / directory.name
+    listed = index_names(index.read_text(encoding="utf-8")) if index.is_file() else None
+    if listed is None:
+        found.append(f"{directory} has no MESA index file {directory.name}: MESA opens the index named after "
+                     "the folder")
+    else:
+        if absent := [name for name in listed if name not in curves]:
+            found.append(f"{index} lists {', '.join(absent)}, not in the folder")
+        if unlisted := [name for name in curves if name not in listed and Path(name).stem not in archived]:
+            found.append(f"{directory} holds {', '.join(unlisted)}, which its index does not list")
+    if data is not None:
+        named = data.get("facility") and data.get("instrument")
+        other = (describes_other_folder(directory, str(data["facility"]), str(data["instrument"])) if named
+                 else f"{directory / MANIFEST_NAME} names no set")
+        indexed = {Path(name).stem for name in listed or []}
+        if other:
+            found.append(other)
+        elif listed is not None and (beyond := sorted(set(data.get("bands") or []) - set(archived) - indexed)):
+            found.append(f"{directory / MANIFEST_NAME} declares {', '.join(beyond)}, which its index does not "
+                         "list (an incomplete set, or a stale manifest)")
+    mine = (claims or {}).get(f"{directory.parent.name}/{directory.name}")
+    for name in curves if mine is not None else ():  # a set no claim describes (a user's own) is not judged
+        filter_id = read_filter_header(directory / name).get("FilterID")
+        source = curve_source(filter_id)
+        owners = sorted(other for other, made_of in claims.items() if source in made_of) if source not in mine else []
+        if owners:
+            found.append(f"{directory / name} is {filter_id}, a curve of {', '.join(owners)}, not of this set")
+    return found
+
+
+def check_sets(filter_root: PathLike, claims: Optional[Mapping[str, Iterable[str]]] = None) -> Dict[str, List[str]]:
+    """:func:`set_problems` of every ``<Facility>/<Instrument>`` set under ``filter_root``, only those with any."""
+    return {str(directory): problems for directory in sorted(Path(filter_root).glob("*/*"))
+            if directory.is_dir() and (problems := set_problems(directory, claims))}
 
 
 @dataclass
@@ -287,12 +367,23 @@ class InstrumentManifest:
     # ---- persistence -------------------------------------------------
     @classmethod
     def load(cls, instrument_dir: PathLike) -> "InstrumentManifest":
-        """Read ``manifest.json``, or describe a legacy directory from its headers."""
+        """Read ``manifest.json``, or describe a legacy directory from its headers.
+
+        ComponentError when the manifest names another set: the folder was renamed or copied, and
+        the manifest (its bands, detector types and components) is not this folder's record.
+        """
         instrument_dir = Path(instrument_dir)
         path = instrument_dir / MANIFEST_NAME
-        if path.exists():
-            return cls.from_dict(json.loads(path.read_text(encoding="utf-8")))
-        return cls.from_published(instrument_dir)
+        if not path.exists():
+            return cls.from_published(instrument_dir)
+        manifest = cls.from_dict(json.loads(path.read_text(encoding="utf-8")))
+        other = describes_other_folder(instrument_dir, manifest.facility, manifest.instrument)
+        if other:
+            raise ComponentError(
+                f"{other}: the folder was renamed or copied. If it holds that set's curves, set the manifest's "
+                f"facility and instrument to this folder's (and name the MESA index file {instrument_dir.name}); "
+                f"otherwise delete {path}, and SED_Tools describes the set from its curves.")
+        return manifest
 
     @classmethod
     def from_dict(cls, data: Mapping[str, object]) -> "InstrumentManifest":

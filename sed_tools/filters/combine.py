@@ -137,7 +137,6 @@ def combine_filter_sets(
 
     root = Path(filter_root) if filter_root is not None else FILTER_DIR_DEFAULT
     output_dir = resolve_output_path(output, root, facility=facility, instrument=instrument)
-    output_instrument = instrument or output_dir.name
     output_dir.mkdir(parents=True, exist_ok=True)
 
     copied: List[str] = []
@@ -159,7 +158,7 @@ def combine_filter_sets(
     if not copied:
         raise ValueError("No .dat filter files were found in the supplied inputs")
 
-    write_filter_index(output_dir, output_instrument)
+    write_filter_index(output_dir)  # named after the folder, where MESA opens it
     return output_dir
 
 

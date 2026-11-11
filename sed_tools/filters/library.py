@@ -287,7 +287,6 @@ class FilterLibrary:
             # Every curve arrived; only an extra (components, say) failed, and is fetched again when needed.
             logger.warning("NJM provided every curve of %s/%s, but: %s", facility, instrument,
                            "; ".join(result.other_failures))
-        _drop_unlisted_bands(directory, {curve_file(name) for name in result.listed})
         return None
 
     def _published_from_builder(self, ref, directory):
@@ -858,26 +857,6 @@ def _describe_completed_set(directory):
     manifest = InstrumentManifest.from_published(directory)
     manifest.bands = sorted(Path(name).stem for name in index_listing(directory) or [] if name.endswith(".dat"))
     manifest.save(directory)
-
-
-def _drop_unlisted_bands(directory, listed):
-    """Remove from an NJM set's manifest the bands NJM's index does not list and that are not installed.
-
-    Such bands are never downloaded, so kept they would make the set look incomplete for ever.
-    """
-    path = Path(directory) / "manifest.json"
-    if not path.is_file():
-        return
-    data = json.loads(path.read_text(encoding="utf-8"))
-    archived = data.get("archived_bands") or {}
-    stale = [band for band in data.get("bands", []) if band not in archived and f"{band}.dat" not in listed
-             and not (Path(directory) / f"{band}.dat").is_file()]
-    if not stale:
-        return
-    data["bands"] = [band for band in data["bands"] if band not in stale]
-    path.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    logger.warning("%s declared bands that NJM's index does not list and that are not installed (%s); "
-                   "they are no longer expected", path, ", ".join(stale))
 
 
 def _curve_state(directory):
