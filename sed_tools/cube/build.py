@@ -28,7 +28,6 @@ from .variants import (_build_filtered_cube, _build_mean_cube, _extra_key_to_fil
                        _group_by_extra_axes, _parameter_arrays, _print_summary, _split_into_subgrids, _subdir_name,
                        _value_to_safe_str, _warn_averaged_rows)
 from ..grids.spectrum_io import read_text_spectrum
-from ..photometry import COARSE_RESOLVING_POWER, coarse_stretches
 
 logger = logging.getLogger("sed_tools.precompute_flux_cube")
 
@@ -188,11 +187,6 @@ def compute_common_wavelengths(model_dir: str, file_names: List[str], n_sample: 
         raise RuntimeError("Could not determine wavelength grid — all sampled files empty.")
     grid = np.unique(np.concatenate(wl))
     print(f"Wavelength grid: {len(grid)} points ({grid[0]:.1f}–{grid[-1]:.1f} Å)")
-    stretches = coarse_stretches(grid)
-    if stretches:
-        print(f"  lambda/delta-lambda < {COARSE_RESOLVING_POWER:g} between "
-              + ", ".join(f"{a:.6g}-{b:.6g}" for a, b in stretches)
-              + " Å: no band there is sampled (sed_tools.photometry.band_sampling)")
     return grid
 
 

@@ -343,45 +343,24 @@ def band_sampling(grid_wavelength: Sequence[float], curve: FilterCurve) -> BandS
     return BandSampling(inside, share(beyond), share(coarse), stretch)
 
 
-def coarse_stretches(grid_wavelength: Sequence[float]) -> List[Tuple[float, float]]:
-    """The stretches of the increasing wavelengths ``grid_wavelength`` where lambda/delta-lambda is below
-    COARSE_RESOLVING_POWER, adjacent ones joined: bands there are not sampled (:func:`band_sampling`)."""
-    grid = np.asarray(grid_wavelength, dtype=float)
-    lo, hi = grid[:-1], grid[1:]
-    coarse = (hi - lo) * 2 * COARSE_RESOLVING_POWER > hi + lo
-    out: List[Tuple[float, float]] = []
-    for a, b in zip(lo[coarse], hi[coarse]):
-        if out and out[-1][1] == a:
-            out[-1] = (out[-1][0], float(b))
-        else:
-            out.append((float(a), float(b)))
-    return out
-
-
 def _warn_outside_sed(sed_wavelength: np.ndarray, curves: Iterable[FilterCurve]) -> None:
-    """One warning naming the bands the SED's wavelengths do not sample (:func:`band_sampling`): those that fall
-    between too few or too coarse SED wavelengths, and those with transmission outside the SED, where band averages
-    count zero flux."""
+    """One warning naming the filters with transmission outside the SED, where band averages count zero flux."""
     lo, hi = np.min(sed_wavelength), np.max(sed_wavelength)
-    outside, between = [], []
+    outside = []
     for curve in curves:
-        if not np.trapezoid(np.clip(curve.weight, 0.0, None), curve.wavelength) > 0:
+        total = np.trapezoid(curve.transmission, curve.wavelength)
+        if not total > 0:
             continue  # the band average itself raises for a curve that integrates to zero
-        sampling = band_sampling(sed_wavelength, curve)
-        if sampling.outside > 0:
-            outside.append(f"{curve.name} ({100 * sampling.outside:.3g}%)")
-        elif not sampling.sampled:
-            between.append(f"{curve.name} ({sampling.describe()})")
-    messages = []
-    if between:
-        messages.append("The SED's wavelengths do not sample these bands, so their band averages interpolate across "
-                        f"the SED's gaps: {'; '.join(between)}.")
+        beyond = (curve.wavelength < lo) | (curve.wavelength > hi)
+        fraction = np.trapezoid(np.where(beyond, curve.transmission, 0.0), curve.wavelength) / total
+        if fraction > 0:
+            outside.append(f"{curve.name} ({100 * fraction:.3g}%)")
     if outside:
-        messages.append(f"Filter transmission outside the SED's wavelength range ({lo:.6g}-{hi:.6g} Å), where the "
-                        "band average counts the flux as zero, so these bands are biased low: "
-                        f"{', '.join(outside)}.")
-    if messages:
-        logger.warning(" ".join(messages))
+        logger.warning(
+            "Filter transmission outside the SED's wavelength range (%.6g-%.6g Å), where the band "
+            "average counts the flux as zero, so these bands are biased low: %s.",
+            lo, hi, ", ".join(outside),
+        )
 
 
 def band_average_flux_lambda(

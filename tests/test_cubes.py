@@ -1428,7 +1428,7 @@ def sedmodel_resolves_nested_instrument_directory_from_name(t):
 
 
 # ----------------------------------------------------------------------
-# Band sampling: bands between or beyond a grid's wavelengths are named (MIRI on ATLAS9's 10.02-20 um step)
+# Band sampling: coverage --filters names the bands a grid's wavelengths do not sample (MIRI on ATLAS9's step)
 # ----------------------------------------------------------------------
 #: ATLAS9's sampling in miniature: 40 Å steps to 10,000 Å, then 20,000 and 40,000 Å.
 STEP_AXIS = np.concatenate([np.arange(1000.0, 10001.0, 40.0), [20000.0, 40000.0]])
@@ -1453,11 +1453,10 @@ def _box_band(name, lo, hi):
 
 
 def _band_sampling(t, edges, inside, sampled):
-    from sed_tools.photometry import band_sampling, coarse_stretches
+    from sed_tools.photometry import band_sampling
 
     sampling = band_sampling(STEP_AXIS, _box_band("Band", *edges))
     assert (sampling.inside, sampling.sampled) == (inside, sampled), sampling
-    assert coarse_stretches(STEP_AXIS) == [(10000.0, 40000.0)]
 
 
 def _step_grid(root):
@@ -1486,18 +1485,7 @@ def coverage_with_filters_exits_1_naming_the_bands_the_grid_does_not_sample(t):
 
 
 @row
-def model_photometry_names_a_band_between_the_seds_wavelengths(t):
-    cube, filters = _step_grid(t.tmp)
-    sed = SEDModel(name="Step", flux_cube_path=cube)(5500.0, 4.0, 0.0)
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.flux_cube_tool"):
-        sed.photometry(str(filters / "Dense.dat"), str(filters / "Step.dat"), system="AB")
-    [warning] = [r.getMessage() for r in t.caplog.records]
-    assert warning.startswith("The SED's wavelengths do not sample these bands")
-    assert "Step (0 grid wavelengths where it transmits" in warning and "Dense" not in warning
-
-
-@row
-def cube_build_says_where_bands_are_not_sampled_and_which_spectra_were_put_onto_its_axis(t):
+def cube_build_says_which_spectra_were_put_onto_its_axis(t):
     # The axis is the union of five sampled spectra (as NextGen2's is); the sixth has one wavelength more.
     model_dir = _write_grid(t.tmp / "Step", [(f"s{i}.txt", 5000.0 + 100 * i, 4.0, 0.0) for i in range(6)])
     for i in range(6):
@@ -1505,7 +1493,6 @@ def cube_build_says_where_bands_are_not_sampled_and_which_spectra_were_put_onto_
         (model_dir / f"s{i}.txt").write_text("".join(f"{w:.1f} 1.0e-10\n" for w in wavelengths))
     _build(model_dir)
     out = t.capsys.readouterr().out
-    assert "lambda/delta-lambda < 16 between 10000-40000 Å: no band there is sampled" in out
     assert "1 of them have wavelengths that are not on the cube's axis" in out
 
 
