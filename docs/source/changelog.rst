@@ -23,6 +23,9 @@ Version 0.6.1 (unreleased)
 - ``scripts/audit_pipeline.py`` runs every check on every grid (the
   ``grams_*`` and ``bbody`` grids were exempt by name) and uses the package's
   Planck function and flux cube layout.
+- ``build(..., raw=...)`` for PANIC, INGRID, NSFCam and IO:O reads the saved
+  research inventory from ``round3/ground-1`` and ``round3/ground-2``, the
+  folders' new names.
 
 Version 0.6.0 (November 2026)
 -----------------------------
