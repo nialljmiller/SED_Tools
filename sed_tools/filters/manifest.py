@@ -66,6 +66,13 @@ MANIFEST_NAME = "manifest.json"
 #: moves their red edges about 2.5 per cent blueward (SDSS DR7 "Photometric
 #: flux calibration", classic.sdss.org/dr7/algorithms/fluxcal.html).
 FILTER_SIBLING_SUFFIXES = ("_filter", "_fil")
+
+
+def filter_sibling_base(band: str) -> Optional[str]:
+    """The band whose filter-only sibling ``band`` is named as (``g`` for ``g_filter``), or None."""
+    return next((band[:-len(s)] for s in FILTER_SIBLING_SUFFIXES if band.endswith(s) and band != s), None)
+
+
 #: Variant names: letters, digits, ``_`` and ``-`` (they appear in product names).
 _VARIANT_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
 MANIFEST_SCHEMA = 1
@@ -473,8 +480,7 @@ class InstrumentManifest:
     def primary_bands(self) -> List[str]:
         """Bands that are not merely another band's filter-only sibling."""
         bands = set(self.bands)
-        siblings = {b for b in self.bands if self.published_bands.get(b) == FILTER
-                    and any(b.endswith(sfx) and b[: -len(sfx)] in bands for sfx in FILTER_SIBLING_SUFFIXES)}
+        siblings = {b for b in self.bands if self.published_bands.get(b) == FILTER and filter_sibling_base(b) in bands}
         return [b for b in self.bands if b not in siblings]
 
     def buildable(self) -> List[str]:

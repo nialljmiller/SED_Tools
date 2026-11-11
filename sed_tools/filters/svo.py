@@ -20,7 +20,8 @@ from bs4 import BeautifulSoup
 
 from .manifest import InstrumentManifest
 from .curve_metadata import (ENERGY, SOURCE_ASSUMED, SOURCE_SVO, SVO_ALTERNATIVES, SVOMetadataClient,
-                              SVOUnreachableError, svo_components_header, svo_fps_url, svo_get, write_filter_file)
+                              SVOUnreachableError, svo_components_header, svo_detector, svo_fps_url, svo_get,
+                              write_filter_file)
 from ..ui_utils import prompt_choice
 from ..ui_utils import parse_multi_selection
 
@@ -251,14 +252,12 @@ class SVOFilterBrowser:
         record = self.metadata_client.get_filter(row.filter_id)
         if record is None or record.wavelength.size == 0:
             raise ValueError("SVO returned no transmission data")
-        if record.detector_type:
-            detector_type, source = record.detector_type, SOURCE_SVO
-        else:
-            detector_type, source = ENERGY, SOURCE_ASSUMED
+        detector_type, source = svo_detector(record, ENERGY)
+        if source == SOURCE_ASSUMED:
             print(f"    [warn] SVO gives no DetectorType for {row.filter_id}; assuming energy")
         write_filter_file(out_path, record.wavelength, record.transmission, detector_type=detector_type, source=source,
                           filter_id=row.filter_id, wavelength_unit=record.wavelength_unit,
-                          extra=svo_components_header(record.components))
+                          extra=svo_components_header(record.components, row.filter_id))
         print(f"    [saved] {out_path} ({detector_type}-counting)")
 
     # -------------------- HTTP helpers --------------------

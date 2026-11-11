@@ -3401,6 +3401,79 @@ def released_mesa_check_after_migration_sees_the_lost_first_sample(t):
 
 
 @row
+def svo_labels_hold_only_what_the_record_states(t):
+    from sed_tools.filters.curve_metadata import svo_components_header, svo_detector
+
+    # No DetectorType at SVO: the writer's default is an assumption, never SVO's value (the LSST and
+    # SVO-published builders wrote it as "svo").
+    assert svo_detector(svo_record("X/Y.b", None, [1, 2], [1, 1]), PHOTON) == (PHOTON, SOURCE_ASSUMED)
+    assert svo_detector(svo_record("X/Y.b", ENERGY, [1, 2], [1, 1]), PHOTON) == (ENERGY, SOURCE_SVO)
+    # SVO's LSST/LSST.g_filter, "LSST u filter (filter only)", lists the total band's components.
+    total = "Filter + Instrument + Atmosphere"
+    assert svo_components_header(total, "LSST/LSST.g_filter") == {}
+    assert "LSST/LSST.g_filter is named as a filter-only curve" in t.caplog.text
+    assert svo_components_header("Filter", "LSST/LSST.g_filter") == {"Components": FILTER, "ComponentsSource": "svo"}
+    assert svo_components_header(total, "LSST/LSST.g") == {"Components": "filter+instrument+atmosphere",
+                                                           "ComponentsSource": "svo"}
+    assert svo_components_header("Filter + Lens", "X/Y.b") == {}
+
+
+@row
+def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
+    import runpy
+
+    from sed_tools.filters import label_check
+
+    def curve(path, detector=PHOTON, source=SOURCE_SVO, wl=(4000.0, 5000.0, 6000.0), tr=(0.5, 1.0, 0.5), **extra):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        write_filter_file(path, wl, tr, detector_type=detector, source=source, extra=extra or None)
+
+    new, old = t.tmp / "new", t.tmp / "old"
+    ins = new / "Fac" / "Ins"
+    curve(ins / "g.dat", Components="filter+qe")
+    curve(ins / "g_filter.dat", tr=(0.5, 0.9, 0.5), Components="filter+qe")   # rule 3, and 4: it is the filter
+    curve(ins / "components/filter/g.dat", source="component", tr=(0.5, 0.9, 0.5), Components=FILTER)
+    curve(ins / "components/qe/flat.dat", source="component", tr=(0.0, 0.0, 0.0))
+    curve(ins / "r.dat", detector="both", wl=(4500.0, 5500.0), tr=(1.0, 1.0))   # rule 1; the filter's wings
+    curve(ins / "i.dat", source="manual")                                         # rule 1: a word no one ranks
+    curve(ins / "z.dat", source="original", Components="filter+lens")             # rule 2
+    curve(ins / "u.dat", source="user")
+    curve(ins / "y.dat")                                                          # SVO reclassified it
+    (ins / "bad.dat").write_text("Wavelength,Transmission\n4000,-1\n5000,1\n")
+    (ins / "manifest.json").write_text(json.dumps({"components": {
+        FILTER: {"g": "components/filter/g.dat"}, QE: {"*": "components/qe/flat.dat"},
+        "filter+qe": {"g": "g.dat"}}}))
+    curve(new / "Fac" / "Plain" / "v.dat", Components=FILTER)   # its own filter component, as from_published says
+    (new / "Fac" / "Plain" / "manifest.json").write_text(json.dumps({"components": {FILTER: {"v": "v.dat"}}}))
+    clean = t.tmp / "clean"
+    curve(clean / "Fac" / "Bare" / "v.dat")
+    curve(old / "Fac" / "Ins" / "g.dat", ENERGY, "manual")                    # TESS: photon by hand, then SVO
+    curve(old / "Fac" / "Ins" / "r.dat")
+    curve(old / "Fac" / "Ins" / "i.dat")
+    curve(old / "Fac" / "Ins" / "z.dat", ENERGY)
+    curve(old / "Fac" / "Ins" / "u.dat", ENERGY, "original")
+    curve(old / "Fac" / "Ins" / "y.dat", ENERGY)
+    (old / "Fac" / "Ins" / "g_filter.dat").write_text("Wavelength,Transmission\n4000,1\n")
+
+    found = {(path.name, message.split(" ")[0]) for path, message in label_check.problems(new, old)}
+    assert found == {("r.dat", "DetectorType"), ("i.dat", "DetectorTypeSource"), ("z.dat", "Components"),
+                     ("g_filter.dat", "named"), ("g_filter.dat", "is"), ("bad.dat", str(ins / "bad.dat") + ":"),
+                     ("g.dat", "DetectorType"), ("y.dat", "DetectorType")}, found
+    messages = [m for _, m in label_check.problems(new, old)]
+    assert "DetectorType energy (manual) became photon (svo), which does not outrank it" in messages
+    assert "DetectorType energy (svo) became photon (svo), which does not outrank it" in messages
+    assert "DetectorType photon (svo) became unlabelled (svo), which does not outrank it" in messages
+    assert label_check.main([str(new)]) == 1 and "ERROR" in t.capsys.readouterr().err
+    assert label_check.main([str(clean)]) == 0 and "keep every rule" in t.capsys.readouterr().out
+    with pytest.raises(SystemExit):
+        label_check.main([str(t.tmp / "missing")])
+    t.mp.setattr(sys, "argv", ["label_check", str(clean)])
+    with pytest.raises(SystemExit) as stop:
+        runpy.run_module("sed_tools.filters.label_check", run_name="__main__")
+    assert stop.value.code == 0
+
+
+@row
 def keys_from_newer_writers_are_kept(t):
     path = t.tmp / "GAIA" / "GAIA" / "G.dat"
     path.parent.mkdir(parents=True)

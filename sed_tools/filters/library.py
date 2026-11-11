@@ -446,7 +446,7 @@ class FilterLibrary:
                 failed.setdefault("svo", []).append(f"no metadata for {row.filter_id}")
                 headers[row.band] = {}
             else:
-                headers[row.band] = dict(svo_components_header(record.components),
+                headers[row.band] = dict(svo_components_header(record.components, row.filter_id),
                                          DetectorType=record.detector_type or "",
                                          DetectorTypeSource="svo" if record.detector_type else "assumed")
         if not headers:
