@@ -187,8 +187,8 @@ RAW_GROUPS = {
     "HAWKI": "eso2/eso_hawki", "NACO": "eso/eso_naco", "SPHERE": "eso/eso_sphere",
     "GSAOI": "pages2/pg_www_gemini_edu_instrumentation_gsaoi_components",
     "NIFS": "pages2/pg_www_gemini_edu_instrumentation_nifs_components",
-    "PANIC": "round3/ground-agent/CAHA", "INGRID": "round3/ground-agent/WHT",
-    "NSFCam": "round3/ground-agent/IRTF", "IOO": "round3/codex/evidence/Liverpool",
+    "PANIC": "round3/ground-2/CAHA", "INGRID": "round3/ground-2/WHT",
+    "NSFCam": "round3/ground-2/IRTF", "IOO": "round3/ground-1/evidence/Liverpool",
 }
 
 
