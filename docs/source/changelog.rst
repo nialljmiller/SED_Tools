@@ -5,6 +5,12 @@ Changelog
 Version 0.7.0 (unreleased)
 --------------------------
 
+- Functions only the tests used are removed: ``NJMFilterGrabber.find_facility``,
+  ``get_exclusive_facilities``, ``find_instrument`` and ``get_filter_info``;
+  ``build_all_products`` (``build_product`` builds each recipe);
+  ``AtmosphereGrid.select`` (``AtmosphereGrid.find`` looks a condition up);
+  and ``instrument_properties`` (``curve_properties`` gives one curve's).
+  ``released_mesa_reads`` stays.
 - ``NJMFilterGrabber`` no longer takes ``max_workers``, which it never used,
   and ``FilterCatalogue.instrument_file`` no longer takes ``prefer_installed``:
   the copy saved beside installed curves is always read first, unless

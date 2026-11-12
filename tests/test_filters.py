@@ -42,16 +42,15 @@ from sed_tools.filter_catalogue import CatalogueError, FilterCatalogue, cache_ro
 from sed_tools.filter_colors import display_colors, instrument_colors
 from sed_tools.filter_components import (ATMOSPHERE, FILTER, OPTICS, QE, AtmosphereGrid, AtmosphereSpec,
                                          ComponentCoverageError, ComponentError, Curve, InstrumentManifest,
-                                         add_component, atmosphere_file, build_all_products, build_product,
-                                         compose_band, multiply_curves, parse_components, resolve_atmosphere)
+                                         add_component, atmosphere_file, build_product, compose_band,
+                                         multiply_curves, parse_components, resolve_atmosphere)
 from sed_tools.filter_library import FilterLibrary, instrument_catalogue, load_instrument_catalogue
 from sed_tools.filter_metadata import (ENERGY, PHOTON, SOURCE_ASSUMED, SOURCE_INFERRED, SOURCE_SVO, SOURCE_SVO_MATCH,
                                        SVOFilterRecord, SVOUnreachableError, format_metadata_field, has_column_row,
                                        migrate_filter_file, migrate_filter_tree, normalize_detector_type,
                                        read_filter_header, released_mesa_reads, tag_filter_file, tag_filter_tree,
                                        write_filter_file, write_filter_header)
-from sed_tools.filter_properties import (AB_JY, curve_properties, extinction_law, extinction_ratio, filter_properties,
-                                         instrument_properties)
+from sed_tools.filter_properties import AB_JY, curve_properties, extinction_law, extinction_ratio, filter_properties
 from sed_tools.filters.compose import read_curve
 from sed_tools.filters.manifest import check_sets, set_problems
 from sed_tools.filters.njm import drop_unlisted_bands
@@ -780,17 +779,6 @@ def instrument_without_own_site_gets_no_atmosphere(t):
 
 
 @row
-def build_all_products_makes_every_with_and_without_variant(t):
-    inst = with_site(argus_system(t.tmp / "filters"))
-    built = build_all_products(inst, conditions=[ATM], atmosphere_root=paranal(t.tmp / "atm"))
-    assert sorted(p.name for p in built) == sorted([
-        "filter", "filter+optics", "filter+qe", "filter+optics+qe",
-        "filter+atm_paranal_am1.2_pwv2.5", "filter+optics+atm_paranal_am1.2_pwv2.5",
-        "filter+qe+atm_paranal_am1.2_pwv2.5", "filter+optics+qe+atm_paranal_am1.2_pwv2.5",
-    ])
-
-
-@row
 def skycalc_build_writes_grid_and_resumes(t):
     from sed_tools.component_sources.skycalc import build
 
@@ -1287,8 +1275,8 @@ def atmosphere_requires_pwv_when_grid_is_ambiguous(t):
     grid = AtmosphereGrid("paranal", [{"airmass": 1.2, "pwv": 1., "file": "a.dat"},
                                       {"airmass": 1.2, "pwv": 3., "file": "b.dat"}])
     with pytest.raises(ComponentError, match="choose pwv"):
-        grid.select(AtmosphereSpec("paranal", 1.2))
-    assert grid.select(AtmosphereSpec("paranal", 1.2, 3)) == "b.dat"
+        grid.find(AtmosphereSpec("paranal", 1.2))
+    assert grid.find(AtmosphereSpec("paranal", 1.2, 3)) == "b.dat"
 
 
 @njm_offline_row
@@ -1488,7 +1476,6 @@ def helpers_pass_the_sun_through(t):
     write_filter_file(inst / "V.dat", *gaussian(5500.0, 300.0), detector_type="photon", source="svo")
     sun = (np.linspace(1000.0, 30000.0, 100), np.full(100, 185.0))
     assert curve_properties(inst / "V.dat", sun=sun)["Fsun"] == pytest.approx(185.0)
-    assert instrument_properties(inst, sun=sun)["V"]["Fsun"] == pytest.approx(185.0)
 
 
 # ======================================================================
@@ -1586,9 +1573,8 @@ def unstated_airmass_is_listed_apart_and_selected_explicitly(t):
     assert sorted({float(e["airmass"]) for e in raw["entries"]}) == []
 
     grid = AtmosphereGrid.load(t.tmp / "plexus_team")
-    assert grid.select(AtmosphereSpec("plexus_team", None)) == "am_unstated.dat"
-    with pytest.raises(ComponentError, match="unstated airmass: airmass=None"):
-        grid.select(AtmosphereSpec("plexus_team", 1.0))
+    assert grid.find(AtmosphereSpec("plexus_team", None)) == "am_unstated.dat"
+    assert grid.find(AtmosphereSpec("plexus_team", 1.0)) is None
     assert AtmosphereSpec.coerce({"site": "plexus_team", "airmass": None}).label == "plexus_team_amunstated"
     with pytest.raises(ComponentError, match="no pwv"):
         AtmosphereSpec("plexus_team", None, 2.0)

@@ -3,7 +3,6 @@
 import json
 import logging
 import os
-import re
 import time
 from dataclasses import dataclass, field
 from time import monotonic
@@ -186,53 +185,6 @@ class NJMFilterGrabber:
         target.parent.mkdir(parents=True, exist_ok=True)
         _write_atomic(target, text)
         migrate_filter_file(target)
-
-    @staticmethod
-    def _normalize_name(name: str) -> str:
-        """Lowercase and strip separators for fuzzy name comparison."""
-        return re.sub(r'[-_\s]', '', name).lower()
-
-    def find_facility(self, svo_key: str) -> Optional[str]:
-        """Return the NJM directory name that best matches an SVO facility key.
-
-        An exact match first, then a normalized prefix match ('Bepi-Colom' at SVO is 'Bepi_Colombo' at NJM).
-        """
-        facilities = self.discover_facilities()
-        if svo_key in facilities:
-            return svo_key
-        svo_norm = self._normalize_name(svo_key)
-        for name in facilities:
-            njm_norm = self._normalize_name(name)
-            if njm_norm.startswith(svo_norm) or svo_norm.startswith(njm_norm):
-                return name
-        return None
-
-    def get_exclusive_facilities(self, svo_keys: List[str]) -> List[str]:
-        """Return NJM facility names that have no matching SVO facility (matched as :meth:`find_facility` does)."""
-        svo_norms = {self._normalize_name(k) for k in svo_keys}
-        exclusive = []
-        for fac in self.discover_facilities():
-            fac_norm = self._normalize_name(fac)
-            matched = any(
-                fac_norm.startswith(s) or s.startswith(fac_norm)
-                for s in svo_norms
-            )
-            if not matched:
-                exclusive.append(fac)
-        return exclusive
-
-    def find_instrument(self, njm_facility: str, svo_instrument: str) -> Optional[str]:
-        """Return the NJM instrument name that best matches an SVO instrument key."""
-        instruments = self.discover_instruments(njm_facility)
-        if svo_instrument in instruments:
-            return svo_instrument
-        # Exact (normalised) matches only: a prefix match would hand back a
-        # different instrument, e.g. GAIA0 (DR1) -> the mirror's GAIA set.
-        svo_norm = self._normalize_name(svo_instrument)
-        for name in instruments:
-            if self._normalize_name(name) == svo_norm:
-                return name
-        return None
 
     def _index(self, unreadable: str = "listing the filters directory instead") -> Optional[Dict]:
         """NJM's ``index.json``, read once per process (again after an hour); None, warned once, when unreadable."""
@@ -642,20 +594,6 @@ class NJMFilterGrabber:
             return []
         return [s for s in self._parse_directory_listing(f"{self.base_url}/atmospheres/") if "." not in s]
 
-    def get_filter_info(self, facility: str, instrument: str) -> Dict[str, any]:
-        """Get information about available filters for an instrument."""
-        if not self._available:
-            return {}
-
-        filters = self.discover_filters(facility, instrument)
-
-        return {
-            "facility": facility,
-            "instrument": instrument,
-            "filter_count": len(filters),
-            "filters": filters,
-            "url": f"{self.filters_url}/{facility}/{instrument}/",
-        }
 
 
 def _update_atmosphere_manifest(site_dir: Path, served: str) -> None:

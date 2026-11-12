@@ -11,4 +11,4 @@ SetDownload Tuple VERIFIED_CURVES curve_file dataclass field json logger logging
 migrate_filter_file monotonic os plain_reason re requests tag_filter_file threading time urllib3
 """.split()
 
-_old_path.forward(__name__, _module, threading="threading", urllib3="urllib3")
+_old_path.forward(__name__, _module, re="re", threading="threading", urllib3="urllib3")

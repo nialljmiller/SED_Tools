@@ -287,19 +287,3 @@ def properties_record(path: PathLike, vega: Optional[Spectrum] = None,
     record["DetectorTypeSource"] = header.get("DetectorTypeSource", "assumed")
     return record
 
-
-def instrument_properties(instrument_dir: PathLike, vega: Optional[Spectrum] = None,
-                          sun: Optional[Spectrum] = None) -> Dict[str, dict]:
-    """Properties of every published ``<band>.dat`` curve of an instrument, keyed by band.
-
-    Each entry also records the ``DetectorType`` the values were computed with.
-    """
-    out: Dict[str, dict] = {}
-    for path in sorted(Path(instrument_dir).glob("*.dat")):
-        curve = load_filter_curve(str(path))
-        props: Dict[str, object] = dict(filter_properties(curve.wavelength, curve.transmission,
-                                                          curve.detector_type, vega, sun))
-        props["DetectorType"] = curve.detector_type
-        props["DetectorTypeSource"] = read_filter_header(path).get("DetectorTypeSource", "assumed")
-        out[path.stem] = props
-    return out

@@ -9,7 +9,7 @@ ATMOSPHERE ATMOSPHERE_KINDS AUXILIARY_DIRS AtmosphereGrid AtmosphereSpec COMPONE
 ComponentCoverageError ComponentError Curve DERIVED Dict ENERGY FILTER FILTER_SIBLING_SUFFIXES
 INSTRUMENT InstrumentManifest Iterable List MANIFEST_NAME MANIFEST_SCHEMA Mapping OPTICS Optional PHOTON
 PRODUCTS_DIR PUBLISHED Path PathLike QE ROLES SHARED Sequence TEAM Tuple Union add_component annotations
-archived_bands asdict atmosphere_file atmosphere_grid build_all_products build_product compose_band
+archived_bands asdict atmosphere_file atmosphere_grid build_product compose_band
 dataclass deepcopy field find_atmosphere index_listing instrument_sites is_auxiliary_path
 is_ground_based json logger logging math_isclose multiply_curves normalize_detector_type np os own_site
 parse_components platform product_detector_type product_name re read_curve read_filter_header
