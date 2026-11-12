@@ -15,6 +15,7 @@ from dataclasses import dataclass  # noqa: F401
 from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 from . import model as _model
@@ -28,11 +29,6 @@ from ..photometry import (  # noqa: F401
     band_average_flux_lambda, band_average_flux_lambda_from_arrays, band_average_flux_nu, bolometric_magnitude,
     filter_weight, get_metadata_float, infer_unit_from_values, integrate_flux, load_filter_curve, load_spectrum,
     load_two_column_file, normalize_metadata_key, parse_metadata_value, standardize_wavelength_array)
-
-try:
-    import matplotlib.pyplot as plt
-except ImportError:  # pragma: no cover - only plot_sed needs matplotlib
-    plt = None
 
 logger = logging.getLogger("sed_tools.flux_cube_tool")
 
@@ -68,9 +64,6 @@ def plot_sed(
     margin_frac: float = 0.03,                 # pad the chosen window by this fraction
 ) -> None:
     """Plot the interpolated SED and optional filter curves, with sane x-limits."""
-    if plt is None:
-        raise ImportError("matplotlib is required for plotting SEDs")
-
     plt.figure(figsize=(10, 6))
     plt.plot(wavelength, flux, label="Interpolated SED", color="C0")
 

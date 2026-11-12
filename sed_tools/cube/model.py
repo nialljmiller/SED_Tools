@@ -382,7 +382,7 @@ class SED:
         candidates: List[ModelMatch] = []
         for name in self.available_models():
             cube_path = self.model_root / name / "flux_cube.bin"
-            metadata = self._get_metadata(name, cube_path)
+            metadata = self._get_metadata(cube_path)
             grids = [metadata[key] for key in ("teff", "logg", "meta")]
             bounds = [(float(grid[0]), float(grid[-1])) for grid in grids]
             point = (float(teff), float(logg), float(metallicity))
@@ -429,7 +429,7 @@ class SED:
         candidates: List[ModelMatch] = []
         for name in self.available_models():
             cube_path = self.model_root / name / "flux_cube.bin"
-            metadata = self._get_metadata(name, cube_path)
+            metadata = self._get_metadata(cube_path)
             grids = [metadata[key] for key in ("teff", "logg", "meta")]
             bounds = [(float(grid[0]), float(grid[-1])) for grid in grids]
             coverage = [_range_coverage(wanted, bound) for wanted, bound in zip(requested, bounds)]
@@ -517,7 +517,7 @@ class SED:
             f"Could not resolve model '{model}'. Provide either a model directory or a flux_cube.bin file."
         )
 
-    def _get_metadata(self, name: str, cube_path: Path) -> Dict[str, np.ndarray]:
+    def _get_metadata(self, cube_path: Path) -> Dict[str, np.ndarray]:
         cache_key = str(cube_path)
         if cache_key not in self._metadata_cache:
             self._metadata_cache[cache_key] = _read_flux_cube_header(cube_path)

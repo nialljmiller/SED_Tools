@@ -462,12 +462,8 @@ def _filter_curves(filters: Sequence[Union[str, Path]]) -> List:
     return curves
 
 
-def bands_not_sampled(model_dir: Union[str, Path], filters: Sequence[Union[str, Path]]) -> Dict[str, Dict]:
-    """{band: {cube: BandSampling}} for each band of ``filters`` that a wavelength axis of the grid does not sample."""
-    return _not_sampled(grid_wavelength_axes(model_dir), _filter_curves(filters))
-
-
 def _not_sampled(axes: Dict[str, np.ndarray], curves: List) -> Dict[str, Dict]:
+    """{band: {cube: BandSampling}} for each of ``curves`` that one of the wavelength ``axes`` does not sample."""
     from ..photometry import band_sampling
 
     out: Dict[str, Dict] = {}
@@ -511,7 +507,7 @@ def grid_coverage(
     plot        : whether to write the coverage figure.
     out_path    : plot output path. Defaults to <model_dir>/coverage.png.
     filters     : filter curves or instrument folders (paths, or Facility/Instrument under the filter
-                  directory) to check the grid's wavelengths against (bands_not_sampled).
+                  directory) to check the grid's wavelengths against.
 
     Returns the summary dict (with the node DataFrame under key '_df', and, given filters, the bands not
     sampled under 'bands_not_sampled').
