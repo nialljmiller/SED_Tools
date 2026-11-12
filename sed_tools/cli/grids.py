@@ -119,7 +119,7 @@ def _ask_rebuild_selection(cand: List[str]) -> List[str]:
 
 def _ask_flux_unit(grid: str, txt_files: List[str], flux_unit: Optional[str] = None) -> Optional[str]:
     """``flux_unit`` if given, else the unit typed in a terminal for undeclared spectra ('n' raises ValueError;
-    cleaning refuses anything else that is not a unit), else None, leaving cleaning to stop with its best guess."""
+    cleaning fails on anything else that is not a unit), else None, leaving cleaning to stop with its best guess."""
     if flux_unit is not None or not sys.stdin.isatty():
         return flux_unit
     guess = undeclared_flux_unit(txt_files)
