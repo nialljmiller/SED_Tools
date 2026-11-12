@@ -405,6 +405,8 @@ def _cmd_filters_combine(args, parser):
 
 def _cmd_filters_detector(args, parser):
     if args.correct or args.convert:
+        if args.dry_run:  # they edit in place: ignoring --dry-run would write what it was asked not to
+            parser.error("--correct and --convert edit the files in place; they take no --dry-run")
         edit = Filters.convert_detector_type if args.convert else Filters.correct_detector_type
         rows = edit(args.path, args.convert or args.correct, bands=args.bands)
         print(f"\n[filters] {len(rows)} files, {sum(r['changed'] for r in rows)} changed")
