@@ -191,7 +191,7 @@ def auto_train_best(t, lib, out):
     seeded_optuna(t)
     from sed_tools.ml_optimized import AutoTrainer
 
-    AutoTrainer(lib).train_best(lib, out, n_trials=1, epochs=1)
+    AutoTrainer().train_best(lib, out, n_trials=1, epochs=1)
 
 
 def train_raises_before_saving_when_every_batch_is_nan(t, network, train):

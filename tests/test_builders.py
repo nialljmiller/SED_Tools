@@ -1332,10 +1332,10 @@ def euclid_build_writes_components_and_compares(t):
     published(inst, "Y", wave * 10.0, total * 0.6, "filter+optics+qe", source=None)
     published(inst, "Blue", wave * 10.0, total, components="filter+instrument", source=None)
     (inst / "NISP").write_text("Blue.dat\nY.dat\n")  # as NJM serves the set
-    euclid.build(t.tmp, bands=["Y"], session=Session({euclid.URL.format(band="Y"): text}))
+    euclid.build(t.tmp, session=Session({euclid.URL.format(band=b): text for b in euclid.BANDS}))
     m = InstrumentManifest.load(inst)
     assert {r: m.components[r] for r in (FILTER, OPTICS, QE)} == {
-        r: {"Y": f"components/{r}/Y.dat"} for r in (FILTER, OPTICS, QE)}
+        r: {b: f"components/{r}/{b}.dat" for b in euclid.BANDS} for r in (FILTER, OPTICS, QE)}
     assert "Release mismatch" in m.notes and "Blue" in m.notes
     assert all(released_mesa_reads(inst / rel) for rel in (m.components[r]["Y"] for r in (FILTER, OPTICS, QE)))
 
@@ -1353,18 +1353,16 @@ def euclid_build_writes_missing_published_curves(t):
     # NJM keeps SVO's copy beside the set, outside its bands and index file.
     archived = {"Y_svo": {"detector_type": "photon", "detector_type_source": "svo", "published": "filter+optics+qe"}}
     InstrumentManifest("Euclid", "NISP", bands=[], archived_bands=archived).save(inst)
-    euclid.build(t.tmp, bands=["Y", "Blue"], session=Session({euclid.URL.format(band="Y"): text}))
+    euclid.build(t.tmp, session=Session({euclid.URL.format(band=b): text for b in euclid.BANDS}))
     header = read_filter_header(inst / "Y.dat")
     assert header["FilterID"] == "Euclid/NISP.Y" and header["DetectorType"] == "photon"
     assert header["DetectorTypeSource"] == "original" and header["Components"] == "filter+optics+qe"
     assert released_mesa_reads(inst / "Y.dat")
-    assert (inst / "NISP").read_text() == "Y.dat\n"
+    assert (inst / "NISP").read_text() == "Y.dat\nJ.dat\nH.dat\n"
     m = InstrumentManifest.load(inst)
-    assert m.bands == ["Y"] and "reproduces" in m.notes and "Y_svo are SVO's copies" in m.notes
+    assert m.bands == ["H", "J", "Y"] and "reproduces" in m.notes and "Y_svo are SVO's copies" in m.notes
     assert m.archived_bands == archived  # the archive copy never goes back into bands
     assert "negative samples set to 0: Y 1" in m.notes
-    with pytest.raises(ValueError, match="photometric band"):  # grisms have no ESA factors
-        euclid.build(t.tmp, bands=["Blue"], session=Session({}))
 
 
 def roman_qe(values):

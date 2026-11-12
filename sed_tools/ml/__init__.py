@@ -239,6 +239,6 @@ def auto_train_generator(
         The trained generator
     """
     from .tuning import AutoTrainer
-    generator, _ = AutoTrainer(library, task="generator").train_best(library_path=library, output_path=output,
-                                                                     n_trials=n_trials, epochs=epochs)
+    generator, _ = AutoTrainer().train_best(library_path=library, output_path=output, n_trials=n_trials,
+                                            epochs=epochs)
     return generator

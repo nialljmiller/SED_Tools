@@ -146,12 +146,10 @@ def build(
     *,
     instrument: str = "LSST",
     atmosphere_root: Union[str, Path, None] = None,
-    tag: Optional[str] = None,
     session=None,
     svo_client: SVOMetadataClient = None,
 ) -> Path:
-    release, suffix, published_from = RELEASES[instrument]
-    tag = tag or release
+    tag, suffix, published_from = RELEASES[instrument]
     if session is None:
         import requests
 
