@@ -32,19 +32,11 @@ _PATH_COLUMNS = (
 # ---- Node table ----
 
 def _resolve_dir(name_or_dir: Union[str, Path], base_dir: Optional[Path]) -> Path:
-    """Resolve a grid identifier to a model directory."""
+    """The grid folder: ``name_or_dir`` if it is a folder, else that name under ``base_dir``."""
     p = Path(name_or_dir).expanduser()
-    if p.is_dir():
+    if p.is_dir() or base_dir is None:
         return p
-    if base_dir is not None:
-        cand = Path(base_dir).expanduser() / str(name_or_dir)
-        if cand.is_dir():
-            return cand
-    raise FileNotFoundError(
-        f"Grid '{name_or_dir}' not found (looked for a directory"
-        + (f" under {base_dir}" if base_dir is not None else "")
-        + ")."
-    )
+    return Path(base_dir).expanduser() / str(name_or_dir)
 
 
 def read_grid_nodes(model_dir: Union[str, Path]) -> pd.DataFrame:

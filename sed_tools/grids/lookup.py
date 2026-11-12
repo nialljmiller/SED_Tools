@@ -134,9 +134,6 @@ def regenerate_lookup_table(
     else:
         model_name = model if isinstance(model, str) else "unknown"
 
-    if output_dir is None:
-        raise TypeError("output_dir must be supplied or derivable from 'model'.")
-
     if files is None:
         files = sorted(os.path.join(output_dir, name) for name in os.listdir(output_dir)
                        if name.lower().endswith(".txt"))

@@ -91,13 +91,6 @@ def resample_to_grid(
     return fl_tgt
 
 
-def _find_lookup_file(model_dir: str) -> str:
-    lookup_file = os.path.join(model_dir, "lookup_table.csv")
-    if not os.path.isfile(lookup_file):
-        raise FileNotFoundError(f"lookup_table.csv not found in {model_dir}")
-    return lookup_file
-
-
 def load_lookup_table(lookup_file: str) -> Dict[str, List]:
     """Every column of lookup_table.csv as {column_name: [values]}, so callers can find extra axes.
 
@@ -431,7 +424,7 @@ def precompute_flux_cube(
     if root_dir:
         copy_global_config_to_model(Path(root_dir), Path(model_dir))
 
-    lookup_file = _find_lookup_file(model_dir)
+    lookup_file = os.path.join(model_dir, "lookup_table.csv")
     lookup = load_lookup_table(lookup_file)
     file_col = find_file_column(lookup.keys()) or list(lookup.keys())[0]
     file_names = lookup[file_col]

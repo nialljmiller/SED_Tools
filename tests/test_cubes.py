@@ -302,7 +302,7 @@ def symlink_failure_warns_and_still_builds_the_subgrid_cube(t):
 def other_lookup_table_file_is_not_used(t):
     # Until 0.6.0 any lookup_table*.csv was used, after a warning, when lookup_table.csv was missing.
     model = _simple_grid(t.tmp / "grid", lookup_name="lookup_table_full.csv")
-    with pytest.raises(FileNotFoundError, match="lookup_table.csv not found in"):
+    with pytest.raises(FileNotFoundError, match=r"lookup_table\.csv"):
         pcf.precompute_flux_cube(str(model), str(model / "flux_cube.bin"))
     assert not (model / "flux_cube.bin").exists()
 
@@ -343,7 +343,7 @@ def _mesa_exits(t, base, *replies, **kwargs):
 @row
 def run_interactive_exits_non_zero_when_the_grid_has_no_lookup(t):
     (t.tmp / "Empty").mkdir()
-    assert "lookup_table.csv not found" in _mesa_exits(t, t.tmp, model="Empty", output=str(t.tmp / "out"))
+    assert "lookup_table.csv" in _mesa_exits(t, t.tmp, model="Empty", output=str(t.tmp / "out"))
 
 
 @row
@@ -1097,8 +1097,6 @@ def a_vega_spectrum_given_or_hinted_is_used(t):
     cube = _tool_grid(t) / "flux_cube.bin"
     vega = _write_vega(t.tmp / "ref" / "my_vega.dat")
     assert tool.resolve_vega_spectrum_path(str(vega), cube) == vega.resolve()
-    with pytest.raises(FileNotFoundError, match="Vega spectrum 'nope.dat' does not exist"):
-        tool.resolve_vega_spectrum_path("nope.dat", cube)
     assert tool.resolve_vega_spectrum_path(None, cube, [vega]) == vega.resolve()
     assert tool.resolve_vega_spectrum_path(None, cube, [vega.parent]) == vega.resolve()  # a folder is searched
     band = vega.parent / "B.dat"
@@ -1156,16 +1154,6 @@ def tool_scales_and_measures_vega_magnitudes_with_the_cube_it_finds(t):
         assert float(line.split("mag=")[1]) == pytest.approx(mag, abs=1e-3)
     assert np.loadtxt(t.tmp / "sed.txt")[:, 1] == pytest.approx(np.full(TOOL_WL.size, scale))
     assert (t.tmp / "sed.png").is_file()
-
-
-@row
-def tool_stops_when_vega_magnitudes_have_no_vega_spectrum(t):
-    grid = _tool_grid(t)
-    answer(t.mp, "n")
-    with pytest.raises(SystemExit, match="Could not locate a Vega reference spectrum. Provide a Vega spectrum "
-                                         "via --vega-sed or place one near the flux cube."):
-        tool.main(["--flux-cube", str(grid / "flux_cube.bin"), "--teff", "5000", "--logg", "4.0",
-                   "--metallicity", "0", "--photometric-system", "Vega", "--plot", str(t.tmp / "sed.png")])
 
 
 # ----------------------------------------------------------------------

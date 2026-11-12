@@ -128,28 +128,8 @@ def prompt_for_parameter(name: str, units: str, grid: np.ndarray, provided: floa
     """Return the requested parameter, prompting if ``provided`` is ``None``."""
     if provided is not None:
         return provided
-
-    lower = float(np.min(grid))
-    upper = float(np.max(grid))
-    prompt = f"Enter target {name} in {units} (range: {lower:g}–{upper:g} {units}): "
-
-    while True:
-        try:
-            value_str = input(prompt).strip()
-        except EOFError:
-            raise SystemExit(f"Missing {name}; aborting.")
-
-        try:
-            value = float(value_str)
-        except ValueError:
-            print(f"Could not parse '{value_str}'. Please enter a numeric value.")
-            continue
-
-        if not (lower <= value <= upper):
-            print(f"Value {value} is outside the supported range {lower:g}–{upper:g} {units}.")
-            continue
-
-        return value
+    lower, upper = float(np.min(grid)), float(np.max(grid))
+    return float(input(f"Enter target {name} in {units} (range: {lower:g}–{upper:g} {units}): "))
 
 
 def infer_filter_directories(flux_cube_path: str) -> List[Path]:
@@ -249,11 +229,7 @@ def prompt_for_filter_system(
         provided_key = provided.strip()
         if provided_key.lower() in {"all", "*"}:
             return None, filter_entries
-        if provided_key in systems:
-            return provided_key, systems[provided_key]
-        raise SystemExit(
-            f"Unknown filter system '{provided}'. Available systems: {', '.join(sorted(systems))}"
-        )
+        return provided_key, systems[provided_key]
 
     if len(systems) <= 1:
         return next(iter(systems), None), filter_entries
@@ -276,17 +252,9 @@ def prompt_for_filter_system(
 
 def prompt_for_photometric_system(provided: str | None) -> str:
     if provided:
-        normalized = provided.strip().lower()
-        if normalized in {"ab", "vega"}:
-            return "AB" if normalized == "ab" else "Vega"
-        raise SystemExit("Photometric system must be either 'AB' or 'Vega'.")
-
+        return {"ab": "AB", "vega": "Vega"}[provided.strip().lower()]
     answers = {"": "AB", "ab": "AB", "a": "AB", "vega": "Vega", "v": "Vega"}
-    while True:
-        response = input("Compute magnitudes in the AB or Vega system? [AB/Vega]: ").strip().lower()
-        if response in answers:
-            return answers[response]
-        print("Please answer 'AB' or 'Vega'.")
+    return answers[input("Compute magnitudes in the AB or Vega system? [AB/Vega]: ").strip().lower()]
 
 
 def discover_vega_candidates(search_roots: Sequence[Path]) -> List[Path]:
@@ -317,10 +285,7 @@ def resolve_vega_spectrum_path(
         hint_paths.append(Path(env_hint).expanduser())
 
     if provided:
-        candidate = Path(provided).expanduser()
-        if candidate.is_file():
-            return candidate.resolve()
-        raise FileNotFoundError(f"Vega spectrum '{provided}' does not exist")
+        return Path(provided).expanduser().resolve()
 
     for hint in hint_paths:
         if hint.is_file() and "vega" in hint.name.lower():
@@ -559,10 +524,7 @@ def _print_filter_photometry(
     def ensure_vega_spec() -> Spectrum:
         nonlocal vega_spec
         if vega_spec is None:
-            try:
-                spectrum_path = resolve_vega_spectrum_path(args.vega_sed, flux_cube_path, args.filters or [])
-            except FileNotFoundError as exc:
-                raise SystemExit(f"{exc} Provide a Vega spectrum via --vega-sed or place one near the flux cube.")
+            spectrum_path = resolve_vega_spectrum_path(args.vega_sed, flux_cube_path, args.filters or [])
             print(f"Using Vega spectrum: {spectrum_path}")
             vega_spec = load_spectrum(str(spectrum_path))
         return vega_spec

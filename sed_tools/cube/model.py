@@ -124,9 +124,6 @@ class EvaluatedSED:
             a :class:`Spectrum` instance or a filesystem path.
         """
 
-        if not filters:
-            raise ValueError("At least one filter must be supplied")
-
         resolved = self._model._resolve_filters(filters)
         results: Dict[str, PhotometryResult] = {}
 
@@ -239,10 +236,8 @@ class SEDModel:
                 custom_name, source = item
                 curve = self._load_filter(source, custom_name=custom_name)
                 resolved[curve.name] = curve
-            elif isinstance(item, (str, os.PathLike)):
+            else:  # a name or path
                 resolved.update(self._load_filter_group(item))
-            else:
-                raise TypeError(f"Unsupported filter specification: {item!r}")
         return resolved
 
     def _load_filter_group(self, spec: Union[str, os.PathLike[str]]) -> Dict[str, FilterCurve]:
@@ -420,11 +415,7 @@ class SED:
             which can be useful when exploring sparse grids.
         """
 
-        if teff_range is None and logg_range is None and metallicity_range is None:
-            raise ValueError("Provide at least one parameter range to search for")
-
-        requested = [_normalize_range(teff_range, "teff"), _normalize_range(logg_range, "logg"),
-                     _normalize_range(metallicity_range, "metallicity")]
+        requested = [_normalize_range(wanted) for wanted in (teff_range, logg_range, metallicity_range)]
 
         candidates: List[ModelMatch] = []
         for name in self.available_models():
@@ -477,8 +468,6 @@ class SED:
         metallicity: Optional[Number] = None,
         **aliases: Number,
     ) -> EvaluatedSED:
-        if self._active_model is None:
-            raise RuntimeError("No atmosphere selected. Call 'model(...)' or pass 'atm=' when constructing SED.")
         if metallicity is None:
             for key in ("z", "Z"):
                 if key in aliases:
@@ -486,8 +475,6 @@ class SED:
                     break
         if aliases:
             raise TypeError(f"Unexpected keyword arguments: {', '.join(sorted(aliases.keys()))}")
-        if metallicity is None:
-            raise TypeError("Metallicity value missing; supply 'metallicity' or 'z'.")
         return self._active_model(teff, logg, metallicity)
 
     # --- Helpers ---
@@ -603,12 +590,10 @@ def _normalize_filter_sequence(filters: Sequence[FilterSpec]) -> List[FilterSpec
     return list(filters)
 
 
-def _normalize_range(value: Optional[Sequence[Number]], label: str) -> Optional[Tuple[float, float]]:
+def _normalize_range(value: Optional[Sequence[Number]]) -> Optional[Tuple[float, float]]:
     if value is None:
         return None
-    if len(value) != 2:
-        raise ValueError(f"{label} range must contain exactly two entries")
-    start, end = float(value[0]), float(value[1])
+    start, end = (float(v) for v in value)
     if start > end:
         start, end = end, start
     return start, end

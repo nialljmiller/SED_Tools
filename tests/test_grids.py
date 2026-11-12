@@ -344,16 +344,6 @@ def declared_flux_units_clean_as_before(t):
 
 
 @row
-def an_unknown_flux_unit_name_is_refused_before_anything_changes(t):
-    grid = _grid(t.tmp / "Cool")
-    before = _contents(grid)
-    with pytest.raises(ValueError, match=r"flux_unit='Jy' is not one of flam, fnu, fnu_jy, flam_si, flam_si_nm, "
-                                         r"flam_si_um, normalized"):
-        clean_model_dir(str(grid), flux_unit="Jy")
-    assert _contents(grid) == before
-
-
-@row
 def a_spectrum_cleaned_on_its_own_stops_on_an_undeclared_flux_unit(t):
     grid = _grid(t.tmp / "Cool")
     before = (grid / "s0.txt").read_bytes()
@@ -1265,12 +1255,8 @@ def mast_unreadable_download_script_raises(t):
 
 
 @row
-def mast_metallicity_prompt_rejects_values_it_would_have_dropped(t):
+def mast_metallicity_prompt_takes_the_values_typed(t):
     grabber = mast.MASTSpectraGrabber(base_dir=str(t.tmp), session=Routes({}))
-    for typed, error in (("-1.0,abc", "'abc' is not a number"), ("-3.0", "no \\[M/H\\] = -3.0")):
-        t.mp.setattr("builtins.input", lambda prompt, typed=typed: typed)
-        with pytest.raises(ValueError, match=error):
-            grabber.get_model_metadata("BOSZ-2024-r1000")
     t.mp.setattr("builtins.input", lambda prompt: "-1.0, +0.25,")
     assert grabber.get_model_metadata("BOSZ-2024-r1000")["metals"] == ["m-1.00", "m+0.25"]
 

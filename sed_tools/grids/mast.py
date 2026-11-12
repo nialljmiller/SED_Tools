@@ -94,17 +94,9 @@ def _metal_tag_to_float(tag: str) -> Optional[float]:
     return sign * float(m.group("val"))
 
 def _metal_tag(token: str) -> str:
-    """The BOSZ tag ('m-1.00') for a typed metallicity; ValueError if BOSZ has no such value."""
-    try:
-        val = float(token)
-    except ValueError:
-        raise ValueError(f"Metallicity '{token}' is not a number") from None
-    sgn = "+" if val >= 0 else "-"
-    tag = f"m{sgn}{abs(val):.2f}"
-    if tag not in METALS:
-        raise ValueError(f"BOSZ 2024 has no [M/H] = {token}; choose from "
-                         + ", ".join(m[1:] for m in METALS))
-    return tag
+    """The BOSZ tag ('m-1.00') for a typed metallicity."""
+    val = float(token)
+    return f"m{'+' if val >= 0 else '-'}{abs(val):.2f}"
 
 def _filter_metals_by_range(metals: List[str], meta_range: Optional[Tuple[float, float]]) -> List[str]:
     if meta_range is None:
@@ -330,8 +322,7 @@ class MASTSpectraGrabber:
     def get_model_metadata(self, model_name: str) -> Dict[str, Any]:
         """Ask which metallicities to fetch and return the download plan.
 
-        Raises ValueError for an unknown model name, or a typed metallicity
-        that is not a number or not a BOSZ 2024 value.
+        Raises ValueError for a model name that is not a BOSZ 2024 grid.
         """
         m = re.match(r"^BOSZ-2024-(r\d+|rorig)$", model_name)
         if not m:
