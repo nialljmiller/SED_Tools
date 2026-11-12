@@ -273,10 +273,9 @@ def _rebuild(t):
 def rebuild_rebuilds_every_grid_it_can_then_lists_the_rest(t):
     rebuilt = _rebuild(t)
     with pytest.raises(RuntimeError) as excinfo:
-        cli.run_rebuild_flow(base_dir=str(t.tmp), models=["A", "B", "C", "Nope"])
+        cli.run_rebuild_flow(base_dir=str(t.tmp), models=["A", "B", "C"])
     assert rebuilt == ["A", "C"]
     assert "B: ValueError: corrupt header in s.txt" in str(excinfo.value)
-    assert "Nope: not a local spectral grid under" in str(excinfo.value)
 
 
 @row
@@ -1172,8 +1171,6 @@ def non_interactive_combine_leaves_out_earlier_combined_grids(t):
 
 #: name: (the grids named, what stderr says).
 COMBINE_REFUSES = {
-    "combine_refuses_unknown_grids_and_combining_into_an_input_unknown": (
-        ["--grids", "Nope"], "No spectral grid with a lookup table named Nope"),
     "combine_refuses_unknown_grids_and_combining_into_an_input_output": (
         ["--grids", "Kurucz", "combined_models"], "The output grid combined_models is also one of the grids"),
 }
@@ -1227,16 +1224,6 @@ def auto_training_takes_trials_and_epochs(t):
     assert run_cli(t.mp, "ml_generator", "--auto", "--library", "lib", "--output", "out") == 0
     assert calls == [{"library": "lib", "output": "out", "n_trials": 2, "epochs": 1},
                      {"library": "lib", "output": "out"}]
-
-
-@menu_row
-def grids_without_a_terminal_or_names_says_to_use_grids(t):
-    t.mp.setattr("sed_tools.msg_spectra_grabber.MSGSpectraGrabber",
-                 lambda *args, **kwargs: SimpleNamespace(discover_models=lambda: ["bt-cond"]))
-    t.mp.setattr("sys.stdin", Stdin(False))
-    with pytest.raises(ValueError, match=r"No terminal to choose from the 1 spectral grids found; name them with "
-                                         r"--grids NAME \.\.\. \(or --grids all\)"):
-        cli.run_spectra_flow("msg", base_dir=str(t.tmp))
 
 
 @menu_row

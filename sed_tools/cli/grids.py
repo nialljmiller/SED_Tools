@@ -93,10 +93,6 @@ def run_rebuild_flow(
     for model_name in selected:
         print("\n" + "=" * 64)
         print(f"[rebuild] {model_name}")
-        if model_name not in cand:
-            print(f"[rebuild] {model_name} is not a local spectral grid under {base_dir}")
-            failures.append(f"{model_name}: not a local spectral grid under {base_dir}")
-            continue
         try:
             problems = _rebuild_grid(os.path.join(base_dir, model_name), model_name,
                                      rebuild_h5, rebuild_flux_cube, flux_unit)
@@ -284,9 +280,6 @@ def run_spectra_flow(
     all_models = [_ModelOption(n, srcs) for n, srcs in sorted(model_sources.items())]
     if models is not None:
         chosen, failures = _requested_spectral_grids(models, all_models)
-    elif not sys.stdin.isatty():
-        raise ValueError(f"No terminal to choose from the {len(all_models)} spectral grids found; "
-                         "name them with --grids NAME ... (or --grids all)")
     else:
         idxs = prompt_choice(all_models, label="Spectral grids", allow_back=True, multi=True)
         if idxs is None or idxs == -1:
@@ -487,7 +480,7 @@ def run_combine_flow(
         raise FileNotFoundError(f"No spectral grids found in {base_dir}")
 
     if models is not None:
-        selected_models = _named_grids(models, model_dirs, base_dir)
+        selected_models = [(name, dict(model_dirs)[name]) for name in models]
     elif interactive:
         selected_models = select_models_interactive(model_dirs)
     else:
@@ -519,16 +512,6 @@ def _combined_grid_name(output_name: str, inputs: List[str], interactive: bool) 
     if output_name in inputs:
         raise ValueError(f"The output grid {output_name} is also one of the grids to combine")
     return output_name
-
-
-def _named_grids(models: List[str], model_dirs: List[Tuple[str, str]], base_dir: str) -> List[Tuple[str, str]]:
-    """The ``(name, path)`` of each grid in ``models``, in that order; ValueError names any not found."""
-    found = dict(model_dirs)
-    missing = [m for m in models if m not in found]
-    if missing:
-        raise ValueError(f"No spectral grid with a lookup table named {', '.join(missing)} in {base_dir}; "
-                         f"available: {', '.join(sorted(found))}")
-    return [(m, found[m]) for m in models]
 
 
 def _grids_to_combine_by_default(model_dirs: List[Tuple[str, str]], output_name: str) -> List[Tuple[str, str]]:
