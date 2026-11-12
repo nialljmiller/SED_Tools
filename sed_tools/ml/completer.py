@@ -21,6 +21,7 @@ from ..ui_utils import (ask_number as _ask_number, banner as _banner, menu_choic
 from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, DEFAULT_WL_POINTS, Engine, Network, action_menu, data_loaders, fit,
                      log_grid, model_configs, normalised_params, param_scaler, predict, print_libraries, resample,
                      sample_spectra, training_libraries, write_spectrum)
+from .common import mlp  # noqa: F401  (kept: `from sed_tools.ml.completer import *` gives mlp, as before)
 
 logger = logging.getLogger("sed_tools.ml_sed_completer")
 
