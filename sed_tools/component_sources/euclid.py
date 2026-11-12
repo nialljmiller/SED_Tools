@@ -181,7 +181,7 @@ def _notes(bands, written: Dict[str, int], clamped: Dict[str, int], deviations: 
     return " ".join(notes)
 
 
-def build(filter_root: Union[str, Path], *, session=None, **_ignored) -> Path:
+def build(filter_root: Union[str, Path], *, session=None) -> Path:
     """Add ESA's NISP filter, optics and QE factors to ``Euclid/NISP``."""
     inst_dir = Path(filter_root) / FACILITY / INSTRUMENT
     fetch = Fetcher(session)

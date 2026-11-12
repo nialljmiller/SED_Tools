@@ -138,7 +138,7 @@ def band_optics(t: Dict[int, tuple], band: str):
     return common_product([mirror, t[2], lenses] + [t[n] for n in DICHROIC_PATH[band]])
 
 
-def build(filter_root: Union[str, Path], *, session=None, **_ignored) -> Path:
+def build(filter_root: Union[str, Path], *, session=None) -> Path:
     inst_dir = Path(filter_root) / FACILITY / INSTRUMENT
     present = published_bands(inst_dir)
     missing = sorted(set(FILTER_TABLE) - present)

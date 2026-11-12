@@ -190,7 +190,7 @@ def _curve(path: Path) -> Tuple[np.ndarray, np.ndarray]:
     return a[:, 0], a[:, 1]
 
 
-def build(filter_root, *, instrument, session=None, **_ignored) -> Path:
+def build(filter_root, *, instrument, session=None) -> Path:
     """Write missing published curves, the components and the manifest, then record the checks."""
     spec = _camera(instrument, Fetcher(session))
     inst_dir = write_instrument(filter_root, spec)

@@ -1365,6 +1365,16 @@ def euclid_build_writes_missing_published_curves(t):
     assert "negative samples set to 0: Y 1" in m.notes
 
 
+@row
+def euclid_build_takes_no_bands(t):
+    # bands= was removed: it raises, rather than being ignored and every band built.
+    from sed_tools.component_sources import euclid
+
+    with pytest.raises(TypeError, match="bands"):
+        euclid.build(t.tmp, bands=["Y"], session=Session({}))
+    assert not (t.tmp / "Euclid").exists()
+
+
 def roman_qe(values):
     head = ["# %ECSV 1.0", "# ---", "# datatype:",
             "# - {name: wavelength, unit: nm, datatype: float64, description: wavelength}"]

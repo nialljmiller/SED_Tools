@@ -76,7 +76,7 @@ def bass_qe(wl, filt, filt_qe, floor: float = QE_FLOOR):
     return wl[ok], filt_qe[ok] / filt[ok]
 
 
-def build_bass(filter_root, *, session=None, svo_client=None, **_ignored) -> Path:
+def build_bass(filter_root, *, session=None, svo_client=None) -> Path:
     fetch = Fetcher(session)
     curves = {b: read_bass(fetch.get(f"{FILES}/bass-{b}.txt")) for b in BASS_BANDS}
     inst_dir = Path(filter_root) / "BOK" / "BASS"
@@ -135,7 +135,7 @@ def _mzls(fetch: Fetcher) -> Instrument:
     )
 
 
-def build_mzls(filter_root, *, session=None, **_ignored) -> Path:
+def build_mzls(filter_root, *, session=None) -> Path:
     inst_dir = write_instrument(filter_root, _mzls(Fetcher(session)))
     manifest = InstrumentManifest.load(inst_dir)
     manifest.sources["legacysurvey"] = DR10

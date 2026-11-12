@@ -379,7 +379,7 @@ def make_builder(recipes: Mapping[str, Recipe]):
     """``build(filter_root, *, instrument, session=None)`` for one source module: ``recipes`` maps each
     instrument to its recipe."""
 
-    def build(filter_root, *, instrument, session=None, atmosphere_root=None, **_ignored) -> Path:
+    def build(filter_root, *, instrument, session=None, atmosphere_root=None) -> Path:
         fetcher = Fetcher(session)
         spec = recipes[instrument](fetcher)
         return write_instrument(filter_root, spec, atmosphere_root=atmosphere_root, session=fetcher.session)
