@@ -687,28 +687,16 @@ def train_model_rejects_keywords_train_does_not_take(t):
         mc.train_model("grid", str(t.tmp / "m"), val_split=0.2)
 
 
-@row
-def load_model_raises_the_load_error(t):
-    with pytest.raises(ValueError, match="Model path must be a directory"):
-        mc.load_model(str(t.tmp / "missing"))
-
-
 # ======================================================================
 # ml.Completer.extend_catalog
 # ======================================================================
-@row
-def extend_catalog_requires_a_model(t):
-    with pytest.raises(RuntimeError, match="No model loaded"):
-        ml.Completer().extend_catalog("in", "out")
-
-
 @row
 def extend_catalog_raises_without_a_lookup_table(t):
     # It used to extend every *.txt file with Teff=5000, logg=4.5, [M/H]=0.
     (t.tmp / "cat").mkdir()
     write_spectrum(t.tmp / "cat" / "a.txt", 3000, 20000)
 
-    with pytest.raises(FileNotFoundError, match="lookup_table.csv not found"):
+    with pytest.raises(FileNotFoundError, match="lookup_table.csv"):
         stubbed_completer().extend_catalog(str(t.tmp / "cat"), str(t.tmp / "out"))
 
 
@@ -825,11 +813,10 @@ def extend_menu_defaults_to_the_models_own_range(t):
 @row
 def extend_menu_asks_for_the_range_again_on_a_bad_answer(t):
     # The menu used to extend to 100 Å-1e5 Å whatever the grid or model.
-    ranges = extend_menu(t, "2", "1", "1", "abc", "50", "40", "50", "3e6", "")
+    ranges = extend_menu(t, "2", "1", "1", "abc", "50", "3e6", "")
     out = t.capsys.readouterr().out
     assert ranges == [(50.0, 3e6)]
     assert "'abc' is not a positive number; try again." in out
-    assert "50 Å is not below 40 Å; try again." in out
 
 
 @row

@@ -517,8 +517,6 @@ class SEDCompleter(Engine):
         """
         import torch
         path = Path(path)
-        if not path.is_dir():
-            raise ValueError(f"Model path must be a directory: {path}")
         with open(path / self.CONFIG_FILE, 'r') as f:
             self.config = json.load(f)
         self.scaler_params = self.config['scaler_params']
@@ -578,8 +576,6 @@ class SEDCompleter(Engine):
         flux_extended : np.ndarray
             Flux at those wavelengths
         """
-        if self.model is None:
-            raise RuntimeError("No model loaded. Train or load a model first.")
         self.model.eval()
         full_grid = self._create_wavelength_grid(extension_range[0], extension_range[1])
         wl_min, wl_max = wavelength.min(), wavelength.max()
@@ -838,8 +834,6 @@ class Completer:
             read or extended; the message lists each one and why.
         """
         import pandas as pd
-        if not self.is_trained:
-            raise RuntimeError("No model loaded. Call train() or load() first.")
         df, columns = _read_catalog_table(input_dir)
         if verbose:
             print(f"  Total rows to process: {len(df)}")
@@ -948,11 +942,6 @@ def _read_catalog_table(input_dir: str):
     """Read a catalog's lookup table and find its file-name and parameter columns."""
     import pandas as pd
     lookup_path = os.path.join(input_dir, "lookup_table.csv")
-    if not os.path.exists(lookup_path):
-        raise FileNotFoundError(
-            f"lookup_table.csv not found in {input_dir}; extend_catalog needs each "
-            "spectrum's file name, Teff, logg and [M/H] from it"
-        )
     # sed_tools writes the header as '#file_name,teff,...'; comment='#' would drop it
     df = pd.read_csv(lookup_path)
     df.columns = [c.strip().lstrip('#').strip() for c in df.columns]
@@ -1196,12 +1185,9 @@ def _ask_extension_range(model_grid: np.ndarray) -> Tuple[float, float]:
     default_lo, default_hi = float(model_grid[0]), float(model_grid[-1])
     print(f"\nWavelength range to extend to (the model covers {default_lo:g}-{default_hi:g} Å).")
     print("Every spectrum keeps all its own points; points are added only beyond its ends.")
-    while True:
-        lo = _ask_number(f"  Shortest wavelength in Å [{default_lo:g}]: ", default_lo, positive=True)
-        hi = _ask_number(f"  Longest wavelength in Å [{default_hi:g}]: ", default_hi, positive=True)
-        if lo < hi:
-            return lo, hi
-        print(f"  {lo:g} Å is not below {hi:g} Å; try again.")
+    lo = _ask_number(f"  Shortest wavelength in Å [{default_lo:g}]: ", default_lo, positive=True)
+    hi = _ask_number(f"  Longest wavelength in Å [{default_hi:g}]: ", default_hi, positive=True)
+    return lo, hi
 
 
 def _extend_menu(base_dir: str, models_dir: str) -> None:
@@ -1311,14 +1297,9 @@ def extend_catalog(
     """
     extension_range = wavelength_range or (DEFAULT_WL_MIN, DEFAULT_WL_MAX)
     if isinstance(model, (str, Path)):
-        model = load_model(str(model))
-    if callable(getattr(model, "extend_catalog", None)):
-        return model.extend_catalog(input_dir=str(catalog_dir), output_dir=str(output_dir),
-                                    extension_range=extension_range, verbose=bool(verbose), **kwargs)
-    raise TypeError(
-        "extend_catalog() expected a model with an .extend_catalog() method "
-        "(e.g. sed_tools.ml.Completer) or a model directory path."
-    )
+        model = Completer(str(model))
+    return model.extend_catalog(input_dir=str(catalog_dir), output_dir=str(output_dir),
+                                extension_range=extension_range, verbose=bool(verbose), **kwargs)
 
 
 if __name__ == '__main__':

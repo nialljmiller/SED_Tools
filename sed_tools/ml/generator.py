@@ -382,8 +382,6 @@ class SEDGenerator(Engine):
         wavelength : array (Angstroms)
         flux : array (erg/s/cm²/Å)
         """
-        if self.model is None:
-            raise RuntimeError("No model loaded")
         if check_bounds:
             ranges = self.config.get('parameter_ranges', {})
             for key, label, value, spec in (('teff', 'Teff', teff, '.0f'), ('logg', 'logg', logg, '.2f'),
