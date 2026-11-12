@@ -377,14 +377,12 @@ def files_cleaned_one_by_one_without_a_declared_flux_unit_are_listed(t):
 
 
 @row
-def cli_asks_again_after_an_unknown_unit_and_stops_on_no(t):
+def cli_stops_on_no(t):
     grid = _grid(t.tmp / "Cool")
-    prompts = _terminal(t, "Jy", "n")
+    prompts = _terminal(t, "n")
     with pytest.raises(ValueError, match="No flux unit chosen for Cool; it was not cleaned"):
         cli._ask_flux_unit("Cool", sorted(str(p) for p in grid.glob("*.txt")))
-    assert len(prompts) == 2
-    assert ("'Jy' is not one of: flam, fnu, fnu_jy, flam_si, flam_si_nm, flam_si_um, normalized"
-            in t.capsys.readouterr().out)
+    assert len(prompts) == 1
 
 
 @row
@@ -522,10 +520,8 @@ def flux_unit_is_used_for_spectra_that_declare_none(t):
     assert summary["catalog_units"]["flux"] == "flam" and "is not used" not in t.caplog.text
 
 
-#: name: (the answers typed, the unit taken). Enter or 'y' does not take the guess: the unit must be typed.
+#: name: (the answers typed, the unit taken). The guess is offered, not taken: the unit must be typed.
 TYPED = {
-    "cli_offers_the_best_guess_and_takes_a_typed_unit_after_enter": (["", "fnu_jy"], "fnu_jy"),
-    "cli_offers_the_best_guess_and_takes_a_typed_unit_after_y": (["y", "flam"], "flam"),
     "cli_offers_the_best_guess_and_takes_a_typed_unit": (["flam"], "flam"),
 }
 

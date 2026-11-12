@@ -2,7 +2,7 @@
 
 from typing import Sequence, Optional, List, Union, Tuple
 import importlib.util
-import math
+import math  # noqa: F401  (kept: `from sed_tools.ui_utils import *` gives what 0.5.0 gave)
 import re
 import shutil
 import sys
@@ -53,15 +53,14 @@ def parse_multi_selection(spec: str, total: int) -> list[int]:
 
 
 def ask_option(prompt: str, options: Sequence[str], default: Optional[str] = None) -> str:
-    """Ask until the answer is one of ``options`` (any case); a blank answer gives ``default`` if there is one."""
-    lowered = {o.lower(): o for o in options}
-    while True:
-        raw = input(prompt).strip()
-        if not raw and default is not None:
-            return default
-        if raw.lower() in lowered:
-            return lowered[raw.lower()]
-        print(f"  Please enter one of: {', '.join(options)}.")
+    """The one of ``options`` typed (any case); a blank answer gives ``default`` if there is one.
+
+    Any other answer raises KeyError.
+    """
+    raw = input(prompt).strip()
+    if not raw and default is not None:
+        return default
+    return {o.lower(): o for o in options}[raw.lower()]
 
 
 def ask_yes(prompt: str) -> bool:
@@ -70,13 +69,12 @@ def ask_yes(prompt: str) -> bool:
 
 
 def ask_range(prompt: str) -> Optional[Tuple[float, float]]:
-    """Ask for a range like '3500,8000' until one parses; None for a blank answer (no cut)."""
-    while True:
-        raw = input(prompt).strip()
-        parsed = parse_numeric_range(raw)
-        if parsed is not None or not raw:
-            return parsed
-        print(f"  Could not parse range from '{raw}' — need two values (e.g. '3500,8000')")
+    """The range typed, like '3500,8000'; None for a blank answer (no cut). Anything else raises ValueError."""
+    raw = input(prompt).strip()
+    parsed = parse_numeric_range(raw)
+    if raw and parsed is None:
+        raise ValueError(f"Could not parse a range from {raw!r}")
+    return parsed
 
 
 def wrap(text: str, width: Optional[int] = None, indent: str = "", hanging: str = "") -> str:
@@ -164,39 +162,22 @@ def refused_without(*modules: str) -> bool:
 
 def ask_number(prompt: str, default=NO_DEFAULT, *, whole: bool = False, positive: bool = False,
                words: Sequence[str] = ()):
-    """Ask until the answer is a finite number (whole, positive if asked) or one of ``words``.
+    """The number typed (an int if ``whole``), or the one of ``words`` typed.
 
-    A blank answer gives ``default`` when there is one (None included).
-    Every interactive number question uses this, so a typo asks again.
+    A blank answer gives ``default`` when there is one (None included); anything else raises ValueError, as
+    int() or float() does. ``positive`` is not checked; it is kept so that 0.5.x calls still work.
     """
-    kind = " or ".join([("a positive " if positive else "a ") + ("whole number" if whole else "number"),
-                        *(repr(w) for w in words)])
-    while True:
-        raw = input(prompt).strip()
-        if not raw and default is not NO_DEFAULT:
-            return default
-        if raw.lower() in words:
-            return raw.lower()
-        try:
-            value = int(raw) if whole else float(raw)
-        except ValueError:
-            value = None
-        if value is not None and math.isfinite(value) and (value > 0 or not positive):
-            return value
-        print(f"  {raw!r} is not {kind}; try again." if raw else f"  Please enter {kind}.")
+    raw = input(prompt).strip()
+    if not raw and default is not NO_DEFAULT:
+        return default
+    if raw.lower() in words:
+        return raw.lower()
+    return int(raw) if whole else float(raw)
 
 
 def ask_numbers(prompt: str) -> List[float]:
-    """Ask until the answer is a comma-separated list of finite numbers."""
-    while True:
-        raw = input(prompt).strip()
-        try:
-            values = [float(token) for token in raw.split(',')]
-        except ValueError:
-            values = []
-        if values and all(math.isfinite(v) for v in values):
-            return values
-        print(f"  {raw!r} is not a comma-separated list of numbers; try again.")
+    """The comma-separated numbers typed; anything else raises ValueError, as float() does."""
+    return [float(token) for token in input(prompt).split(',')]
 
 
 def prompt_choice(

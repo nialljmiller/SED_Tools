@@ -238,11 +238,14 @@ def spectra_flow_raises_when_no_grid_is_discovered(t):
 
 
 @row
-def axis_cut_prompt_asks_again_after_an_unparseable_range(t):
-    answer(t.mp, "3500 to 8000", "3500,8000", "", "", "")
-    cuts = cli.prompt_njm_axis_cuts("Grid", SimpleNamespace(get_grid_info=lambda name, model_url=None: None))
+def axis_cut_prompt_takes_ranges_and_never_reads_a_typo_as_no_cut(t):
+    grabber = SimpleNamespace(get_grid_info=lambda name, model_url=None: None)
+    answer(t.mp, "3500,8000", "", "", "")
+    cuts = cli.prompt_njm_axis_cuts("Grid", grabber)
     assert cuts == {"teff_range": (3500.0, 8000.0), "logg_range": None, "meta_range": None, "wl_range": None}
-    assert "Could not parse range from '3500 to 8000'" in t.capsys.readouterr().out
+    answer(t.mp, "3500 to 8000")
+    with pytest.raises(ValueError):  # not None, which would download the whole grid
+        cli.prompt_njm_axis_cuts("Grid", grabber)
 
 
 def _rebuild(t):
@@ -277,12 +280,11 @@ def rebuild_rebuilds_every_grid_it_can_then_lists_the_rest(t):
 
 
 @row
-def rebuild_asks_again_for_an_out_of_range_selection(t):
+def rebuild_asks_which_grids(t):
     rebuilt = _rebuild(t)
-    answer(t.mp, "7", "1,3")
+    answer(t.mp, "1,3")
     cli.run_rebuild_flow(base_dir=str(t.tmp))
     assert rebuilt == ["A", "C"]
-    assert "Selection out of bounds: 7" in t.capsys.readouterr().out
 
 
 @row
@@ -384,14 +386,13 @@ def _paranal(t, atmospheres):
 
 
 @row
-def offer_composition_asks_again_for_an_airmass_that_is_not_a_number(t):
+def offer_composition_folds_in_the_site_and_airmass_typed(t):
     built = []
     filters = _paranal(t, lambda cls, *a, **k: {})
     t.mp.setattr(filters, "compose",
                  classmethod(lambda cls, *a, **k: built.append(k["atmosphere"]) or t.tmp / "product"))
-    answer(t.mp, "y", "1", "1", "high", "1.2", "")  # site 1 of the numbered atmosphere choice
+    answer(t.mp, "y", "1", "1", "1.2", "")  # site 1 of the numbered atmosphere choice
     cli._offer_composition(t.tmp / "Fac" / "Cam")
-    assert "'high' is not a number or 'unstated'" in t.capsys.readouterr().out
     assert built == [{"site": "paranal", "airmass": 1.2, "pwv": None}]
 
 
@@ -923,14 +924,11 @@ def _airmass_defaults(t, grid, typed, airmass, pwv):
 
 
 @menu_row
-def composition_asks_again_after_a_bad_recipe(t):
+def composition_takes_a_typed_recipe(t):
     composed = _composed(t)
     t.mp.setattr(Filters, "available", classmethod(lambda cls, *a, **k: availability()))
-    answer(t.mp, "y", "bogus", "9", "filter,atmosphere", "published,optics")
+    answer(t.mp, "y", "published,optics")
     cli._offer_composition(t.tmp / "Fac" / "Cam")
-    out = t.capsys.readouterr().out
-    assert "Unknown filter component: 'bogus'" in out and "Choose 1 to 2" in out
-    assert "the atmosphere is asked about separately" in out
     assert composed[0][1]["components"] == ["published", "optics"] and "detector_type" not in composed[0][1]
 
 
@@ -1193,7 +1191,10 @@ def combine_prompt_has_a_space_and_refuses_an_input_name(t):
     built = _combine(t)
     t.mp.setattr("sed_tools.combine_stellar_atm.select_models_interactive",
                  lambda dirs: [d for d in dirs if d[0] in ("Kurucz", "Phoenix")])
-    prompts = answer(t.mp, "Kurucz", "", "mine")
+    answer(t.mp, "Kurucz")
+    with pytest.raises(ValueError, match="The output grid Kurucz is also one of the grids to combine"):
+        cli.run_combine_flow(base_dir=str(t.tmp))
+    prompts = answer(t.mp, "mine")
     cli.run_combine_flow(base_dir=str(t.tmp))
     assert prompts[0] == "What should the combined spectral grid be called? [combined_models] "
     assert [(sorted(names), out) for names, out in built] == [(["Kurucz", "Phoenix"], "mine")]
@@ -1449,15 +1450,13 @@ def picker_shows_the_longest_label_in_full(t):
 
 
 # ----------------------------------------------------------------------
-# Prompts and pickers: numbers asked again (NaN refused), names only, descriptions once, full names in
+# Prompts and pickers: numbers asked once, names only, descriptions once, full names in
 # columns, long labels cut with an ellipsis, and a count before downloading several
 # ----------------------------------------------------------------------
 @menu_row
-def number_prompts_ask_again(t):
-    answer(t.mp, "high", "", "1.5")
+def number_prompts_take_a_number_a_default_or_a_word(t):
+    answer(t.mp, "1.5")
     assert cli._ask_number("Airmass: ") == 1.5
-    out = t.capsys.readouterr().out
-    assert "'high' is not a number; try again." in out and "Please enter a number." in out
     answer(t.mp, "")
     assert cli._ask_number("PWV: ", default=None) is None
     answer(t.mp, "UNSTATED")
@@ -1543,14 +1542,10 @@ def downloading_several_facilities_asks_first_with_the_count(t):
 
 
 @menu_row
-def every_number_question_is_the_same_one_and_refuses_nan(t):
+def every_number_question_is_the_same_one(t):
     from sed_tools import ml_sed_completer, ml_sed_generator, ui_utils
 
     assert cli._ask_number is ml_sed_generator._ask_number is ml_sed_completer._ask_number is ui_utils.ask_number
-    answer(t.mp, "nan", "inf", "", "1.3")
-    assert cli._ask_number("Airmass: ", words=("unstated",)) == 1.3  # the CLI's question took nan before
-    out = t.capsys.readouterr().out
-    assert "'nan' is not a number or 'unstated'; try again." in out and "Please enter a number or 'unstated'." in out
 
 
 def _narrow(t, scenario):

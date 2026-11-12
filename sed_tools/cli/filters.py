@@ -11,7 +11,8 @@ from requests import RequestException
 
 from ..api import Filters, _listing_failures
 from ..cube.model import FILTER_DIR_DEFAULT
-from ..filters.compose import ATMOSPHERE, INSTRUMENT, ComponentError, archived_bands, index_listing, parse_components
+from ..filters.compose import ATMOSPHERE, INSTRUMENT  # noqa: F401  (kept: 0.5.0's `import *` gave them)
+from ..filters.compose import ComponentError, archived_bands, index_listing, parse_components
 from ..filters.curve_metadata import normalize_detector_type, other_detector_type, read_filter_header
 from ..filters.detector_edit import FORMULAS, curve_files
 from ..filters.njm_catalogue import CatalogueError
@@ -264,27 +265,13 @@ def _compose_interactively(instrument_dir: Path, info: dict) -> None:
 
 
 def _ask_recipe(info: dict) -> List[str]:
-    """Ask for a recipe (a listed one, or one typed as roles) until it names known roles."""
-    options = [recipe.replace("+", ",") for recipe in info["buildable"]] + ["published"]
+    """The recipe picked by its number, or typed as roles."""
+    numbered = {str(i): recipe.replace("+", ",") for i, recipe in enumerate([*info["buildable"], "published"], 1)}
     print("Recipes (or type your own, e.g. published,optics):")
-    for i, opt in enumerate(options, 1):
-        print(f"  {i}. {opt}")
-    while True:
-        pick = input("Choose a recipe [1]: ").strip() or "1"
-        if pick.isdigit():
-            if 1 <= int(pick) <= len(options):
-                return list(parse_components(options[int(pick) - 1]))
-            print(f"  Choose 1 to {len(options)}, or type a recipe.")
-            continue
-        try:
-            roles = parse_components(pick)
-        except ComponentError as exc:
-            print(f"  {exc}; use filter, optics, qe or published.")
-            continue
-        if ATMOSPHERE in roles or INSTRUMENT in roles:
-            print("  Use filter, optics, qe or published; the atmosphere is asked about separately.")
-        elif roles:
-            return list(roles)
+    for number, recipe in numbered.items():
+        print(f"  {number}. {recipe}")
+    pick = input("Choose a recipe [1]: ").strip() or "1"
+    return list(parse_components(numbered.get(pick, pick)))
 
 
 def review_detector_types(directory: Path, filter_root: Path, what: str = "This filter set") -> None:
@@ -785,8 +772,6 @@ def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
     instrument = input(f"Output index/instrument name [{output}]: ").strip() or None
 
     conflict = input("Duplicate band names: rename, overwrite, or error? [rename]: ").strip().lower() or "rename"
-    while conflict not in {"rename", "overwrite", "error"}:
-        conflict = input("Please enter rename, overwrite, or error [rename]: ").strip().lower() or "rename"
 
     print("\nAbout to create a combined filter set:")
     for name, value in (("Base", chosen_base), ("Output", output), ("Facility", facility or "Combined"),
