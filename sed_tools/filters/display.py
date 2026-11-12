@@ -44,7 +44,6 @@ INFRARED_RAINBOW = (100.0, -25.0)
 ULTRAVIOLET_RAINBOW = (195.0, 290.0)
 
 Curve = Tuple[Sequence[float], Sequence[float]]
-NORMALIZATIONS = (None, False, True, "peak", "area")
 
 
 @lru_cache(maxsize=1)
@@ -179,7 +178,7 @@ def instrument_colors(curve_paths: Sequence[Union[str, Path]]) -> Dict[str, Dict
 
 
 def _normalized(lam: np.ndarray, t: np.ndarray, normalize) -> np.ndarray:
-    """``t`` scaled as :func:`plot_curves`'s ``normalize`` says (one of :data:`NORMALIZATIONS`)."""
+    """``t`` scaled as :func:`plot_curves`'s ``normalize`` says."""
     if normalize in (True, "peak"):
         peak = t.max()
         return t / peak if peak > 0 else t

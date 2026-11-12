@@ -5,6 +5,8 @@ Changelog
 Version 0.7.0 (unreleased)
 --------------------------
 
+- ``sed_tools.filter_plot.NORMALIZATIONS`` is removed; nothing read it.
+  ``plot_curves`` takes the same ``normalize`` values as before.
 - Functions only the tests used are removed: ``NJMFilterGrabber.find_facility``,
   ``get_exclusive_facilities``, ``find_instrument`` and ``get_filter_info``;
   ``build_all_products`` (``build_product`` builds each recipe);
