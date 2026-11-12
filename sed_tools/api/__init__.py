@@ -518,10 +518,15 @@ class SED:
             If no source could supply the grid; the message gives each source's error.
             Also if the spectra do not declare their flux unit and flux_unit is not
             given; the message gives the best guess.
+        KeyError
+            If flux_unit is not a known name, before anything is downloaded.
         RuntimeError
             If a failed download left files behind (another source is then
             not tried), or cleaning left spectra unusable.
         """
+        if flux_unit is not None:
+            from ..grids.units import FLUX_UNITS
+            FLUX_UNITS[flux_unit]  # the conversion, looked up before anything is downloaded
         base_dir = Path(model_root) if model_root else cls._model_root
         base_dir.mkdir(parents=True, exist_ok=True)
 

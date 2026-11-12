@@ -427,6 +427,7 @@ UNKNOWN_UNIT = {
     "an_unknown_flux_unit_leaves_the_source_folder_untouched_on_import": "copy",
     "an_unknown_flux_unit_leaves_the_source_folder_untouched_on_import_with_move": "move",
     "an_unknown_flux_unit_leaves_every_spectrum_untouched_when_cleaning_one_by_one": "clean",
+    "an_unknown_flux_unit_downloads_nothing_on_fetch": "fetch",
 }
 
 
@@ -437,8 +438,11 @@ def _unknown_unit(t, how):
     done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
     t.mp.setattr("sed_tools.spectra_cleaner.random.sample", lambda files, n: [str(done)])  # no grid-wide units
     before = _contents(src)
+    t.mp.setattr("sed_tools.api.SED._download_from_first_source", lambda *a: pytest.fail("downloaded"))
     with pytest.raises(KeyError, match="Jy"):
-        if how == "clean":
+        if how == "fetch":
+            SED.fetch("Grid", source="svo", model_root=t.tmp / "models", flux_unit="Jy")
+        elif how == "clean":
             clean_model_dir(str(src), flux_unit="Jy")
         else:
             SED.import_grid(src, model_root=t.tmp / "models", move=how == "move", build_cube=False, build_h5=False,
