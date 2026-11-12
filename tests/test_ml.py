@@ -223,7 +223,7 @@ def extend_catalog_raises_when_a_column_is_missing(t, missing):
     df = pd.read_csv(catalog / "lookup_table.csv").drop(columns=[missing])
     df.to_csv(catalog / "lookup_table.csv", index=False)
     completer = stubbed_completer()
-    with pytest.raises(ValueError, match=r"has no column for (file|teff|logg|meta) \(one of"):
+    with pytest.raises(ValueError, match=r"has no column for (file|teff|logg|meta)\. Columns read"):
         completer.extend_catalog(str(catalog), str(t.tmp / "out"))
     assert completer._completer.calls == []
 

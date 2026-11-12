@@ -785,7 +785,8 @@ class Completer:
         FileNotFoundError
             If ``input_dir`` has no lookup_table.csv.
         ValueError
-            If the lookup table has no file-name, Teff, logg or [M/H] column.
+            If the lookup table has no file-name, Teff, logg or [M/H] column
+            (the names sed_tools.grids.lookup's find_*_column accept).
         RuntimeError
             After every other spectrum has been written, if any could not be
             read or extended; the message lists each one and why.
@@ -886,36 +887,21 @@ class Completer:
 
 # Catalog helpers for Completer.extend_catalog
 
-# Column names accepted in a catalog's lookup_table.csv, in order of preference
-_CATALOG_COLUMNS = {
-    'file': ['file_name', 'file', 'filename', 'sed_file', 'spectrum', 'File', 'Filename'],
-    'teff': ['teff', 'Teff', 'TEFF', 'T_eff'],
-    'logg': ['logg', 'log_g', 'Logg', 'LOG_G', 'gravity'],
-    'meta': ['meta', 'metallicity', '[M/H]', 'M_H', 'feh', '[Fe/H]', 'FeH'],
-}
-
-
 def _read_catalog_table(input_dir: str):
-    """Read a catalog's lookup table and find its file-name and parameter columns."""
+    """Read a catalog's lookup table and find its file-name and parameter columns, as every lookup reader does
+    (sed_tools.grids.lookup's find_*_column)."""
     import pandas as pd
+
+    from ..grids.lookup import find_file_column, find_logg_column, find_metallicity_column, find_teff_column
     lookup_path = os.path.join(input_dir, "lookup_table.csv")
     # sed_tools writes the header as '#file_name,teff,...'; comment='#' would drop it
     df = pd.read_csv(lookup_path)
     df.columns = [c.strip().lstrip('#').strip() for c in df.columns]
-
-    columns = {}
-    missing = []
-    for role, candidates in _CATALOG_COLUMNS.items():
-        found = [c for c in candidates if c in df.columns]
-        if found:
-            columns[role] = found[0]
-        else:
-            missing.append(f"{role} (one of {', '.join(candidates)})")
+    columns = {'file': find_file_column(df.columns), 'teff': find_teff_column(df.columns),
+               'logg': find_logg_column(df.columns), 'meta': find_metallicity_column(df.columns)}
+    missing = [role for role, column in columns.items() if column is None]
     if missing:
-        raise ValueError(
-            f"{lookup_path} has no column for {'; '.join(missing)}. Columns read: "
-            f"{list(df.columns)}"
-        )
+        raise ValueError(f"{lookup_path} has no column for {', '.join(missing)}. Columns read: {list(df.columns)}")
     return df, columns
 
 
