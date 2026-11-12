@@ -422,6 +422,33 @@ def import_grid_stops_before_moving_files_and_imports_with_a_unit(t):
     assert "# original_flux_unit = flam" in (t.tmp / "models" / "mine" / "s0.txt").read_text()
 
 
+#: name: how an unknown flux unit is given. The unit is looked up before any file is copied, moved or rewritten,
+#: so the spectra are left as they were and no grid folder is made (cleaning one by one used to convert the
+#: spectra that declare their unit before stopping on one that does not).
+UNKNOWN_UNIT = {
+    "an_unknown_flux_unit_leaves_the_source_folder_untouched_on_import": "copy",
+    "an_unknown_flux_unit_leaves_the_source_folder_untouched_on_import_with_move": "move",
+    "an_unknown_flux_unit_leaves_every_spectrum_untouched_when_cleaning_one_by_one": "clean",
+}
+
+
+def _unknown_unit(t, how):
+    src = _grid(t.tmp / "mine")
+    (src / "declared.txt").write_text("# teff = 3500\n# flux_unit = erg/s/cm2/A\n3000 1.0\n4000 2.0\n")
+    done = src / "done.txt"
+    done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
+    t.mp.setattr("sed_tools.spectra_cleaner.random.sample", lambda files, n: [str(done)])  # no grid-wide units
+    before = _contents(src)
+    with pytest.raises(KeyError, match="Jy"):
+        if how == "clean":
+            clean_model_dir(str(src), flux_unit="Jy")
+        else:
+            SED.import_grid(src, model_root=t.tmp / "models", move=how == "move", build_cube=False, build_h5=False,
+                            flux_unit="Jy")
+    assert _contents(src) == before
+    assert not (t.tmp / "models").exists()
+
+
 @row
 def cli_import_asks_for_the_flux_unit_and_passes_it_on(t):
     src = _grid(t.tmp / "mine")
@@ -1482,3 +1509,4 @@ def test_grids(rows):
     rows(ZERO_BOUNDS, _query_bound)
     rows(WARNED, _warns)
     rows(REFUSED, _refused)
+    rows(UNKNOWN_UNIT, _unknown_unit)

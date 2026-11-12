@@ -391,13 +391,16 @@ def undeclared_flux_unit(txt_files: List[str], sample_fraction: float = 0.10) ->
 
 def check_flux_unit(grid: str, txt_files: List[str], flux_unit: Optional[str] = None,
                     sample_fraction: float = 0.10) -> None:
-    """Raise ValueError if clean_model_dir would refuse these spectra's flux unit before cleaning:
-    flux_unit is None while a sample of them does not declare theirs.
+    """Raise, before anything is copied, moved or cleaned, where clean_model_dir would stop on these spectra's flux
+    unit: KeyError when flux_unit is not a FLUX_UNITS name (its conversion is looked up here), ValueError when it is
+    None while a sample of them does not declare theirs.
     """
-    if flux_unit is None:
-        guess = undeclared_flux_unit(txt_files, sample_fraction)
-        if guess is not None:
-            raise ValueError(_undeclared_flux_unit_message(grid, guess))
+    if flux_unit is not None:
+        FLUX_UNITS[flux_unit]  # the conversion, looked up before any file is touched
+        return
+    guess = undeclared_flux_unit(txt_files, sample_fraction)
+    if guess is not None:
+        raise ValueError(_undeclared_flux_unit_message(grid, guess))
 
 
 def _undeclared_flux_unit_message(grid: str, guess: str) -> str:

@@ -260,6 +260,8 @@ def clean_model_dir(
         divided by}; those files are listed under 'converted' or 'recovered' too.
 
     Raises:
+        KeyError: before any file is changed, if flux_unit is not a FLUX_UNITS
+            name (its conversion is looked up first).
         ValueError: before any file is changed, if flux_unit is None while the
             sampled headers do not all declare the flux unit; the message gives
             the best guess.
@@ -269,6 +271,8 @@ def clean_model_dir(
             and the lookup table rebuilt, listing each such file and why.
             Raised at once if rewriting a file fails.
     """
+    if flux_unit is not None:
+        FLUX_UNITS[flux_unit]  # the conversion, looked up before any file is rewritten
     txt_files = sorted(glob.glob(os.path.join(model_dir, "*.[tT][xX][tT]")))  # .txt in any case
     
     summary = {
