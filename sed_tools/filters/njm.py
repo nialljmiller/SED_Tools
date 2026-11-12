@@ -66,9 +66,8 @@ class SetDownload:
 class NJMFilterGrabber:
     """Grabber for filter profiles from NJM mirror server."""
 
-    def __init__(self, base_dir: str = "../data/filters/", max_workers: int = 5):
+    def __init__(self, base_dir: str = "../data/filters/"):
         self.base_dir = base_dir
-        self.max_workers = max_workers
         os.makedirs(base_dir, exist_ok=True)
 
         self.base_url = BASE_URL

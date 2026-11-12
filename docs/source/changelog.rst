@@ -5,6 +5,10 @@ Changelog
 Version 0.7.0 (unreleased)
 --------------------------
 
+- ``NJMFilterGrabber`` no longer takes ``max_workers``, which it never used,
+  and ``FilterCatalogue.instrument_file`` no longer takes ``prefer_installed``:
+  the copy saved beside installed curves is always read first, unless
+  ``refresh=True``.
 - The standalone command lines ``python -m sed_tools.njm_filter_grabber``,
   ``python -m sed_tools.svo_filter_grabber`` (the interactive SVO browser:
   ``run_interactive`` and ``main``) and ``python -m sed_tools.combine_filters``
