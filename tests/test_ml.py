@@ -1,6 +1,5 @@
 """ML: the completer and generator, what their training and inference compute, their menus, extend_catalog,
-list_models, train_model and load_model, and their failures; the torch-free sed_tools.ml API; MPS and the
-optuna auto-trainer.
+list_models, and their failures; the torch-free sed_tools.ml API; MPS and the optuna auto-trainer.
 
 The known-answer rows pin what training and inference compute on tiny seeded inputs on the CPU, recorded
 before the ml modules were split up: a refactor that changes the numerics, the seeds or the order of random
@@ -397,16 +396,17 @@ def extend_catalog_extends_each_spectrum_with_its_own_parameters(t):
 
 
 @row
-def auto_train_generator_saves_a_model_sedgenerator_and_the_api_load(t):
+def auto_trainer_saves_a_model_sedgenerator_and_the_api_load(t):
     # It used to save a ResidualMLP's weights as model_best.pt and overwrite
     # config.json with keys of its own, so nothing could load the model.
     cpu_torch(t)
     seeded_optuna(t)
     from sed_tools import api
+    from sed_tools.ml.tuning import AutoTrainer
 
     kurucz_library = kurucz(t)
     output = t.tmp / "base" / "models" / "auto"
-    generator = ml.auto_train_generator(str(kurucz_library), str(output), n_trials=2, epochs=2)
+    generator, _ = AutoTrainer().train_best(str(kurucz_library), str(output), n_trials=2, epochs=2)
 
     assert isinstance(generator, mg.SEDGenerator)
     assert sorted(p.name for p in output.iterdir()) == [
@@ -619,7 +619,7 @@ def generator_workflow_warns_about_an_unreadable_lookup_table(t):
 
 
 # ======================================================================
-# Training data, train_model and load_model: what they refuse and warn about
+# Training data: what training refuses and warns about
 # ======================================================================
 @row
 def completer_prepare_training_data_warns_how_many_spectra_it_dropped(t):
@@ -666,24 +666,6 @@ def generator_train_rejects_a_grid_with_no_flux_above_the_floor(t):
         mg.SEDGenerator().train(grid(t, [4000.0, 5000.0], 1e-30), str(t.tmp / "model"), epochs=1,
                                 batch_size=2, max_samples=2, hidden_layers=[8])
     assert not (t.tmp / "model").exists()
-
-
-@row
-def train_model_forwards_keywords_and_rejects_unknown_ones(t):
-    calls = []
-    t.mp.setattr(mc.SEDCompleter, "train", lambda self, **kw: calls.append(kw))
-    t.mp.setattr(mc, "Completer", lambda path: ("Completer", path))
-
-    handle = mc.train_model("grid", str(t.tmp / "m"), epochs=2, verbose=False, dropout=0.1)
-
-    assert handle == ("Completer", str(t.tmp / "m"))
-    assert calls[0]["verbose"] is False and calls[0]["dropout"] == 0.1
-
-
-@row
-def train_model_rejects_keywords_train_does_not_take(t):
-    with pytest.raises(TypeError, match="val_split"):
-        mc.train_model("grid", str(t.tmp / "m"), val_split=0.2)
 
 
 # ======================================================================
@@ -760,10 +742,10 @@ def extend_catalog_keeps_every_sample_of_the_kurucz_grid(t):
     library = kurucz(t)
     np.random.seed(0)
     torch.manual_seed(0)
-    model = mc.train_model(str(library), str(t.tmp / "model"), epochs=1, batch_size=3, hidden_layers=[8])
+    mc.SEDCompleter().train(str(library), str(t.tmp / "model"), epochs=1, batch_size=3, hidden_layers=[8])
 
     out = t.tmp / "extended"
-    summary = mc.extend_catalog(model, str(library), str(out))
+    summary = Completer(str(t.tmp / "model")).extend_catalog(str(library), str(out), verbose=False)
 
     assert summary["extended"] == 12 and summary["total"] == 12
     spectra = sorted(library.glob("*.txt"))

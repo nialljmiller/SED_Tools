@@ -1,9 +1,9 @@
 """SEDCompleter, the engine that extends an SED beyond its wavelength range: a black body refined by a neural network.
 
-Also here: Completer, the 0.4.1 class over it that extends a whole grid (extend_catalog); the module's command line
-and its sed-tools menu; and train_model, load_model and extend_catalog, which api.MLCompleter calls.
+Also here: Completer, the 0.4.1 class over it that loads a model and extends a whole grid (extend_catalog), which
+api.MLCompleter uses; and the sed-tools menu.
 A model folder: model.pt, config.json (architecture, scalers, grid), training_plots.png and prediction_examples.png.
-Old import path sed_tools.ml_sed_completer, also run as python -m; sed_tools.ml holds the 0.4.1 functions.
+Old import path sed_tools.ml_sed_completer; sed_tools.ml holds the 0.4.1 functions.
 """
 
 import json
@@ -658,17 +658,10 @@ class SEDCompleter(Engine):
 
 class Completer:
     """
-    High-level SED completion interface.
-    
-    Provides a clean API for training and using SED completion models.
+    High-level SED completion interface over a trained SEDCompleter model.
     
     Example
     -------
-    Training and saving::
-    
-        completer = Completer()
-        completer.train('data/combined_models', 'models/my_model', epochs=100)
-    
     Loading and using::
     
         completer = Completer('models/my_model')
@@ -687,7 +680,7 @@ class Completer:
         Parameters
         ----------
         model_path : str, optional
-            Path to existing model directory. If None, must call train() first.
+            Path to existing model directory. If None, call load() before using it.
         """
         self._completer = SEDCompleter(model_path)
         self._model_path = model_path
@@ -711,43 +704,6 @@ class Completer:
     def wavelength_grid(self) -> Optional[np.ndarray]:
         """Get model wavelength grid."""
         return self._completer.wavelength_grid
-
-    def train(
-        self,
-        library: str,
-        output: str,
-        epochs: int = 100,
-        batch_size: int = 32,
-        learning_rate: float = 1e-4,
-        **kwargs,
-    ) -> 'Completer':
-        """
-        Train a new completion model.
-        
-        Parameters
-        ----------
-        library : str
-            Path to SED library
-        output : str
-            Output directory for model
-        epochs : int
-            Maximum training epochs
-        batch_size : int
-            Training batch size
-        learning_rate : float
-            Initial learning rate
-        **kwargs
-            Additional arguments passed to SEDCompleter.train()
-        
-        Returns
-        -------
-        self
-            For method chaining
-        """
-        self._completer.train(library_path=library, output_path=output, epochs=epochs, batch_size=batch_size,
-                              learning_rate=learning_rate, **kwargs)
-        self._model_path = output
-        return self
 
     def load(self, model_path: str) -> 'Completer':
         """
@@ -997,99 +953,6 @@ def _find_spectrum(input_dir: str, filename: str) -> str:
 
 
 
-# python -m sed_tools.ml_sed_completer
-
-def cli_train(args):
-    """CLI handler for training."""
-    SEDCompleter().train(library_path=args.library, output_path=args.output, epochs=args.epochs,
-                         batch_size=args.batch_size, learning_rate=args.lr, max_samples=args.max_samples,
-                         patience=args.patience)
-
-
-def cli_complete(args):
-    """CLI handler for SED completion."""
-    completer = SEDCompleter(args.model)
-    data = np.loadtxt(args.input)
-    wl_ext, flux_ext = completer.complete_sed(data[:, 0], data[:, 1], teff=args.teff, logg=args.logg, meta=args.meta,
-                                              extension_range=(args.wl_min, args.wl_max))
-    write_spectrum(args.output, wl_ext, flux_ext)
-    print(f"Saved completed SED to: {args.output}")
-
-
-def cli_list(args):
-    """CLI handler for listing models."""
-    models = SEDCompleter.list_models(args.models_dir)
-    if not models:
-        print(f"No models found in {args.models_dir}/")
-        return
-    print(f"\nAvailable models in {args.models_dir}/:")
-    print("-" * 60)
-    for m in models:
-        arch = m.get('architecture', {})
-        hidden = arch.get('hidden_layers', [])
-        print(f"  {m['name']}")
-        print(f"    Path: {m['path']}")
-        print(f"    Framework: {m['framework']}, Version: {m['version']}")
-        if hidden:
-            print(f"    Architecture: {arch.get('input_dim', '?')} -> {hidden} -> {arch.get('output_dim', '?')}")
-        print()
-
-
-def main():
-    """Main CLI entry point."""
-    import argparse
-    parser = argparse.ArgumentParser(
-        description="ML-powered SED Completer (PyTorch)",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-  # Train a new model
-  python -m sed_tools.ml_sed_completer train \\
-      --library /path/to/stellar_library \\
-      --output models/my_model
-
-  # Complete an SED
-  python -m sed_tools.ml_sed_completer complete \\
-      --model models/my_model \\
-      --input incomplete.txt \\
-      --output extended.txt \\
-      --teff 5500 --logg 4.5 --meta 0.0
-
-  # List available models
-  python -m sed_tools.ml_sed_completer list
-        """,
-    )
-
-    subparsers = parser.add_subparsers(dest='command', required=True)
-
-    train_parser = subparsers.add_parser('train', help='Train model on SED library')
-    train_parser.add_argument('--library', required=True, help='Path to SED library')
-    train_parser.add_argument('--output', required=True, help='Output model directory')
-    train_parser.add_argument('--epochs', type=int, default=100, help='Max epochs (default: 100)')
-    train_parser.add_argument('--batch-size', type=int, default=32, help='Batch size (default: 32)')
-    train_parser.add_argument('--lr', type=float, default=1e-4, help='Learning rate (default: 1e-4)')
-    train_parser.add_argument('--max-samples', type=int, default=5000, help='Max training samples (default: 5000)')
-    train_parser.add_argument('--patience', type=int, default=20, help='Early stopping patience (default: 20)')
-    train_parser.set_defaults(func=cli_train)
-
-    complete_parser = subparsers.add_parser('complete', help='Complete an incomplete SED')
-    complete_parser.add_argument('--model', required=True, help='Model directory')
-    complete_parser.add_argument('--input', required=True, help='Input SED file')
-    complete_parser.add_argument('--output', required=True, help='Output file')
-    complete_parser.add_argument('--teff', type=float, required=True, help='Effective temperature (K)')
-    complete_parser.add_argument('--logg', type=float, required=True, help='Surface gravity')
-    complete_parser.add_argument('--meta', type=float, required=True, help='Metallicity [M/H]')
-    complete_parser.add_argument('--wl-min', type=float, default=100.0, help='Min wavelength (default: 100)')
-    complete_parser.add_argument('--wl-max', type=float, default=100000.0, help='Max wavelength (default: 100000)')
-    complete_parser.set_defaults(func=cli_complete)
-
-    list_parser = subparsers.add_parser('list', help='List available models')
-    list_parser.add_argument('--models-dir', default='models', help='Models directory (default: models)')
-    list_parser.set_defaults(func=cli_list)
-    args = parser.parse_args()
-    args.func(args)
-
-
 # Interactive workflow (sed-tools main menu item 8)
 
 def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> Optional[int]:
@@ -1259,52 +1122,3 @@ def _list_menu(models_dir: str) -> None:
         if arch:
             hidden = arch.get('hidden_layers', [])
             print(f"    Architecture: {arch.get('input_dim', '?')} -> {hidden} -> {arch.get('output_dim', '?')}")
-
-
-# train_model, load_model and extend_catalog: what api.MLCompleter calls, 0.4.1 names of sed_tools.ml_sed_completer
-
-def train_model(
-    grid_dir: str,
-    save_path: str,
-    epochs: int = 100,
-    batch_size: int = 32,
-    max_samples: int = 5000,
-    **kwargs: Any,
-):
-    """
-    Train a SEDCompleter on grid_dir/flux_cube.bin, save it to save_path, and return it loaded as a Completer.
-
-    Extra keyword arguments go to SEDCompleter.train(); one it does not take raises TypeError.
-    """
-    save_path = str(save_path)
-    SEDCompleter().train(library_path=str(grid_dir), output_path=save_path, epochs=int(epochs),
-                         batch_size=int(batch_size), max_samples=int(max_samples), **kwargs)
-    return Completer(save_path)
-
-
-def load_model(model_path: str):
-    """The model at model_path, as a Completer (which extend_catalog takes)."""
-    return Completer(str(model_path))
-
-
-def extend_catalog(
-    model: Union[str, Path, Any],
-    catalog_dir: str,
-    output_dir: str,
-    wavelength_range: Optional[Tuple[float, float]] = None,
-    verbose: bool = False,
-    **kwargs: Any,
-):
-    """
-    Completer.extend_catalog of ``model`` (a Completer, or a model folder's path): extend the spectral grid in
-    catalog_dir (spectra and lookup_table.csv) into output_dir, to ``wavelength_range`` (default 100-100000 A).
-    """
-    extension_range = wavelength_range or (DEFAULT_WL_MIN, DEFAULT_WL_MAX)
-    if isinstance(model, (str, Path)):
-        model = Completer(str(model))
-    return model.extend_catalog(input_dir=str(catalog_dir), output_dir=str(output_dir),
-                                extension_range=extension_range, verbose=bool(verbose), **kwargs)
-
-
-if __name__ == '__main__':
-    main()

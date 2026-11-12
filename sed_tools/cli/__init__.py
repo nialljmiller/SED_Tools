@@ -507,9 +507,9 @@ def _cmd_ml_generator(args, parser):
         return run_ml_generator_flow(base_dir=args.base, models_dir=args.models_dir) or 0
     if refused_without("torch", "sklearn", "optuna"):
         return 1
-    from ..ml import auto_train_generator
+    from ..ml.tuning import AutoTrainer
     limits = {key: value for key, value in (("n_trials", args.trials), ("epochs", args.epochs)) if value}
-    auto_train_generator(library=args.library, output=args.output, **limits)
+    AutoTrainer().train_best(library_path=args.library, output_path=args.output, **limits)
     return 0
 
 

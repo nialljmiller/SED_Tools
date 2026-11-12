@@ -1,8 +1,9 @@
-"""The 0.4.1 SED completer API: train_completer, load_completer, complete_sed, list_models, model_info, Completer.
+"""The 0.4.1 SED completer API: load_completer, complete_sed, list_models, model_info, Completer.
 
 These functions call the engines directly: SEDCompleter, and the Completer class over it, in ml/completer.py (old
-path sed_tools.ml_sed_completer), and SEDGenerator in ml/generator.py (sed_tools.ml_sed_generator), which
-auto_train_generator trains. ml/common.py is what they share.
+path sed_tools.ml_sed_completer). SEDGenerator is in ml/generator.py (sed_tools.ml_sed_generator), and its optuna
+tuning in ml/tuning.py. ml/common.py is what they share. Models are trained with api.MLCompleter and api.MLGenerator,
+the sed-tools menus, or the engines' own train().
 """
 
 import json
@@ -18,75 +19,15 @@ from .completer import Completer, SEDCompleter
 logger = logging.getLogger(__name__)
 
 __all__ = [
-    'train_completer',
     'load_completer',
     'complete_sed',
     'list_models',
     'model_info',
-    'auto_train_generator',
     'Completer',
 ]
 
 
 # Functional API
-
-def train_completer(
-    library: str,
-    output: str,
-    epochs: int = 100,
-    batch_size: int = 32,
-    learning_rate: float = 1e-4,
-    max_samples: int = 5000,
-    hidden_layers: List[int] = None,
-    dropout: float = 0.3,
-    patience: int = 20,
-    verbose: bool = True,
-) -> 'SEDCompleter':
-    """
-    Train a new SED completion model.
-    
-    Parameters
-    ----------
-    library : str
-        Path to SED library directory (must contain flux_cube.bin)
-    output : str
-        Output directory for trained model
-    epochs : int
-        Maximum training epochs
-    batch_size : int
-        Training batch size
-    learning_rate : float
-        Initial learning rate
-    max_samples : int
-        Maximum training samples to use
-    hidden_layers : list of int
-        Neural network hidden layer sizes. Default: [256, 128, 64]
-    dropout : float
-        Dropout rate for regularization
-    patience : int
-        Early stopping patience (epochs without improvement)
-    verbose : bool
-        Print training progress
-    
-    Returns
-    -------
-    SEDCompleter
-        Trained model instance
-    
-    Example
-    -------
-    >>> model = train_completer(
-    ...     library='data/stellar_models/combined_models',
-    ...     output='models/combined_completer',
-    ...     epochs=150,
-    ... )
-    """
-    completer = SEDCompleter()
-    completer.train(library_path=library, output_path=output, epochs=epochs, batch_size=batch_size,
-                    learning_rate=learning_rate, max_samples=max_samples, hidden_layers=hidden_layers,
-                    dropout=dropout, patience=patience, verbose=verbose)
-    return completer
-
 
 def load_completer(model_path: str) -> 'SEDCompleter':
     """
@@ -205,40 +146,3 @@ def model_info(model_path: str) -> Dict[str, Any]:
     """
     with open(Path(model_path) / SEDCompleter.CONFIG_FILE, 'r') as f:
         return json.load(f)
-
-
-def auto_train_generator(
-    library: str,
-    output: str,
-    n_trials: int = 20,
-    epochs: int = 100,
-) -> Any:
-    """
-    Train a generator after an optuna search for its hyperparameters.
-
-    Each trial trains a SEDGenerator network for a few epochs on the library.
-    The network shape, dropout and learning rate with the lowest validation
-    loss are then trained with SEDGenerator.train and saved to ``output``,
-    so SEDGenerator and api.MLGenerator load it like any other generator.
-    Needs optuna: ``pip install 'sed-tools[ml-tune]'``.
-    
-    Parameters
-    ----------
-    library : str
-        Path to SED library directory
-    output : str
-        Output directory for the best model
-    n_trials : int
-        Number of hyperparameter optimization trials
-    epochs : int
-        Maximum epochs for the final training
-
-    Returns
-    -------
-    SEDGenerator
-        The trained generator
-    """
-    from .tuning import AutoTrainer
-    generator, _ = AutoTrainer().train_best(library_path=library, output_path=output, n_trials=n_trials,
-                                            epochs=epochs)
-    return generator
