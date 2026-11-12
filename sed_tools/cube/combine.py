@@ -128,17 +128,12 @@ def load_model_data(model_path):
     }
 
 
-def load_sed(filepath):
-    """Load wavelength and flux from a spectrum file, skipping comment lines."""
-    return read_text_spectrum(filepath)
-
-
 def prepare_sed(filepath):
     """Load a spectrum already in standard units (Angstrom, erg/cm²/s/Å, from the spectra cleaner), unscaled.
 
     Raises OSError if the file cannot be read, and ValueError if it gives fewer than two readable points.
     """
-    wl, flux = load_sed(filepath)
+    wl, flux = read_text_spectrum(filepath)
     if wl.size < 2:
         raise ValueError(f"{filepath}: fewer than 2 readable wavelength/flux rows "
                          "(empty or not a spectrum)")
@@ -175,7 +170,7 @@ def create_common_wavelength_grid(all_models_data, sample_size=20):
         for idx in indices:
             filepath = os.path.join(model_data["model_dir"], model_data["files"][idx])
             try:
-                wavelengths, _ = load_sed(filepath)
+                wavelengths, _ = read_text_spectrum(filepath)
             except OSError:
                 # Every spectrum is read again when the cube is built, and that
                 # pass raises one error listing all unreadable files.

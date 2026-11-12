@@ -88,16 +88,6 @@ class EvaluatedSED:
     def metallicity(self) -> float:
         return self.metadata["metallicity"]
 
-    @property
-    def wl(self) -> np.ndarray:
-        """Alias for wavelength."""
-        return self.wavelength
-
-    @property
-    def fl(self) -> np.ndarray:
-        """Alias for flux."""
-        return self.flux
-
     def photometry(
         self,
         *filters: FilterSpec,
@@ -358,8 +348,6 @@ class SED:
         entries = sorted(self.model_root.iterdir())
         return [entry.name for entry in entries if entry.is_dir() and (entry / "flux_cube.bin").is_file()]
 
-    available_models = available_grids
-
     def find_model(
         self,
         teff: Number,
@@ -370,7 +358,7 @@ class SED:
         allow_partial: bool = False,
     ) -> List[ModelMatch]:
         candidates: List[ModelMatch] = []
-        for name in self.available_models():
+        for name in self.available_grids():
             cube_path = self.model_root / name / "flux_cube.bin"
             metadata = self._get_metadata(cube_path)
             grids = [metadata[key] for key in ("teff", "logg", "meta")]
@@ -413,7 +401,7 @@ class SED:
         requested = [_normalize_range(wanted) for wanted in (teff_range, logg_range, metallicity_range)]
 
         candidates: List[ModelMatch] = []
-        for name in self.available_models():
+        for name in self.available_grids():
             cube_path = self.model_root / name / "flux_cube.bin"
             metadata = self._get_metadata(cube_path)
             grids = [metadata[key] for key in ("teff", "logg", "meta")]
@@ -431,8 +419,6 @@ class SED:
                 contains_point=_contains_point(*centers, metadata), covers_range=covers_range,
             ))
         return sorted(candidates)[:limit]
-
-    find_atmospheres = find_grids
 
     # --- Model loading ---
 

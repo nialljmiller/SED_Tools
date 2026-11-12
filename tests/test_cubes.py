@@ -1361,16 +1361,16 @@ def set_data_dir_preserves_nested_ui(t):
 
 
 @row
-def find_atmospheres_prefers_full_coverage(t):
-    root = t.tmp / "stellar_models"  # header-only cubes: find_atmospheres reads only the axes
+def find_grids_prefers_full_coverage(t):
+    root = t.tmp / "stellar_models"  # header-only cubes: find_grids reads only the axes
     _raw_cube(root / "model_a" / "flux_cube.bin", [4000.0, 5000.0, 6000.0], [1.0, 2.0, 3.0], [-1.0, 0.0, 1.0],
               [4000.0, 5000.0])
     _raw_cube(root / "model_b" / "flux_cube.bin", [4500.0, 5200.0], [1.5, 2.5], [-0.5, 0.2], [4000.0, 5000.0])
     sed = SED(model_root=root)
     ranges = {"teff_range": (4600.0, 5500.0), "logg_range": (1.8, 2.4), "metallicity_range": (-0.3, 0.1)}
-    matches = sed.find_atmospheres(**ranges)
+    matches = sed.find_grids(**ranges)
     assert [m.name for m in matches] == ["model_a"] and matches[0].covers_range is True
-    partial = sed.find_atmospheres(**ranges, allow_partial=True)
+    partial = sed.find_grids(**ranges, allow_partial=True)
     assert {m.name for m in partial} == {"model_a", "model_b"} and any(not m.covers_range for m in partial)
 
 

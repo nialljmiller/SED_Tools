@@ -136,12 +136,9 @@ class Spectrum:
     def to_dict(self) -> Dict[str, Any]:
         return {name: getattr(self, name) for name in ('wavelength', 'flux', 'teff', 'logg', 'metallicity', 'filename')}
     
-    def save(self, path: Union[str, Path], format: str = 'txt') -> None:
+    def save(self, path: Union[str, Path]) -> None:
         """Save spectrum to file."""
-        path = Path(path)
-        if format != 'txt':
-            raise ValueError(f"Unsupported format: {format}")
-        with open(path, 'w') as f:
+        with open(Path(path), 'w') as f:
             for line in (f"teff = {self.teff}", f"logg = {self.logg}", f"metallicity = {self.metallicity}",
                          "wavelength_unit = angstrom", "flux_unit = erg/cm2/s/A", "units_standardized = True"):
                 f.write(f"# {line}\n")

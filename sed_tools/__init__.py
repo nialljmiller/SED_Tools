@@ -92,11 +92,6 @@ find_atmospheres = find_grids
 
 def find_atm(**kwargs) -> list[ModelMatch]:
     """Backward-compatible alias for :func:`find_grids`."""
-    for legacy_key in ("Z_range", "z_range"):
-        if legacy_key in kwargs and "metallicity_range" not in kwargs:
-            kwargs["metallicity_range"] = kwargs.pop(legacy_key)
-    if "logg_range" not in kwargs and "log_g_range" in kwargs:
-        kwargs["logg_range"] = kwargs.pop("log_g_range")
     return find_grids(**kwargs)
 
 

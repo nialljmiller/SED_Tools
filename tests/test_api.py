@@ -659,10 +659,10 @@ def _cube(t, name, teff, logg, flux=1.0):
 
 
 def _evaluated(t, flux, **roots):
-    """A flat cube found with find_atmospheres, loaded with model(), and evaluated at 1500 K, log g 1.5, -0.5."""
+    """A flat cube found with find_grids, loaded with model(), and evaluated at 1500 K, log g 1.5, -0.5."""
     _cube(t, "demo", [1000.0, 2000.0], [1.0, 2.0], flux)
     sed = GridFinder(model_root=t.tmp, **roots)
-    atm = sed.find_atmospheres(teff_range=(1000.0, 2000.0), logg_range=(1.0, 2.0), metallicity_range=(-1.0, 0.0))
+    atm = sed.find_grids(teff_range=(1000.0, 2000.0), logg_range=(1.0, 2.0), metallicity_range=(-1.0, 0.0))
     return sed.model(atm[0])(teff=1500.0, logg=1.5, metallicity=-0.5)
 
 
@@ -702,15 +702,15 @@ def spectral_grid_discovery_names(t):
 def find_atm_alias(t):
     _cube(t, "demo", [4000.0, 6000.0], [3.0, 5.0])
     matches = sed_tools.find_atm(teff_range=(4500.0, 5500.0), logg_range=(3.5, 4.5),
-                                 Z_range=(-0.5, 0.0), model_root=t.tmp)  # within the cube's [M/H] range [-1, 0]
+                                 metallicity_range=(-0.5, 0.0), model_root=t.tmp)  # within the cube's [M/H] [-1, 0]
     assert len(matches) >= 1
 
 
 @row
-def find_atmospheres_returns_model_match(t):
+def find_grids_returns_model_match(t):
     _cube(t, "m1", [4000.0, 6000.0], [3.0, 5.0])
-    matches = GridFinder(model_root=t.tmp).find_atmospheres(teff_range=(4500.0, 5500.0), logg_range=(3.5, 4.5),
-                                                          metallicity_range=(-0.5, 0.0))
+    matches = GridFinder(model_root=t.tmp).find_grids(teff_range=(4500.0, 5500.0), logg_range=(3.5, 4.5),
+                                                    metallicity_range=(-0.5, 0.0))
     assert len(matches) >= 1
     m = matches[0]
     assert hasattr(m, "name")
@@ -721,10 +721,10 @@ def find_atmospheres_returns_model_match(t):
 
 
 @row
-def find_atmospheres_no_match(t):
+def find_grids_no_match(t):
     _cube(t, "m1", [4000.0, 5000.0], [3.0, 4.0])
-    matches = GridFinder(model_root=t.tmp).find_atmospheres(teff_range=(50000.0, 60000.0), logg_range=(3.5, 4.5),
-                                                          metallicity_range=(-0.5, 0.0))
+    matches = GridFinder(model_root=t.tmp).find_grids(teff_range=(50000.0, 60000.0), logg_range=(3.5, 4.5),
+                                                    metallicity_range=(-0.5, 0.0))
     assert matches == []
 
 
@@ -758,10 +758,8 @@ def photometry_magnitude_formula(t):
 
 
 @row
-def evaluated_sed_property_aliases(t):
+def evaluated_sed_properties(t):
     result = _evaluated(t, 1.0)
-    assert np.array_equal(result.wl, result.wavelength)
-    assert np.array_equal(result.fl, result.flux)
     assert math.isclose(result.teff, 1500.0)
     assert math.isclose(result.logg, 1.5)
     assert math.isclose(result.metallicity, -0.5)

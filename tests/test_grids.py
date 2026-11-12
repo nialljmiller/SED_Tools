@@ -1476,20 +1476,12 @@ def bolometric_renorm_rescales_a_spectrum_100x_too_large(t):
 
 
 @row
-def text_spectrum_compatibility_aliases(t):
-    from sed_tools.cli import load_txt_spectrum
-    from sed_tools.precompute_flux_cube import load_sed
-    from sed_tools.spectra_cleaner import read_spectrum_data
-
+def text_spectrum_reader_keeps_the_finite_pairs(t):
     path = t.tmp / "sample.txt"
     path.write_text("# header\n1, 2\ninvalid\n3 4 extra\ninf 5\n")
-    expected = read_text_spectrum(path)
-    np.testing.assert_array_equal(expected[0], [1.0, 3.0])
-    np.testing.assert_array_equal(expected[1], [2.0, 4.0])
-    for loader in (load_txt_spectrum, load_sed, read_spectrum_data):
-        actual = loader(str(path))
-        np.testing.assert_array_equal(actual[0], expected[0])
-        np.testing.assert_array_equal(actual[1], expected[1])
+    wavelength, flux = read_text_spectrum(path)
+    np.testing.assert_array_equal(wavelength, [1.0, 3.0])
+    np.testing.assert_array_equal(flux, [2.0, 4.0])
 
 
 def test_grids(rows):

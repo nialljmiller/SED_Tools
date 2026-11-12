@@ -35,10 +35,6 @@ SPLIT_THRESHOLD = 25
 
 # --- Spectra and the lookup table ---
 
-def load_sed(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
-    return read_text_spectrum(filepath)
-
-
 _FLUX_FLOOR = 1e-300
 
 
@@ -165,7 +161,7 @@ def compute_common_wavelengths(model_dir: str, file_names: List[str], n_sample: 
     subset = [file_names[i] for i in range(0, n, step)][:n_sample]
     wl = []
     for fname in subset:
-        w, _ = load_sed(os.path.join(model_dir, fname))
+        w, _ = read_text_spectrum(os.path.join(model_dir, fname))
         if w.size:
             wl.append(w)
     if not wl:
@@ -358,7 +354,7 @@ def _accumulate_spectra(
 
     for i, fname in enumerate(file_names):
         fpath = os.path.join(model_dir, fname)
-        wl, fl = load_sed(fpath)
+        wl, fl = read_text_spectrum(fpath)
         if wl.size == 0:
             empty.append(fpath)
             continue
