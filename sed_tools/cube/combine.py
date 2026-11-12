@@ -4,7 +4,6 @@ back in: a grid whose lookup table has the ``source_model`` and ``original_file`
 :func:`save_combined_data` writes them), or whose folder is ``combined_models``. One named explicitly is combined.
 """
 
-import argparse
 import logging
 import os
 import shutil
@@ -598,50 +597,3 @@ def _print_combination_summary(teff_grid, logg_grid, meta_grid, source_map, mode
     for idx, name in enumerate(model_names):
         n = np.sum(source_map == idx)
         print(f"  {name}: {n:,} ({100 * n / source_map.size:.1f}%)")
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Combine stellar spectral grids")
-    parser.add_argument("--data_dir", default="../data/stellar_models/",
-                       help="Base directory containing spectral grids")
-    parser.add_argument("--output", default="combined_models", help="Output directory name")
-    parser.add_argument("--interactive", action="store_true", default=True,
-                       help="Interactive spectral grid selection")
-    args = parser.parse_args()
-
-    model_dirs = find_stellar_models(args.data_dir)
-    if not model_dirs:
-        print(f"No spectral grids found in {args.data_dir}")
-        return
-
-    selected = select_models_interactive(model_dirs)  # --interactive is always on (store_true, default True)
-    if not selected:
-        print("No spectral grids selected.")
-        return
-
-    print(f"\nSelected {len(selected)} spectral grids:")
-    for name, _ in selected:
-        print(f"  - {name}")
-
-    print("\nLoading spectral grid data...")
-    all_models_data = [load_model_data(path) for _, path in selected]
-
-    print("\nCreating parameter grids...")
-    teff_grid, logg_grid, meta_grid = create_unified_grid(all_models_data)
-    wavelength_grid = create_common_wavelength_grid(all_models_data)
-
-    flux_cube, source_map = build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid)
-
-    output_dir = os.path.join(args.data_dir, args.output)
-    save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
-                      wavelength_grid, flux_cube, all_models_data)
-
-    visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
-                             all_models_data, output_dir,
-                             wavelength_grid=wavelength_grid, flux_cube=flux_cube)
-
-    print(f"\nDone! Output: {output_dir}")
-
-
-if __name__ == "__main__":
-    main()

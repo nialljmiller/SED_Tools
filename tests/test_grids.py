@@ -1348,24 +1348,6 @@ def mast_failed_first_spectrum_does_not_stop_the_rest(t):
 
 
 @row
-def msg_discover_and_run_finishes_other_grids_then_raises(t):
-    index = f'<a href="{MSG_FILE}">a</a><a href="http://user.astro.wisc.edu/msg/grids/sg-Other.h5">b</a>'
-    grabber, _ = _grabber(t, "msg", {MSG_INDEX: index})
-    done = []
-
-    def metadata(name):
-        if name == "sg-Test":
-            raise RuntimeError("download failed")
-        return [{"fid": 1}]
-
-    t.mp.setattr(grabber, "get_model_metadata", metadata)
-    t.mp.setattr(grabber, "download_model_spectra", lambda name, meta: done.append(name) or 1)
-    with pytest.raises(RuntimeError, match="1 of 2 grid\\(s\\) failed:\n  sg-Test: download failed"):
-        grabber.discover_and_run()
-    assert done == ["sg-Other"]
-
-
-@row
 def mast_download_accepts_generic_axis_kwargs(t):
     url = ("https://archive.stsci.edu/hlsps/bosz/bosz2024/m+0.00/r1000/"
            "bosz2024_mp_t05750_g+4.5_m+0.00_a+0.00_c+0.00_v2_r1000_resam.txt.gz")

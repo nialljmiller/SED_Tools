@@ -3,13 +3,11 @@ resampling every cube builder uses. When the table's extra columns (alpha, vturb
 applies the [on_collision] strategy of cube/collision.py. spectra_not_in_cube checks a written cube.
 """
 
-import argparse
 import csv
 import logging
 import math
 import os
 import struct
-import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -470,47 +468,3 @@ def precompute_flux_cube(
         _build_filtered_cube(cfg, groups, extra_cols, lookup, output_file, write_cube)
 
     _print_summary(output_file, teff_vals, logg_vals, meta_vals)
-
-
-def _main():
-    parser = argparse.ArgumentParser(description="Precompute flux cube for stellar spectral grids")
-    parser.add_argument("--model_dir", type=str, required=False)
-    parser.add_argument("--output",    type=str, default=None)
-    parser.add_argument("--root_dir",  type=str, default=None,
-                        help="SED_Tools root directory (for sed_tools.defaults)")
-    args = parser.parse_args()
-
-    if not args.model_dir:
-        print("No --model_dir provided. Discovering local model directories…")
-        root = "data/stellar_models"
-        found = set()
-        for base in [root, "./" + root, "../" + root]:
-            if not os.path.isdir(base):
-                continue
-            for name in sorted(os.listdir(base)):
-                p = os.path.join(base, name)
-                if not os.path.isdir(p):
-                    continue
-                has_lookup = os.path.isfile(os.path.join(p, "lookup_table.csv"))
-                has_txt    = any(fn.lower().endswith(".txt") for fn in os.listdir(p))
-                if has_lookup or has_txt:
-                    found.add(os.path.normpath(p))  # one entry for data/... and ./data/...
-        cands = sorted(found)
-        if not cands:
-            sys.exit("No model directories found.")
-        for i, p in enumerate(cands, 1):
-            print(f"{i}. {p}")
-        sel = input("Select a model directory by number: ").strip()
-        if not sel.isdigit() or not (1 <= int(sel) <= len(cands)):
-            sys.exit("Invalid selection.")
-        args.model_dir = cands[int(sel) - 1]
-
-    if not args.output:
-        args.output = os.path.join(args.model_dir, "flux_cube.bin")
-        args.output = input(f"Output file [{args.output}]: ").strip() or args.output
-
-    precompute_flux_cube(args.model_dir, args.output, root_dir=args.root_dir)
-
-
-if __name__ == "__main__":
-    _main()

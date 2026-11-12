@@ -6,7 +6,6 @@ The dense cube is written a block of wavelengths at a time (contiguous in the fi
 
 from __future__ import annotations
 
-import argparse
 import os
 import struct
 import time
@@ -235,20 +234,3 @@ def run_interactive_workflow(base_dir: str = None) -> Optional[int]:
     dst = input(f"Output path [{default_dst}]: ").strip() or default_dst
 
     densify_grid(src=src, dst=dst, teff_spacing=spacing, ml_model=ml_model)
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Densify a flux_cube.bin Teff grid using SEDGenerator.",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    )
-    parser.add_argument("--flux-cube",    required=True)
-    parser.add_argument("--output",       required=True)
-    parser.add_argument("--teff-spacing", type=float, default=1000.0)
-    parser.add_argument("--ml-model",     default=None)
-    args = parser.parse_args()
-    densify_grid(src=args.flux_cube, dst=args.output, teff_spacing=args.teff_spacing, ml_model=args.ml_model)
-
-
-if __name__ == "__main__":
-    main()

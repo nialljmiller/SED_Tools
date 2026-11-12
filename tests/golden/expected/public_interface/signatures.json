@@ -35,7 +35,6 @@
  "MLCompleter.load": "(self, model_name: 'str') -> \"'MLCompleter'\"",
  "MLCompleter.train": "(self, grid: 'str', epochs: 'int' = 100, batch_size: 'int' = 32, save_name: 'Optional[str]' = None) -> \"'MLCompleter'\"",
  "MSGSpectraGrabber": "(base_dir='../data/stellar_models/', max_workers=6)",
- "MSGSpectraGrabber.discover_and_run": "(self, selected_models=None)",
  "MSGSpectraGrabber.discover_models": "(self)",
  "MSGSpectraGrabber.download_model_spectra": "(self, model_name, spectra_info, teff_range=None, logg_range=None, meta_range=None, wl_range=None)",
  "MSGSpectraGrabber.get_model_metadata": "(self, model_name)",

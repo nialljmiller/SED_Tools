@@ -12,7 +12,4 @@ os precompute_flux_cube re read_text_spectrum resample_to_grid shutil spectra_no
 time write_lookup_csv
 """.split()
 
-if __name__ == "__main__":
-    _module._main()
-else:
-    _old_path.forward(__name__, _module, re="re", shutil="shutil")
+_old_path.forward(__name__, _module, argparse="argparse", re="re", shutil="shutil", sys="sys")

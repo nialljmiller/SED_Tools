@@ -435,38 +435,3 @@ class MSGSpectraGrabber:
         write_lookup_csv(sorted(rows, key=lambda row: row["file_name"]), path,
                          columns=["file_name", "teff", "logg", "meta"], comment=False, restval=float("nan"))
         print(f"    Lookup table saved: {path}")
-
-    def discover_and_run(self, selected_models=None):
-        """Extract every grid named (default: all MSG lists); RuntimeError at the end lists the grids that failed."""
-        avail = self.discover_models()
-        if not avail:
-            print("No MSG spectral grids found.")
-            return
-        selected = selected_models or avail
-        total = 0
-        failed = []
-        for name in selected:
-            print(f"\n[msg] Processing spectral grid: {name}")
-            try:
-                meta = self.get_model_metadata(name)
-                total += self.download_model_spectra(name, meta)
-            except RuntimeError as e:  # finish the other grids, then report
-                failed.append(f"{name}: {e}")
-        print(f"\n[MSG] Done. Extracted {total} spectra total.")
-        if failed:
-            raise RuntimeError(f"MSG: {len(failed)} of {len(selected)} grid(s) failed:\n  " + "\n  ".join(failed))
-
-
-def main():
-    import argparse
-    p = argparse.ArgumentParser(description="Extract MSG stellar spectra to ASCII with correct params")
-    p.add_argument("--output", default="../data/stellar_models/")
-    p.add_argument("--workers", type=int, default=6)
-    p.add_argument("--models", nargs="*")
-    a = p.parse_args()
-    g = MSGSpectraGrabber(base_dir=a.output, max_workers=a.workers)
-    g.discover_and_run(selected_models=a.models)
-
-
-if __name__ == "__main__":
-    main()
