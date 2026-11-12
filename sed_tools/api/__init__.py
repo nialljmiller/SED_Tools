@@ -758,7 +758,8 @@ class SED:
         ValueError); one that no header states (log g of a blackbody grid) gets
         no column. If the spectra do not declare their flux unit and flux_unit
         is not given, ValueError names the best guess before any file is
-        copied or moved.
+        copied or moved. A flux_unit that is not a known name raises KeyError,
+        also before any file is touched.
         """
         files, src_dir = _import_sources(Path(src).expanduser())
         name = src_dir.name if name is None else name
