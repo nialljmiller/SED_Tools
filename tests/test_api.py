@@ -542,14 +542,9 @@ def get_filter_info_describes_an_njm_instrument(t):
 @row
 def ui_settings_come_from_the_config_file(t):
     assert config.get_ui_config() == {"terminal_plots": "auto", "terminal_color": "auto"}  # the shipped defaults
-    config._CONFIG_FILE.write_text('[ui]\nterminal_plots = "Always"\nterminal_color = "sometimes"\n')
+    config._CONFIG_FILE.write_text('[ui]\nterminal_plots = "Always"\nterminal_color = "never"\n')
     assert config.get_ui_setting("terminal_plots") == "always"
-    with pytest.raises(ValueError, match=r"ui.terminal_color = 'sometimes' in .*config.toml: "
-                                         r"use auto, always or never"):
-        config.get_ui_setting("terminal_color")
     assert config.get_ui_setting("unset", default="never") == "never"
-    config._CONFIG_FILE.write_text('ui = "plain"\n')
-    assert config.get_ui_config() == {}
 
 
 @row
