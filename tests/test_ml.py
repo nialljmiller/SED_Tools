@@ -813,10 +813,11 @@ def extend_menu_defaults_to_the_models_own_range(t):
 @row
 def extend_menu_asks_for_the_range_again_on_a_bad_answer(t):
     # The menu used to extend to 100 Å-1e5 Å whatever the grid or model.
-    ranges = extend_menu(t, "2", "1", "1", "abc", "50", "3e6", "")
+    ranges = extend_menu(t, "2", "1", "1", "abc", "50", "40", "50", "3e6", "")
     out = t.capsys.readouterr().out
     assert ranges == [(50.0, 3e6)]
     assert "'abc' is not a positive number; try again." in out
+    assert "50 Å is not below 40 Å; try again." in out
 
 
 @row

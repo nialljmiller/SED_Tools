@@ -1185,9 +1185,12 @@ def _ask_extension_range(model_grid: np.ndarray) -> Tuple[float, float]:
     default_lo, default_hi = float(model_grid[0]), float(model_grid[-1])
     print(f"\nWavelength range to extend to (the model covers {default_lo:g}-{default_hi:g} Å).")
     print("Every spectrum keeps all its own points; points are added only beyond its ends.")
-    lo = _ask_number(f"  Shortest wavelength in Å [{default_lo:g}]: ", default_lo, positive=True)
-    hi = _ask_number(f"  Longest wavelength in Å [{default_hi:g}]: ", default_hi, positive=True)
-    return lo, hi
+    while True:
+        lo = _ask_number(f"  Shortest wavelength in Å [{default_lo:g}]: ", default_lo, positive=True)
+        hi = _ask_number(f"  Longest wavelength in Å [{default_hi:g}]: ", default_hi, positive=True)
+        if lo < hi:
+            return lo, hi
+        print(f"  {lo:g} Å is not below {hi:g} Å; try again.")
 
 
 def _extend_menu(base_dir: str, models_dir: str) -> None:
