@@ -431,7 +431,9 @@ class MSGSpectraGrabber:
 
     def _write_lookup(self, out_dir, rows):
         path = os.path.join(out_dir, "lookup_table.csv")
-        write_lookup_csv(rows, path, columns=["file_name", "teff", "logg", "meta"], comment=False, restval=float("nan"))
+        # In file-name order, as the cleaner writes its tables: the extractions finish in any order
+        write_lookup_csv(sorted(rows, key=lambda row: row["file_name"]), path,
+                         columns=["file_name", "teff", "logg", "meta"], comment=False, restval=float("nan"))
         print(f"    Lookup table saved: {path}")
 
     def discover_and_run(self, selected_models=None):

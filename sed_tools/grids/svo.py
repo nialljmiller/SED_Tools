@@ -350,7 +350,8 @@ class SVOSpectraGrabber:
     def _write_lookup(self, out_dir, rows):
         path = os.path.join(out_dir, "lookup_table.csv")
         keys = sorted({key for row in rows for key in row} - {"file_name"})
-        write_lookup_csv(rows, path, columns=["file_name"] + keys)
+        # In file-name order, as the cleaner writes its tables: the downloads finish in any order
+        write_lookup_csv(sorted(rows, key=lambda row: row["file_name"]), path, columns=["file_name"] + keys)
         print(f"    Lookup table saved: {path}")
 
 

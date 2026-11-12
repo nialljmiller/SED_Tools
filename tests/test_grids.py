@@ -1135,6 +1135,17 @@ def svo_complete_download_writes_lookup_table(t):
     assert lookup[0] == "#file_name,logg,metallicity,teff" and len(lookup) == 3
 
 
+@row
+def svo_and_msg_lookup_rows_are_in_file_name_order(t):
+    # The rows came in the order the threaded downloads finished, so the same download wrote different files.
+    rows = [{"file_name": f"Grid_fid{fid}.txt", "teff": fid} for fid in (2, 10, 1)]
+    for source in ("svo", "msg"):
+        grabber, _ = _grabber(t, source)
+        grabber._write_lookup(str(t.tmp), rows)
+        names = [line.split(",")[0] for line in (t.tmp / "lookup_table.csv").read_text().splitlines()[1:]]
+        assert names == ["Grid_fid1.txt", "Grid_fid10.txt", "Grid_fid2.txt"]
+
+
 def _msg_grid(t):
     """A grabber whose sg-Test.h5 holds three spectra: one good, one with no flux dataset, one with an undecodable
     wavelength segment."""
