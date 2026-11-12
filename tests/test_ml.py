@@ -673,7 +673,7 @@ def generator_train_rejects_a_grid_with_no_flux_above_the_floor(t):
 def train_model_forwards_keywords_and_rejects_unknown_ones(t):
     calls = []
     t.mp.setattr(mc.SEDCompleter, "train", lambda self, **kw: calls.append(kw))
-    t.mp.setattr(ml, "Completer", lambda path: ("Completer", path))
+    t.mp.setattr(mc, "Completer", lambda path: ("Completer", path))
 
     handle = mc.train_model("grid", str(t.tmp / "m"), epochs=2, verbose=False, dropout=0.1)
 

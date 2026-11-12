@@ -14,7 +14,7 @@ import numpy as np
 
 from ..cube.fileio import load as load_cube
 from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, DEFAULT_WL_POINTS, Engine, Network, action_menu, data_loaders, fit,
-                     log_grid, mlp, model_configs, normalised_params, param_scaler, predict, print_libraries, resample,
+                     log_grid, model_configs, normalised_params, param_scaler, predict, print_libraries, resample,
                      sample_spectra, training_libraries, write_spectrum)
 from ..ui_utils import (ask_number as _ask_number, ask_numbers as _ask_numbers, banner as _banner,
                        menu_choice as _menu_choice, refused_without, section as _section)
@@ -95,10 +95,6 @@ class SEDGenerator(Engine):
 
     _create_wavelength_grid = staticmethod(log_grid)
 
-    def _load_flux_cube(self, library_path: str):
-        """Load flux cube from binary file."""
-        return load_cube(os.path.join(library_path, "flux_cube.bin"))
-
     def _prepare_training_data(
         self,
         library_path: str,
@@ -106,7 +102,7 @@ class SEDGenerator(Engine):
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """params (N, 3: teff, logg, meta), flux and validity masks (N, n_wavelengths), float32, from the flux cube."""
         print("Loading flux cube...")
-        teff_grid, logg_grid, meta_grid, wavelengths, flux_cube = self._load_flux_cube(library_path)
+        teff_grid, logg_grid, meta_grid, wavelengths, flux_cube = load_cube(os.path.join(library_path, "flux_cube.bin"))
         nt, nl, nm = len(teff_grid), len(logg_grid), len(meta_grid)
         total_seds = nt * nl * nm
         print(f"  Grid: {nt} Teff × {nl} logg × {nm} [M/H] = {total_seds} total SEDs")
