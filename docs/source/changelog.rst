@@ -5,6 +5,14 @@ Changelog
 Version 0.7.0 (unreleased)
 --------------------------
 
+- SED_Tools no longer checks arguments only to word a user's mistake. A
+  misused option, name or value now fails where Python or the library fails
+  (``KeyError``, ``ValueError``, ``TypeError``, ``FileNotFoundError``), and a
+  question is asked once rather than again after a bad answer. Valid use
+  behaves as before, and the checks of SED_Tools' own and upstream data stay.
+  ``Filters.compose`` with an unknown band, or with bands for which the
+  manifest declares none of the requested components, now asks NJM and the
+  builder before it fails (since 0.5.0 it had refused them first).
 - ``sed-tools coverage --filters ...`` (and ``SED.coverage(filters=...)``)
   lists the bands a grid's wavelengths do not sample
   (``sed_tools.photometry.band_sampling``), and exits 1 if there are any. A
