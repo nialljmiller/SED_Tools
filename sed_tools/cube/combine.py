@@ -133,7 +133,7 @@ def load_sed(filepath):
     return read_text_spectrum(filepath)
 
 
-def prepare_sed(filepath, teff):
+def prepare_sed(filepath):
     """Load a spectrum already in standard units (Angstrom, erg/cm²/s/Å, from the spectra cleaner), unscaled.
 
     Raises OSError if the file cannot be read, and ValueError if it gives fewer than two readable points.
@@ -238,7 +238,6 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
     valid_mask = np.isfinite(ref_params).all(axis=1)
     ref_params = ref_params[valid_mask]
     ref_files = np.array(reference_data["files"])[valid_mask]
-    ref_teff = np.array(reference_data["teff"])[valid_mask]
 
     if len(ref_params) == 0:
         # build_combined_flux_cube then stops, listing the reference grid's non-finite rows.
@@ -266,7 +265,7 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
         file_ref = os.path.join(reference_data["model_dir"], ref_files[idx])
 
         try:
-            factor, reason = _normalization_factor(file_target, teff, file_ref, ref_teff[idx], wavelength_grid)
+            factor, reason = _normalization_factor(file_target, file_ref, wavelength_grid)
         except (OSError, ValueError) as exc:  # unreadable target or reference spectrum
             failures.append(str(exc))
             continue
@@ -288,10 +287,10 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
     return np.array(norm_factors)
 
 
-def _normalization_factor(file_target, teff, file_ref, ref_teff, wavelength_grid):
+def _normalization_factor(file_target, file_ref, wavelength_grid):
     """Reference over target integrated flux on their common range, as (factor, None), or (1.0, reason)."""
-    wl_tgt, flux_tgt = prepare_sed(file_target, teff)
-    wl_ref, flux_ref = prepare_sed(file_ref, ref_teff)
+    wl_tgt, flux_tgt = prepare_sed(file_target)
+    wl_ref, flux_ref = prepare_sed(file_ref)
 
     wl_min = max(wl_tgt.min(), wl_ref.min(), wavelength_grid.min())
     wl_max = min(wl_tgt.max(), wl_ref.max(), wavelength_grid.max())
@@ -352,14 +351,14 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
                                 f"(teff={teff}, logg={logg}, meta={meta})")
                 continue
             try:
-                wl, fl = prepare_sed(filepath, teff)
+                wl, fl = prepare_sed(filepath)
             except (OSError, ValueError) as exc:
                 failures.append(str(exc))
                 continue
             fl *= norm_factors[model_idx][i]
 
             node = (_nearest_idx(teff_grid, teff), _nearest_idx(logg_grid, logg), _nearest_idx(meta_grid, meta))
-            flux_cube[node] = resample_to_grid(wl, fl, teff, wavelength_grid)
+            flux_cube[node] = resample_to_grid(wl, fl, wavelength_grid)
             filled_map[node] = True
             source_map[node] = model_idx
 

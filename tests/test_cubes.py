@@ -616,7 +616,7 @@ def densified_ml_nodes_do_not_depend_on_the_block_size(t):
     for i_t, te in ((1, 5000.0), (3, 7000.0), (4, 8000.0)):
         for i_l, logg in enumerate(dense.logg_grid):
             for i_m, meta in enumerate(dense.meta_grid):
-                expected = resample_to_grid(*generate(None, te, logg, meta), te, dense.wavelengths)
+                expected = resample_to_grid(*generate(None, te, logg, meta), dense.wavelengths)
                 np.testing.assert_array_equal(dense.flux[i_t, i_l, i_m], expected)
 
 
@@ -1343,14 +1343,6 @@ def header_lines_before_the_data_are_still_skipped(t):
 # ----------------------------------------------------------------------
 # Resampling, grid coverage, the config's ui table, and finding atmospheres and filters
 # ----------------------------------------------------------------------
-@row
-def teff_argument_does_not_affect_output(t):
-    # Documented: teff is kept for the interface, not used to extrapolate.
-    wl_src, fl_src, wl_tgt = np.linspace(4000.0, 8000.0, 20), np.linspace(1.0, 2.0, 20), np.linspace(4500.0, 7500.0, 15)
-    np.testing.assert_array_equal(resample_to_grid(wl_src, fl_src, teff=3000.0, wl_tgt=wl_tgt),
-                                  resample_to_grid(wl_src, fl_src, teff=50000.0, wl_tgt=wl_tgt))
-
-
 @row
 def read_grid_nodes_fallback_has_path(t):
     from sed_tools.grid_coverage import read_grid_nodes

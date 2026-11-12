@@ -77,7 +77,7 @@
  "SED.model": "(self, name: 'Optional[str]' = None) -> 'SEDModel'",
  "SED.parameter_ranges": "(self) -> 'Dict[str, Tuple[float, float]]'",
  "SED.query": "(source: 'Optional[str]' = None, teff_min: 'Optional[float]' = None, teff_max: 'Optional[float]' = None, logg_min: 'Optional[float]' = None, logg_max: 'Optional[float]' = None, metallicity_min: 'Optional[float]' = None, metallicity_max: 'Optional[float]' = None, include_local: 'bool' = True, include_remote: 'bool' = True) -> 'List[SpectralGridInfo]'",
- "SEDModel": "(name: 'str', flux_cube_path: 'Union[str, os.PathLike[str]]', filters_dir: 'Optional[Union[str, os.PathLike[str]]]' = None, *, interpolation: 'str' = 'hermite', fill_gaps: 'bool' = True) -> 'None'",
+ "SEDModel": "(name: 'str', flux_cube_path: 'Union[str, os.PathLike[str]]', filters_dir: 'Optional[Union[str, os.PathLike[str]]]' = None, *, fill_gaps: 'bool' = True) -> 'None'",
  "SEDModel.parameter_ranges": "(self) -> 'Dict[str, Tuple[float, float]]'",
  "STELLAR_DIR_DEFAULT": "PosixPath",
  "SVOSpectraGrabber": "(base_dir='data/stellar_models/', max_workers=8)",

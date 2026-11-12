@@ -182,15 +182,11 @@ class SEDModel:
         flux_cube_path: Union[str, os.PathLike[str]],
         filters_dir: Optional[Union[str, os.PathLike[str]]] = None,
         *,
-        interpolation: str = "hermite",
         fill_gaps: bool = True,
     ) -> None:
         self.name = name
         self.flux_cube_path = Path(flux_cube_path)
         self.filters_dir = Path(filters_dir) if filters_dir is not None else None
-        self.interpolation = interpolation.lower()
-        if self.interpolation != "hermite":
-            raise ValueError("Only Hermite interpolation is supported at present")
         self.fill_gaps = fill_gaps
 
         metadata = _read_flux_cube_header(self.flux_cube_path)
@@ -343,7 +339,6 @@ class SED:
         model_root: Union[str, os.PathLike[str], None] = None,
         filter_root: Union[str, os.PathLike[str], None] = None,
         atm: Optional[Union[str, os.PathLike[str], ModelMatch, "SEDModel"]] = None,
-        interpolation: str = "hermite",
         fill_gaps: bool = True,
     ) -> None:
         self.model_root = Path(model_root) if model_root else STELLAR_DIR_DEFAULT
@@ -352,7 +347,7 @@ class SED:
         self._active_model: Optional[SEDModel] = None
 
         if atm is not None:
-            self.model(atm, interpolation=interpolation, fill_gaps=fill_gaps, activate=True)
+            self.model(atm, fill_gaps=fill_gaps, activate=True)
 
     # --- Model discovery ---
 
@@ -445,7 +440,6 @@ class SED:
         self,
         model: Union[str, os.PathLike[str], ModelMatch, SEDModel],
         *,
-        interpolation: str = "hermite",
         fill_gaps: bool = True,
         activate: bool = True,
     ) -> SEDModel:
@@ -455,7 +449,7 @@ class SED:
             flux_path, name = self._resolve_model_inputs(model)
             result = SEDModel(name=name, flux_cube_path=flux_path,
                               filters_dir=self.filter_root if self.filter_root.exists() else None,
-                              interpolation=interpolation, fill_gaps=fill_gaps)
+                              fill_gaps=fill_gaps)
 
         if activate:
             self._active_model = result

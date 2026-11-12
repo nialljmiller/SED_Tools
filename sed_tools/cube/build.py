@@ -46,7 +46,6 @@ _FLUX_FLOOR = 1e-300
 def resample_to_grid(
     wl_src:  "np.ndarray",
     fl_src:  "np.ndarray",
-    teff:    "float",
     wl_tgt:  "np.ndarray",
 ) -> "np.ndarray":
     """
@@ -64,11 +63,6 @@ def resample_to_grid(
         Source wavelengths in Angstroms, must be strictly increasing.
     fl_src : array
         Source flux in erg/cm²/s/Å, same length as wl_src.
-    teff : float
-        Effective temperature of the star in Kelvin.  Not currently used by
-        this function's extrapolation (out-of-coverage flux is zero-filled
-        regardless of teff); retained in the signature for interface
-        stability with callers.
     wl_tgt : array
         Target wavelength grid in Angstroms.
 
@@ -372,7 +366,7 @@ def _accumulate_spectra(
         on = np.searchsorted(wavelengths, wl).clip(max=len(wavelengths) - 1)  # both increasing
         off_axis += not np.array_equal(wavelengths[on], wl)
         i_t, i_l, i_m = t2i[teff_vals[i]], l2i[logg_vals[i]], m2i[meta_vals[i]]
-        flux_cube[i_t, i_l, i_m, :] += resample_to_grid(wl, fl, teff_vals[i], wavelengths)
+        flux_cube[i_t, i_l, i_m, :] += resample_to_grid(wl, fl, wavelengths)
         count_cube[i_t, i_l, i_m] += 1
 
         elapsed = time.time() - t0

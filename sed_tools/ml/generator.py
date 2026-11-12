@@ -593,8 +593,8 @@ def _train_menu(base_dir: str, models_dir: str) -> None:
         return
     print(f"\nTraining on: {selected['name']}")
 
-    epochs = _ask_number("  Epochs [200]: ", 200, whole=True, positive=True)
-    batch_size = _ask_number("  Batch size [64]: ", 64, whole=True, positive=True)
+    epochs = _ask_number("  Epochs [200]: ", 200, whole=True)
+    batch_size = _ask_number("  Batch size [64]: ", 64, whole=True)
     default_name = f"sed_generator_{selected['name']}"
     model_name = input(f"  Model name [{default_name}]: ").strip() or default_name
     output_path = os.path.join(models_dir, model_name)
@@ -615,7 +615,7 @@ def _generate_menu(models_dir: str) -> None:
     gen = SEDGenerator(selected['path'])
 
     print("\nEnter stellar parameters:")
-    teff = _ask_number("  Teff (K): ", positive=True)
+    teff = _ask_number("  Teff (K): ")
     logg = _ask_number("  logg: ")
     meta = _ask_number("  [M/H]: ")
     print()

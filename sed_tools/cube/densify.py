@@ -72,7 +72,7 @@ def _ml_sed(generator, teff, logg, meta, wavelengths, dst):
     """SEDGenerator output at one node, resampled onto the cube's wavelengths."""
     try:
         wl_ml, fl_ml = generator.generate(teff=teff, logg=logg, meta=meta, check_bounds=False)
-        return resample_to_grid(wl_ml, fl_ml, teff, wavelengths)
+        return resample_to_grid(wl_ml, fl_ml, wavelengths)
     except Exception as exc:
         raise RuntimeError(
             f"ML generation failed for Teff={teff:.0f} logg={logg:.2f} meta={meta:.2f}: {exc}. "
@@ -224,7 +224,7 @@ def run_interactive_workflow(base_dir: str = None) -> Optional[int]:
         return
     src = cubes[int(sel) - 1]
 
-    spacing  = _ask_number("Target Teff spacing in K [1000]: ", 1000.0, positive=True)
+    spacing  = _ask_number("Target Teff spacing in K [1000]: ", 1000.0)
     ml_model = input("ML model path (leave blank for blackbody only): ").strip() or None
     if ml_model is not None and refused_without("torch"):
         return 1
