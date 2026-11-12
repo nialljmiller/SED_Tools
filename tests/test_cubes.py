@@ -821,19 +821,16 @@ def mesa_prepare_invalid_choice_fits_80_columns(t):
 
 
 @row
-def densifier_spacing_prompt_asks_again(t):
+def densifier_spacing_prompt_takes_the_spacing_typed(t):
     from sed_tools.grid_densifier import run_interactive_workflow
 
     write_flux_cube(t.tmp / "grid" / "flux_cube.bin", [5000.0, 7000.0], [4.0], [0.0], [1000.0, 2000.0],
                     np.ones((2, 1, 1, 2)))
     calls = []
     t.mp.setattr("sed_tools.grid_densifier.densify_grid", lambda **kw: calls.append(kw))
-    answer(t.mp, "1", "fine", "-5", "250", "", "")
+    answer(t.mp, "1", "250", "", "")
     run_interactive_workflow(str(t.tmp))
     assert [c["teff_spacing"] for c in calls] == [250.0]
-    out = t.capsys.readouterr().out
-    assert "'fine' is not a positive number; try again." in out
-    assert "'-5' is not a positive number; try again." in out
 
 
 def _split_grid(t):

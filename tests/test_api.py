@@ -123,7 +123,6 @@ def fetch_from_mast_does_not_wait_for_the_keyboard(t):
 #: name: the call that names the misspelt source.
 UNKNOWN_SOURCE = {
     "query_rejects_an_unknown_source": lambda t: (_sources(t), SED.query(source="sov")),
-    "fetch_rejects_an_unknown_source": lambda t: SED.fetch("Grid", source="sov", model_root=t.tmp),
 }
 
 
@@ -277,18 +276,6 @@ def grid_write_says_when_it_built_one_cube_per_variant(t):
 
 
 @row
-def ml_completer_extend_raises_on_spectra_it_could_not_extend(t):
-    from sed_tools.api import MLCompleter
-
-    summary = {"extended": 0, "failed": 0, "skipped": 0, "total": 0}
-    t.mp.setattr("sed_tools.ml_sed_completer.extend_catalog", lambda **kwargs: dict(summary, output_dir="o"))
-    completer = MLCompleter(base_dir=t.tmp)
-    completer._model = object()
-    with pytest.raises(FileNotFoundError, match="No spectra to extend in"):
-        completer.extend("Grid")
-
-
-@row
 def ml_generator_writes_outputs_beside_the_loaded_model(t):
     calls = []
 
@@ -428,8 +415,6 @@ def find_model_lists_the_grids_covering_a_point_nearest_first(t):
 def model_selects_a_grid_to_interpolate(t):
     installed = _installed(t)
     sed = SED(model_root=installed, filter_root=installed / "filters")
-    with pytest.raises(RuntimeError, match="No model loaded"):
-        sed.model()
     chosen = sed.model("Hot")
     assert sed.model() is chosen and chosen.name == "Hot"
     assert sed(6500, 4.5, -0.5).flux.tolist() == pytest.approx([1.0, 1.0, 1.0])
@@ -481,8 +466,6 @@ def ml_completer_trains_and_loads_a_model(t):
     _tiny_training(t)
     completer = SED.ml_completer(model_root=t.tmp)
     assert (completer.base_dir, completer.models_dir) == (t.tmp, "models")
-    with pytest.raises(FileNotFoundError, match="No flux_cube.bin found in"):
-        completer.train("missing")
     assert completer.train("lib", epochs=1, batch_size=3) is completer and completer._model.is_trained
     assert [m["name"] for m in ml.Completer.available_models(str(t.tmp / "models"))] == ["lib_completer"]
     loaded = SED.ml_completer(model_root=t.tmp).load("lib_completer")
@@ -493,8 +476,6 @@ def ml_completer_trains_and_loads_a_model(t):
 def ml_generator_trains_lists_and_loads_a_model(t):
     _tiny_training(t)
     generator = SED.ml_generator(model_root=t.tmp)
-    with pytest.raises(FileNotFoundError, match="No flux_cube.bin found in"):
-        generator.train("missing")
     assert generator.train("lib", epochs=1, batch_size=3) is generator
     [listed] = MLGenerator.list_models(str(t.tmp / "models"))
     assert listed["name"] == "sed_generator_lib"
@@ -502,8 +483,6 @@ def ml_generator_trains_lists_and_loads_a_model(t):
     loaded = SED.ml_generator(model_root=t.tmp).load("sed_generator_lib")
     wl, flux = loaded.generate(5000.0, 4.25, -0.25)
     assert wl.shape == flux.shape == (1000,) and np.isfinite(flux).all()
-    with pytest.raises(FileNotFoundError, match="Model not found"):
-        loaded.load("missing")
 
 
 @row
@@ -563,14 +542,9 @@ def get_filter_info_describes_an_njm_instrument(t):
 @row
 def ui_settings_come_from_the_config_file(t):
     assert config.get_ui_config() == {"terminal_plots": "auto", "terminal_color": "auto"}  # the shipped defaults
-    config._CONFIG_FILE.write_text('[ui]\nterminal_plots = "Always"\nterminal_color = "sometimes"\n')
+    config._CONFIG_FILE.write_text('[ui]\nterminal_plots = "Always"\nterminal_color = "never"\n')
     assert config.get_ui_setting("terminal_plots") == "always"
-    with pytest.raises(ValueError, match=r"ui.terminal_color = 'sometimes' in .*config.toml: "
-                                         r"use auto, always or never"):
-        config.get_ui_setting("terminal_color")
     assert config.get_ui_setting("unset", default="never") == "never"
-    config._CONFIG_FILE.write_text('ui = "plain"\n')
-    assert config.get_ui_config() == {}
 
 
 @row

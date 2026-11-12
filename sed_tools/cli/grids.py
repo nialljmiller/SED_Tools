@@ -93,10 +93,6 @@ def run_rebuild_flow(
     for model_name in selected:
         print("\n" + "=" * 64)
         print(f"[rebuild] {model_name}")
-        if model_name not in cand:
-            print(f"[rebuild] {model_name} is not a local spectral grid under {base_dir}")
-            failures.append(f"{model_name}: not a local spectral grid under {base_dir}")
-            continue
         try:
             problems = _rebuild_grid(os.path.join(base_dir, model_name), model_name,
                                      rebuild_h5, rebuild_flux_cube, flux_unit)
@@ -111,25 +107,19 @@ def run_rebuild_flow(
 
 
 def _ask_rebuild_selection(cand: List[str]) -> List[str]:
-    """Ask which grids to rebuild ('all', or numbers and ranges like 1,3-6) until the answer parses."""
+    """The grids to rebuild: 'all', or numbers and ranges like 1,3-6."""
     print("\nLocal spectral grids available for rebuild:")
     print("-" * 64)
     for i, m in enumerate(cand, 1):
         print(f"{i:3d}. {m}")
     print("\nSelect indices (comma / ranges like 3-6) or 'all':")
-    while True:
-        raw = input("> ").strip().lower()
-        if raw == "all":
-            return cand
-        try:
-            return [cand[i] for i in parse_multi_selection(raw, len(cand))]
-        except ValueError as exc:
-            print(f"  {exc}")
+    raw = input("> ").strip().lower()
+    return cand if raw == "all" else [cand[i] for i in parse_multi_selection(raw, len(cand))]
 
 
 def _ask_flux_unit(grid: str, txt_files: List[str], flux_unit: Optional[str] = None) -> Optional[str]:
-    """``flux_unit`` if given, else the unit typed in a terminal for undeclared spectra (Enter never takes
-    the guess; 'n' raises ValueError), else None, leaving cleaning to stop with its best guess."""
+    """``flux_unit`` if given, else the unit typed in a terminal for undeclared spectra ('n' raises ValueError;
+    cleaning fails on anything else that is not a unit), else None, leaving cleaning to stop with its best guess."""
     if flux_unit is not None or not sys.stdin.isatty():
         return flux_unit
     guess = undeclared_flux_unit(txt_files)
@@ -139,17 +129,10 @@ def _ask_flux_unit(grid: str, txt_files: List[str], flux_unit: Optional[str] = N
     for name, (_, _, description) in FLUX_UNITS.items():
         print(f"  {name:11s} {description}")
     print(wrap(f"Best guess: {guess}, {FLUX_UNITS[guess][2]}; {FLUX_GUESS_WHY}.", indent="  ", hanging="    "))
-    question = f"Flux unit of {grid} (type its name, e.g. {guess}), or n to leave it uncleaned: "
-    while True:
-        answer = input(question).strip()
-        if answer in FLUX_UNITS:
-            return answer
-        if answer.lower() in ("n", "no"):
-            raise ValueError(f"No flux unit chosen for {grid}; it was not cleaned")
-        if answer.lower() in ("", "y", "yes"):
-            print(f"  Type the unit's name; the guess ({guess}) is not taken without it.")
-        else:
-            print(f"  {answer!r} is not one of: {', '.join(FLUX_UNITS)}")
+    answer = input(f"Flux unit of {grid} (type its name, e.g. {guess}), or n to leave it uncleaned: ").strip()
+    if answer.lower() in ("n", "no"):
+        raise ValueError(f"No flux unit chosen for {grid}; it was not cleaned")
+    return answer
 
 
 def _txt_files(model_dir: str) -> List[str]:
@@ -297,9 +280,6 @@ def run_spectra_flow(
     all_models = [_ModelOption(n, srcs) for n, srcs in sorted(model_sources.items())]
     if models is not None:
         chosen, failures = _requested_spectral_grids(models, all_models)
-    elif not sys.stdin.isatty():
-        raise ValueError(f"No terminal to choose from the {len(all_models)} spectral grids found; "
-                         "name them with --grids NAME ... (or --grids all)")
     else:
         idxs = prompt_choice(all_models, label="Spectral grids", allow_back=True, multi=True)
         if idxs is None or idxs == -1:
@@ -500,7 +480,7 @@ def run_combine_flow(
         raise FileNotFoundError(f"No spectral grids found in {base_dir}")
 
     if models is not None:
-        selected_models = _named_grids(models, model_dirs, base_dir)
+        selected_models = [(name, dict(model_dirs)[name]) for name in models]
     elif interactive:
         selected_models = select_models_interactive(model_dirs)
     else:
@@ -526,26 +506,12 @@ def run_combine_flow(
 
 
 def _combined_grid_name(output_name: str, inputs: List[str], interactive: bool) -> str:
-    """The output grid's name, asked for when interactive; never one of the ``inputs``."""
+    """The output grid's name, asked for when interactive; ValueError if it is one of the ``inputs``."""
     if interactive:
         output_name = input(f"What should the combined spectral grid be called? [{output_name}] ").strip() or output_name
-        while output_name in inputs:
-            output_name = (input(f"{output_name} is one of the grids being combined; choose another name: ").strip()
-                           or output_name)
-    elif output_name in inputs:
-        raise ValueError(f"The output grid {output_name} is also one of the grids to combine; "
-                         "choose another --output or leave it out of --grids")
+    if output_name in inputs:
+        raise ValueError(f"The output grid {output_name} is also one of the grids to combine")
     return output_name
-
-
-def _named_grids(models: List[str], model_dirs: List[Tuple[str, str]], base_dir: str) -> List[Tuple[str, str]]:
-    """The ``(name, path)`` of each grid in ``models``, in that order; ValueError names any not found."""
-    found = dict(model_dirs)
-    missing = [m for m in models if m not in found]
-    if missing:
-        raise ValueError(f"No spectral grid with a lookup table named {', '.join(missing)} in {base_dir}; "
-                         f"available: {', '.join(sorted(found))}")
-    return [(m, found[m]) for m in models]
 
 
 def _grids_to_combine_by_default(model_dirs: List[Tuple[str, str]], output_name: str) -> List[Tuple[str, str]]:
