@@ -23,8 +23,7 @@ from sed_tools import _constants, flux_cube_tool as tool, mesa_prepare
 from sed_tools._flux import FluxCube
 from sed_tools._resample import resample_to_grid
 from sed_tools.api import _build_flux_cube, _flux_cube_shortfall
-from sed_tools.collision_config import (CollisionConfig, copy_global_config_to_model, load_config,
-                                        match_filter_value, write_default_config)
+from sed_tools.collision_config import CollisionConfig, copy_global_config_to_model, load_config, match_filter_value
 from sed_tools.flux_cube_tool import bolometric_magnitude
 from sed_tools.grid_densifier import densify_grid
 from sed_tools.mesa_prepare import list_variants
@@ -1226,21 +1225,11 @@ def load_config_root_dir_overrides_builtin(t):
 
 
 @row
-def write_default_config_then_copy_to_model(t):
+def global_config_is_copied_to_the_model(t):
     root, model = _root_and_model(t)
-    path = write_default_config(root)
-    assert path.exists() and 'strategy = "split"' in path.read_text()
+    (root / "sed_tools.defaults").write_text('[on_collision]\nstrategy = "split"\n')
     copy_global_config_to_model(root, model)
-    assert (model / "sed_tools.defaults").read_text() == path.read_text()
-
-
-@row
-def write_default_config_does_not_overwrite_by_default(t):
-    root, _ = _root_and_model(t)
-    path = write_default_config(root)
-    path.write_text("# manually edited\n")
-    write_default_config(root, overwrite=False)
-    assert path.read_text() == "# manually edited\n"
+    assert (model / "sed_tools.defaults").read_text() == (root / "sed_tools.defaults").read_text()
 
 
 # ----------------------------------------------------------------------

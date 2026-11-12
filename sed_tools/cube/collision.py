@@ -229,41 +229,6 @@ def copy_global_config_to_model(root_dir: Path, model_dir: Path) -> None:
         dst.write_bytes(src.read_bytes())
 
 
-def write_default_config(root_dir: Path, overwrite: bool = False) -> Path:
-    """Write a commented sed_tools.defaults to root_dir, unless one exists and overwrite is False; returns its path."""
-    path = Path(root_dir) / _DEFAULTS_FILENAME
-    if path.exists() and not overwrite:
-        return path
-
-    path.write_text("""\
-# sed_tools.defaults
-# Global on-collision configuration for precompute_flux_cube.
-# Per-model overrides go in <model_dir>/mesa_config.toml (same schema).
-#
-# strategy options:
-#   split     — (default) split each extra physical axis into a separate
-#               MESA-ready subgrid directory.  Physically safe: no averaging.
-#               Subdirs are named {Model}_{axis}_{value}/.
-#               A variants_index.csv is written in the parent directory.
-#   all-warn  — alias for split (backward compatible).
-#   all       — alias for split (backward compatible).
-#   mean      — collapse extra axes by averaging into a single cube.
-#               Physically unsafe — produces a synthetic mean atmosphere.
-#   filter    — filter to one specific extra-axis slice, then build.
-#               Requires [on_collision.filter] section below.
-
-[on_collision]
-strategy = "split"
-
-# Uncomment and fill in when strategy = "filter":
-# [on_collision.filter]
-# alpha = "min"          # min | max | exact value e.g. "0.4"
-# f_sed = "2.0"
-# composition = "h-rich" # string: case-insensitive
-""")
-    return path
-
-
 def discover_extra_axes(lookup_columns: List[str]) -> List[str]:
     """The lookup columns that are not MESA axes or bookkeeping (MESA_AXES), compared after _normalise_key."""
     mesa_norms = {_normalise_key(k) for k in MESA_AXES}
