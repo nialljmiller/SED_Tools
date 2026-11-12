@@ -115,9 +115,9 @@ def usno(fetch: Fetcher) -> Instrument:
 
 
 RECIPES = {
-    "Bessell": (FAC, bessell),
-    "MKO": (FAC, mko),
-    "USNO": (FAC, usno),
+    "Bessell": bessell,
+    "MKO": mko,
+    "USNO": usno,
 }
 
 build = make_builder(RECIPES)

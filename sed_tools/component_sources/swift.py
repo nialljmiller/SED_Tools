@@ -221,6 +221,6 @@ def uvot(fetch: Fetcher) -> Instrument:
                       outside_range="error")
 
 
-RECIPES = {"UVOT": ("Swift", uvot)}
+RECIPES = {"UVOT": uvot}
 
 build = make_builder(RECIPES)

@@ -1689,7 +1689,7 @@ def cassini_band_names_map_to_filter_pairs(t):
 # ======================================================================
 def cassini_recipes_describe_each_camera(t, camera):
     files, _nm, _pairs = cassini_files(camera)
-    spec = cassini.RECIPES[camera][1](Fetcher(Session(files)))
+    spec = cassini.RECIPES[camera](Fetcher(Session(files)))
     assert (spec.facility, spec.instrument, spec.ground_based) == ("Cassini", camera, False)
     assert spec.outside_range == "error"
     assert [b.name for b in spec.bands] == cassini.BANDS[camera]
@@ -1841,7 +1841,7 @@ def ps1_build_registers_its_team_site(t):
                                                 detector_type="photon", components="filter+optics+qe+atmosphere",
                                                 sources="x")], "n", ground_based=True,
         sites=[team.HALEAKALA_PS1], default_site="haleakala_ps1"))
-    t.mp.setitem(surveys.RECIPES, "PS1", ("PAN-STARRS", surveys.ps1))
+    t.mp.setitem(surveys.RECIPES, "PS1", surveys.ps1)
     build = surveys.make_builder(surveys.RECIPES)
     inst = build(t.tmp / "filters", instrument="PS1", session=session)
     assert InstrumentManifest.load(inst).default_site == "haleakala_ps1"

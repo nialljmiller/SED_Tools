@@ -205,6 +205,6 @@ def csp2(fetch: Fetcher) -> Instrument:
     return Instrument("LCO", "CSP2", bands, note, ground_based=True, outside_range="error")
 
 
-RECIPES = {"CSP": ("LCO", csp1), "CSP2": ("LCO", csp2)}
+RECIPES = {"CSP": csp1, "CSP2": csp2}
 
 build = make_builder(RECIPES)

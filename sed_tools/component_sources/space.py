@@ -368,20 +368,20 @@ def xmm_om(fetch: Fetcher) -> Instrument:
 
 
 RECIPES = {
-    "DR2": ("GAIA", gaia_dr2),
-    "DR2r": ("GAIA", gaia_dr2r),
-    "PACS": ("Herschel", pacs),
-    "SPIRE": ("Herschel", spire),
-    "Hipparcos": ("Hipparcos", hipparcos),
-    "Tycho": ("Hipparcos", tycho),
-    "IRAS": ("IRAS", iras),
-    "MSX": ("MSX", msx),
-    "HFI": ("Planck", hfi),
-    "LFI": ("Planck", lfi),
-    "IRAC": ("Spitzer", irac),
-    "MIPS": ("Spitzer", mips),
-    "IRS": ("Spitzer", irs),
-    "OM": ("XMM", xmm_om),
+    "DR2": gaia_dr2,
+    "DR2r": gaia_dr2r,
+    "PACS": pacs,
+    "SPIRE": spire,
+    "Hipparcos": hipparcos,
+    "Tycho": tycho,
+    "IRAS": iras,
+    "MSX": msx,
+    "HFI": hfi,
+    "LFI": lfi,
+    "IRAC": irac,
+    "MIPS": mips,
+    "IRS": irs,
+    "OM": xmm_om,
 }
 
 build = make_builder(RECIPES)

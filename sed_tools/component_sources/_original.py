@@ -375,13 +375,13 @@ def _each_published(facility_dir: Path, names, table: Mapping, build_one: Callab
     return built
 
 
-def make_builder(recipes: Mapping[str, Tuple[str, Recipe]]):
+def make_builder(recipes: Mapping[str, Recipe]):
     """``build(filter_root, *, instrument, session=None)`` for one source module: ``recipes`` maps each
-    instrument to (its facility, its recipe)."""
+    instrument to its recipe."""
 
     def build(filter_root, *, instrument, session=None, atmosphere_root=None, **_ignored) -> Path:
         fetcher = Fetcher(session)
-        spec = recipes[instrument][1](fetcher)
+        spec = recipes[instrument](fetcher)
         return write_instrument(filter_root, spec, atmosphere_root=atmosphere_root, session=fetcher.session)
 
     return build

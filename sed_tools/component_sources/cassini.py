@@ -182,7 +182,7 @@ def iss_wac(fetch: Fetcher) -> Instrument:
     return _camera("ISS_WAC", fetch)
 
 
-RECIPES = {"ISS_NAC": (FACILITY, iss_nac), "ISS_WAC": (FACILITY, iss_wac)}
+RECIPES = {"ISS_NAC": iss_nac, "ISS_WAC": iss_wac}
 
 
 def _curve(path: Path) -> Tuple[np.ndarray, np.ndarray]:
