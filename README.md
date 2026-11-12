@@ -165,7 +165,7 @@ sed-tools config --set /path/to/data --move
 
 Changed meaning:
 - `combine --non-interactive` combines the `--grids` given, else every local spectral grid except earlier combined ones (and the output grid).
-- `densify` now runs. It refuses, as usage errors, the options `densify_grid` cannot honour: `--method interp`, `--method ml` without `--ml-model`, `--method blackbody` with `--ml-model`, and `--ml-gap-threshold` other than its default.
+- `densify` now runs. `--method`, `--ml-gap-threshold` and `--no-lookup`, which `densify_grid` could not honour, are gone.
 - Usage errors print the subcommand's usage and exit 2. A failed command exits 1; the interactive menu exits 1 at quit if any workflow failed. Set `SED_TOOLS_DEBUG=1` for tracebacks.
 
 ### `sed-tools filters`

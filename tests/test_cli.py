@@ -415,13 +415,11 @@ def _densify_calls(t):
 def densify_passes_only_what_densify_grid_accepts(t):
     calls = _densify_calls(t)
     base = ["densify", "--flux-cube", "in.bin", "--output", "out.bin", "--teff-spacing", "250"]
-    assert run_cli(t.mp, *base, "--no-lookup") == 0
-    assert run_cli(t.mp, *base, "--method", "ml", "--ml-model", "gen") == 0
-    assert run_cli(t.mp, *base, "--method", "blackbody") == 0
+    assert run_cli(t.mp, *base) == 0
+    assert run_cli(t.mp, *base, "--ml-model", "gen") == 0
     assert calls == [
         {"src": "in.bin", "dst": "out.bin", "teff_spacing": 250.0, "ml_model": None},
         {"src": "in.bin", "dst": "out.bin", "teff_spacing": 250.0, "ml_model": "gen"},
-        {"src": "in.bin", "dst": "out.bin", "teff_spacing": 250.0, "ml_model": None},
     ]
 
 
@@ -474,34 +472,6 @@ def sed_tools_mesa_prepare_exit_status_is_1_on_failure(t):
     done = _python_m_cli("mesa_prepare", "--base", str(t.tmp), "--grid", "Plain", "--output", str(t.tmp / "out"),
                          stdin=subprocess.DEVNULL)
     assert done.returncode == 1 and "has no flux_cube.bin" in done.stderr
-
-
-# ----------------------------------------------------------------------
-# Usage errors: exit 2 in plain words, under the subcommand's usage, before any work is done
-# ----------------------------------------------------------------------
-_DENSIFY = ["densify", "--flux-cube", "in.bin", "--output", "out.bin"]
-
-#: name: (argv, what stderr says).
-USAGE = {
-    "densify_refuses_options_it_cannot_honour_interp": (
-        [*_DENSIFY, "--method", "interp"], "--method interp is not implemented"),
-    "densify_refuses_options_it_cannot_honour_ml_without_a_model": (
-        [*_DENSIFY, "--method", "ml"], "--method ml needs --ml-model"),
-    "densify_refuses_options_it_cannot_honour_blackbody_with_a_model": (
-        [*_DENSIFY, "--method", "blackbody", "--ml-model", "gen"], "--method blackbody does not use --ml-model"),
-    "densify_refuses_options_it_cannot_honour_gap_threshold": (
-        [*_DENSIFY, "--ml-gap-threshold", "2000"], "--ml-gap-threshold is not implemented"),
-}
-
-
-def _usage_error(t, argv, message):
-    narrow_terminal(t)
-    densified = _densify_calls(t)
-    with pytest.raises(SystemExit) as stop:
-        run_cli(t.mp, *argv)
-    err = t.capsys.readouterr().err
-    assert stop.value.code == 2 and message in err and "_bound" not in err
-    assert err.startswith(f"usage: sed-tools {argv[0]}") and densified == []
 
 
 # ----------------------------------------------------------------------
@@ -1536,7 +1506,6 @@ def _narrow(t, scenario):
 def test_cli(rows):
     rows(SCENARIOS)
     rows(FILTERS_INFO, _filters_info)
-    rows(USAGE, _usage_error)
     rows({f"{module}_help_prints_the_usage_and_exits_0": module for module in HELP}, _help)
     rows({f"{module}_a_bad_argument_prints_the_usage_and_exits_2": module for module in HELP}, _bad_argument)
     rows(MAINS, _in_its_folder_run)

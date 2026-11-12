@@ -262,10 +262,6 @@ def _add_filter_component_parsers(sub) -> None:
     fbp.add_argument("--pwv", nargs="+", type=float, default=None, help="SkyCalc PWV grid (mm)")
 
 
-# densify accepts --ml-gap-threshold only at this default, since densify_grid has no such threshold.
-_ML_GAP_THRESHOLD_DEFAULT = 5000.0
-
-
 def _add_grid_build_parsers(sub) -> None:
     rp = sub.add_parser("rebuild", help="Rebuild lookup table + HDF5 + flux cube")
     _add_base_option(rp, STELLAR_DIR_DEFAULT, "Base spectral grid dir")
@@ -303,16 +299,8 @@ def _add_grid_build_parsers(sub) -> None:
     p_densify.add_argument("--flux-cube", required=True, help="The flux_cube.bin to densify")
     p_densify.add_argument("--output", required=True, help="Where to write the densified flux cube")
     p_densify.add_argument("--teff-spacing", type=float, default=1000.0, help="Target Teff spacing in K")
-    p_densify.add_argument("--method", default="auto",
-                           choices=["auto", "interp", "ml", "blackbody"],
-                           help="auto: fill gaps inside the grid's Teff range with --ml-model if given, and "
-                                "elsewhere with a blackbody scaled to the nearest spectrum; ml: the same, "
-                                "--ml-model required; blackbody: blackbodies only; interp: not implemented, refused")
     p_densify.add_argument("--ml-model", default=None,
                            help="Trained ML generator for gaps inside the grid's Teff range")
-    p_densify.add_argument("--ml-gap-threshold", type=float, default=_ML_GAP_THRESHOLD_DEFAULT,
-                           help="Not implemented: refused unless left at its default")
-    p_densify.add_argument("--no-lookup", action="store_true", help="No effect: densify writes only the flux cube")
 
 
 def _add_grid_tool_parsers(sub) -> None:
@@ -515,19 +503,9 @@ def _cmd_ml_generator(args, parser):
 
 def _cmd_densify(args, parser):
     """densify_grid fills each Teff gap with --ml-model inside the source grid's Teff range, and
-    with a blackbody scaled to the nearest real spectrum otherwise; options it cannot honour are refused."""
+    with a blackbody scaled to the nearest real spectrum otherwise."""
     from ..cube.densify import densify_grid
 
-    if args.method == "interp":
-        parser.error("--method interp is not implemented: densify fills gaps with --ml-model or blackbodies")
-    if args.method == "ml" and not args.ml_model:
-        parser.error("--method ml needs --ml-model")
-    if args.method == "blackbody" and args.ml_model:
-        parser.error("--method blackbody does not use --ml-model; leave one of them out")
-    if args.ml_gap_threshold != _ML_GAP_THRESHOLD_DEFAULT:
-        parser.error("--ml-gap-threshold is not implemented: with --ml-model, every gap inside the source "
-                     "grid's Teff range is filled by the model")
-    # --no-lookup needs nothing: densify_grid writes only the flux cube.
     densify_grid(src=args.flux_cube, dst=args.output, teff_spacing=args.teff_spacing, ml_model=args.ml_model)
     return 0
 
