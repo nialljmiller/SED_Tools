@@ -1720,8 +1720,10 @@ def decam_instrument_response_is_the_des_band_over_its_atmosphere(t):
                                "filter+instrument+atmosphere")
 
     svo_client = SVOClient(des)
-    inst = decam.build(t.tmp / "filters", session=Session(saved()), svo_client=svo_client,
+    session = Session(saved())
+    inst = decam.build(t.tmp / "filters", session=session, svo_client=svo_client,
                        atmosphere_root=t.tmp / "atmospheres")
+    assert session.calls == [decam.DES_STD]  # one download for the five bands and the atmosphere
     assert sorted(svo_client.asked) == sorted(decam.SPEC.svo_ids.values())
     manifest = InstrumentManifest.load(inst)
     assert manifest.default_site == "ctio_des" and manifest.outside_range == "error"
@@ -1743,11 +1745,13 @@ def decam_instrument_response_is_the_des_band_over_its_atmosphere(t):
 
 @row
 def vista_components_come_from_the_eso_bundle(t):
-    t.mp.setattr(vista, "_CACHE", {})
     session = Session(saved())
     flat = SVOClient(lambda fid: record(fid, np.linspace(8000.0, 25000.0, 50), np.full(50, 0.5), "filter+instrument"))
     inst = vista.build(t.tmp / "filters", session=session, svo_client=flat, atmosphere_root=t.tmp / "atmospheres")
     assert session.calls == [vista.BUNDLE]  # one download for every member
+    again = Session(saved())
+    vista.build(t.tmp / "filters", session=again, svo_client=flat, atmosphere_root=t.tmp / "atmospheres")
+    assert again.calls == [vista.BUNDLE]  # a second build downloads afresh, not the first build's copy
     manifest = InstrumentManifest.load(inst)
     assert manifest.default_site == "paranal" and manifest.outside_range == "edge"
     assert not (t.tmp / "atmospheres").exists()  # the SkyCalc site is not a team file

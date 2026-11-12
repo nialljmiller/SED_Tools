@@ -19,7 +19,7 @@ from ..filters.compose import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, Atmospher
 from ..filters.curve_metadata import (ENERGY, PHOTON, SOURCE_SVO, SVOMetadataClient, read_filter_header,
                                svo_components_header, svo_detector, svo_fps_url, write_filter_file)
 from ._original import (CONNECT_TIMEOUT, Curve, common_product,  # noqa: F401  importable from here, as before
-                        download, product)
+                        CachingSession, download, product)
 
 
 @dataclass
@@ -316,11 +316,15 @@ def build_simple(
     session=None,
     svo_client: Optional[SVOMetadataClient] = None,
 ) -> Path:
-    """Write the published curves (where missing), components, atmospheres and manifest of ``spec``."""
+    """Write the published curves (where missing), components, atmospheres and manifest of ``spec``.
+
+    Each URL is downloaded once per build, however many of ``spec``'s tables read it.
+    """
     if session is None:
         import requests
 
         session = requests.Session()
+    session = CachingSession(session)
     filter_root = Path(filter_root)
     inst_dir = filter_root / spec.facility / spec.instrument
     if spec.published_from_filters:
