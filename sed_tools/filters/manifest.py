@@ -257,13 +257,13 @@ def set_problems(directory: PathLike, claims: Optional[Mapping[str, Iterable[str
     curves = sorted(p.name for p in directory.glob("*.dat") if p.is_file())
     if not curves:
         return []
-    found = []
+    manifest = directory / MANIFEST_NAME
     try:
-        data = json.loads((directory / MANIFEST_NAME).read_text(encoding="utf-8")) \
-            if (directory / MANIFEST_NAME).is_file() else None
+        data = json.loads(manifest.read_text(encoding="utf-8")) if manifest.is_file() else None
         archived = archived_bands(directory)
     except (OSError, ValueError, AttributeError) as exc:
-        return [f"{directory / MANIFEST_NAME} cannot be read ({exc})"]
+        return [f"{manifest} cannot be read ({exc})"]
+    found = []
     index = directory / directory.name
     listed = index_names(index.read_text(encoding="utf-8")) if index.is_file() else None
     if listed is None:
@@ -275,22 +275,23 @@ def set_problems(directory: PathLike, claims: Optional[Mapping[str, Iterable[str
         if unlisted := [name for name in curves if name not in listed and Path(name).stem not in archived]:
             found.append(f"{directory} holds {', '.join(unlisted)}, which its index does not list")
     if data is not None:
-        named = data.get("facility") and data.get("instrument")
-        other = (describes_other_folder(directory, str(data["facility"]), str(data["instrument"])) if named
-                 else f"{directory / MANIFEST_NAME} names no set")
-        indexed = {Path(name).stem for name in listed or []}
-        if other:
+        if not (data.get("facility") and data.get("instrument")):
+            found.append(f"{manifest} names no set")
+        elif other := describes_other_folder(directory, str(data["facility"]), str(data["instrument"])):
             found.append(other)
-        elif listed is not None and (beyond := sorted(set(data.get("bands") or []) - set(archived) - indexed)):
-            found.append(f"{directory / MANIFEST_NAME} declares {', '.join(beyond)}, which its index does not "
-                         "list (an incomplete set, or a stale manifest)")
+        elif listed is not None:
+            indexed = {Path(name).stem for name in listed}
+            if beyond := sorted(set(data.get("bands") or []) - set(archived) - indexed):
+                found.append(f"{manifest} declares {', '.join(beyond)}, which its index does not list "
+                             "(an incomplete set, or a stale manifest)")
     mine = (claims or {}).get(f"{directory.parent.name}/{directory.name}")
-    for name in curves if mine is not None else ():  # a set no claim describes (a user's own) is not judged
-        filter_id = read_filter_header(directory / name).get("FilterID")
-        source = curve_source(filter_id)
-        owners = sorted(other for other, made_of in claims.items() if source in made_of) if source not in mine else []
-        if owners:
-            found.append(f"{directory / name} is {filter_id}, a curve of {', '.join(owners)}, not of this set")
+    if mine is not None:  # a set no claim describes (a user's own) is not judged
+        for name in curves:
+            filter_id = read_filter_header(directory / name).get("FilterID")
+            source = curve_source(filter_id)
+            owners = sorted(other for other, made_of in claims.items() if source in made_of)
+            if source not in mine and owners:
+                found.append(f"{directory / name} is {filter_id}, a curve of {', '.join(owners)}, not of this set")
     return found
 
 
