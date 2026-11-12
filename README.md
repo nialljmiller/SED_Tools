@@ -733,7 +733,7 @@ sed-tools coverage --grids Kurucz2003all --no-plot
 
 ### `sed-tools mesa_prepare`
 
-Export one extra-axis variant (e.g. one alpha-enhancement, microturbulence or mixing-length combination) of a spectral grid as a clean, self-contained MESA-ready folder holding only that variant's flux cube and lookup table. `sed-tools rebuild` splits a grid whose extra axes vary into one subgrid per variant (`<grid>/<variant path>/`, each with its own `flux_cube.bin` and `lookup_table.csv`) and lists them in `<grid>/variants_index.csv`; `mesa_prepare` reads that file first. A `fluxcube_library/` written by earlier SED_Tools versions is still read when present. A uniform grid with its `flux_cube.bin` is already MESA-ready, and the command says so. The provenance columns of combined and ML-extended grids are not variant axes.
+Export one extra-axis variant (e.g. one alpha-enhancement, microturbulence or mixing-length combination) of a spectral grid as a clean, self-contained MESA-ready folder holding only that variant's flux cube and lookup table. `sed-tools rebuild` splits a grid whose extra axes vary into one subgrid per variant (`<grid>/<variant path>/`, each with its own `flux_cube.bin` and `lookup_table.csv`) and lists them in `<grid>/variants_index.csv`; `mesa_prepare` reads that file first. A uniform grid with its `flux_cube.bin` is already MESA-ready, and the command says so. The provenance columns of combined and ML-extended grids are not variant axes.
 
 ```bash
 # Interactive spectral grid and variant selection

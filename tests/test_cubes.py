@@ -624,14 +624,18 @@ def densified_ml_nodes_do_not_depend_on_the_block_size(t):
 # or go back; split, mean and combined grids; averaged rows; 80 columns
 # ----------------------------------------------------------------------
 def _variant_grid(t):
-    """``<base>/Grid`` with two alpha variants, each with its spectra and its cube; returns base."""
+    """``<base>/Grid`` with two alpha variants, split as ``sed-tools rebuild`` splits them: a subgrid per variant
+    with its lookup table and cube, listed in variants_index.csv; returns base."""
     grid = t.tmp / "stellar" / "Grid"
     write_lookup(grid, [*COLUMNS, "alpha"], [("a.txt", 5000, 4.0, 0.0, "0.0"), ("b.txt", 5000, 4.0, 0.0, "0.4")])
-    for name in ("a.txt", "b.txt"):
+    index = ["variant_name,alpha,n_spectra,path"]
+    for name, alpha in (("a.txt", "0.0"), ("b.txt", "0.4")):
         (grid / name).write_text("4000 1.0\n5000 2.0\n")
-    for alpha in ("0.0", "0.4"):
-        write_flux_cube(grid / "fluxcube_library" / f"flux_cube__alpha_{alpha}.bin", [5000.0], [4.0], [0.0],
-                        [4000.0, 5000.0], np.ones((1, 1, 1, 2)))
+        write_lookup(grid / f"alpha_{alpha}", [*COLUMNS, "alpha"], [(name, 5000, 4.0, 0.0, alpha)])
+        write_flux_cube(grid / f"alpha_{alpha}" / "flux_cube.bin", [5000.0], [4.0], [0.0], [4000.0, 5000.0],
+                        np.ones((1, 1, 1, 2)))
+        index.append(f"alpha_{alpha},{alpha},1,alpha_{alpha}")
+    (grid / "variants_index.csv").write_text("\n".join(index) + "\n")
     return grid.parent
 
 
