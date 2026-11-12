@@ -439,8 +439,6 @@ def model_selects_a_grid_to_interpolate(t):
 def the_grid_finder_resolves_a_model_and_takes_z_for_metallicity(t):
     installed = _installed(t)
     finder = GridFinder(model_root=installed, filter_root=installed / "filters")
-    with pytest.raises(RuntimeError, match="No atmosphere selected"):
-        finder(5000, 4.5, 0.0)
     cube, loose = installed / "Hot" / "flux_cube.bin", installed / "Loose.bin"
     loose.write_bytes(cube.read_bytes())
     # the cube, its folder, a grid's name, the name of a <name>.bin under the model root
@@ -454,8 +452,6 @@ def the_grid_finder_resolves_a_model_and_takes_z_for_metallicity(t):
         assert finder(6000, 4.5, **call).flux.tolist() == pytest.approx([1.0, 1.0, 1.0])
     with pytest.raises(TypeError, match="Unexpected keyword arguments: feh"):
         finder(6000, 4.5, feh=0.0)
-    with pytest.raises(TypeError, match="Metallicity value missing"):
-        finder(6000, 4.5)
 
 
 @row

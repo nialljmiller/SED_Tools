@@ -82,8 +82,6 @@ def list_variants(model_dir: str | os.PathLike) -> List[VariantInfo]:
     lookup_path = model_dir / "lookup_table.csv"
     library_dir = model_dir / "fluxcube_library"
 
-    if not lookup_path.exists():
-        raise FileNotFoundError(f"lookup_table.csv not found in {model_dir}")
     df = _read_csv_as_text(lookup_path)
 
     if (model_dir / "variants_index.csv").exists():

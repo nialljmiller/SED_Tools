@@ -1,4 +1,5 @@
-"""Canonical text-spectrum I/O and simple HDF5 bundle support."""
+"""A grid's text spectra and its HDF5 bundle: list_text_spectra, read_text_spectrum, build_h5_bundle and
+bundled_spectra, with where the bundle goes (_bundle_path)."""
 
 from __future__ import annotations
 

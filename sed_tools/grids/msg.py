@@ -7,8 +7,6 @@ import re
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from urllib.parse import urljoin
 
-logger = logging.getLogger("sed_tools.msg_spectra_grabber")
-
 import h5py
 import numpy as np
 import requests
@@ -17,8 +15,10 @@ from requests.packages.urllib3.util.retry import Retry
 from tqdm import tqdm
 
 from ._http import DISCOVERY_TIMEOUT, discovery_failure, mount_discovery, retrying_session
-from .hdf5_wavelengths import _is_physical_wavelength_array as _is_physical_wavelength, _iter_datasets
+from .hdf5_wavelengths import _is_physical_wavelength_array as _is_physical_wavelength, _search_all_datasets
 from .lookup import write_lookup_csv
+
+logger = logging.getLogger("sed_tools.msg_spectra_grabber")
 
 _SEG_IDX = re.compile(r"\[(\d+)\]")
 
@@ -36,12 +36,33 @@ AXIS_ROLE_OVERRIDES = {
     "sg-C3K": {"teff": 0, "meta": 1, "logg": 3},
 }
 
+
 def _dataset_if_exists(g, names):
     return next((g[n] for n in names if n in g and isinstance(g[n], h5py.Dataset)), None)
 
+
+def _number(grp, keys):
+    """First of *keys* (attribute, then dataset) that holds a number, else None."""
+    for k in keys:
+        if k in grp.attrs:
+            try:
+                return float(np.array(grp.attrs[k]).ravel()[0])
+            except (TypeError, ValueError, IndexError):
+                pass  # not a number: try the next name
+    d = _dataset_if_exists(grp, keys)
+    if d is not None:
+        arr = np.array(d[()]).ravel()
+        if arr.size:
+            try:
+                return float(arr[0])
+            except (TypeError, ValueError):
+                pass  # not a number: no value under these names
+    return None
+
+
 def _recover_wavelengths(f, spec_g, expected_len):
     # 1) direct dataset within spectrum group
-    WAVE_KEYS = ("lambda","wavelength","wave","wl","wavelength_A")
+    WAVE_KEYS = ("lambda", "wavelength", "wave", "wl", "wavelength_A")
     ds = _dataset_if_exists(spec_g, WAVE_KEYS)
     if ds is not None:
         wl = np.array(ds[()]).astype(float).squeeze()
@@ -59,35 +80,25 @@ def _recover_wavelengths(f, spec_g, expected_len):
         # 3) concatenated segments
         seg_root = rg.get("ranges", rg)
         seg_names = sorted((k for k in seg_root.keys() if k.startswith("ranges")), key=_bracket_number)
-        segs=[]
-        def num(grp, keys):
-            """First of *keys* (attribute, then dataset) that holds a number, else None."""
-            for k in keys:
-                if k in grp.attrs:
-                    try: return float(np.array(grp.attrs[k]).ravel()[0])
-                    except (TypeError, ValueError, IndexError): pass  # not a number: try the next name
-            d = _dataset_if_exists(grp, keys)
-            if d is not None:
-                arr = np.array(d[()]).ravel()
-                if arr.size:
-                    try: return float(arr[0])
-                    except (TypeError, ValueError): pass  # not a number: no value under these names
-            return None
+        segs = []
         for sn in seg_names:
             sgrp = seg_root[sn]
-            if not isinstance(sgrp, h5py.Group): continue
-            xds = _dataset_if_exists(sgrp, ("x",)+WAVE_KEYS)
+            if not isinstance(sgrp, h5py.Group):
+                continue
+            xds = _dataset_if_exists(sgrp, ("x",) + WAVE_KEYS)
             if xds is not None:
                 x = np.array(xds[()]).astype(float).ravel()
-                if x.size: segs.append(x); continue
-            start = num(sgrp, ("start","min","lmin","lambda_min","lam_min"))
-            stop  = num(sgrp, ("stop","max","lmax","lambda_max","lam_max"))
-            step  = num(sgrp, ("dlam","dl","step","delta"))
-            npts  = num(sgrp, ("n","N","len","size"))
+                if x.size:
+                    segs.append(x)
+                    continue
+            start = _number(sgrp, ("start", "min", "lmin", "lambda_min", "lam_min"))
+            stop = _number(sgrp, ("stop", "max", "lmax", "lambda_max", "lam_max"))
+            step = _number(sgrp, ("dlam", "dl", "step", "delta"))
+            npts = _number(sgrp, ("n", "N", "len", "size"))
             if start is not None and stop is not None and step is not None:
-                segs.append(np.arange(start, stop+0.5*step, step, dtype=float))
+                segs.append(np.arange(start, stop + 0.5 * step, step, dtype=float))
             elif start is not None and step is not None and npts is not None:
-                segs.append(start + step*np.arange(int(round(npts)), dtype=float))
+                segs.append(start + step * np.arange(int(round(npts)), dtype=float))
             elif start is not None and stop is not None and npts is not None and int(round(npts)) >= 2:
                 segs.append(np.linspace(start, stop, int(round(npts)), dtype=float))
             else:
@@ -108,49 +119,48 @@ def _recover_wavelengths(f, spec_g, expected_len):
                 if abs(wl.size - expected_len) <= 2:
                     return wl[:expected_len] if expected_len and expected_len < wl.size else wl
 
-    # 5) Fallback: search entire file for a physically plausible wavelength array
-    #    Only accept arrays that pass physical wavelength validation.
+    # 5) Fallback: any rising, physically plausible dataset of exactly the expected length
     if expected_len > 1:
-        for d in _iter_datasets(f):
-            try:
-                arr = np.array(d[()]).astype(float).ravel()
-            except (TypeError, ValueError):
-                continue  # not numeric, so not a wavelength grid
-            if arr.size == expected_len and np.all(np.diff(arr) > 0) and _is_physical_wavelength(arr):
-                return arr
-
+        wl = _search_all_datasets(f, expected_len)
+        if wl is not None:
+            return wl
     raise RuntimeError("Unable to recover wavelength grid")
 
 
 def _pick_flux(spec_g):
-    FLUX_PREFS = ("flux","specific_intensity","intensity","F","H","I","c")
+    FLUX_PREFS = ("flux", "specific_intensity", "intensity", "F", "H", "I", "c")
     ds = _dataset_if_exists(spec_g, FLUX_PREFS)
     if ds is not None:
         return np.array(ds[()]).astype(float).squeeze()
     # single 1D/(N,1) candidate
     cands = [k for k, d in spec_g.items()
              if isinstance(d, h5py.Dataset) and (len(d.shape) == 1 or (len(d.shape) == 2 and d.shape[1] == 1))]
-    if len(cands)==1:
+    if len(cands) == 1:
         return np.array(spec_g[cands[0]][()]).astype(float).squeeze()
     raise RuntimeError("No suitable flux dataset")
 
+
 def _guess_roles_from_axes(axes):
-    # Basic heuristics if no override: pick max-span as Teff; logg in [-1.5,6.8]; meta in [-3.5,1.5]
+    """Axis roles when no override applies: Teff has the largest values, [M/H] lies in [-3.5, 1.5], log g in
+    [-1.5, 6.8] (and is not the [M/H] axis)."""
     role = {}
     if not axes:
         return role
-    # Teff: largest max
     role["teff"] = int(np.argmax([np.nanmax(a) for a in axes]))
-    # meta: span in [-3.5,+1.5]
-    cand_meta = [j for j,a in enumerate(axes) if -3.5 <= float(np.nanmin(a)) <= 1.5 and -3.5 <= float(np.nanmax(a)) <= 1.5]
-    if cand_meta: role["meta"] = cand_meta[0]
-    # logg: span in [-1.5,6.8], not meta
-    cand_logg = [j for j,a in enumerate(axes) if -1.5 <= float(np.nanmin(a)) <= 6.8 and -1.5 <= float(np.nanmax(a)) <= 6.8 and j != role.get("meta")]
-    if cand_logg: role["logg"] = cand_logg[0]
+    cand_meta = [j for j, a in enumerate(axes)
+                 if -3.5 <= float(np.nanmin(a)) <= 1.5 and -3.5 <= float(np.nanmax(a)) <= 1.5]
+    if cand_meta:
+        role["meta"] = cand_meta[0]
+    cand_logg = [j for j, a in enumerate(axes)
+                 if -1.5 <= float(np.nanmin(a)) <= 6.8 and -1.5 <= float(np.nanmax(a)) <= 6.8 and j != role.get("meta")]
+    if cand_logg:
+        role["logg"] = cand_logg[0]
     return role
+
 
 def _role_override_for_model(model_name):
     return next((mapping.copy() for key, mapping in AXIS_ROLE_OVERRIDES.items() if key in model_name), {})
+
 
 def _in_range(val, rng):
     """Return True if val is within rng (lo, hi), or if rng is None/val is nan."""
@@ -160,6 +170,7 @@ def _in_range(val, rng):
         return True  # can't filter what we don't know
     lo, hi = rng
     return lo <= val <= hi
+
 
 class MSGSpectraGrabber:
     def __init__(self, base_dir="../data/stellar_models/", max_workers=6):
@@ -197,19 +208,19 @@ class MSGSpectraGrabber:
         return sorted(self.model_urls.keys())
 
     def _load_axes_and_vlin(self, f: h5py.File, model_name: str):
-        axes=[]
-        i=0
+        axes = []
+        i = 0
         while f"vgrid/axes[{i}]" in f:
             ax = f[f"vgrid/axes[{i}]"]
             if "x" in ax and isinstance(ax["x"], h5py.Dataset):
                 axes.append(np.array(ax["x"][()], dtype=float).ravel())
-            i+=1
+            i += 1
         shape = tuple(len(a) for a in axes)
         vlin = None
         if "vgrid/v_lin_seq" in f and isinstance(f["vgrid/v_lin_seq"], h5py.Dataset):
             vlin = np.array(f["vgrid/v_lin_seq"][()], dtype=int).ravel()
             prod = int(np.prod(shape)) if shape else 0
-            if prod>0 and vlin.size>0:
+            if prod > 0 and vlin.size > 0:
                 if int(vlin.max()) == prod:  # 1-based
                     vlin = vlin - 1
                 vlin = np.clip(vlin, 0, prod - 1)
@@ -303,9 +314,10 @@ class MSGSpectraGrabber:
             best = vf
         else:
             # take whichever has more finite fields
-            def score(v): return sum(np.isfinite([v.get("teff",np.nan), v.get("logg",np.nan), v.get("meta",np.nan)]))
+            def score(v):
+                return sum(np.isfinite([v.get("teff", np.nan), v.get("logg", np.nan), v.get("meta", np.nan)]))
             best = vc if score(vc) >= score(vf) else vf
-        return best.get("teff",np.nan), best.get("logg",np.nan), best.get("meta",np.nan)
+        return best.get("teff", np.nan), best.get("logg", np.nan), best.get("meta", np.nan)
 
     def _extract_one(self, h5_path, gpath, model_name, order_index):
         with h5py.File(h5_path, "r") as f:
@@ -323,7 +335,7 @@ class MSGSpectraGrabber:
 
             wl = _recover_wavelengths(f, spec_g, expected_len=len(fx))
             n = min(len(wl), len(fx))
-            wl = wl[:n].astype(float); fx = fx[:n].astype(float)
+            wl, fx = wl[:n].astype(float), fx[:n].astype(float)
         teff, logg, meta = self._params_from_index(model_name, order_index)
         return wl, fx, teff, logg, meta
 
@@ -347,7 +359,8 @@ class MSGSpectraGrabber:
 
         print(f"Extracting {len(spectra_info)} spectra for {model_name}...")
 
-        rows=[]; failures=[]
+        rows = []
+        failures = []
         ranges = {"teff": teff_range, "logg": logg_range, "meta": meta_range, "wl": wl_range}
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as ex:
@@ -358,9 +371,7 @@ class MSGSpectraGrabber:
                 if status == "failed":
                     failures.append(f"{fname}: {detail}")
                 elif status != "excluded":
-                    row = {"file_name": fname}
-                    if detail: row.update(detail)
-                    rows.append(row)
+                    rows.append({"file_name": fname, **(detail or {})})
 
         if failures:
             raise RuntimeError(
@@ -407,30 +418,31 @@ class MSGSpectraGrabber:
         with open(fpath, "w", encoding="utf-8") as fh:
             fh.write("# source = MSG HDF5\n")
             fh.write(f"# spec_group = {gpath}\n")
-            if np.isfinite(teff): fh.write(f"# teff = {teff}\n")
-            if np.isfinite(logg): fh.write(f"# logg = {logg}\n")
-            if np.isfinite(meta): fh.write(f"# meta = {meta}\n")
+            for key, value in (("teff", teff), ("logg", logg), ("meta", meta)):
+                if np.isfinite(value):
+                    fh.write(f"# {key} = {value}\n")
             fh.write("# wavelength_unit = Angstrom\n")
             fh.write("# flux_unit = erg/cm2/s/A\n")
             fh.write("# columns = wavelength_A flux\n")
             for x, y in zip(wl, fx):
-                # Ensure x and y are Python scalars to avoid TypeError in f-strings
                 fh.write(f"{float(x):.6f} {float(y):.8e}\n")
 
-        return ("ok", fname, {"teff":teff,"logg":logg,"meta":meta})
+        return ("ok", fname, {"teff": teff, "logg": logg, "meta": meta})
 
     def _write_lookup(self, out_dir, rows):
         path = os.path.join(out_dir, "lookup_table.csv")
         write_lookup_csv(rows, path, columns=["file_name", "teff", "logg", "meta"], comment=False, restval=float("nan"))
         print(f"    Lookup table saved: {path}")
 
-    # optional standalone
     def discover_and_run(self, selected_models=None):
+        """Extract every grid named (default: all MSG lists); RuntimeError at the end lists the grids that failed."""
         avail = self.discover_models()
         if not avail:
-            print("No MSG spectral grids found."); return
+            print("No MSG spectral grids found.")
+            return
         selected = selected_models or avail
-        total=0; failed=[]
+        total = 0
+        failed = []
         for name in selected:
             print(f"\n[msg] Processing spectral grid: {name}")
             try:
@@ -442,6 +454,7 @@ class MSGSpectraGrabber:
         if failed:
             raise RuntimeError(f"MSG: {len(failed)} of {len(selected)} grid(s) failed:\n  " + "\n  ".join(failed))
 
+
 def main():
     import argparse
     p = argparse.ArgumentParser(description="Extract MSG stellar spectra to ASCII with correct params")
@@ -451,6 +464,7 @@ def main():
     a = p.parse_args()
     g = MSGSpectraGrabber(base_dir=a.output, max_workers=a.workers)
     g.discover_and_run(selected_models=a.models)
+
 
 if __name__ == "__main__":
     main()

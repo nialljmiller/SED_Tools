@@ -24,7 +24,7 @@ from .lookup import write_lookup_csv
 from .hdf5_wavelengths import WAVE_KEYS, is_index_grid, recover_wavelengths_from_hdf5  # noqa: F401
 from .spectrum_io import read_text_spectrum  # noqa: F401
 from .units import (FLUX_GUESS_WHY, FLUX_UNITS, SPEED_OF_LIGHT_ANGSTROM, WAVELENGTH_FACTORS,  # noqa: F401
-                    SpectrumMeta, UnitInfo, _check_flux_unit_name, _load_header, _with_flux_unit, check_flux_unit,
+                    SpectrumMeta, UnitInfo, _load_header, _with_flux_unit, check_flux_unit,
                     convert_to_standard_units, detect_catalog_units, detect_flux_unit_from_range,
                     detect_units_from_header, detect_units_single_file, detect_wavelength_unit_from_range,
                     read_spectrum_data, undeclared_flux_unit, validate_converted_spectrum)
@@ -260,16 +260,19 @@ def clean_model_dir(
         divided by}; those files are listed under 'converted' or 'recovered' too.
 
     Raises:
-        ValueError: before any file is changed, if flux_unit is not a FLUX_UNITS
-            name, or is None while the sampled headers do not all declare the
-            flux unit; the message gives the best guess.
+        KeyError: before any file is changed, if flux_unit is not a FLUX_UNITS
+            name (its conversion is looked up first).
+        ValueError: before any file is changed, if flux_unit is None while the
+            sampled headers do not all declare the flux unit; the message gives
+            the best guess.
         RuntimeError: if any spectrum is left unconverted (invalid, unrecoverable
             index grid, unreadable, or without a declared flux unit when no
             grid-wide units were found). Raised after every file has been tried
             and the lookup table rebuilt, listing each such file and why.
             Raised at once if rewriting a file fails.
     """
-    _check_flux_unit_name(flux_unit)
+    if flux_unit is not None:
+        FLUX_UNITS[flux_unit]  # the conversion, looked up before any file is rewritten
     txt_files = sorted(glob.glob(os.path.join(model_dir, "*.[tT][xX][tT]")))  # .txt in any case
     
     summary = {

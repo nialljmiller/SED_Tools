@@ -17,16 +17,15 @@ import numpy as np
 from .._constants import available_memory_bytes as _available_ram_bytes
 from .._constants import planck_flam as _blackbody
 from .build import resample_to_grid
-from .fileio import flux_offset, write_header
+from .fileio import flux_offset, read_axes, write_header
 from ..ui_utils import banner
 
 
 def _read_cube_header(path):
-    """Read grids and wavelengths only — does not load flux into RAM."""
+    """The four axis lengths and the four axes (Teff, log g, [M/H], wavelength); the flux is not read."""
     with open(path, "rb") as f:
-        sizes = struct.unpack("iiii", f.read(16))
-        axes = [np.frombuffer(f.read(8 * n), dtype=np.float64).copy() for n in sizes]
-    return (*sizes, *axes)
+        sizes = struct.unpack("4i", f.read(16))
+        return (*sizes, *read_axes(f, *sizes))
 
 
 # --- The dense Teff grid and its SEDs ---
