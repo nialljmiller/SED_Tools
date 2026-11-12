@@ -1,4 +1,4 @@
-Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=composed;WavelengthUnit=Angstrom;Components=filter+optics+qe+atmosphere;ComponentsSource=composed;Recipe=filter+optics+qe+atmosphere%20@%20lsst_std_am1.2;Atmosphere=site=lsst_std%20airmass=1.2;Sources=components/filter/y_v1p5.dat%3B%20components/optics/mirrors_lenses_v1p5.dat%3B%20components/qe/detector_v1p5.dat%3B%20atmospheres/lsst_std/am1.20.dat
+Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=composed;WavelengthUnit=Angstrom;Components=filter+optics+qe+atmosphere;ComponentsSource=composed;Recipe=filter+optics+qe+atmosphere%20@%20lsst_std_am1.2;Atmosphere=site=lsst_std%20airmass=1.2;Sources=components/filter/y_v1p5.dat%20|%20components/optics/mirrors_lenses_v1p5.dat%20|%20components/qe/detector_v1p5.dat%20|%20atmospheres/lsst_std/am1.20.dat
 3000.0,0.0
 3001.0,0.0
 3002.0000000000005,0.0

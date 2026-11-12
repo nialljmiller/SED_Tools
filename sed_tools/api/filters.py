@@ -674,11 +674,9 @@ class Filters:
         for fac, inst, bands, directory in cls._targets(targets, filter_root):
             if directory is None:
                 fac, inst, directory = cls._installed_or_fetched(fac, inst, filter_root, catalogue, fetch)
-            files = {p.stem: p for p in sorted(Path(directory).glob("*.dat"))}
-            for band in (files if bands is None else bands):
-                if band not in files:
-                    raise FileNotFoundError(f"{fac}/{inst} has no band {band!r} in {directory}")
-                chosen.append((fac, inst, band, Path(directory)))
+            if bands is None:
+                bands = [p.stem for p in sorted(Path(directory).glob("*.dat"))]
+            chosen.extend((fac, inst, band, Path(directory)) for band in bands)
         return chosen
 
     @classmethod

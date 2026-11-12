@@ -343,11 +343,11 @@ def system_header(band: str) -> Dict[str, str]:
             "Sources": " | ".join(SYSTEM_INPUTS[key].source for key in (band, OPTICS, QE))}
 
 
-def build_system(filter_root: Union[str, Path], raw: Union[str, Path, None] = None) -> Path:
+def build_system(filter_root: Union[str, Path], raw: Union[str, Path, None] = None, **_ignored) -> Path:
     """Add the components of the legacy Argus/System curves and label the curves' column row.
 
     Only line 1 of each published curve changes (:func:`system_header`);
-    its samples are kept byte for byte.
+    its samples are kept byte for byte.  It reads local files only: ``session`` and ``archive_dir`` are ignored.
     """
     filter_root = Path(filter_root)
     instrument_dir = filter_root / FACILITY / "System"
@@ -383,12 +383,9 @@ def build_system(filter_root: Union[str, Path], raw: Union[str, Path, None] = No
 
 
 def build(filter_root: Union[str, Path], raw: Union[str, Path, None] = None, *, instrument: str = "System",
-          session=None, archive_dir: Union[str, Path, None] = None) -> Path:
-    """Build ``Argus/<instrument>`` (``DR280`` or ``System``); see the module docstring."""
-    if instrument == "DR280":
-        return build_dr280(filter_root, raw, session=session, archive_dir=archive_dir)
-    if instrument == "System":
-        if session is not None or archive_dir is not None:
-            raise ValueError("Argus/System is built from local files only; session and archive_dir apply to DR280")
-        return build_system(filter_root, raw)
-    raise ValueError(f"No Argus builder for {instrument!r}; available: DR280, System")
+          **options) -> Path:
+    """Build ``Argus/<instrument>`` (``DR280`` or ``System``); see the module docstring.
+
+    ``options`` (``session``, ``archive_dir``) go to :func:`build_dr280`; :func:`build_system` ignores them.
+    """
+    return {"DR280": build_dr280, "System": build_system}[instrument](filter_root, raw, **options)

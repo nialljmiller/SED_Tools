@@ -94,10 +94,7 @@ _VARIABLE = ("airmass", "pwv", "observatory", "wmin", "wmax", "wres")
 
 def pwv_option(pwv: float) -> str:
     """The SkyCalc spelling of a PWV value; SkyCalc offers a fixed list."""
-    for option in PWV_OPTIONS:
-        if math.isclose(float(option), pwv, rel_tol=0, abs_tol=1e-9):
-            return option
-    raise ValueError(f"SkyCalc accepts pwv in {PWV_OPTIONS} mm, not {pwv:g}")
+    return {float(option): option for option in PWV_OPTIONS}[pwv]
 
 
 def airmass_altitude(airmass: float) -> float:
@@ -524,8 +521,6 @@ def build(
 
     points = [(airmass, pwv) for airmass in airmasses for pwv in pwvs]
     for site in sites:
-        if site not in SITES:
-            raise ValueError(f"Unknown SkyCalc site '{site}'. Choose from: {', '.join(sorted(SITES))}")
         archive = _Archive(Path(archive_dir) / site) if archive_dir else None
         _build_site(root / site, site, client, points, edges, fetch_resolution, store_resolution, chunks, archive)
     return root

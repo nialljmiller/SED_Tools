@@ -18,9 +18,10 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 import requests
 from bs4 import BeautifulSoup
 
-from .manifest import InstrumentManifest
+from .manifest import ComponentError, InstrumentManifest, archived_bands, curve_source, write_filter_index
 from .curve_metadata import (ENERGY, SOURCE_ASSUMED, SOURCE_SVO, SVO_ALTERNATIVES, SVOMetadataClient,
-                              SVOUnreachableError, svo_components_header, svo_fps_url, svo_get, write_filter_file)
+                             SVOUnreachableError, read_filter_header, svo_components_header, svo_detector, svo_fps_url,
+                             svo_get, write_filter_file)
 from ..ui_utils import prompt_choice
 from ..ui_utils import parse_multi_selection
 
@@ -221,7 +222,18 @@ class SVOFilterBrowser:
         self._save_all([(row, directory, band) for band, row in bands.items()], {directory: set(expected)})
 
     def _save_all(self, targets: Sequence[Tuple[FilterRow, Path, str]], expected: Dict[Path, set]) -> None:
-        """Save each ``(row, directory, band)``, then write each directory's index and manifest."""
+        """Save each ``(row, directory, band)``, then write each directory's index and manifest.
+
+        ComponentError, before anything is written, when a directory holds curves of another source
+        instrument than the rows saved there: one set is never made of two instruments' curves.
+        """
+        sources: Dict[Path, set] = {}
+        for row, out_dir, _ in targets:
+            sources.setdefault(out_dir, set()).add(curve_source(row.filter_id))
+        for out_dir, saved in sources.items():
+            _refuse_other_sources(out_dir, saved, expected.get(out_dir, ()))
+        for out_dir in sources:
+            out_dir.mkdir(parents=True, exist_ok=True)
         failed = []
         for idx, (row, out_dir, band_name) in enumerate(targets, 1):
             print(f"  [{idx:3d}/{len(targets):3d}] {row.filter_id}")
@@ -240,25 +252,21 @@ class SVOFilterBrowser:
                                "run again to retry them:\n  " + "\n  ".join(failed))
 
     def _target(self, row: FilterRow) -> Tuple[Path, str]:
-        """The instrument directory (created) and band file name for ``row``."""
-        out_dir = os.path.join(self.base_dir, _clean_path(row.facility or "UnknownFacility"),
-                               _clean_path(row.instrument or "UnknownInstrument"))
-        os.makedirs(out_dir, exist_ok=True)
-        return Path(out_dir), _clean_filename(row.band)
+        """The instrument directory and band file name for ``row``."""
+        return (Path(self.base_dir) / _clean_path(row.facility or "UnknownFacility")
+                / _clean_path(row.instrument or "UnknownInstrument"), _clean_filename(row.band))
 
     def _save_filter(self, row: FilterRow, out_path: str) -> None:
         """Write one SVO curve with its metadata header."""
         record = self.metadata_client.get_filter(row.filter_id)
         if record is None or record.wavelength.size == 0:
             raise ValueError("SVO returned no transmission data")
-        if record.detector_type:
-            detector_type, source = record.detector_type, SOURCE_SVO
-        else:
-            detector_type, source = ENERGY, SOURCE_ASSUMED
+        detector_type, source = svo_detector(record, ENERGY)
+        if source == SOURCE_ASSUMED:
             print(f"    [warn] SVO gives no DetectorType for {row.filter_id}; assuming energy")
         write_filter_file(out_path, record.wavelength, record.transmission, detector_type=detector_type, source=source,
                           filter_id=row.filter_id, wavelength_unit=record.wavelength_unit,
-                          extra=svo_components_header(record.components))
+                          extra=svo_components_header(record.components, row.filter_id))
         print(f"    [saved] {out_path} ({detector_type}-counting)")
 
     # -------------------- HTTP helpers --------------------
@@ -296,14 +304,36 @@ class SVOFilterBrowser:
         return None
 
 
+def _refuse_other_sources(directory: Path, sources: set, members: Iterable[str] = ()) -> None:
+    """ComponentError if saving curves of ``sources`` (source instruments) in ``directory`` would mix instruments.
+
+    A plain download saves one SVO instrument per folder, and never beside curves whose FilterID names
+    another.  ``members`` are the bands of one of NJM's products being completed (made from the SVO
+    instruments it claims): those may be of any source.
+    """
+    archived, members, sources = archived_bands(directory), set(members), set(sources) - {""}
+    other = {}
+    for path in sorted(directory.glob("*.dat")):
+        source = curve_source(read_filter_header(path).get("FilterID"))
+        if source and source not in sources and path.stem not in members and path.stem not in archived:
+            other.setdefault(source, []).append(path.name)
+    if other:
+        mixed = "holds " + "; ".join(f"{', '.join(names)} of {source}" for source, names in other.items())
+    elif len(sources) > 1 and not members:
+        mixed = f"would receive the curves of {len(sources)} instruments"
+    else:
+        return
+    raise ComponentError(f"{directory} {mixed}. Saving {', '.join(sorted(sources))} there would make one set of "
+                         "two instruments' curves; save each instrument in a folder of its own (move the other "
+                         "curves out) and run again.")
+
+
 def _write_index_and_manifest(directory: Path, expected: Iterable[str]) -> None:
     """Write the instrument's MESA index (every ``.dat`` present) and merge its curves into the manifest.
 
     The manifest keeps every expected band, so a retry never takes a partial download for a complete set.
     """
-    dat_files = sorted(f.name for f in directory.iterdir() if f.is_file() and f.name.endswith(".dat"))
-    with open(directory / directory.name, "w", encoding="utf-8") as fh:  # e.g. .../Generic/Johnson/Johnson
-        fh.write("\n".join(dat_files) + ("\n" if dat_files else ""))
+    write_filter_index(directory)
     manifest = InstrumentManifest.load(directory)
     headers = InstrumentManifest.from_published(directory)
     manifest.bands = sorted(set(manifest.bands) | set(expected))
@@ -422,7 +452,7 @@ def _download_facilities(browser: SVOFilterBrowser, facilities: Sequence[Facilit
                 browser.download_filters(filters)
             except SVOUnreachableError:
                 raise
-            except RuntimeError as exc:  # some filters of this instrument could not be saved
+            except (RuntimeError, ComponentError) as exc:  # some filters of this instrument could not be saved
                 failed.append(f"{facility.label}/{instrument.label}: {exc}")
     if failed:
         raise RuntimeError("Bulk download incomplete:\n" + "\n".join(failed))
@@ -478,7 +508,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     try:
         run_interactive(base_dir)
         return 0
-    except RuntimeError as exc:
+    except (RuntimeError, ComponentError) as exc:
         print(exc)
         return 1
 

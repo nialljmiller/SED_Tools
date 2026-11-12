@@ -144,8 +144,4 @@ def build_mzls(filter_root, *, session=None, **_ignored) -> Path:
 
 
 def build(filter_root, *, instrument="BASS", **kwargs) -> Path:
-    if instrument == "BASS":
-        return build_bass(filter_root, **kwargs)
-    if instrument == "MzLS":
-        return build_mzls(filter_root, **kwargs)
-    raise ValueError(f"No Legacy Surveys builder for {instrument!r}; available: BASS, MzLS")
+    return {"BASS": build_bass, "MzLS": build_mzls}[instrument](filter_root, **kwargs)

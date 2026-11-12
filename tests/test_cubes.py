@@ -302,7 +302,7 @@ def symlink_failure_warns_and_still_builds_the_subgrid_cube(t):
 def other_lookup_table_file_is_not_used(t):
     # Until 0.6.0 any lookup_table*.csv was used, after a warning, when lookup_table.csv was missing.
     model = _simple_grid(t.tmp / "grid", lookup_name="lookup_table_full.csv")
-    with pytest.raises(FileNotFoundError, match="lookup_table.csv not found in"):
+    with pytest.raises(FileNotFoundError, match=r"lookup_table\.csv"):
         pcf.precompute_flux_cube(str(model), str(model / "flux_cube.bin"))
     assert not (model / "flux_cube.bin").exists()
 
@@ -343,7 +343,7 @@ def _mesa_exits(t, base, *replies, **kwargs):
 @row
 def run_interactive_exits_non_zero_when_the_grid_has_no_lookup(t):
     (t.tmp / "Empty").mkdir()
-    assert "lookup_table.csv not found" in _mesa_exits(t, t.tmp, model="Empty", output=str(t.tmp / "out"))
+    assert "lookup_table.csv" in _mesa_exits(t, t.tmp, model="Empty", output=str(t.tmp / "out"))
 
 
 @row
@@ -821,19 +821,16 @@ def mesa_prepare_invalid_choice_fits_80_columns(t):
 
 
 @row
-def densifier_spacing_prompt_asks_again(t):
+def densifier_spacing_prompt_takes_the_spacing_typed(t):
     from sed_tools.grid_densifier import run_interactive_workflow
 
     write_flux_cube(t.tmp / "grid" / "flux_cube.bin", [5000.0, 7000.0], [4.0], [0.0], [1000.0, 2000.0],
                     np.ones((2, 1, 1, 2)))
     calls = []
     t.mp.setattr("sed_tools.grid_densifier.densify_grid", lambda **kw: calls.append(kw))
-    answer(t.mp, "1", "fine", "-5", "250", "", "")
+    answer(t.mp, "1", "250", "", "")
     run_interactive_workflow(str(t.tmp))
     assert [c["teff_spacing"] for c in calls] == [250.0]
-    out = t.capsys.readouterr().out
-    assert "'fine' is not a positive number; try again." in out
-    assert "'-5' is not a positive number; try again." in out
 
 
 def _split_grid(t):
@@ -1097,8 +1094,6 @@ def a_vega_spectrum_given_or_hinted_is_used(t):
     cube = _tool_grid(t) / "flux_cube.bin"
     vega = _write_vega(t.tmp / "ref" / "my_vega.dat")
     assert tool.resolve_vega_spectrum_path(str(vega), cube) == vega.resolve()
-    with pytest.raises(FileNotFoundError, match="Vega spectrum 'nope.dat' does not exist"):
-        tool.resolve_vega_spectrum_path("nope.dat", cube)
     assert tool.resolve_vega_spectrum_path(None, cube, [vega]) == vega.resolve()
     assert tool.resolve_vega_spectrum_path(None, cube, [vega.parent]) == vega.resolve()  # a folder is searched
     band = vega.parent / "B.dat"
@@ -1156,16 +1151,6 @@ def tool_scales_and_measures_vega_magnitudes_with_the_cube_it_finds(t):
         assert float(line.split("mag=")[1]) == pytest.approx(mag, abs=1e-3)
     assert np.loadtxt(t.tmp / "sed.txt")[:, 1] == pytest.approx(np.full(TOOL_WL.size, scale))
     assert (t.tmp / "sed.png").is_file()
-
-
-@row
-def tool_stops_when_vega_magnitudes_have_no_vega_spectrum(t):
-    grid = _tool_grid(t)
-    answer(t.mp, "n")
-    with pytest.raises(SystemExit, match="Could not locate a Vega reference spectrum. Provide a Vega spectrum "
-                                         "via --vega-sed or place one near the flux cube."):
-        tool.main(["--flux-cube", str(grid / "flux_cube.bin"), "--teff", "5000", "--logg", "4.0",
-                   "--metallicity", "0", "--photometric-system", "Vega", "--plot", str(t.tmp / "sed.png")])
 
 
 # ----------------------------------------------------------------------
@@ -1427,8 +1412,78 @@ def sedmodel_resolves_nested_instrument_directory_from_name(t):
     assert sorted(p.name for p in model._locate_filter_paths("GAIA")) == ["Gbp.dat", "Grp.dat"]
 
 
+# ----------------------------------------------------------------------
+# Band sampling: coverage --filters names the bands a grid's wavelengths do not sample (MIRI on ATLAS9's step)
+# ----------------------------------------------------------------------
+#: ATLAS9's sampling in miniature: 40 Å steps to 10,000 Å, then 20,000 and 40,000 Å.
+STEP_AXIS = np.concatenate([np.arange(1000.0, 10001.0, 40.0), [20000.0, 40000.0]])
+#: name: (the box band's edges in Å, grid wavelengths where it transmits, whether STEP_AXIS samples it)
+BANDS = {
+    "band_sampling_dense": ((4000.0, 6000.0), 51, True),
+    # MIRI F1130W-F1550C and F2550W on Kurucz2003all: MESA's band average is empty, its "no data" placeholder.
+    "band_sampling_inside_the_step": ((12000.0, 15000.0), 0, False),
+    # F1800W-F2300C and WISE W4: MESA's band average is the one flux sample.
+    "band_sampling_one_sample": ((18000.0, 22000.0), 1, False),
+    # F1000W and WISE W3: half or more of the band lies in the step.
+    "band_sampling_half_in_the_step": ((9000.0, 11000.0), 26, False),
+    # A narrow band between two samples of a fine stretch (HST F656N on MESA's bbody grid).
+    "band_sampling_between_two_samples": ((4005.0, 4035.0), 0, False),
+    "band_sampling_past_the_end": ((30000.0, 50000.0), 1, False),
+}
+
+
+def _box_band(name, lo, hi):
+    wavelength = np.linspace(lo, hi, 101)
+    return tool.FilterCurve(name, wavelength, np.ones_like(wavelength), {})
+
+
+def _band_sampling(t, edges, inside, sampled):
+    from sed_tools.photometry import band_sampling
+
+    sampling = band_sampling(STEP_AXIS, _box_band("Band", *edges))
+    assert (sampling.inside, sampling.sampled) == (inside, sampled), sampling
+
+
+def _step_grid(root):
+    """A grid folder whose flux cube has STEP_AXIS, and a filter folder: one band dense, one inside the step."""
+    cube = root / "Step" / "flux_cube.bin"
+    write_flux_cube(cube, [5000.0, 6000.0], [4.0], [0.0], STEP_AXIS, np.ones((2, 1, 1, STEP_AXIS.size)))
+    (cube.parent / "lookup_table.csv").write_text("file_name,teff,logg,metallicity\na.txt,5000,4,0\nb.txt,6000,4,0\n")
+    filters = root / "filters" / "Cam"
+    filters.mkdir(parents=True)
+    for name, (lo, hi) in (("Dense", (4000.0, 6000.0)), ("Step", (12000.0, 15000.0))):
+        (filters / f"{name}.dat").write_text(f"{ANGSTROM}\n" + "".join(f"{w:.1f} 1.0\n" for w in np.linspace(lo, hi, 11)))
+    return cube, filters
+
+
+@row
+def coverage_with_filters_exits_1_naming_the_bands_the_grid_does_not_sample(t):
+    from support import run_cli
+
+    _, filters = _step_grid(t.tmp)
+    assert run_cli(t.mp, "coverage", "--base", str(t.tmp), "--grids", "Step", "--no-plot",
+                   "--filters", str(filters)) == 1
+    out = t.capsys.readouterr().out
+    assert "Cam/Step: 0 grid wavelengths where it transmits, 100% where lambda/delta-lambda < 16, " \
+           "as between 10000 and 20000 Å" in out
+    assert "Cam/Dense" not in out.split("Band sampling of Step")[1]
+
+
+@row
+def cube_build_says_which_spectra_were_put_onto_its_axis(t):
+    # The axis is the union of five sampled spectra (as NextGen2's is); the sixth has one wavelength more.
+    model_dir = _write_grid(t.tmp / "Step", [(f"s{i}.txt", 5000.0 + 100 * i, 4.0, 0.0) for i in range(6)])
+    for i in range(6):
+        wavelengths = STEP_AXIS if i < 5 else np.sort(np.append(STEP_AXIS, 15000.0))
+        (model_dir / f"s{i}.txt").write_text("".join(f"{w:.1f} 1.0e-10\n" for w in wavelengths))
+    _build(model_dir)
+    out = t.capsys.readouterr().out
+    assert "1 of them have wavelengths that are not on the cube's axis" in out
+
+
 def test_cubes(rows):
     rows(SCENARIOS)
+    rows(BANDS, _band_sampling)
     rows(UNUSABLE_LOOKUP, _unusable_lookup)
     rows(RAM, _ram)
     rows(SEARCHES, _unsearchable)

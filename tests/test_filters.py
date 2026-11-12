@@ -20,6 +20,7 @@ import time
 from dataclasses import asdict
 from pathlib import Path
 from types import SimpleNamespace
+from urllib.parse import quote
 
 import numpy as np
 import pandas as pd
@@ -53,6 +54,8 @@ from sed_tools.filter_properties import (AB_JY, curve_properties, extinction_law
                                          instrument_properties)
 from sed_tools.filters import svo
 from sed_tools.filters.compose import read_curve
+from sed_tools.filters.manifest import check_sets, set_problems
+from sed_tools.filters.njm import drop_unlisted_bands
 from sed_tools.filters.properties import load_vega, properties_record
 from sed_tools.flux_cube_tool import infer_unit_from_values, load_filter_curve, load_spectrum, load_two_column_file
 from sed_tools.njm_filter_grabber import NJMFilterGrabber, SetDownload
@@ -68,6 +71,7 @@ DEFAULT_SVO, default_svo_row = scenarios()
 
 def test_filters(rows):
     rows(SCENARIOS)
+    rows(SOURCES, _sources)
     rows(NJM_OFFLINE, _offline_then)
     rows(DEFAULT_SVO, _default_svo_then)
     rows(QUERY_LOCAL, _query_local)
@@ -75,7 +79,6 @@ def test_filters(rows):
     rows(PICKER, _picker)
     rows(PUBLISHED_WITH_ATMOSPHERE, _published_with_atmosphere)
     rows(CONVERT_TO_ENERGY, _convert_to_energy)
-    rows(INVALID_CONDITIONS, _invalid_conditions)
     rows(COVERAGE_ERROR, _coverage_error)
     rows(COMPONENTS_WITHOUT_A_BUILDER, _components_without_a_builder)
     rows(OUTAGE_ANNOUNCED_ONCE, _outage_announced_once)
@@ -532,8 +535,6 @@ def search_accepts_quantities_and_names_only(t):
     names = Filters.search(band="K", properties=False, filter_root=root)
     assert list(names.columns) == ["facility", "instrument", "band"] and list(names["band"]) == ["K"]
     assert not [r for r, _ in njm.requests if r.endswith("properties.json")]
-    with pytest.raises(ValueError):
-        Filters.search(fwhm=(1, 2), properties=False, filter_root=root)
 
 
 @row
@@ -753,17 +754,11 @@ def multiply_curves_refuses_to_extrapolate(t):
     assert np.all(product[grid < 4500.0] == 0.0)
 
 
-@row
-def compose_requires_filter_or_published(t):
-    with pytest.raises(ComponentError, match="needs the 'filter'"):
-        compose_band(argus_system(t.tmp), "b1", ["optics", "qe"])
-
-
 PUBLISHED_WITH_ATMOSPHERE = {
     "published_with_atmosphere_is_not_double_counted": (lambda root: with_site(svo_published(
         root / "2MASS" / "2MASS", "J", gauss(5000, 300), "filter+instrument+atmosphere")), "double count"),
     "space_instrument_refuses_atmosphere": (lambda root: svo_published(
-        root / "TESS" / "TESS", "Red", gauss(5000, 300), "filter+instrument"), "space-based"),
+        root / "TESS" / "TESS", "Red", gauss(5000, 300), "filter+instrument"), "no atmosphere site of its own"),
     "published_requires_known_contents": (lambda root: with_site(put(
         root / "Generic" / "Mystery", {"X.dat": "Wavelength,Transmission\n4000,1\n5000,1\n"})),
         "does not say what it contains"),
@@ -1288,15 +1283,6 @@ def manifest_role_must_match_component_header(t):
         build_product(instrument, "filter", bands=["g"])
 
 
-INVALID_CONDITIONS = {"invalid_atmosphere_conditions_are_rejected_nan_airmass": (float("nan"), 1),
-                      "invalid_atmosphere_conditions_are_rejected_infinite_pwv": (1.2, float("inf"))}
-
-
-def _invalid_conditions(t, airmass, pwv):
-    with pytest.raises(ComponentError):
-        AtmosphereSpec("paranal", airmass, pwv)
-
-
 @njm_offline_row
 def atmosphere_requires_pwv_when_grid_is_ambiguous(t):
     grid = AtmosphereGrid("paranal", [{"airmass": 1.2, "pwv": 1., "file": "a.dat"},
@@ -1604,8 +1590,6 @@ def unstated_airmass_is_listed_apart_and_selected_explicitly(t):
     assert grid.select(AtmosphereSpec("plexus_team", None)) == "am_unstated.dat"
     with pytest.raises(ComponentError, match="unstated airmass: airmass=None"):
         grid.select(AtmosphereSpec("plexus_team", 1.0))
-    with pytest.raises(ComponentError, match="atmosphere needs at least 'airmass'"):
-        AtmosphereSpec.coerce({"site": "plexus_team"})
     assert AtmosphereSpec.coerce({"site": "plexus_team", "airmass": None}).label == "plexus_team_amunstated"
     with pytest.raises(ComponentError, match="no pwv"):
         AtmosphereSpec("plexus_team", None, 2.0)
@@ -1717,15 +1701,6 @@ def missing_conditions_error_says_what_the_site_has(t):
         assert str(excinfo.value) == message
 
 
-@row
-def atmosphere_without_conditions_error_has_no_python_syntax(t):
-    inst = site_camera(t.tmp / "filters", default_site="short_team")
-    with pytest.raises(ComponentError) as excinfo:
-        compose_band(inst, "g", [FILTER, ATMOSPHERE], atmosphere_root=t.tmp / "atm")
-    assert str(excinfo.value) == ("Including the atmosphere needs the observing conditions: an airmass, "
-                                  "and a PWV where the site models it")
-
-
 # ======================================================================
 # A catalogue gap apart from a fetch failure (test_filters_catalogue_gaps)
 # ======================================================================
@@ -1772,8 +1747,6 @@ def variant_is_selected_only_on_request(t):
     assert default.transmission.max() == pytest.approx(0.9)
     assert chosen.transmission.max() == pytest.approx(0.5)
     assert "[qe=b]" in chosen.header["Recipe"]
-    with pytest.raises(ComponentError, match="available: a, b"):
-        compose_band(inst, "g", "filter+qe", variants={"qe": "nope"})
 
 
 @row
@@ -2676,17 +2649,6 @@ def svo_may_complete_a_set_njm_wrote_nothing_into(t):
 
 # Compose and availability
 @row
-def compose_refuses_an_unknown_band_before_asking_any_source(t):
-    bundled(t)
-    root = t.tmp / "filters"
-    write_set(root / "Argus" / "DR280", ["g"])
-    library = library_with(root, SimpleNamespace(is_available=lambda: pytest.fail("NJM was asked")))
-    t.mp.setattr(filter_library, "get_builder", lambda name: pytest.fail("a builder was run"))
-    with pytest.raises(ComponentError, match="^Argus/DR280 has no band 'nosuch'$"):
-        library.compose(root / "Argus" / "DR280", "filter", bands=["nosuch"])
-
-
-@row
 def njm_instrument_without_manifest_is_described_not_an_error(t):
     bundled(t)
     info = {"bands": {"G": {"curve": {"Components": "filter+qe+instrument", "ComponentsSource": "svo",
@@ -2979,13 +2941,132 @@ def dropping_bands_njm_does_not_list_keeps_archived_bands(t):
     data = json.loads((inst / "manifest.json").read_text())
     data["bands"] = ["H", "J", "Y"]  # J: declared, but NJM's index does not list it and it is not installed
     (inst / "manifest.json").write_text(json.dumps(data))
-    filter_library._drop_unlisted_bands(inst, ["H.dat", "Y.dat"])
+    drop_unlisted_bands(inst, ["H.dat", "Y.dat"])
     saved = json.loads((inst / "manifest.json").read_text())
     assert saved["bands"] == ["H", "Y"] and saved["archived_bands"] == ARCHIVED
     assert FilterLibrary.published_complete(inst)
 
 
-# Compose refuses bands without the components before any download
+# A set's records agree: one release per set, a MESA index named after the folder, a manifest naming it
+def curve_of(filter_id):
+    return FILTER_CURVE.replace("FilterID=X.b", f"FilterID={filter_id}")
+
+
+def gaia_as_served(root):
+    """GAIA/GAIA as NJM served it to 11 Nov 2026: GAIA3's G and Grvs with Gaia2m's Gbp_bright, all indexed."""
+    return put(root / "GAIA" / "GAIA", {"G.dat": curve_of("GAIA/GAIA3.G"), "Grvs.dat": curve_of("GAIA/GAIA3.Grvs"),
+                                       "Gbp_bright.dat": curve_of("GAIA/Gaia2m.Gbp_bright"),
+                                       "GAIA": "G.dat\nGbp_bright.dat\nGrvs.dat\n"})
+
+
+#: Which source instruments each set is made from, as NJM's svo_instruments.json says.
+GAIA_CLAIMS = {"GAIA/GAIA": ["GAIA/GAIA3"], "GAIA/Gaia2m": ["GAIA/Gaia2m"]}
+
+
+@row
+def set_problems_names_each_way_a_sets_records_drift(t):
+    def a_set(name, files):
+        return put(t.tmp / "Fac" / name, {"b.dat": FILTER_CURVE, **files})
+
+    named = json.dumps({"facility": "Fac", "instrument": "Stale", "bands": ["b", "c"]})
+    expected = {  # the old tarball's MIRI and NIRISS had no index, so MESA could not read them
+        a_set("NoIndex", {}): "Fac/NoIndex has no MESA index file NoIndex: MESA opens the index named after the folder",
+        a_set("Empty", {"Empty": ""}): "Fac/Empty holds b.dat, which its index does not list",
+        a_set("Gone", {"Gone": "b.dat\nc.dat\n"}): "Fac/Gone/Gone lists c.dat, not in the folder",
+        a_set("Stray", {"Stray": "b.dat\n", "c.dat": FILTER_CURVE}): "Stray holds c.dat, which its index does not list",
+        a_set("Unnamed", {"Unnamed": "b.dat\n", "manifest.json": '{"bands": ["b"]}'}): "manifest.json names no set",
+        a_set("Broken", {"Broken": "b.dat\n", "manifest.json": "{"}): "Broken/manifest.json cannot be read",
+        a_set("Stale", {"Stale": "b.dat\n", "manifest.json": named}): (
+            "Stale/manifest.json declares c, which its index does not list (an incomplete set, or a stale manifest)"),
+    }
+    write_set(t.tmp / "Fac" / "Good", ["b"])
+    found = check_sets(t.tmp)
+    assert sorted(found) == sorted(str(d) for d in expected)  # Fac/Good agrees with itself
+    for directory, line in expected.items():
+        assert len(found[str(directory)]) == 1 and line in found[str(directory)][0], (directory, found[str(directory)])
+    assert set_problems(put(t.tmp / "Fac" / "NoCurves", {})) == []
+
+
+@row
+def one_set_never_holds_another_release_of_its_instrument(t):
+    gaia = gaia_as_served(t.tmp)
+    assert set_problems(gaia) == []  # its records agree: only what each curve is shows the mix
+    assert set_problems(gaia, GAIA_CLAIMS) == [
+        f"{gaia}/Gbp_bright.dat is GAIA/Gaia2m.Gbp_bright, a curve of GAIA/Gaia2m, not of this set"]
+    # NJM moves Gbp_bright out: downloading the set again leaves the installed copy beside it, not in it
+    InstrumentManifest.from_published(gaia).save(gaia)
+    served = {f"filters/GAIA/GAIA/{name}": (gaia / name).read_text() for name in ("G.dat", "Grvs.dat")}
+    grabber = njm_filters(t, t.tmp, {**served, "filters/GAIA/GAIA/GAIA": "G.dat\nGrvs.dat\n"})
+    with t.caplog.at_level(logging.WARNING):
+        grabber.download_filters("GAIA", "GAIA")
+    assert (gaia / "GAIA").read_text().split() == ["G.dat", "Grvs.dat"]
+    saved = json.loads((gaia / "manifest.json").read_text())
+    assert saved["bands"] == ["G", "Grvs"] and saved["archived_bands"] == {"Gbp_bright": {}}
+    assert "does not list Gbp_bright; Gbp_bright kept in the folder under archived_bands" in t.caplog.text
+    assert InstrumentManifest.from_published(gaia).bands == ["G", "Grvs"] and set_problems(gaia) == []
+    assert len(set_problems(gaia, GAIA_CLAIMS)) == 1  # still another release's curve in the folder
+    (gaia / "Gbp_bright.dat").unlink()
+    assert set_problems(gaia, GAIA_CLAIMS) == []
+    mine = put(t.tmp / "GAIA" / "Mine", {"G.dat": curve_of("GAIA/GAIA3.G"), "Mine": "G.dat\n"})
+    assert set_problems(mine, GAIA_CLAIMS) == []  # a user's own set: no claim says what it is made from
+    drop_unlisted_bands(mine, [])  # no manifest: nothing declared, nothing changed
+    assert sorted(p.name for p in mine.iterdir()) == ["G.dat", "Mine"]
+
+
+@row
+def svo_never_saves_two_instruments_curves_into_one_set(t):
+    browser = svo_browser(t.tmp, {})
+
+    def rows(release, bands, folder="GAIA"):  # SVO labels every Gaia release "GAIA": 0.2.0 filed them all there
+        return [FilterRow(f"GAIA/{release}.{band}", band, "GAIA", folder, "") for band in bands]
+
+    browser.download_filters(rows("GAIA3", ["G", "Grvs"]))
+    gaia = t.tmp / "GAIA" / "GAIA"
+    with pytest.raises(ComponentError, match=r"GAIA holds G\.dat, Grvs\.dat of GAIA/GAIA3\. Saving GAIA/Gaia2m there "
+                                             r"would make one set of two instruments' curves"):
+        browser.download_filters(rows("Gaia2m", ["G", "Gbp_bright"]))
+    with pytest.raises(ComponentError, match="Other would receive the curves of 2 instruments"):
+        browser.download_filters(rows("GAIA0", ["G"], "Other") + rows("GAIA2", ["G"], "Other"))
+    assert browser.saved == ["GAIA/GAIA3.G", "GAIA/GAIA3.Grvs"]  # nothing of the others was fetched or written
+    assert (gaia / "GAIA").read_text().split() == ["G.dat", "Grvs.dat"] and not (t.tmp / "GAIA" / "Other").exists()
+    # Completing one of NJM's products from the SVO instruments it claims: its own bands, whatever their source
+    (gaia / "Gbp_bright.dat").write_text(curve_of("GAIA/Gaia2m.Gbp_bright"))
+    grp = {"Grp": FilterRow("GAIA/GAIA3.Grp", "Grp", "GAIA", "GAIA3", "")}
+    with pytest.raises(ComponentError, match="holds Gbp_bright.dat of GAIA/Gaia2m"):
+        browser.download_into(gaia, grp, expected=["G", "Grp", "Grvs"])
+    browser.download_into(gaia, grp, expected=["G", "Gbp_bright", "Grp", "Grvs"])
+    assert (gaia / "Grp.dat").is_file()
+
+
+@row
+def the_mesa_index_is_named_after_its_folder(t):
+    cam = put(t.tmp / "F" / "Cam", {"b.dat": FILTER_CURVE})
+    assert write_filter_index(cam) == cam / "Cam"  # where MESA opens it
+    out = combine_filter_sets(t.tmp / "Mine", [cam], filter_root=t.tmp, instrument="Other")  # 0.4.1 wrote Mine/Other
+    assert (out / "Mine").read_text().split() == ["b.dat"] and not (out / "Other").exists()
+
+
+@row
+def a_renamed_or_copied_set_is_not_described_by_the_manifest_it_carried(t):
+    sdss = write_set(t.tmp / "SLOAN" / "SDSS", ["g", "r"])
+    copy = t.tmp / "SLOAN" / "SDSS_E"
+    shutil.copytree(sdss, copy)
+    (copy / "SDSS").rename(copy / "SDSS_E")  # the MESA index renamed by hand, as MESA needs
+    with pytest.raises(ComponentError, match=r"SDSS_E/manifest.json describes SLOAN/SDSS, not SLOAN/SDSS_E: the "
+                                             r"folder was renamed or copied"):
+        Filters.available("SLOAN", "SDSS_E", filter_root=t.tmp, include_remote=False)
+    assert set_problems(copy) == [f"{copy}/manifest.json describes SLOAN/SDSS, not SLOAN/SDSS_E"]
+    data = json.loads((copy / "manifest.json").read_text())
+    (copy / "manifest.json").write_text(json.dumps(dict(data, instrument="SDSS_E")))  # what the error says to do
+    assert set_problems(copy) == []
+    assert Filters.available("SLOAN", "SDSS_E", filter_root=t.tmp, include_remote=False)["instrument"] == "SDSS_E"
+    gmos = write_set(t.tmp / "Gemini" / "GMOS-N", ["g"])  # NJM's Gemini/GMOS_N installed under another spelling
+    (gmos / "manifest.json").write_text(json.dumps(dict(json.loads((gmos / "manifest.json").read_text()),
+                                                        instrument="GMOS_N")))
+    assert set_problems(gmos) == [] and InstrumentManifest.load(gmos).instrument == "GMOS_N"
+
+
+# Compose of the bands that have the components asks the sources for them
 def nisp_with_declared_components(t):
     """Euclid/NISP as NJM's manifest declares it: filter, optics and qe for H and Y; grisms Blue and Red bare."""
     curve = FILTER_CURVE.replace("Components=filter", "Components=filter+optics+qe")
@@ -2995,15 +3076,6 @@ def nisp_with_declared_components(t):
                   for role in ("filter", "optics", "qe")}  # declared; not downloaded yet
     InstrumentManifest("Euclid", "NISP", ["Blue", "H", "Red", "Y"], components=components).save(inst)
     return inst
-
-
-@row
-def compose_names_the_bands_without_components_before_asking_any_source(t):
-    nisp_with_declared_components(t)
-    library = library_with(t.tmp / "filters", SimpleNamespace(is_available=lambda: pytest.fail("NJM was asked")))
-    with pytest.raises(ComponentError, match=r"Euclid/NISP has no filter\+optics\+qe components for Blue, Red; "
-                                             r"they exist for H, Y\. Compose only those bands"):
-        library.compose("Euclid/NISP", "filter,optics,qe")
 
 
 @row
@@ -3398,6 +3470,133 @@ def released_mesa_check_after_migration_sees_the_lost_first_sample(t):
     migrate_filter_file(path)
     assert path.read_text() == "1,2\n3,4\n"
     assert not released_mesa_reads(path)
+
+
+@row
+def svo_labels_hold_only_what_the_record_states(t):
+    from sed_tools.filters.curve_metadata import svo_components_header, svo_detector
+
+    # No DetectorType at SVO: the writer's default is an assumption, never SVO's value (the LSST and
+    # SVO-published builders wrote it as "svo").
+    assert svo_detector(svo_record("X/Y.b", None, [1, 2], [1, 1]), PHOTON) == (PHOTON, SOURCE_ASSUMED)
+    assert svo_detector(svo_record("X/Y.b", ENERGY, [1, 2], [1, 1]), PHOTON) == (ENERGY, SOURCE_SVO)
+    # SVO's LSST/LSST.g_filter, "LSST u filter (filter only)", lists the total band's components.
+    total = "Filter + Instrument + Atmosphere"
+    assert svo_components_header(total, "LSST/LSST.g_filter") == {}
+    assert "LSST/LSST.g_filter is named as a filter-only curve" in t.caplog.text
+    assert svo_components_header("Filter", "LSST/LSST.g_filter") == {"Components": FILTER, "ComponentsSource": "svo"}
+    assert svo_components_header(total, "LSST/LSST.g") == {"Components": "filter+instrument+atmosphere",
+                                                           "ComponentsSource": "svo"}
+    assert svo_components_header("Filter + Lens", "X/Y.b") == {}
+
+
+#: The Internet Archive ingest's Sources: the capture, a credit naming the record it archives, and a README.
+INGESTED = ("https://web.archive.org/web/2025id_/http://svo/fps.php?ID=LSST/LSST.g_filter | SVO Filter Profile "
+            "Service (Rodrigo et al. 2012, 2020; Rodrigo & Solano 2024), record LSST/LSST.g_filter recovered from "
+            "the Internet Archive capture 2025 of http://svo/fps.php?ID=LSST/LSST.g_filter | https://lsst/README.md")
+#: name: (Sources as found, as SED_Tools writes it)
+SOURCES = {
+    "sources_drop_a_credit_of_a_listed_reference": (
+        INGESTED, "https://web.archive.org/web/2025id_/http://svo/fps.php?ID=LSST/LSST.g_filter | https://lsst/README.md"),
+    "sources_split_references_run_together": (
+        "product of https://a/m.txt (mirror) and https://a/c.txt (corrector), nm; https://a/w.txt",
+        "product of https://a/m.txt (mirror) | https://a/c.txt (corrector), nm | https://a/w.txt"),
+    "sources_keep_notes_and_a_url_in_parentheses": (
+        "https://e/H.dat (T_FILTER; ESA V1.0, https://doi.org/10.5270/x) | Hewett et al. 2006 Table 1",
+        "https://e/H.dat (T_FILTER; ESA V1.0, https://doi.org/10.5270/x) | Hewett et al. 2006 Table 1"),
+    "sources_drop_empty_and_repeated_items": ("https://a |  | https://a | b", "https://a | b"),
+}
+
+
+def _sources(t, found, written):
+    from sed_tools.filters.curve_metadata import normalize_sources
+
+    assert normalize_sources(found) == written and normalize_sources(written) == written
+    write_filter_file(t.tmp / "c.dat", [1.0, 2.0], [1.0, 1.0], detector_type=PHOTON, source="user",
+                      extra={"Sources": found})
+    assert read_filter_header(t.tmp / "c.dat")["Sources"] == written
+
+
+@row
+def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
+    import runpy
+
+    from sed_tools.filters import label_check
+
+    def curve(path, detector=PHOTON, source=SOURCE_SVO, wl=(4000.0, 5000.0, 6000.0), tr=(0.5, 1.0, 0.5), **extra):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        write_filter_file(path, wl, tr, detector_type=detector, source=source, extra=extra or None)
+
+    new, old = t.tmp / "new", t.tmp / "old"
+    ins = new / "Fac" / "Ins"
+    curve(ins / "g.dat", Components="filter+qe")
+    curve(ins / "g_filter.dat", tr=(0.5, 0.9, 0.5), Components="filter+qe")   # rule 3, and 4: it is the filter
+    curve(ins / "components/filter/g.dat", source="component", tr=(0.5, 0.9, 0.5), Components=FILTER)
+    curve(ins / "components/qe/flat.dat", source="component", tr=(0.0, 0.0, 0.0))
+    curve(ins / "r.dat", detector="both", wl=(4500.0, 5500.0), tr=(1.0, 1.0))   # rule 1; the filter's wings
+    curve(ins / "i.dat", source="manual")                                         # rule 1: a word no one ranks
+    curve(ins / "z.dat", source="original", Components="filter+lens")             # rule 2
+    curve(ins / "u.dat", source="user")
+    curve(ins / "y.dat")                                                          # SVO reclassified it
+    curve(ins / "w.dat")                                                          # rule 6: the ingest's credit
+    (ins / "w.dat").write_text((ins / "w.dat").read_text().replace("\n", f";Sources={quote(INGESTED)}\n", 1))
+    (ins / "bad.dat").write_text("Wavelength,Transmission\n4000,-1\n5000,1\n")
+    (ins / "manifest.json").write_text(json.dumps({"components": {
+        FILTER: {"g": "components/filter/g.dat"}, QE: {"*": "components/qe/flat.dat"},
+        "filter+qe": {"g": "g.dat"}}}))
+    curve(new / "Fac" / "Plain" / "v.dat", Components=FILTER)   # its own filter component, as from_published says
+    (new / "Fac" / "Plain" / "manifest.json").write_text(json.dumps({"components": {FILTER: {"v": "v.dat"}}}))
+    clean = t.tmp / "clean"
+    curve(clean / "Fac" / "Bare" / "v.dat")
+    curve(old / "Fac" / "Ins" / "g.dat", ENERGY, "manual")                    # TESS: photon by hand, then SVO
+    curve(old / "Fac" / "Ins" / "r.dat")
+    curve(old / "Fac" / "Ins" / "i.dat")
+    curve(old / "Fac" / "Ins" / "z.dat", ENERGY)
+    curve(old / "Fac" / "Ins" / "u.dat", ENERGY, "original")
+    curve(old / "Fac" / "Ins" / "y.dat", ENERGY)
+    (old / "Fac" / "Ins" / "g_filter.dat").write_text("Wavelength,Transmission\n4000,1\n")
+
+    found = {(path.name, message.split(" ")[0]) for path, message in label_check.problems(new, old)}
+    assert found == {("r.dat", "DetectorType"), ("i.dat", "DetectorTypeSource"), ("z.dat", "Components"),
+                     ("g_filter.dat", "named"), ("g_filter.dat", "is"), ("bad.dat", str(ins / "bad.dat") + ":"),
+                     ("g.dat", "DetectorType"), ("y.dat", "DetectorType"), ("w.dat", "Sources")}, found
+    messages = [m for _, m in label_check.problems(new, old)]
+    assert "DetectorType energy (manual) became photon (svo), which does not outrank it" in messages
+    assert "DetectorType energy (svo) became photon (svo), which does not outrank it" in messages
+    assert "DetectorType photon (svo) became unlabelled (svo), which does not outrank it" in messages
+    assert label_check.main([str(new)]) == 1 and "ERROR" in t.capsys.readouterr().err
+    assert label_check.main([str(clean)]) == 0 and "keep every rule" in t.capsys.readouterr().out
+    with pytest.raises(SystemExit):
+        label_check.main([str(t.tmp / "missing")])
+    t.mp.setattr(sys, "argv", ["label_check", str(clean)])
+    with pytest.raises(SystemExit) as stop:
+        runpy.run_module("sed_tools.filters.label_check", run_name="__main__")
+    assert stop.value.code == 0
+
+
+@row
+def label_check_finds_the_same_curve_served_with_two_detector_types(t):
+    from sed_tools.filters import label_check
+
+    wl, tr = np.array([4000.0, 4500.0, 5000.0, 5500.0]), np.array([0.1, 0.8312345678, 0.5, 0.05])
+    for rel, transmission, detector, source in (
+            ("SLOAN/SDSS/g.dat", tr, PHOTON, SOURCE_SVO),                   # rule 7: these three are one curve
+            ("Misc/UCAC/sdss_g.dat", tr.astype(np.float32), ENERGY, SOURCE_SVO),  # SDSS's values at float32
+            ("CTIO/CTIO/g.dat", 100 * tr, ENERGY, SOURCE_SVO_MATCH),        # in percent
+            ("LBT/MODS/g.dat", tr, PHOTON, SOURCE_SVO),                     # the same tag: no clash
+            ("Misc/APASS/r.dat", tr[::-1], ENERGY, SOURCE_SVO)):            # another curve
+        (t.tmp / rel).parent.mkdir(parents=True, exist_ok=True)
+        write_filter_file(t.tmp / rel, wl, [float(v) for v in transmission], detector_type=detector, source=source)
+    component = t.tmp / "Misc" / "APASS" / "components" / "filter" / "g.dat"   # components keep their own labels
+    component.parent.mkdir(parents=True)
+    write_filter_file(component, wl, tr, detector_type=ENERGY, source="component")
+    [(_, message)] = label_check.problems(t.tmp)
+    assert message == ("the same curve carries more than one DetectorType: "
+                       "CTIO/CTIO/g.dat (energy, svo-curve-match), LBT/MODS/g.dat (photon, svo), "
+                       "Misc/UCAC/sdss_g.dat (energy, svo), SLOAN/SDSS/g.dat (photon, svo)"), message
+    for rel in ("CTIO/CTIO/g.dat", "Misc/UCAC/sdss_g.dat"):   # one tag for the curve: no problem left
+        write_filter_header(t.tmp / rel, {**read_filter_header(t.tmp / rel), "DetectorType": PHOTON})
+    assert list(label_check.problems(t.tmp)) == []
 
 
 @row

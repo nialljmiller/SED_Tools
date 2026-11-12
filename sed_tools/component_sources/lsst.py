@@ -42,7 +42,7 @@ import numpy as np
 from ..filters.compose import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, AtmosphereGrid,
                                  InstrumentManifest, add_component)
 from ..filters.curve_metadata import (ENERGY, PHOTON, SOURCE_ASSUMED, SOURCE_SVO, SVOMetadataClient,
-                               svo_components_header, write_filter_file)
+                               svo_components_header, svo_detector, write_filter_file)
 from ._original import CONNECT_TIMEOUT
 
 FACILITY = "LSST"
@@ -115,9 +115,10 @@ def _publish_svo(instrument_dir: Path, svo_client: Optional[SVOMetadataClient]) 
         record = svo_client.get_filter(f"LSST/LSST.{band}")
         if record is None:
             raise RuntimeError(f"SVO has no LSST/LSST.{band}")
+        detector_type, source = svo_detector(record, PHOTON)
         write_filter_file(
             instrument_dir / f"{band}.dat", record.wavelength, record.transmission,
-            detector_type=record.detector_type or PHOTON, source=SOURCE_SVO,
+            detector_type=detector_type, source=source,
             filter_id=f"LSST/LSST.{band}", wavelength_unit=record.wavelength_unit,
             extra=svo_components_header(record.components),
         )
@@ -149,8 +150,6 @@ def build(
     session=None,
     svo_client: SVOMetadataClient = None,
 ) -> Path:
-    if instrument not in RELEASES:
-        raise ValueError(f"No LSST release for {instrument!r}; available: {sorted(RELEASES)}")
     release, suffix, published_from = RELEASES[instrument]
     tag = tag or release
     if session is None:

@@ -6,11 +6,11 @@ this module re-exports them.
 
 import argparse
 import glob  # noqa: F401  (kept: `from sed_tools.cli import *` gives what 0.5.0 gave)
-import inspect
+import inspect  # noqa: F401  (kept, as glob)
 import json
 import logging
 import os
-import re
+import re  # noqa: F401  (kept, as glob)
 import shlex  # noqa: F401  (kept, as glob)
 import sys
 import textwrap  # noqa: F401  (kept, as glob)
@@ -143,24 +143,9 @@ def _add_flux_unit_option(parser) -> None:
                              "asks in a terminal, and stops without one); spectra that declare theirs keep it")
 
 
-def _positive_int(text: str) -> int:
-    try:
-        value = int(text)
-    except ValueError:
-        value = 0
-    if value < 1:
-        raise argparse.ArgumentTypeError(f"expected a whole number of at least 1, got {text!r}")
-    return value
-
-
 def _airmass_arg(text):
     """argparse type: an airmass, or 'unstated' for an atmosphere published without one."""
-    if str(text).strip().lower() == _UNSTATED:
-        return _UNSTATED
-    try:
-        return float(text)
-    except ValueError:
-        raise argparse.ArgumentTypeError(f"expected a number or 'unstated', got {text!r}") from None
+    return _UNSTATED if text.strip().lower() == _UNSTATED else float(text)
 
 
 def _add_filter_product_options(parser, *, components=None):
@@ -309,9 +294,9 @@ def _add_grid_build_parsers(sub) -> None:
     gp.add_argument("--auto", action="store_true", help="Run optimized auto-training with hyperparameter search")
     gp.add_argument("--library", help="Library path for auto-training")
     gp.add_argument("--output", help="Output directory for auto-training")
-    gp.add_argument("--trials", type=_positive_int, default=None,
+    gp.add_argument("--trials", type=int, default=None,
                     help="With --auto: number of hyperparameter search trials (default 20)")
-    gp.add_argument("--epochs", type=_positive_int, default=None,
+    gp.add_argument("--epochs", type=int, default=None,
                     help="With --auto: maximum epochs of the final training (default 100)")
 
     p_densify = sub.add_parser("densify", help="Fill coarse Teff gaps in a flux_cube.bin")
@@ -347,6 +332,9 @@ def _add_grid_tool_parsers(sub) -> None:
                       help="Spectral grid folder name(s); default: every local grid")
     covp.add_argument("--no-plot", action="store_true", help="Skip the coverage plot")
     covp.add_argument("--out", default=None, help="Output path for the plot PNG (single spectral grid only)")
+    covp.add_argument("--filters", nargs="+", default=None, metavar="FILTERS",
+                      help="Filter curves or instrument folders (e.g. JWST/MIRI) to check the grid's wavelengths "
+                           "against; exits 1 if the grid does not sample one of the bands")
 
     imp = sub.add_parser("import", help="Ingest a local grid of .txt spectra into the pipeline")
     imp.add_argument("--path", required=True, help="Directory of .txt spectra (or a single .txt file)")
@@ -364,41 +352,21 @@ def _add_grid_tool_parsers(sub) -> None:
 # Each takes the parsed arguments and its subcommand's parser (for .error)
 # and returns the process exit status: 0 done, 1 failed, 2 usage error.
 
-def _range_option(args, name: str, parser) -> Optional[Tuple[float, float]]:
+def _range(values) -> Optional[Tuple[float, float]]:
     """A ``--NAME LOW HIGH`` cut as ``(low, high)``, or None when not given."""
-    values = getattr(args, name)
-    if values is None:
-        return None
-    low, high = values
-    if low > high:
-        parser.error(f"--{name} LOW HIGH: {low:g} is above {high:g}")
-    return low, high
+    return None if values is None else tuple(values)
 
 
 def _cmd_grids(args, parser):
     run_spectra_flow(source=args.source, base_dir=args.base, models=args.models, workers=args.workers,
                      force_bundle_h5=not args.no_h5, build_flux_cube=not args.no_cube, flux_unit=args.flux_unit,
-                     teff_range=_range_option(args, "teff", parser), logg_range=_range_option(args, "logg", parser),
-                     meta_range=_range_option(args, "meta", parser),
-                     wl_range=_range_option(args, "wavelength", parser))
+                     teff_range=_range(args.teff), logg_range=_range(args.logg), meta_range=_range(args.meta),
+                     wl_range=_range(args.wavelength))
     return 0
 
 
-def _facility_instrument(target: str, parser) -> List[str]:
-    parts = target.strip("/").split("/")
-    if len(parts) != 2:
-        parser.error("target must be Facility/Instrument")
-    return parts
-
-
-def _atmosphere_request(args, parser) -> Optional[Dict]:
+def _atmosphere_request(args) -> Optional[Dict]:
     """The ``atmosphere`` argument of Filters.fetch/compose, from --airmass, --pwv and --atmosphere-site."""
-    if args.pwv is not None and args.airmass is None:
-        parser.error("--pwv needs --airmass")
-    if args.atmosphere_site and args.airmass is None:
-        parser.error("--atmosphere-site needs --airmass (a number, or 'unstated')")
-    if "atmosphere" in re.split(r"[\s,+]+", (args.components or "").lower()) and args.airmass is None:
-        parser.error("--components atmosphere needs --airmass (a number, or 'unstated')")
     if args.airmass is None:
         return None
     atmosphere = {"airmass": None if args.airmass == _UNSTATED else args.airmass, "pwv": args.pwv}
@@ -410,41 +378,20 @@ def _atmosphere_request(args, parser) -> Optional[Dict]:
 def _cmd_filters(args, parser):
     """``filters`` and ``filters-compose``: download (or browse) an instrument, optionally composing it."""
     if not args.target:
-        if any((args.components, args.bands, args.detector_type, args.airmass is not None,
-                args.pwv is not None, args.atmosphere_site, args.allow_heavy, args.allow_partial)):
-            parser.error("component options require a Facility/Instrument target")
         return run_filters_flow(base_dir=args.base)
-    options = dict(filter_root=args.base, components=args.components, atmosphere=_atmosphere_request(args, parser),
+    options = dict(filter_root=args.base, components=args.components, atmosphere=_atmosphere_request(args),
                    bands=args.bands, detector_type=args.detector_type,
                    allow_heavy=args.allow_heavy, allow_partial=args.allow_partial)
     try:
         if args.cmd == "filters-compose":
             Filters.compose(args.target, **options)
         else:
-            print(Filters.fetch(*_facility_instrument(args.target, parser), **options))
+            facility, instrument = args.target.strip("/").split("/")
+            print(Filters.fetch(facility, instrument, **options))
     except (ComponentError, RequestException, OSError, RuntimeError) as exc:
-        print(f"[filters] {_atmosphere_error(exc, args) if options['atmosphere'] else exc}")
+        print(f"[filters] {exc}")
         return 1
     return 0
-
-
-def _atmosphere_error(exc: Exception, args) -> str:
-    """A failed composition's error, in command-line terms (--atmosphere-site) for an instrument with
-    several sites and no default; a site's own errors already say which conditions it has."""
-    from ..filters.library import FilterLibrary
-
-    if args.atmosphere_site:
-        return str(exc)
-    directory = FilterLibrary(args.base).directory(args.target)
-    try:
-        info = _installed_availability(directory)
-    except (ComponentError, OSError, RuntimeError) as lookup_error:
-        return f"{exc} (its atmosphere sites could not be listed: {lookup_error})"
-    sites = _atmosphere_sites(info)
-    if len(sites) > 1 and _default_site(info, sites) is None:
-        return (f"{directory.parent.name}/{directory.name} has several atmosphere sites "
-                f"({', '.join(sites)}) and no default; choose one with --atmosphere-site")
-    return str(exc)
 
 
 def _cmd_filters_combine(args, parser):
@@ -458,14 +405,12 @@ def _cmd_filters_combine(args, parser):
 
 def _cmd_filters_detector(args, parser):
     if args.correct or args.convert:
-        if args.facility or args.force or args.dry_run:
-            parser.error("--correct and --convert take only PATH and --bands")
+        if args.dry_run:  # they edit in place: ignoring --dry-run would write what it was asked not to
+            parser.error("--correct and --convert edit the files in place; they take no --dry-run")
         edit = Filters.convert_detector_type if args.convert else Filters.correct_detector_type
         rows = edit(args.path, args.convert or args.correct, bands=args.bands)
         print(f"\n[filters] {len(rows)} files, {sum(r['changed'] for r in rows)} changed")
         return 0
-    if args.bands:
-        parser.error("--bands needs --correct or --convert")
     # Each file is printed as it is tagged, so on failure main() has only the error left to say.
     rows = Filters.tag_detector_types(args.path, facility=args.facility, force=args.force, dry_run=args.dry_run)
     counts = Counter((r["detector_type"], r["source"]) for r in rows)
@@ -486,13 +431,13 @@ def _cmd_filters_detector(args, parser):
 
 
 def _cmd_filters_info(args, parser):
-    target = _facility_instrument(args.target, parser)
-    info = Filters.available(*target, filter_root=args.base, include_remote=not args.offline)
-    catalogue = _catalogue_entry(*target, args.base, offline=args.offline)
+    facility, instrument = args.target.strip("/").split("/")
+    info = Filters.available(facility, instrument, filter_root=args.base, include_remote=not args.offline)
+    catalogue = _catalogue_entry(facility, instrument, args.base, offline=args.offline)
     if args.json:
         print(json.dumps(dict(info, catalogue=catalogue), indent=2))
     else:
-        _print_filter_set("/".join(target), info, catalogue)
+        _print_filter_set(f"{facility}/{instrument}", info, catalogue)
     # NJM's catalogue (description, licence, band properties) is an extra: without it the
     # availability report still stands, so only an incomplete availability report fails.
     return 1 if _availability_errors(info) else 0
@@ -514,21 +459,10 @@ def _cmd_filters_inventory(args, parser):
 def _cmd_filters_build_components(args, parser):
     if args.source == "all":
         return _build_all_component_sources(args.base, args.sites)
-    if args.source.lower() not in BUILDERS:
-        parser.error(f"unknown source {args.source!r}; choose one of: {', '.join(sorted(BUILDERS))}, or all")
-    builder = get_builder(args.source)
-    needs = inspect.signature(builder).parameters.get("instrument")
-    if not args.instrument and needs is not None and needs.default is inspect.Parameter.empty:
-        parser.error(f"{args.source} builds several instruments; choose one with --instrument")
-    if args.source.lower() == "tabular":
-        from ..component_sources.tabular import SOURCES
-
-        if args.instrument not in SOURCES:
-            parser.error(f"tabular has no instrument {args.instrument!r}; choose one of: {', '.join(SOURCES)}")
     options = (("raw", args.raw), ("instrument", args.instrument), ("sites", args.sites),
                ("airmasses", args.airmass), ("pwvs", args.pwv), ("archive_dir", args.archive))
     kwargs = {key: value for key, value in options if value}
-    print(f"[filters] Built {builder(args.base, **kwargs)}")
+    print(f"[filters] Built {get_builder(args.source)(args.base, **kwargs)}")
     return 0
 
 
@@ -569,16 +503,12 @@ def _cmd_ml_completer(args, parser):
 
 
 def _cmd_ml_generator(args, parser):
-    limits = {key: value for key, value in (("n_trials", args.trials), ("epochs", args.epochs)) if value}
     if not args.auto:
-        if limits:
-            parser.error("--trials and --epochs apply to --auto training only")
         return run_ml_generator_flow(base_dir=args.base, models_dir=args.models_dir) or 0
-    if not args.library or not args.output:
-        parser.error("--auto needs --library and --output")
     if refused_without("torch", "sklearn", "optuna"):
         return 1
     from ..ml import auto_train_generator
+    limits = {key: value for key, value in (("n_trials", args.trials), ("epochs", args.epochs)) if value}
     auto_train_generator(library=args.library, output=args.output, **limits)
     return 0
 
@@ -623,10 +553,14 @@ def _cmd_coverage(args, parser):
     failed = []
     for nm in names:
         try:
-            SED.coverage(nm, model_root=args.base, plot=not args.no_plot,
-                         out_path=args.out if len(names) == 1 else None)
+            summary = SED.coverage(nm, model_root=args.base, plot=not args.no_plot,
+                                   out_path=args.out if len(names) == 1 else None, filters=args.filters)
         except (ValueError, OSError, RuntimeError) as exc:
             failed.append(f"{nm}: {exc}")
+            continue
+        if summary.get("bands_not_sampled"):
+            failed.append(f"{nm}: does not sample {len(summary['bands_not_sampled'])} band(s): "
+                          + ", ".join(summary["bands_not_sampled"]))
     return _failure_status("coverage", failed)
 
 
@@ -738,12 +672,7 @@ def _print_error(exc: BaseException) -> None:
     """``sed-tools: error: <message>`` on stderr; with SED_TOOLS_DEBUG=1 the traceback first."""
     if os.environ.get("SED_TOOLS_DEBUG") == "1":
         traceback.print_exception(type(exc), exc, exc.__traceback__)
-    if isinstance(exc, EOFError):
-        message = ("input ended before a question was answered; run it in a terminal, "
-                   "or see the command's --help for options that give the answers")
-    else:
-        message = str(exc) or type(exc).__name__
-    print(f"sed-tools: error: {message}", file=sys.stderr)
+    print(f"sed-tools: error: {str(exc) or type(exc).__name__}", file=sys.stderr)
 
 
 # ------------ Main CLI ------------

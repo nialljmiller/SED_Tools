@@ -188,12 +188,48 @@ _KEY_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 _ESCAPES = {c: f"%{ord(c):02X}" for c in '% \t\r\n,;"#'}
 
 
+#: The separator between the references a curve's ``Sources`` lists.
+SOURCES_SEPARATOR = " | "
+_URL_RE = re.compile(r"(?:https?|ftp)://[^\s|()<>]*[^\s|()<>.,;:]")
+_TRAILING_JOINER = re.compile(r"(?:\s*(?:[;,+&]|\band\b|\bx\b))+\s*$")
+
+
+def normalize_sources(value: str) -> str:
+    """``value`` as SED_Tools writes every ``Sources``: distinct references separated by ``" | "``.
+
+    A reference is a URL, path or citation, with any notes after it.  An item that runs references together
+    (two or more URLs outside its parentheses, as ``"product of URL1; URL2"``) is split before each further
+    URL.  An item that is not led by a URL, and whose URLs other items are led by, is dropped: it credits a
+    reference already listed (a Wayback capture's original URL, say).  Empty and repeated items are dropped.
+    """
+    items = [piece for item in str(value).split(SOURCES_SEPARATOR) for piece in _split_run_on(item.strip())]
+    leads = [m.group(0) for item in items if (m := _URL_RE.match(item))]
+    kept: List[str] = []
+    for item in items:
+        urls = _URL_RE.findall(item)
+        if urls and not _URL_RE.match(item) and all(any(url in lead for lead in leads) for url in urls):
+            continue
+        if item and item not in kept:
+            kept.append(item)
+    return SOURCES_SEPARATOR.join(kept)
+
+
+def _split_run_on(item: str) -> List[str]:
+    """``item`` split before each URL after the first that lies outside its parentheses."""
+    cuts = [m.start() for m in _URL_RE.finditer(item) if item.count("(", 0, m.start()) <= item.count(")", 0, m.start())]
+    if len(cuts) < 2:
+        return [item]
+    return [_TRAILING_JOINER.sub("", item[a:b]).strip() for a, b in zip([0] + cuts[1:], cuts[1:] + [len(item)])]
+
+
 def format_metadata_field(fields: Mapping[str, Optional[str]]) -> str:
     """Return the ``Key=value;...`` field SED_Tools appends to a column row.
 
     Known keys come first, in ``HEADER_KEYS`` order; any others (read from a
     file written by a newer version) follow as given, so a rewrite keeps them.
+    ``Sources`` is written as :func:`normalize_sources` gives it.
     """
+    fields = {key: normalize_sources(value) if key == "Sources" and value else value for key, value in fields.items()}
     keys = [key for key in HEADER_KEYS if fields.get(key)]
     keys += [key for key in fields if key not in HEADER_KEYS and fields.get(key)]
     for key in keys:
@@ -502,17 +538,29 @@ class SVOMetadataClient:
         return ids
 
 
-def svo_components_header(components: Optional[str]) -> Dict[str, str]:
-    """``Components``/``ComponentsSource`` header fields from SVO's components string."""
+def svo_detector(record: SVOFilterRecord, default: str) -> Tuple[str, str]:
+    """``(DetectorType, DetectorTypeSource)`` of a curve written from SVO's ``record``: SVO's type as ``svo``,
+    or ``default`` as ``assumed`` when the record states none (a default is never SVO's statement)."""
+    return (record.detector_type, SOURCE_SVO) if record.detector_type else (default, SOURCE_ASSUMED)
+
+
+def svo_components_header(components: Optional[str], filter_id: Optional[str] = None) -> Dict[str, str]:
+    """``Components``/``ComponentsSource`` header fields from SVO's components string for ``filter_id``.
+
+    SVO names a band's filter-only curve ``<band>_filter`` or ``<band>_fil``.  Such a record whose string
+    names more than the filter contradicts itself (SVO copied the total band's string to LSST/LSST.g_filter,
+    "LSST u filter (filter only)"), so, like an unrecognised string, it is left unrecorded.
+    """
     if not components:
         return {}
-    from .manifest import ComponentError, parse_components, recipe_name
+    from .manifest import FILTER, ComponentError, filter_sibling_base, parse_components, recipe_name
 
     try:
         roles = parse_components(components)
-    except ComponentError:
-        logger.warning("Unrecognised SVO components string %r; the curve's Components are left unrecorded",
-                       components)
+        if roles and roles != (FILTER,) and filter_id and filter_sibling_base(filter_id.rsplit(".", 1)[-1]):
+            raise ComponentError(f"{filter_id} is named as a filter-only curve")
+    except ComponentError as exc:
+        logger.warning("SVO components string %r not recorded: %s", components, exc)
         return {}
     return {"Components": recipe_name(roles), "ComponentsSource": SOURCE_SVO} if roles else {}
 
@@ -709,7 +757,7 @@ def _resolved_fields(header: Mapping[str, str], client: SVOMetadataClient, detec
         record = client.get_filter(filter_id)
         wavelength_unit = record.wavelength_unit or wavelength_unit
         if not header.get("Components"):
-            published_components = svo_components_header(record.components)
+            published_components = svo_components_header(record.components, filter_id)
     new_fields: Dict[str, Optional[str]] = {**header, "FilterID": filter_id, "DetectorType": detector_type,
                                             "DetectorTypeSource": source, "WavelengthUnit": wavelength_unit}
     if published_components:

@@ -19,14 +19,12 @@ from .spectrum_io import _bundle_path, build_h5_bundle
 
 
 def spectra_grabber(src: str, base_dir: str, **kwargs):
-    """A new grabber for ``src`` (njm, svo, msg or mast); ValueError for any other name.
+    """A new grabber for ``src``: njm, svo, msg or mast.
 
     The class is looked up in its module at call time, so a patched grabber class is used.
     """
     grabbers = {"njm": njm.NJMSpectraGrabber, "svo": svo.SVOSpectraGrabber,
                 "msg": msg.MSGSpectraGrabber, "mast": mast.MASTSpectraGrabber}
-    if src not in grabbers:
-        raise ValueError(f"Unknown source: {src}")
     return grabbers[src](base_dir=base_dir, **kwargs)
 
 
@@ -181,16 +179,11 @@ def _build_combined_grid(selected_models: List[Tuple[str, str]], output_dir: str
 
 
 def _import_sources(src: Path) -> Tuple[List[Path], Path]:
-    """The .txt spectra to import from a directory or a single file, and their directory."""
-    if not src.exists():
-        raise FileNotFoundError(f"Source path not found: {src}")
-
+    """The .txt spectra to import from a directory or a single .txt file, and their directory."""
     if src.is_dir():
         files, src_dir = sorted(src.glob("*.[tT][xX][tT]")), src
-    elif src.is_file() and src.suffix.lower() == ".txt":
-        files, src_dir = [src], src.parent
     else:
-        raise ValueError(f"Source must be a directory or a .txt file: {src}")
+        files, src_dir = ([src] if src.suffix.lower() == ".txt" else []), src.parent
 
     if not files:
         raise RuntimeError(f"No .txt spectra found in {src}")

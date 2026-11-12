@@ -1,7 +1,9 @@
 """SEDCompleter, the engine that extends an SED beyond its wavelength range: a black body refined by a neural network.
 
+Also here: Completer, the 0.4.1 class over it that extends a whole grid (extend_catalog); the module's command line
+and its sed-tools menu; and train_model, load_model and extend_catalog, which api.MLCompleter calls.
 A model folder: model.pt, config.json (architecture, scalers, grid), training_plots.png and prediction_examples.png.
-Old import path sed_tools.ml_sed_completer, also run as python -m; sed_tools.ml is the 0.4.1 API over this engine.
+Old import path sed_tools.ml_sed_completer, also run as python -m; sed_tools.ml holds the 0.4.1 functions.
 """
 
 import json
@@ -17,8 +19,9 @@ from ..cube.fileio import load as load_cube
 from ..ui_utils import (ask_number as _ask_number, banner as _banner, menu_choice as _menu_choice, refused_without,
                        section as _section)
 from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, DEFAULT_WL_POINTS, Engine, Network, action_menu, data_loaders, fit,
-                     log_grid, mlp, model_configs, normalised_params, param_scaler, predict, print_libraries, resample,
+                     log_grid, model_configs, normalised_params, param_scaler, predict, print_libraries, resample,
                      sample_spectra, training_libraries, write_spectrum)
+from .common import mlp  # noqa: F401  (kept: `from sed_tools.ml.completer import *` gives mlp, as before)
 
 logger = logging.getLogger("sed_tools.ml_sed_completer")
 
@@ -149,14 +152,6 @@ class SEDCompleter(Engine):
 
     _create_wavelength_grid = staticmethod(log_grid)
 
-    def _normalize_params(self, teff: float, logg: float, meta: float) -> np.ndarray:
-        """Normalize stellar parameters using stored scaler."""
-        return np.array(normalised_params(self.scaler_params, teff, logg, meta))
-
-    def _load_flux_cube(self, library_path: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-        """teff, logg, meta, wavelengths and flux cube of library_path/flux_cube.bin."""
-        return load_cube(os.path.join(library_path, "flux_cube.bin"))
-
     def _prepare_training_data(
         self,
         library_path: str,
@@ -164,7 +159,7 @@ class SEDCompleter(Engine):
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """(X, y, params, masks), float32: X a randomly placed input window, y the spectrum, masks 1 where y counts."""
         print("Loading flux cube...")
-        teff, logg, meta, wavelengths, flux_cube = self._load_flux_cube(library_path)
+        teff, logg, meta, wavelengths, flux_cube = load_cube(os.path.join(library_path, "flux_cube.bin"))
         nt, nl, nm = len(teff), len(logg), len(meta)
         n_samples = min(max_samples, nt * nl * nm)
         print(f"  Grid: {nt} Teff × {nl} logg × {nm} [M/H] = {nt * nl * nm} total SEDs")
@@ -523,8 +518,6 @@ class SEDCompleter(Engine):
         """
         import torch
         path = Path(path)
-        if not path.is_dir():
-            raise ValueError(f"Model path must be a directory: {path}")
         with open(path / self.CONFIG_FILE, 'r') as f:
             self.config = json.load(f)
         self.scaler_params = self.config['scaler_params']
@@ -584,8 +577,6 @@ class SEDCompleter(Engine):
         flux_extended : np.ndarray
             Flux at those wavelengths
         """
-        if self.model is None:
-            raise RuntimeError("No model loaded. Train or load a model first.")
         self.model.eval()
         full_grid = self._create_wavelength_grid(extension_range[0], extension_range[1])
         wl_min, wl_max = wavelength.min(), wavelength.max()
@@ -626,7 +617,7 @@ class SEDCompleter(Engine):
         flux_known_norm = (flux_known_log - self.scaler_params['flux_log_mean']) / self.scaler_params['flux_log_std']
         flux_known_norm = np.where(np.isfinite(flux_known_norm), flux_known_norm, 0.0)
 
-        params_norm = self._normalize_params(teff, logg, meta)
+        params_norm = np.array(normalised_params(self.scaler_params, teff, logg, meta))
         X_input = np.concatenate([flux_known_norm, params_norm]).astype(np.float32)
         y_pred_norm = predict(self.model, X_input, self.device)
         y_pred_log = y_pred_norm * self.scaler_params['ext_log_std'] + self.scaler_params['ext_log_mean']
@@ -661,6 +652,349 @@ class SEDCompleter(Engine):
                 'architecture': config.get('architecture', {}),
             })
         return models
+
+
+# Completer: the 0.4.1 class API (sed_tools.ml.Completer) over SEDCompleter, and its extend_catalog
+
+class Completer:
+    """
+    High-level SED completion interface.
+    
+    Provides a clean API for training and using SED completion models.
+    
+    Example
+    -------
+    Training and saving::
+    
+        completer = Completer()
+        completer.train('data/combined_models', 'models/my_model', epochs=100)
+    
+    Loading and using::
+    
+        completer = Completer('models/my_model')
+        wl, flux = completer.extend(wl_in, flux_in, teff=5500, logg=4.5, meta=0.0)
+    
+    Batch processing::
+    
+        completer = Completer('models/my_model')
+        results = completer.extend_catalog('data/sphinx_models', 'data/sphinx_extended')
+    """
+
+    def __init__(self, model_path: Optional[str] = None):
+        """
+        Initialize completer.
+        
+        Parameters
+        ----------
+        model_path : str, optional
+            Path to existing model directory. If None, must call train() first.
+        """
+        self._completer = SEDCompleter(model_path)
+        self._model_path = model_path
+
+    @property
+    def is_trained(self) -> bool:
+        """Check if model is loaded/trained."""
+        return self._completer.model is not None
+
+    @property
+    def model_path(self) -> Optional[str]:
+        """Get current model path."""
+        return self._model_path
+
+    @property
+    def config(self) -> Dict[str, Any]:
+        """Get model configuration."""
+        return self._completer.config
+
+    @property
+    def wavelength_grid(self) -> Optional[np.ndarray]:
+        """Get model wavelength grid."""
+        return self._completer.wavelength_grid
+
+    def train(
+        self,
+        library: str,
+        output: str,
+        epochs: int = 100,
+        batch_size: int = 32,
+        learning_rate: float = 1e-4,
+        **kwargs,
+    ) -> 'Completer':
+        """
+        Train a new completion model.
+        
+        Parameters
+        ----------
+        library : str
+            Path to SED library
+        output : str
+            Output directory for model
+        epochs : int
+            Maximum training epochs
+        batch_size : int
+            Training batch size
+        learning_rate : float
+            Initial learning rate
+        **kwargs
+            Additional arguments passed to SEDCompleter.train()
+        
+        Returns
+        -------
+        self
+            For method chaining
+        """
+        self._completer.train(library_path=library, output_path=output, epochs=epochs, batch_size=batch_size,
+                              learning_rate=learning_rate, **kwargs)
+        self._model_path = output
+        return self
+
+    def load(self, model_path: str) -> 'Completer':
+        """
+        Load a trained model.
+        
+        Parameters
+        ----------
+        model_path : str
+            Path to model directory
+        
+        Returns
+        -------
+        self
+            For method chaining
+        """
+        self._completer.load(model_path)
+        self._model_path = model_path
+        return self
+
+    def extend(
+        self,
+        wavelength: np.ndarray,
+        flux: np.ndarray,
+        teff: float,
+        logg: float,
+        meta: float,
+        extension_range: Tuple[float, float] = (100.0, 100000.0),
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Extend an incomplete SED.
+        
+        Parameters
+        ----------
+        wavelength : np.ndarray
+            Input wavelength (Angstroms)
+        flux : np.ndarray
+            Input flux (erg/s/cm²/Å)
+        teff : float
+            Effective temperature (K)
+        logg : float
+            Surface gravity
+        meta : float
+            Metallicity [M/H]
+        extension_range : tuple
+            Target wavelength range
+        
+        Returns
+        -------
+        wavelength_ext, flux_ext : np.ndarray
+            Extended arrays
+        """
+        return self._completer.complete_sed(wavelength=wavelength, flux=flux, teff=teff, logg=logg, meta=meta,
+                                            extension_range=extension_range)
+
+    def extend_catalog(
+        self,
+        input_dir: str,
+        output_dir: str,
+        extension_range: Tuple[float, float] = (100.0, 100000.0),
+        verbose: bool = True,
+    ) -> Dict[str, Any]:
+        """
+        Extend all model spectra in a spectral grid directory.
+        
+        Each spectrum's file name, Teff, logg and [M/H] come from
+        ``input_dir/lookup_table.csv``, whose header line may start with
+        '#' as sed_tools writes it. Spectra that already cover
+        ``extension_range`` (to within 10%) are copied unchanged. The spectra
+        and a new lookup table are written to ``output_dir``.
+        
+        Returns
+        -------
+        dict
+            Counts of spectra 'extended', 'skipped' (copied unchanged),
+            'failed' (always 0; see Raises) and 'total', and 'output_dir'.
+        
+        Raises
+        ------
+        FileNotFoundError
+            If ``input_dir`` has no lookup_table.csv.
+        ValueError
+            If the lookup table has no file-name, Teff, logg or [M/H] column.
+        RuntimeError
+            After every other spectrum has been written, if any could not be
+            read or extended; the message lists each one and why.
+        """
+        import pandas as pd
+        df, columns = _read_catalog_table(input_dir)
+        if verbose:
+            print(f"  Total rows to process: {len(df)}")
+            print(f"  Using file column: {columns['file']}")
+        os.makedirs(output_dir, exist_ok=True)
+
+        new_rows = []
+        examples = []
+        failures = []
+        extended_count = 0
+        skipped_count = 0
+        for i, row in df.iterrows():
+            try:
+                new_row, example = self._extend_one(row, columns, input_dir, output_dir, extension_range)
+            except (OSError, ValueError) as exc:
+                failures.append(f"row {i} ({row[columns['file']]}): {exc}")
+                continue
+            new_rows.append(new_row)
+            if example is None:
+                skipped_count += 1
+                continue
+            extended_count += 1
+            if len(examples) < 6:
+                examples.append(example)
+            if verbose and extended_count % 50 == 0:
+                print(f"  Extended {extended_count} SEDs...")
+
+        if new_rows:
+            new_df = pd.DataFrame(new_rows)
+            cols = ['file_name'] + [c for c in new_df.columns if c != 'file_name']
+            new_df[cols].to_csv(os.path.join(output_dir, "lookup_table.csv"), index=False)
+        if examples:
+            if verbose:
+                print("\nGenerating inference examples plot...")
+            self._completer.plot_inference_examples(examples, output_dir)
+        if verbose:
+            print("\nProcessing complete:")
+            print(f"  {extended_count} extended")
+            print(f"  {skipped_count} skipped (already covered the range)")
+            print(f"  {len(failures)} failed")
+        if failures:
+            raise RuntimeError(
+                f"{len(failures)} of {len(df)} spectra in {input_dir} could not be extended "
+                f"(the other {len(new_rows)} were written to {output_dir}):\n  " + "\n  ".join(failures)
+            )
+        return {
+            'extended': extended_count,
+            'failed': 0,
+            'skipped': skipped_count,
+            'total': len(df),
+            'output_dir': output_dir,
+        }
+
+    def _extend_one(self, row, columns, input_dir, output_dir, extension_range):
+        """Extend, or copy, one catalog spectrum into output_dir: its new lookup row, and a plot example if extended.
+        Raises ValueError or OSError, which extend_catalog collects, if the spectrum cannot be used."""
+        teff, logg, meta = _row_parameters(row, columns)
+        filename = str(row[columns['file']])
+        if filename == 'nan' or not filename:
+            raise ValueError("no file name")
+        data = np.loadtxt(_find_spectrum(input_dir, filename))
+        if data.ndim != 2 or data.shape[1] < 2:
+            raise ValueError(f"expected wavelength and flux columns, got an array of shape {data.shape}")
+        wavelength = data[:, 0]
+        flux = data[:, 1]
+
+        output_file = os.path.join(output_dir, filename)
+        new_row = row.to_dict()
+        covers_low = wavelength.min() <= extension_range[0] * 1.1
+        covers_high = wavelength.max() >= extension_range[1] * 0.9
+        if covers_low and covers_high:
+            write_spectrum(output_file, *data.T)  # every column of the file, as read
+            new_row.update(extended_by_ml=False, file_name=filename)
+            return new_row, None
+
+        wl_ext, flux_ext = self.extend(wavelength, flux, teff=teff, logg=logg, meta=meta,
+                                       extension_range=extension_range)
+        write_spectrum(output_file, wl_ext, flux_ext)
+        new_row.update(extended_by_ml=True, file_name=filename,
+                       wl_min=float(wl_ext.min()), wl_max=float(wl_ext.max()))
+        return new_row, (filename, wavelength, flux, wl_ext, flux_ext)
+
+    @staticmethod
+    def available_models(models_dir: str = "models") -> List[Dict[str, Any]]:
+        """List the trained SED completer models in ``models_dir`` (not generator models)."""
+        return SEDCompleter.list_models(models_dir)
+
+    def __repr__(self) -> str:
+        status = "trained" if self.is_trained else "untrained"
+        path = f" @ {self._model_path}" if self._model_path else ""
+        return f"<Completer({status}{path})>"
+
+
+# Catalog helpers for Completer.extend_catalog
+
+# Column names accepted in a catalog's lookup_table.csv, in order of preference
+_CATALOG_COLUMNS = {
+    'file': ['file_name', 'file', 'filename', 'sed_file', 'spectrum', 'File', 'Filename'],
+    'teff': ['teff', 'Teff', 'TEFF', 'T_eff'],
+    'logg': ['logg', 'log_g', 'Logg', 'LOG_G', 'gravity'],
+    'meta': ['meta', 'metallicity', '[M/H]', 'M_H', 'feh', '[Fe/H]', 'FeH'],
+}
+
+
+def _read_catalog_table(input_dir: str):
+    """Read a catalog's lookup table and find its file-name and parameter columns."""
+    import pandas as pd
+    lookup_path = os.path.join(input_dir, "lookup_table.csv")
+    # sed_tools writes the header as '#file_name,teff,...'; comment='#' would drop it
+    df = pd.read_csv(lookup_path)
+    df.columns = [c.strip().lstrip('#').strip() for c in df.columns]
+
+    columns = {}
+    missing = []
+    for role, candidates in _CATALOG_COLUMNS.items():
+        found = [c for c in candidates if c in df.columns]
+        if found:
+            columns[role] = found[0]
+        else:
+            missing.append(f"{role} (one of {', '.join(candidates)})")
+    if missing:
+        raise ValueError(
+            f"{lookup_path} has no column for {'; '.join(missing)}. Columns read: "
+            f"{list(df.columns)}"
+        )
+    return df, columns
+
+
+def _row_number(row, column: str, name: str) -> float:
+    value = row[column]
+    try:
+        number = float(value)
+    except (ValueError, TypeError) as exc:
+        raise ValueError(f"{name} {value!r} is not a number") from exc
+    if not np.isfinite(number):
+        raise ValueError(f"{name} is {value!r}")
+    return number
+
+
+def _row_parameters(row, columns) -> Tuple[float, float, float]:
+    """Teff, logg and [M/H] of one lookup-table row; ValueError if one is unusable."""
+    teff = _row_number(row, columns['teff'], 'Teff')
+    if teff <= 0:
+        raise ValueError(f"Teff {teff} is not positive")
+    logg = _row_number(row, columns['logg'], 'logg')
+    if logg > 10:
+        raise ValueError(f"logg {logg} is above 10")
+    meta = _row_number(row, columns['meta'], '[M/H]')
+    if abs(meta) > 100:
+        raise ValueError(f"[M/H] {meta} is outside -100..100")
+    return teff, logg, meta
+
+
+def _find_spectrum(input_dir: str, filename: str) -> str:
+    """Path of a catalog spectrum; the lookup may hold a path, so its basename is tried too."""
+    for path in (os.path.join(input_dir, filename), os.path.join(input_dir, os.path.basename(filename))):
+        if os.path.exists(path):
+            return path
+    raise FileNotFoundError(f"{filename} not found in {input_dir}")
+
 
 
 # python -m sed_tools.ml_sed_completer
@@ -861,7 +1195,6 @@ def _ask_extension_range(model_grid: np.ndarray) -> Tuple[float, float]:
 
 
 def _extend_menu(base_dir: str, models_dir: str) -> None:
-    from . import Completer
     _section("COMPLETE/EXTEND SEDs")
     trained_models = SEDCompleter.list_models(models_dir)
     if not trained_models:
@@ -928,7 +1261,7 @@ def _list_menu(models_dir: str) -> None:
             print(f"    Architecture: {arch.get('input_dim', '?')} -> {hidden} -> {arch.get('output_dim', '?')}")
 
 
-# The functions api.MLCompleter calls
+# train_model, load_model and extend_catalog: what api.MLCompleter calls, 0.4.1 names of sed_tools.ml_sed_completer
 
 def train_model(
     grid_dir: str,
@@ -939,13 +1272,10 @@ def train_model(
     **kwargs: Any,
 ):
     """
-    Wrapper expected by MLCompleter in api.py.
+    Train a SEDCompleter on grid_dir/flux_cube.bin, save it to save_path, and return it loaded as a Completer.
 
-    Trains a model using SEDCompleter.train(), saves it under save_path/,
-    and returns a model handle suitable for extend_catalog(). Extra keyword
-    arguments go to SEDCompleter.train(); one it does not take raises TypeError.
+    Extra keyword arguments go to SEDCompleter.train(); one it does not take raises TypeError.
     """
-    from . import Completer
     save_path = str(save_path)
     SEDCompleter().train(library_path=str(grid_dir), output_path=save_path, epochs=int(epochs),
                          batch_size=int(batch_size), max_samples=int(max_samples), **kwargs)
@@ -953,12 +1283,7 @@ def train_model(
 
 
 def load_model(model_path: str):
-    """
-    Wrapper expected by MLCompleter.load() in api.py.
-
-    Returns an object that can be passed into extend_catalog().
-    """
-    from . import Completer
+    """The model at model_path, as a Completer (which extend_catalog takes)."""
     return Completer(str(model_path))
 
 
@@ -971,20 +1296,14 @@ def extend_catalog(
     **kwargs: Any,
 ):
     """
-    Wrapper expected by MLCompleter.extend() in api.py.
-
-    Extends a spectral grid directory (with lookup_table.csv + spectra files) into output_dir.
+    Completer.extend_catalog of ``model`` (a Completer, or a model folder's path): extend the spectral grid in
+    catalog_dir (spectra and lookup_table.csv) into output_dir, to ``wavelength_range`` (default 100-100000 A).
     """
     extension_range = wavelength_range or (DEFAULT_WL_MIN, DEFAULT_WL_MAX)
     if isinstance(model, (str, Path)):
-        model = load_model(str(model))
-    if callable(getattr(model, "extend_catalog", None)):
-        return model.extend_catalog(input_dir=str(catalog_dir), output_dir=str(output_dir),
-                                    extension_range=extension_range, verbose=bool(verbose), **kwargs)
-    raise TypeError(
-        "extend_catalog() expected a model with an .extend_catalog() method "
-        "(e.g. sed_tools.ml.Completer) or a model directory path."
-    )
+        model = Completer(str(model))
+    return model.extend_catalog(input_dir=str(catalog_dir), output_dir=str(output_dir),
+                                extension_range=extension_range, verbose=bool(verbose), **kwargs)
 
 
 if __name__ == '__main__':

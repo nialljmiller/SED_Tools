@@ -18,7 +18,6 @@ _DEFAULT_DATA_DIR = _CONFIG_DIR / "data"
 
 # Sub-directories that hold movable data under a data dir.
 _DATA_SUBDIRS = ("stellar_models", "filters")
-_UI_MODES = {"auto", "always", "never"}
 
 
 def load_toml(path: Union[str, Path], *, strict: bool = False) -> Dict[str, Any]:
@@ -70,15 +69,12 @@ def get_config() -> Dict[str, Any]:
 
 
 def get_ui_config() -> Dict[str, str]:
-    ui = get_config().get("ui", {})
-    return dict(ui) if isinstance(ui, dict) else {}
+    return dict(get_config().get("ui", {}))
 
 
 def get_ui_setting(name: str, default: str = "auto") -> str:
-    value = str(get_ui_config().get(name, default)).strip().lower()
-    if value not in _UI_MODES:
-        raise ValueError(f"ui.{name} = {value!r} in {_CONFIG_FILE}: use auto, always or never")
-    return value
+    """``ui.<name>`` from the config: auto, always or never (terminal_plots reads anything else as auto)."""
+    return str(get_ui_config().get(name, default)).strip().lower()
 
 
 def get_data_dir() -> Path:

@@ -2,9 +2,29 @@
 Changelog
 =========
 
-Version 0.6.1 (unreleased)
+Version 0.7.0 (unreleased)
 --------------------------
 
+- SED_Tools no longer checks arguments only to word a user's mistake. A
+  misused option, name or value now fails where Python or the library fails
+  (``KeyError``, ``ValueError``, ``TypeError``, ``FileNotFoundError``), and a
+  question is asked once rather than again after a bad answer. Valid use
+  behaves as before, and the checks of SED_Tools' own and upstream data stay.
+  ``Filters.compose`` with an unknown band, or with bands for which the
+  manifest declares none of the requested components, now asks NJM and the
+  builder before it fails (since 0.5.0 it had refused them first).
+- ``sed-tools coverage --filters ...`` (and ``SED.coverage(filters=...)``)
+  lists the bands a grid's wavelengths do not sample
+  (``sed_tools.photometry.band_sampling``), and exits 1 if there are any. A
+  band is *sampled* when two or more grid wavelengths lie where it transmits
+  and at most 1 % of its weight lies beyond the grid or where
+  lambda/delta-lambda < 16; otherwise a band average, MESA's or SED_Tools',
+  is not determined by the grid. ATLAS9 (Kurucz, Kurucz2003all), for
+  example, has no wavelengths between 10.02 and 20 µm, so in MESA MIRI
+  F1130W–F1550C and F2550W come back as its "no data" placeholder.
+  Photometry and band averages are unchanged.
+- Building a flux cube prints how many spectra had wavelengths off the
+  cube's axis and so were interpolated onto it.
 - ``sed-tools rebuild``, ``SpectralGrid.write()`` and ``SED.import_grid()``
   no longer write the HDF5 bundle over an MSG grid's downloaded ``<grid>.h5``:
   a file there that is not a bundle is left alone and the bundle is
@@ -26,6 +46,60 @@ Version 0.6.1 (unreleased)
 - ``build(..., raw=...)`` for PANIC, INGRID, NSFCam and IO:O reads the saved
   research inventory from ``round3/ground-1`` and ``round3/ground-2``, the
   folders' new names.
+- A curve written from an SVO record labels only what the record states. An
+  SVO filter-only curve (``<band>_filter``, ``<band>_fil``) whose components
+  string names more than the filter, such as ``LSST/LSST.g_filter`` listed as
+  "Filter + Instrument + Atmosphere", gets no ``Components`` label. Before,
+  it got the total band's label. The LSST and SVO-published builders record a
+  ``DetectorType`` that SVO does not give as ``assumed``. Before, they
+  recorded it as ``svo``.
+- ``python -m sed_tools.filters.label_check FILTERS_DIR [--against OLD_DIR]``
+  checks the label rules every served filter tree must keep, and exits 1 on
+  any problem:
+
+  - detector types and their sources use SED_Tools' words;
+  - components use known roles;
+  - an SVO filter-only curve is labelled ``filter``;
+  - a curve equal to a registered component carries that component's role;
+  - ``Sources`` is written as below;
+  - curves with the same samples (after peak normalisation, to float32
+    precision) carry the same ``DetectorType`` across the whole tree. On NJM
+    it finds 31 groups (68 curves) served with both tags, e.g. SDSS g as
+    photon in ``SLOAN/SDSS`` and as energy in ``Misc/APASS``.
+
+  With ``--against``, it also checks that a changed ``DetectorType`` rests on
+  stronger evidence than the old one, or on ``user``. A rebuild then cannot
+  undo a correction, nor follow SVO reclassifying a curve, without a report.
+  Run against the shipped ``colors_data``, it catches TESS returning from
+  MESA's hand-set ``photon`` to SVO's ``energy``.
+- Every curve's ``Sources`` is written as one list of distinct references
+  separated by ``" | "`` (``sed_tools.filters.curve_metadata.normalize_sources``),
+  the form most served curves already had. An item that runs references
+  together (two or more URLs outside its parentheses) is split, and an item
+  that only credits a reference another item gives is dropped, such as the
+  Internet Archive ingest's sentence crediting the record a Wayback URL
+  already archives. Composed products list their components with ``" | "``;
+  before, with ``"; "``.
+- A filter set's folder holds one instrument's curves. An SVO download stops,
+  before saving anything, when the folder already holds curves whose
+  ``FilterID`` names another SVO instrument, or would receive the curves of
+  two (SED_Tools 0.2.0 and earlier filed every Gaia release in ``GAIA/GAIA``).
+  When NJM no longer lists a band of a set, a re-download keeps its installed
+  curve beside the set under ``archived_bands`` instead of declaring it.
+- A ``manifest.json`` that names another folder (the set was renamed or
+  copied, e.g. ``SLOAN/SDSS`` to ``SLOAN/SDSS_E``) stops, with the fix, instead
+  of describing the folder as the set it came from.
+- The MESA index file is named after its folder, where MESA opens it:
+  ``combine_filter_sets(output, ..., instrument=...)`` with an absolute
+  ``output`` wrote it under ``instrument``, and ``write_filter_index`` now
+  takes the folder's name when given none. An SVO download's index leaves
+  out ``archived_bands``.
+- ``sed_tools.filters.manifest.set_problems`` and ``check_sets`` say where a set
+  folder's records disagree: no index named after the folder, an index and
+  curves that differ, a manifest naming another set or declaring bands the
+  index does not list, and, for a set whose source instruments are known
+  (NJM's claims), a curve of another set's instrument. NJM runs it on every
+  refresh.
 
 Version 0.6.0 (November 2026)
 -----------------------------

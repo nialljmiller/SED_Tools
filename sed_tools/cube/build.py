@@ -91,13 +91,6 @@ def resample_to_grid(
     return fl_tgt
 
 
-def _find_lookup_file(model_dir: str) -> str:
-    lookup_file = os.path.join(model_dir, "lookup_table.csv")
-    if not os.path.isfile(lookup_file):
-        raise FileNotFoundError(f"lookup_table.csv not found in {model_dir}")
-    return lookup_file
-
-
 def load_lookup_table(lookup_file: str) -> Dict[str, List]:
     """Every column of lookup_table.csv as {column_name: [values]}, so callers can find extra axes.
 
@@ -367,6 +360,7 @@ def _accumulate_spectra(
 
     n = len(file_names)
     empty: List[str] = []
+    off_axis = 0  # spectra with wavelengths that are not on the cube's axis: interpolated onto it
     t0 = time.time()
     prefix = f"[{label}] " if label else ""
 
@@ -377,6 +371,8 @@ def _accumulate_spectra(
             empty.append(fpath)
             continue
 
+        on = np.searchsorted(wavelengths, wl).clip(max=len(wavelengths) - 1)  # both increasing
+        off_axis += not np.array_equal(wavelengths[on], wl)
         i_t, i_l, i_m = t2i[teff_vals[i]], l2i[logg_vals[i]], m2i[meta_vals[i]]
         flux_cube[i_t, i_l, i_m, :] += resample_to_grid(wl, fl, teff_vals[i], wavelengths)
         count_cube[i_t, i_l, i_m] += 1
@@ -388,6 +384,9 @@ def _accumulate_spectra(
         print(f"\r  {prefix}spectra {done}/{n} ({100*done/n:.1f}%)  ETA {eta:.0f}s   ", end="", flush=True)
 
     print(f"\n  {prefix}Done — {n - len(empty)}/{n} loaded.")
+    if off_axis:
+        print(f"  {prefix}{off_axis} of them have wavelengths that are not on the cube's axis; "
+              "their flux was interpolated onto it.")
     if empty:
         raise ValueError(
             f"{len(empty)} spectra hold no numeric data or could not be read; "
@@ -425,7 +424,7 @@ def precompute_flux_cube(
     if root_dir:
         copy_global_config_to_model(Path(root_dir), Path(model_dir))
 
-    lookup_file = _find_lookup_file(model_dir)
+    lookup_file = os.path.join(model_dir, "lookup_table.csv")
     lookup = load_lookup_table(lookup_file)
     file_col = find_file_column(lookup.keys()) or list(lookup.keys())[0]
     file_names = lookup[file_col]

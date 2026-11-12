@@ -1,4 +1,4 @@
-Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=composed;WavelengthUnit=Angstrom;Components=filter+qe;ComponentsSource=composed;Recipe=filter+qe%20[qe=multi_layer];Sources=components/filter/g.dat%3B%20components/qe/qe_multi.dat
+Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=composed;WavelengthUnit=Angstrom;Components=filter+qe;ComponentsSource=composed;Recipe=filter+qe%20[qe=multi_layer];Sources=components/filter/g.dat%20|%20components/qe/qe_multi.dat
 3676.0,0.003623360332956589
 3677.0,0.0034206881391714945
 3678.0,0.003750009722512432

@@ -15,7 +15,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
-import numpy as np
+import numpy as np  # noqa: F401  (kept: `from sed_tools.filters.manifest import *` gives np, as before)
 
 from .curve_metadata import ENERGY, detector_type_before_conversion, normalize_detector_type, read_filter_header
 from .sites import instrument_sites, is_ground_based, own_site, platform
@@ -50,11 +50,8 @@ def is_auxiliary_path(path: PathLike, root: Optional[PathLike] = None, dirs: Seq
     Scanners of *published* curves skip these, so a composed ``products/filter/G.dat`` never shadows ``G.dat``.
     """
     path = Path(path)
-    if root is not None:
-        try:
-            path = path.relative_to(root)
-        except ValueError:
-            pass
+    if root is not None and path.is_relative_to(root):
+        path = path.relative_to(root)
     return any(part in dirs for part in path.parts)
 
 
@@ -66,6 +63,13 @@ MANIFEST_NAME = "manifest.json"
 #: moves their red edges about 2.5 per cent blueward (SDSS DR7 "Photometric
 #: flux calibration", classic.sdss.org/dr7/algorithms/fluxcal.html).
 FILTER_SIBLING_SUFFIXES = ("_filter", "_fil")
+
+
+def filter_sibling_base(band: str) -> Optional[str]:
+    """The band whose filter-only sibling ``band`` is named as (``g`` for ``g_filter``), or None."""
+    return next((band[:-len(s)] for s in FILTER_SIBLING_SUFFIXES if band.endswith(s) and band != s), None)
+
+
 #: Variant names: letters, digits, ``_`` and ``-`` (they appear in product names).
 _VARIANT_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]*")
 MANIFEST_SCHEMA = 1
@@ -140,24 +144,13 @@ class AtmosphereSpec:
     pwv: Optional[float] = None  # precipitable water vapour, mm
 
     def __post_init__(self):
-        if self.airmass is None:
-            if self.pwv is not None:
-                raise ComponentError("an atmosphere of unstated airmass has no pwv to choose")
-        elif not np.isfinite(self.airmass) or self.airmass < 1:
-            raise ComponentError("airmass must be finite and at least 1")
-        if self.pwv is not None and (not np.isfinite(self.pwv) or self.pwv < 0):
-            raise ComponentError("pwv must be finite and nonnegative")
-        if self.site is not None:
-            _require_inside(self.site, "atmosphere site")
-            if Path(self.site).name != self.site:
-                raise ComponentError("atmosphere site must be a single directory name")
+        if self.airmass is None and self.pwv is not None:  # its label would name a pwv it does not have
+            raise ComponentError("an atmosphere of unstated airmass has no pwv to choose")
 
     @classmethod
     def coerce(cls, value: Union["AtmosphereSpec", Mapping[str, object], None]) -> Optional["AtmosphereSpec"]:
         if value is None or isinstance(value, AtmosphereSpec):
             return value
-        if "airmass" not in value:
-            raise ComponentError("atmosphere needs at least 'airmass' (and 'pwv' for SkyCalc sites)")
         return cls(
             site=None if value.get("site") is None else str(value["site"]),
             airmass=None if value["airmass"] is None else float(value["airmass"]),  # type: ignore[arg-type]
@@ -199,18 +192,99 @@ def archived_bands(instrument_dir: PathLike) -> Dict[str, Dict[str, object]]:
     return {band: {} for band in archived} if isinstance(archived, list) else dict(archived)
 
 
-def write_filter_index(filter_dir: Path, instrument: str) -> Path:
-    """Write the MESA index file for all ``*.dat`` files in ``filter_dir``.
+def write_filter_index(filter_dir: Path, instrument: Optional[str] = None) -> Path:
+    """Write the MESA index file for all ``*.dat`` files in ``filter_dir``, as ``instrument``.
 
-    Bands its ``manifest.json`` lists under ``archived_bands`` (superseded
-    copies kept beside the set) are left out: MESA must not load them.
+    MESA opens ``<folder>/<folder name>``, so the name defaults to the folder's own; another is only
+    right for a folder that will be renamed to it.  Bands its ``manifest.json`` lists under
+    ``archived_bands`` (superseded copies kept beside the set) are left out: MESA must not load them.
     """
+    filter_dir = Path(filter_dir)
     archived = archived_bands(filter_dir)
     dat_files = sorted(child.name for child in filter_dir.glob("*.dat")
                        if child.is_file() and child.stem not in archived)
-    index_path = filter_dir / instrument
+    index_path = filter_dir / (instrument or filter_dir.name)
     index_path.write_text("\n".join(dat_files) + "\n", encoding="utf-8")
     return index_path
+
+
+def curve_source(filter_id: Optional[str]) -> str:
+    """The source instrument a curve's ``FilterID`` names (``GAIA/Gaia2m`` for ``GAIA/Gaia2m.Gbp_bright``), or ''."""
+    source, dot, _ = (filter_id or "").partition(".")
+    return source if dot else ""
+
+
+def describes_other_folder(directory: PathLike, facility: str, instrument: str) -> Optional[str]:
+    """Why a manifest naming ``facility/instrument`` is not the record of ``directory``, or None when it is.
+
+    Names are compared without case or punctuation: NJM's ``Gemini/GMOS_N`` installed as ``Gemini/GMOS-N`` is
+    the same set; a folder renamed or copied (``SLOAN/SDSS`` to ``SLOAN/SDSS_E``) is not.
+    """
+    from ..component_sources.catalog import name_key
+
+    directory = Path(directory)
+    if (name_key(facility), name_key(instrument)) == (name_key(directory.parent.name), name_key(directory.name)):
+        return None
+    return (f"{directory / MANIFEST_NAME} describes {facility}/{instrument}, not "
+            f"{directory.parent.name}/{directory.name}")
+
+
+def set_problems(directory: PathLike, claims: Optional[Mapping[str, Iterable[str]]] = None) -> List[str]:
+    """Where a set folder's records disagree, one line each; [] when they agree (or it holds no curves).
+
+    One rule for every set, served or installed: the MESA index, named after the folder as MESA opens
+    it, lists exactly the curves there less ``archived_bands``; ``manifest.json``, if any, names this
+    folder and declares no band the index does not list.  With ``claims`` ({"Facility/Instrument":
+    the source instruments the set is made from}, as NJM's ``svo_instruments.json``), a set they
+    describe holds no curve of a source instrument another set is made from and it is not: one
+    release in another's folder.
+    """
+    directory = Path(directory)
+    curves = sorted(p.name for p in directory.glob("*.dat") if p.is_file())
+    if not curves:
+        return []
+    manifest = directory / MANIFEST_NAME
+    try:
+        data = json.loads(manifest.read_text(encoding="utf-8")) if manifest.is_file() else None
+        archived = archived_bands(directory)
+    except (OSError, ValueError, AttributeError) as exc:
+        return [f"{manifest} cannot be read ({exc})"]
+    found = []
+    index = directory / directory.name
+    listed = index_names(index.read_text(encoding="utf-8")) if index.is_file() else None
+    if listed is None:
+        found.append(f"{directory} has no MESA index file {directory.name}: MESA opens the index named after "
+                     "the folder")
+    else:
+        if absent := [name for name in listed if name not in curves]:
+            found.append(f"{index} lists {', '.join(absent)}, not in the folder")
+        if unlisted := [name for name in curves if name not in listed and Path(name).stem not in archived]:
+            found.append(f"{directory} holds {', '.join(unlisted)}, which its index does not list")
+    if data is not None:
+        if not (data.get("facility") and data.get("instrument")):
+            found.append(f"{manifest} names no set")
+        elif other := describes_other_folder(directory, str(data["facility"]), str(data["instrument"])):
+            found.append(other)
+        elif listed is not None:
+            indexed = {Path(name).stem for name in listed}
+            if beyond := sorted(set(data.get("bands") or []) - set(archived) - indexed):
+                found.append(f"{manifest} declares {', '.join(beyond)}, which its index does not list "
+                             "(an incomplete set, or a stale manifest)")
+    mine = (claims or {}).get(f"{directory.parent.name}/{directory.name}")
+    if mine is not None:  # a set no claim describes (a user's own) is not judged
+        for name in curves:
+            filter_id = read_filter_header(directory / name).get("FilterID")
+            source = curve_source(filter_id)
+            owners = sorted(other for other, made_of in claims.items() if source in made_of)
+            if source not in mine and owners:
+                found.append(f"{directory / name} is {filter_id}, a curve of {', '.join(owners)}, not of this set")
+    return found
+
+
+def check_sets(filter_root: PathLike, claims: Optional[Mapping[str, Iterable[str]]] = None) -> Dict[str, List[str]]:
+    """:func:`set_problems` of every ``<Facility>/<Instrument>`` set under ``filter_root``, only those with any."""
+    return {str(directory): problems for directory in sorted(Path(filter_root).glob("*/*"))
+            if directory.is_dir() and (problems := set_problems(directory, claims))}
 
 
 @dataclass
@@ -287,12 +361,23 @@ class InstrumentManifest:
     # ---- persistence -------------------------------------------------
     @classmethod
     def load(cls, instrument_dir: PathLike) -> "InstrumentManifest":
-        """Read ``manifest.json``, or describe a legacy directory from its headers."""
+        """Read ``manifest.json``, or describe a legacy directory from its headers.
+
+        ComponentError when the manifest names another set: the folder was renamed or copied, and
+        the manifest (its bands, detector types and components) is not this folder's record.
+        """
         instrument_dir = Path(instrument_dir)
         path = instrument_dir / MANIFEST_NAME
-        if path.exists():
-            return cls.from_dict(json.loads(path.read_text(encoding="utf-8")))
-        return cls.from_published(instrument_dir)
+        if not path.exists():
+            return cls.from_published(instrument_dir)
+        manifest = cls.from_dict(json.loads(path.read_text(encoding="utf-8")))
+        other = describes_other_folder(instrument_dir, manifest.facility, manifest.instrument)
+        if other:
+            raise ComponentError(
+                f"{other}: the folder was renamed or copied. If it holds that set's curves, set the manifest's "
+                f"facility and instrument to this folder's (and name the MESA index file {instrument_dir.name}); "
+                f"otherwise delete {path}, and SED_Tools describes the set from its curves.")
+        return manifest
 
     @classmethod
     def from_dict(cls, data: Mapping[str, object]) -> "InstrumentManifest":
@@ -412,12 +497,8 @@ class InstrumentManifest:
         view = deepcopy(self)
         for key, name in selection.items():
             canonical = recipe_name(parse_components(key))
-            named = self.variants.get(canonical, {})
-            if name not in named:
-                have = ", ".join(sorted(named)) or "none"
-                raise ComponentError(f"{self.facility}/{self.instrument} has no {canonical} variant "
-                                     f"{name!r} (available: {have})")
-            view.components[canonical] = {str(b): str(rel) for b, rel in dict(named[name]["files"]).items()}
+            files = self.variants[canonical][name]["files"]
+            view.components[canonical] = {str(b): str(rel) for b, rel in dict(files).items()}
         return view
 
     # ---- queries -----------------------------------------------------
@@ -473,8 +554,7 @@ class InstrumentManifest:
     def primary_bands(self) -> List[str]:
         """Bands that are not merely another band's filter-only sibling."""
         bands = set(self.bands)
-        siblings = {b for b in self.bands if self.published_bands.get(b) == FILTER
-                    and any(b.endswith(sfx) and b[: -len(sfx)] in bands for sfx in FILTER_SIBLING_SUFFIXES)}
+        siblings = {b for b in self.bands if self.published_bands.get(b) == FILTER and filter_sibling_base(b) in bands}
         return [b for b in self.bands if b not in siblings]
 
     def buildable(self) -> List[str]:

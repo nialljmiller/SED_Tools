@@ -215,10 +215,7 @@ def load_config(
     strategy = oc.get("strategy", "all-warn")
     filter_specs: Dict[str, str] = {}
     if strategy == "filter":
-        raw_filter = oc.get("filter", {})
-        if not isinstance(raw_filter, dict):
-            raise ValueError(f"[on_collision.filter] must be a table in {source}")
-        filter_specs = {k: str(v) for k, v in raw_filter.items()}
+        filter_specs = {k: str(v) for k, v in oc.get("filter", {}).items()}
     return CollisionConfig(strategy=strategy, filter_specs=filter_specs, source=source)
 
 

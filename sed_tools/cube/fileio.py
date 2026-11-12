@@ -19,6 +19,12 @@ def read_axes(fh, nt, nl, nm, nw):
     return [np.fromfile(fh, dtype=np.float64, count=n) for n in (nt, nl, nm, nw)]
 
 
+def load_axes(path):
+    """Teff, log g, [M/H] and wavelengths of the flux cube at ``path``, read without its flux."""
+    with open(path, "rb") as fh:
+        return read_axes(fh, *struct.unpack("4i", fh.read(16)))
+
+
 def load(path):
     """Teff, log g, [M/H], wavelengths and the flux as stored, shape (nw, nm, nl, nt); nothing is checked."""
     with open(path, "rb") as fh:

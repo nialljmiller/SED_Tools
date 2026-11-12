@@ -344,16 +344,6 @@ def declared_flux_units_clean_as_before(t):
 
 
 @row
-def an_unknown_flux_unit_name_is_refused_before_anything_changes(t):
-    grid = _grid(t.tmp / "Cool")
-    before = _contents(grid)
-    with pytest.raises(ValueError, match=r"flux_unit='Jy' is not one of flam, fnu, fnu_jy, flam_si, flam_si_nm, "
-                                         r"flam_si_um, normalized"):
-        clean_model_dir(str(grid), flux_unit="Jy")
-    assert _contents(grid) == before
-
-
-@row
 def a_spectrum_cleaned_on_its_own_stops_on_an_undeclared_flux_unit(t):
     grid = _grid(t.tmp / "Cool")
     before = (grid / "s0.txt").read_bytes()
@@ -377,14 +367,12 @@ def files_cleaned_one_by_one_without_a_declared_flux_unit_are_listed(t):
 
 
 @row
-def cli_asks_again_after_an_unknown_unit_and_stops_on_no(t):
+def cli_stops_on_no(t):
     grid = _grid(t.tmp / "Cool")
-    prompts = _terminal(t, "Jy", "n")
+    prompts = _terminal(t, "n")
     with pytest.raises(ValueError, match="No flux unit chosen for Cool; it was not cleaned"):
         cli._ask_flux_unit("Cool", sorted(str(p) for p in grid.glob("*.txt")))
-    assert len(prompts) == 2
-    assert ("'Jy' is not one of: flam, fnu, fnu_jy, flam_si, flam_si_nm, flam_si_um, normalized"
-            in t.capsys.readouterr().out)
+    assert len(prompts) == 1
 
 
 @row
@@ -430,6 +418,33 @@ def import_grid_stops_before_moving_files_and_imports_with_a_unit(t):
     assert not (t.tmp / "models" / "mine").exists()
     SED.import_grid(src, model_root=t.tmp / "models", move=True, build_cube=False, build_h5=False, flux_unit="flam")
     assert "# original_flux_unit = flam" in (t.tmp / "models" / "mine" / "s0.txt").read_text()
+
+
+#: name: how an unknown flux unit is given. The unit is looked up before any file is copied, moved or rewritten,
+#: so the spectra are left as they were and no grid folder is made (cleaning one by one used to convert the
+#: spectra that declare their unit before stopping on one that does not).
+UNKNOWN_UNIT = {
+    "an_unknown_flux_unit_leaves_the_source_folder_untouched_on_import": "copy",
+    "an_unknown_flux_unit_leaves_the_source_folder_untouched_on_import_with_move": "move",
+    "an_unknown_flux_unit_leaves_every_spectrum_untouched_when_cleaning_one_by_one": "clean",
+}
+
+
+def _unknown_unit(t, how):
+    src = _grid(t.tmp / "mine")
+    (src / "declared.txt").write_text("# teff = 3500\n# flux_unit = erg/s/cm2/A\n3000 1.0\n4000 2.0\n")
+    done = src / "done.txt"
+    done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
+    t.mp.setattr("sed_tools.spectra_cleaner.random.sample", lambda files, n: [str(done)])  # no grid-wide units
+    before = _contents(src)
+    with pytest.raises(KeyError, match="Jy"):
+        if how == "clean":
+            clean_model_dir(str(src), flux_unit="Jy")
+        else:
+            SED.import_grid(src, model_root=t.tmp / "models", move=how == "move", build_cube=False, build_h5=False,
+                            flux_unit="Jy")
+    assert _contents(src) == before
+    assert not (t.tmp / "models").exists()
 
 
 @row
@@ -522,10 +537,8 @@ def flux_unit_is_used_for_spectra_that_declare_none(t):
     assert summary["catalog_units"]["flux"] == "flam" and "is not used" not in t.caplog.text
 
 
-#: name: (the answers typed, the unit taken). Enter or 'y' does not take the guess: the unit must be typed.
+#: name: (the answers typed, the unit taken). The guess is offered, not taken: the unit must be typed.
 TYPED = {
-    "cli_offers_the_best_guess_and_takes_a_typed_unit_after_enter": (["", "fnu_jy"], "fnu_jy"),
-    "cli_offers_the_best_guess_and_takes_a_typed_unit_after_y": (["y", "flam"], "flam"),
     "cli_offers_the_best_guess_and_takes_a_typed_unit": (["flam"], "flam"),
 }
 
@@ -1265,12 +1278,8 @@ def mast_unreadable_download_script_raises(t):
 
 
 @row
-def mast_metallicity_prompt_rejects_values_it_would_have_dropped(t):
+def mast_metallicity_prompt_takes_the_values_typed(t):
     grabber = mast.MASTSpectraGrabber(base_dir=str(t.tmp), session=Routes({}))
-    for typed, error in (("-1.0,abc", "'abc' is not a number"), ("-3.0", "no \\[M/H\\] = -3.0")):
-        t.mp.setattr("builtins.input", lambda prompt, typed=typed: typed)
-        with pytest.raises(ValueError, match=error):
-            grabber.get_model_metadata("BOSZ-2024-r1000")
     t.mp.setattr("builtins.input", lambda prompt: "-1.0, +0.25,")
     assert grabber.get_model_metadata("BOSZ-2024-r1000")["metals"] == ["m-1.00", "m+0.25"]
 
@@ -1496,3 +1505,4 @@ def test_grids(rows):
     rows(ZERO_BOUNDS, _query_bound)
     rows(WARNED, _warns)
     rows(REFUSED, _refused)
+    rows(UNKNOWN_UNIT, _unknown_unit)

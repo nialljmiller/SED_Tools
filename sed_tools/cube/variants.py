@@ -100,7 +100,7 @@ def _print_split_announcement(groups: Dict, extra_cols: List[str], model_name: s
         print(f"\n{n_combos} combinations exceed the auto-split threshold ({threshold}).")
 
 
-def _link_spectra(model_dir: str, subdir: str, file_names: List[str]) -> None:
+def _link_spectra(subdir: str, file_names: List[str]) -> None:
     """Symlink a variant's spectra from the parent so the subgrid can be rebuilt on its own."""
     n_linked = 0
     failures: List[str] = []
@@ -197,7 +197,7 @@ def _split_into_subgrids(model_dir: str, groups: Dict, extra_cols: List[str], lo
 
         filtered = _filter_lookup_by_files(lookup, g["file_names"], file_col)
         write_lookup_csv(filtered, os.path.join(subdir, "lookup_table.csv"))
-        _link_spectra(model_dir, subdir, g["file_names"])
+        _link_spectra(subdir, g["file_names"])
 
         cube_path = os.path.join(subdir, "flux_cube.bin")
         _warn_averaged_rows(lookup, g["rows"], zip(g["teff"], g["logg"], g["meta"]), cube_path)

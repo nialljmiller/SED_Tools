@@ -527,10 +527,8 @@ class SED:
 
         if source is None:
             sources_to_try, failures = cls._get_sources_for_catalog(catalog)
-        elif source in _SPECTRA_SOURCES:
-            sources_to_try, failures = [source], []
         else:
-            raise ValueError(f"Unknown source: {source}")
+            sources_to_try, failures = [source], []
         model_dir = base_dir / catalog
         cuts = _parameter_cuts(teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)
         created = not model_dir.exists()
@@ -682,17 +680,9 @@ class SED:
         """
         base_dir = Path(model_root) if model_root else cls._model_root
         model_dir = base_dir / catalog
-        
-        if not model_dir.exists():
-            raise FileNotFoundError(f"Spectral grid '{catalog}' not found at {model_dir}")
-        
-        cube_path = model_dir / "flux_cube.bin"
-        if not cube_path.exists():
-            raise FileNotFoundError(f"flux_cube.bin not found in {model_dir}")
-
+        sed_model = SEDModel(name=catalog, flux_cube_path=model_dir / "flux_cube.bin",
+                             filters_dir=filter_root or cls._filter_root, fill_gaps=fill_gaps)
         cat = cls._load_catalog_from_dir(model_dir, catalog, 'local')
-        sed_model = SEDModel(name=catalog, flux_cube_path=cube_path, filters_dir=filter_root or cls._filter_root,
-                             fill_gaps=fill_gaps)
         return cls(catalog=cat, model=sed_model, model_root=base_dir, filter_root=filter_root)
 
     @classmethod
@@ -702,6 +692,7 @@ class SED:
         model_root: Optional[Union[str, Path]] = None,
         plot: bool = True,
         out_path: Optional[Union[str, Path]] = None,
+        filters: Optional[Sequence[Union[str, Path]]] = None,
     ) -> Dict[str, Any]:
         """Report parameter-space coverage of a local grid (downloaded or built).
 
@@ -716,13 +707,17 @@ class SED:
         model_root : base stellar_models dir for resolving a bare name.
         plot : whether to write the coverage figure.
         out_path : plot output path.
+        filters : filter curves or instrument folders (paths, or Facility/Instrument under
+            the filter directory); the bands among them the grid's wavelengths do not sample
+            (sed_tools.photometry.band_sampling) are listed, and returned under
+            'bands_not_sampled'.
 
         Returns the summary dict.
         """
         from ..grids.coverage import grid_coverage
 
         base = Path(model_root) if model_root else cls._model_root
-        return grid_coverage(catalog, base_dir=base, plot=plot, out_path=out_path)
+        return grid_coverage(catalog, base_dir=base, plot=plot, out_path=out_path, filters=filters)
 
     @classmethod
     def import_grid(
@@ -763,7 +758,8 @@ class SED:
         ValueError); one that no header states (log g of a blackbody grid) gets
         no column. If the spectra do not declare their flux unit and flux_unit
         is not given, ValueError names the best guess before any file is
-        copied or moved; so does a flux_unit that is not a known name.
+        copied or moved. A flux_unit that is not a known name raises KeyError,
+        also before any file is touched.
         """
         files, src_dir = _import_sources(Path(src).expanduser())
         name = src_dir.name if name is None else name
@@ -831,13 +827,7 @@ class SED:
             SED instance with the combined spectral grid
         """
         base_dir = Path(model_root) if model_root else cls._model_root
-
-        selected_models = []
-        for cat in catalogs:
-            cat_path = base_dir / cat
-            if not cat_path.exists():
-                raise FileNotFoundError(f"SpectralGrid directory not found: {cat_path}")
-            selected_models.append((cat, str(cat_path)))
+        selected_models = [(cat, str(base_dir / cat)) for cat in catalogs]
 
         print(f"\nCombining {len(selected_models)} spectral grids:")
         for name, _ in selected_models:
@@ -894,19 +884,12 @@ class SED:
         EvaluatedSED
             Interpolated spectrum with wavelength and flux arrays
         """
-        if self._model is None:
-            raise RuntimeError(
-                "No spectral grid loaded for interpolation. "
-                "Use SED.local() to load a spectral grid with a flux cube."
-            )
         return self._model(teff, logg, metallicity)
     
     def model(self, name: Optional[str] = None) -> SEDModel:
-        """Get or set the active SEDModel."""
+        """Get or set the active SEDModel (None until SED.local() or a name sets one)."""
         if name is not None:
             self._model = self._core.model(name)
-        if self._model is None:
-            raise RuntimeError("No model loaded")
         return self._model
     
     def available_grids(self) -> List[str]:
@@ -931,14 +914,6 @@ class SED:
 
 
 # ------------ ML ------------
-
-def _training_grid(base_dir: Path, grid: str) -> Path:
-    """The folder of a grid to train on; FileNotFoundError, before anything is written, without its flux cube."""
-    grid_dir = Path(base_dir) / grid
-    if not (grid_dir / "flux_cube.bin").is_file():
-        raise FileNotFoundError(f"No flux_cube.bin found in {grid_dir}. Run 'sed-tools rebuild' first.")
-    return grid_dir
-
 
 class MLCompleter:
     """ML-based SED completion for extending incomplete stellar grids.
@@ -977,10 +952,9 @@ class MLCompleter:
         """
         from ..ml.completer import train_model
 
-        grid_dir = _training_grid(self.base_dir, grid)
         save_name = save_name or f"{grid}_completer"
-        
-        self._model = train_model(grid_dir=str(grid_dir), save_path=str(self.base_dir / self.models_dir / save_name),
+        self._model = train_model(grid_dir=str(self.base_dir / grid),
+                                  save_path=str(self.base_dir / self.models_dir / save_name),
                                   epochs=epochs, batch_size=batch_size)
         
         return self
@@ -1008,18 +982,11 @@ class MLCompleter:
             Extended spectral grid
         """
         from ..ml.completer import extend_catalog
-        
-        if self._model is None:
-            raise RuntimeError("No model trained. Call train() first.")
-        
+
         output = output or f"{catalog}_extended"
-
-        summary = extend_catalog(model=self._model, catalog_dir=str(self.base_dir / catalog),
-                                 output_dir=str(self.base_dir / output), wavelength_range=wavelength_range)
-        # extend_catalog itself raises RuntimeError listing any spectrum it could not extend.
-        if not summary['total']:
-            raise FileNotFoundError(f"No spectra to extend in {self.base_dir / catalog}")
-
+        # extend_catalog raises RuntimeError listing any spectrum it could not extend.
+        extend_catalog(model=self._model, catalog_dir=str(self.base_dir / catalog),
+                       output_dir=str(self.base_dir / output), wavelength_range=wavelength_range)
         return SED._load_catalog_from_dir(self.base_dir / output, output, 'ml')
     
     def load(self, model_name: str) -> 'MLCompleter':
@@ -1086,12 +1053,11 @@ class MLGenerator:
         """
         from ..ml.generator import SEDGenerator
 
-        grid_dir = _training_grid(self.base_dir, grid)
         save_name = save_name or f"sed_generator_{grid}"
         save_path = self.base_dir / self.models_dir / save_name
 
         self._generator = SEDGenerator()
-        self._generator.train(library_path=str(grid_dir), output_path=str(save_path), epochs=epochs,
+        self._generator.train(library_path=str(self.base_dir / grid), output_path=str(save_path), epochs=epochs,
                               batch_size=batch_size, max_samples=max_samples)
         self._model_path = save_path
 
@@ -1111,11 +1077,8 @@ class MLGenerator:
             Self for method chaining
         """
         from ..ml.generator import SEDGenerator
-        
+
         model_path = self.base_dir / self.models_dir / model_name
-        if not model_path.exists():
-            raise FileNotFoundError(f"Model not found: {model_path}")
-        
         self._generator = SEDGenerator(str(model_path))
         self._model_path = model_path
         return self
@@ -1127,7 +1090,7 @@ class MLGenerator:
         metallicity: float,
         check_bounds: bool = True,
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """Generate a complete SED from stellar parameters (RuntimeError before train() or load()).
+        """Generate a complete SED from stellar parameters, after train() or load().
 
         Parameters
         ----------
@@ -1147,7 +1110,7 @@ class MLGenerator:
         flux : np.ndarray
             Flux array in erg/s/cm²/Å
         """
-        return self._loaded_generator().generate(teff=teff, logg=logg, meta=metallicity, check_bounds=check_bounds)
+        return self._generator.generate(teff=teff, logg=logg, meta=metallicity, check_bounds=check_bounds)
     
     def generate_with_outputs(
         self,
@@ -1184,10 +1147,9 @@ class MLGenerator:
         flux : np.ndarray
             Flux array in erg/s/cm²/Å
         """
-        generator = self._loaded_generator()
         if output_dir is None:
-            output_dir = str(self._model_path / 'SED')  # train() and load() set both
-        return generator.generate_with_outputs(teff=teff, logg=logg, meta=metallicity, output_dir=output_dir,
+            output_dir = str(self._model_path / 'SED')  # train() and load() set it
+        return self._generator.generate_with_outputs(teff=teff, logg=logg, meta=metallicity, output_dir=output_dir,
                                                check_bounds=check_bounds)
     
     def parameter_ranges(self) -> Dict[str, Tuple[float, float]]:
@@ -1199,15 +1161,9 @@ class MLGenerator:
             Dictionary with 'teff', 'logg', 'metallicity' keys
             and (min, max) tuple values
         """
-        ranges = self._loaded_generator().config['parameter_ranges']
+        ranges = self._generator.config['parameter_ranges']
         return {'teff': tuple(ranges['teff']), 'logg': tuple(ranges['logg']), 'metallicity': tuple(ranges['meta'])}
     
-    def _loaded_generator(self):
-        """The trained or loaded generator; RuntimeError before train() or load()."""
-        if self._generator is None:
-            raise RuntimeError("No model loaded. Call train() or load() first.")
-        return self._generator
-
     @staticmethod
     def list_models(models_dir: str = "models") -> List[Dict[str, Any]]:
         """List available trained generator models.
