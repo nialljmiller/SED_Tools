@@ -94,7 +94,6 @@ BUILDERS_FOR: Dict[Tuple[str, str], BuilderRef] = {
 }
 
 TOTAL_ONLY = "total-only"
-BLOCKED = "blocked"
 #: The team publishes separate factors, but no builder uses them yet.
 NOT_BUILT = "not-built"
 

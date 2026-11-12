@@ -125,7 +125,6 @@ HALEAKALA_PS1 = SiteAtmosphere(
 # ---------------------------------------------- VISTA/VIRCAM (ESO ETC curves)
 VIRCAM_BUNDLE = "https://www.eso.org/sci/facilities/paranal/decommissioned/vircam/inst/Filters_QE_Atm_curves.tar.gz"
 VIRCAM_PAGE = "https://www.eso.org/sci/facilities/paranal/decommissioned/vircam/inst.html"
-VISTA_PAGE = "https://www.eso.org/public/teles-instr/paranal-observatory/surveytelescopes/vista/"
 
 
 def vircam_atmosphere(raw: bytes, member: str, header: str) -> Curve:
