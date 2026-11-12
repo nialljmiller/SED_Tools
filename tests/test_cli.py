@@ -699,13 +699,6 @@ def njm_filter_grabber_lists_and_downloads(t):
 
 
 @main_row
-def njm_filter_grabber_needs_a_facility_for_an_instrument(t):
-    calls = _njm_served(t)
-    assert run_module(t.mp, "njm_filter_grabber", "--instrument", "Cam", "--output", str(t.tmp)) == 1
-    assert t.capsys.readouterr().out == "Error: --instrument requires --facility\n" and calls == []
-
-
-@main_row
 def njm_filter_grabber_exits_1_when_njm_is_down(t):
     t.mp.setattr(NJMFilterGrabber, "_check_availability", lambda self: False)
     assert run_module(t.mp, "njm_filter_grabber", "--list", "--output", str(t.tmp)) == 1

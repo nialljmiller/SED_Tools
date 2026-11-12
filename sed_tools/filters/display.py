@@ -179,15 +179,14 @@ def instrument_colors(curve_paths: Sequence[Union[str, Path]]) -> Dict[str, Dict
 
 
 def _normalized(lam: np.ndarray, t: np.ndarray, normalize) -> np.ndarray:
-    if normalize in (None, False):
-        return t
+    """``t`` scaled as :func:`plot_curves`'s ``normalize`` says (one of :data:`NORMALIZATIONS`)."""
     if normalize in (True, "peak"):
         peak = t.max()
         return t / peak if peak > 0 else t
     if normalize == "area":
         area = np.trapezoid(t, lam)
         return t / area if area > 0 else t
-    raise ValueError(f"normalize must be one of {NORMALIZATIONS}, got {normalize!r}")
+    return t
 
 
 def plot_curves(
@@ -213,8 +212,6 @@ def plot_curves(
     """
     import matplotlib.pyplot as plt
 
-    if not curves:
-        raise ValueError("no curves to plot")
     data = {}
     for key, (wavelength, transmission) in curves.items():
         lam, t = _arrays(wavelength, transmission)

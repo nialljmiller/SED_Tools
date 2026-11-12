@@ -21,9 +21,6 @@ logger = logging.getLogger("sed_tools.combine_filters")
 def find_filter_sets(base_dir: Optional[PathLike] = None) -> List[Path]:
     """Find local filter-set directories containing ``*.dat`` files."""
     root = Path(base_dir) if base_dir is not None else FILTER_DIR_DEFAULT
-    if not root.exists():
-        return []
-
     return [path for path in sorted(root.rglob("*"))
             if path.is_dir() and not is_auxiliary_path(path, root, dirs=(COMPONENTS_DIR,))
             and any(child.is_file() and child.suffix.lower() == ".dat" for child in path.iterdir())]
@@ -128,13 +125,7 @@ def combine_filter_sets(
     A directory gives the curves its MESA index file lists (every ``*.dat``
     without one), less its manifest's ``archived_bands``.
     """
-    if not inputs:
-        raise ValueError("Provide at least one filter file or filter-set directory to combine")
-
     mode = on_conflict.lower()
-    if mode not in {"rename", "overwrite", "error"}:
-        raise ValueError("on_conflict must be one of: 'rename', 'overwrite', 'error'")
-
     root = Path(filter_root) if filter_root is not None else FILTER_DIR_DEFAULT
     output_dir = resolve_output_path(output, root, facility=facility, instrument=instrument)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -144,7 +135,7 @@ def combine_filter_sets(
         for source_file in resolve_filter_sources(source, root):
             target = output_dir / source_file.name
             if target.exists() and target.resolve() != source_file.resolve():
-                if mode == "error":
+                if mode not in ("rename", "overwrite"):  # "error", or a mode that is neither
                     raise FileExistsError(f"Filter name conflict while combining: {source_file.name}")
                 if mode == "rename":
                     target = unique_filter_target(output_dir, source_file)

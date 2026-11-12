@@ -23,7 +23,7 @@ from ..component_sources.catalog import (
     BUILDERS_FOR, builder_for, component_availability, match_name, name_key, registered_name,
 )
 from .compose import atmosphere_file, build_product, find_atmosphere, resolve_atmosphere
-from .manifest import (
+from .manifest import (  # noqa: F401 - recipe_name stays importable here (filter_library)
     FILTER, OPTICS, QE, PUBLISHED, AtmosphereGrid, AtmosphereSpec, ComponentError,
     InstrumentManifest, index_listing, parse_components, recipe_name,
 )
@@ -583,8 +583,6 @@ class FilterLibrary:
         from ..component_sources.team_atmospheres import SITES as TEAM_SITES
 
         if spec.site in SITES:
-            if spec.pwv is None or spec.airmass is None:
-                raise ComponentError(f"{spec.site}: specify airmass and pwv to generate a SkyCalc atmosphere")
             get_builder("skycalc")(self.root, atmosphere_root=self.atmosphere_root,
                                    sites=[spec.site], airmasses=[spec.airmass], pwvs=[spec.pwv])
         elif spec.site in TEAM_SITES:
@@ -656,12 +654,6 @@ class FilterLibrary:
         if not list(directory.glob("*.dat")):
             directory = self.published(directory.parent.name, directory.name)
         roles = parse_components(components)
-        # Before any source is asked for components a band could never use.
-        manifest = InstrumentManifest.load(directory)
-        for band in bands or ():
-            if band not in manifest.bands:
-                raise ComponentError(f"{manifest.facility}/{manifest.instrument} has no band '{band}'")
-        _refuse_uncovered_bands(manifest, roles, bands)
         self.prepare_components(directory, components=roles, bands=bands, allow_heavy=allow_heavy)
         spec = AtmosphereSpec.coerce(atmosphere)
         if spec is not None:
@@ -811,24 +803,6 @@ def _availability(description, source, failed):
     return dict(description, availability_source=source, errors=errors,
                 sources_failed={name: list(messages) for name, messages in failed.items()},
                 fallback_from=fallback)
-
-
-def _refuse_uncovered_bands(manifest, roles, bands):
-    """ComponentError, before any download, for bands lacking components the manifest has for other bands.
-
-    A manifest that declares them for no band (curves from SVO) is left to prepare_components: a builder may add them.
-    """
-    needed = [role for role in roles if role in (FILTER, OPTICS, QE)]
-    if not needed:
-        return
-    covered = [band for band in manifest.primary_bands() if manifest.cover(band, needed)]
-    selected = manifest.primary_bands() if bands is None else list(bands)
-    missing = [band for band in selected if not manifest.cover(band, needed)]
-    if covered and missing:
-        raise ComponentError(
-            f"{manifest.facility}/{manifest.instrument} has no {recipe_name(needed)} components for "
-            f"{', '.join(missing)}; they exist for {', '.join(covered)}. Compose only those bands "
-            "(bands=[...], or --bands on the command line).")
 
 
 # ---- Installed sets

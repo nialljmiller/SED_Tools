@@ -50,24 +50,19 @@ Problem = Tuple[Path, str]
 
 def problems(filters_dir: PathLike, against: Optional[PathLike] = None) -> Iterator[Problem]:
     """Every rule broken in ``filters_dir`` (``Facility/Instrument/*.dat``), as (curve or folder, message)."""
-    labelled: Dict[int, List] = defaultdict(list)  # rule 7: (curve, path, DetectorType, source) by sample count
-    for folder in sorted(p for p in Path(filters_dir).glob("*/*") if p.is_dir()):
+    for folder in _folders(filters_dir):
         headers = {p.stem: read_filter_header(p) for p in sorted(folder.glob("*.dat"))}
         yield from _label_problems(folder, headers)
         yield from _sibling_problems(folder, headers)
         yield from _component_problems(folder, headers)
         if against is not None:
             yield from _regressions(folder, headers, Path(against) / folder.parent.name / folder.name)
-        for band, header in headers.items():
-            detector = normalize_detector_type(header.get("DetectorType"))
-            try:
-                curve = read_curve(folder / f"{band}.dat") if detector else None
-            except ComponentError:
-                continue  # an unreadable curve is no one's copy
-            if curve is not None and np.max(curve.transmission, initial=0.0) > 0:
-                labelled[len(curve.wavelength)].append((curve, folder / f"{band}.dat", detector,
-                                                        header.get("DetectorTypeSource") or "no source"))
-    yield from _clashes(Path(filters_dir), labelled)
+    yield from _clashes(Path(filters_dir))
+
+
+def _folders(filters_dir: PathLike) -> List[Path]:
+    """The instrument folders of a filter tree: ``Facility/Instrument``."""
+    return sorted(p for p in Path(filters_dir).glob("*/*") if p.is_dir())
 
 
 def _roles(header) -> Tuple[str, ...]:
@@ -143,17 +138,29 @@ def _same_curve(curve, component) -> bool:
     return bool(np.max(np.abs(curve.transmission - on_curve)) <= SAME_CURVE * peak)
 
 
-def _clashes(filters_dir: Path, labelled: Dict[int, List]) -> Iterator[Problem]:
-    """Rule 7: each group of curves with the same samples (:func:`_same_samples`) and more than one DetectorType."""
-    for entries in labelled.values():
-        groups: List[List] = []
-        for entry in entries:
-            group = next((g for g in groups if _same_samples(g[0][0], entry[0])), None)
+def _clashes(filters_dir: Path) -> Iterator[Problem]:
+    """Rule 7: each group of labelled curves with the same samples (:func:`_same_samples`) and more than one
+    DetectorType."""
+    groups: Dict[int, List[List]] = defaultdict(list)  # by sample count: groups of (curve, path, type, source)
+    for folder in _folders(filters_dir):
+        for path in sorted(folder.glob("*.dat")):
+            header = read_filter_header(path)
+            detector = normalize_detector_type(header.get("DetectorType"))
+            try:
+                curve = read_curve(path) if detector else None
+            except ComponentError:
+                continue  # an unreadable curve is no one's copy
+            if curve is None or np.max(curve.transmission) <= 0:
+                continue  # unlabelled, or no peak to compare by
+            entry = (curve, path, detector, header.get("DetectorTypeSource") or "no source")
+            same_length = groups[len(curve.wavelength)]
+            group = next((g for g in same_length if _same_samples(g[0][0], curve)), None)
             if group is None:
-                groups.append([entry])
+                same_length.append([entry])
             else:
                 group.append(entry)
-        for group in groups:
+    for same_length in groups.values():
+        for group in same_length:
             if len({detector for _, _, detector, _ in group}) > 1:
                 yield group[0][1], "the same curve carries more than one DetectorType: " + ", ".join(
                     f"{path.relative_to(filters_dir)} ({detector}, {source})" for _, path, detector, source in group)
@@ -161,11 +168,9 @@ def _clashes(filters_dir: Path, labelled: Dict[int, List]) -> Iterator[Problem]:
 
 def _same_samples(a, b) -> bool:
     """Whether curves ``a`` and ``b`` hold the same samples after peak normalisation, to SAME_SAMPLES."""
-    if not (np.allclose(a.wavelength[[0, -1]], b.wavelength[[0, -1]], rtol=SAME_SAMPLES, atol=0)
-            and np.allclose(a.wavelength, b.wavelength, rtol=SAME_SAMPLES, atol=0)):
-        return False
-    return bool(np.allclose(a.transmission / np.max(a.transmission), b.transmission / np.max(b.transmission),
-                            rtol=0, atol=SAME_SAMPLES))
+    return bool(np.allclose(a.wavelength, b.wavelength, rtol=SAME_SAMPLES, atol=0)
+                and np.allclose(a.transmission / np.max(a.transmission), b.transmission / np.max(b.transmission),
+                                rtol=0, atol=SAME_SAMPLES))
 
 
 def _regressions(folder: Path, headers, old_folder: Path) -> Iterator[Problem]:
@@ -201,7 +206,7 @@ def main(argv=None) -> int:
     found = list(problems(args.filters_dir, args.against))
     for path, message in found:
         print(f"ERROR {path}: {message}", file=sys.stderr)
-    folders = sum(1 for p in args.filters_dir.glob("*/*") if p.is_dir())
+    folders = len(_folders(args.filters_dir))
     if found:
         print(f"label_check: {len(found)} problems in {folders} instrument folders", file=sys.stderr)
         return 1

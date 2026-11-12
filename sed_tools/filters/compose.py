@@ -86,24 +86,18 @@ def multiply_curves(
     relax an ``"error"`` rule: the curve may miss at most that fraction of
     the throughput accumulated so far, and holds its edge values there.
     """
-    if not curves:
-        raise ComponentError("Nothing to compose")
     rules = [outside if p is None else p for p in (policies or [None] * len(curves))]
-    if len(rules) != len(curves):
-        raise ComponentError("one outside-range policy per curve")
     if allow_partial:
         rules = ["zero" if r == "error" else r for r in rules]
-    for rule in [outside, *rules]:
+    for rule in [outside, *rules]:  # from manifests: an unknown word must not read as "zero"
         if rule not in ("error", "zero", "edge"):
             raise ComponentError(f"Unknown outside-range policy {rule!r}")
     tols = list(tolerances or [None] * len(curves))
-    if len(tols) != len(curves):
-        raise ComponentError("one coverage tolerance per curve")
     base = curves[0]
     lo, hi = float(base.wavelength[0]), float(base.wavelength[-1])
     band_lo, band_hi = _support(base)
 
-    for other, rule, tol in zip(curves[1:], rules[1:], tols[1:]):
+    for other, rule, tol in zip(curves[1:], rules[1:], tols[1:], strict=True):
         o_lo, o_hi = float(other.wavelength[0]), float(other.wavelength[-1])
         if (o_lo > band_lo or o_hi < band_hi) and rule == "error" and tol is None:
             raise ComponentCoverageError(
@@ -115,7 +109,7 @@ def multiply_curves(
         [base.wavelength] + [c.wavelength[(c.wavelength > lo) & (c.wavelength < hi)] for c in curves[1:]]
     ))
     product = np.interp(grid, base.wavelength, base.transmission)
-    for other, rule, tol in zip(curves[1:], rules[1:], tols[1:]):
+    for other, rule, tol in zip(curves[1:], rules[1:], tols[1:], strict=True):
         o_lo, o_hi = float(other.wavelength[0]), float(other.wavelength[-1])
         if rule == "error" and tol is not None:
             total = float(np.trapezoid(product, grid))
@@ -198,10 +192,6 @@ def _available_conditions(grid: AtmosphereGrid) -> str:
     return "; or ".join(parts) or "no atmospheres"
 
 
-_NEEDS_CONDITIONS = ("Including the atmosphere needs the observing conditions: an airmass, "
-                     "and a PWV where the site models it")
-
-
 def resolve_atmosphere(manifest: InstrumentManifest, spec: Optional[AtmosphereSpec]) -> AtmosphereSpec:
     """Pin ``spec`` to one of the instrument's own sites, refusing anything else.
 
@@ -212,13 +202,6 @@ def resolve_atmosphere(manifest: InstrumentManifest, spec: Optional[AtmosphereSp
     are otherwise chosen by the user.
     """
     owner = f"{manifest.facility}/{manifest.instrument}"
-    if spec is None:
-        raise ComponentError(_NEEDS_CONDITIONS)
-    if manifest.ground_based is False:
-        raise ComponentError(
-            f"{manifest.facility} is {platform(manifest.facility) or 'not ground'}-based; "
-            "a telluric component does not apply"
-        )
     sites = manifest.sites()
     if not sites:
         raise ComponentError(f"{owner} has no atmosphere site of its own, so no telluric component is offered")
@@ -256,21 +239,6 @@ def _band_detector_type(instrument_dir: Path, band: str, roles: Sequence[str], m
     return product_detector_type(roles, manifest)
 
 
-def _check_composition(roles: set, band: str, manifest: InstrumentManifest,
-                       spec: Optional[AtmosphereSpec]) -> None:
-    """Refuse requests that do not describe one band's own throughput."""
-    if INSTRUMENT in roles:
-        raise ComponentError("'instrument' describes published curves; request 'optics' and/or 'qe'")
-    if PUBLISHED in roles and FILTER in roles:
-        raise ComponentError("'published' already contains the filter; combine it with optics/qe/atmosphere only")
-    if FILTER not in roles and PUBLISHED not in roles:
-        raise ComponentError("A composed band needs the 'filter' component (or the 'published' curve)")
-    if band not in manifest.bands:
-        raise ComponentError(f"{manifest.facility}/{manifest.instrument} has no band '{band}'")
-    if ATMOSPHERE in roles and spec is None:
-        raise ComponentError(_NEEDS_CONDITIONS)
-
-
 def _composition_steps(instrument_dir: Path, band: str, roles: set, manifest: InstrumentManifest,
                        spec: Optional[AtmosphereSpec], atmosphere_root: Optional[PathLike]) -> List[Tuple[str, Path]]:
     """The files to multiply for ``band`` as (component key, path), the one holding the filter first."""
@@ -297,8 +265,6 @@ def _composition_steps(instrument_dir: Path, band: str, roles: set, manifest: In
             )
         steps.extend(("+".join(contains), instrument_dir / rel) for contains, rel in pieces)
     if ATMOSPHERE in roles:
-        if atmosphere_root is None:
-            raise ComponentError("atmosphere_root is required to include the atmosphere")
         steps.append((ATMOSPHERE, atmosphere_file(atmosphere_root, spec)))  # type: ignore[arg-type]
     return steps
 
@@ -325,7 +291,8 @@ def compose_band(
     spec = AtmosphereSpec.coerce(atmosphere)
     if spec is not None:
         roles.add(ATMOSPHERE)
-    _check_composition(roles, band, manifest, spec)
+    if INSTRUMENT in roles:  # never composed: the product would be named for what it does not hold
+        raise ComponentError("'instrument' describes published curves; request 'optics' and/or 'qe'")
     if ATMOSPHERE in roles:
         spec = resolve_atmosphere(manifest, spec)
     ordered = [r for r in (PUBLISHED,) + COMPOSABLE_ROLES if r in roles]
@@ -337,11 +304,10 @@ def compose_band(
     policies: List[Optional[str]] = []
     tolerances: List[Optional[float]] = []
     for key, path in steps:
-        policies.append(None)
-        tolerances.append(None)
+        policy = tolerance = None
         if key == ATMOSPHERE:  # its manifest exists: atmosphere_file found the file through it
             grid = atmosphere_grid(atmosphere_root, spec.site)  # type: ignore[arg-type,union-attr]
-            policies[-1], tolerances[-1] = grid.outside_range, grid.coverage_tolerance
+            policy, tolerance = grid.outside_range, grid.coverage_tolerance
         elif not path.resolve().is_relative_to(instrument_dir.resolve()):
             raise ComponentError(f"{path}: component resolves outside its instrument directory")
         curve = read_curve(path)
@@ -359,6 +325,8 @@ def compose_band(
             raise ComponentError(f"{path.name} already includes {sorted(overlap)}; refusing to double count")
         covered.extend(contains)
         curves.append(curve)
+        policies.append(policy)
+        tolerances.append(tolerance)
         sources.append(curve.header.get("FilterID") or (
             str(path.relative_to(path.parents[2])) if len(path.parents) > 2 else path.name))
 
@@ -390,8 +358,6 @@ def product_name(components: Iterable[str], atmosphere: Optional[AtmosphereSpec]
     roles = [r for r in parse_components(list(components)) if r != ATMOSPHERE]
     name = recipe_name(roles)
     for key, value in sorted((variants or {}).items()):
-        if not _VARIANT_NAME.fullmatch(str(value)):
-            raise ComponentError(f"Invalid {key} variant name: {value!r}")
         name += f"+{recipe_name(parse_components(key))}_{value}"
     return f"{name}+atm_{atmosphere.label}" if atmosphere else name
 
@@ -428,7 +394,6 @@ def build_product(
     out_dir = instrument_dir / "products" / name
     if out_dir.exists() and not overwrite:
         return out_dir
-    manifest.with_variants(variants)  # refuse unknown variants before writing anything
     selected = list(manifest.primary_bands() if bands is None else bands)
     if not selected:
         raise ComponentError("No bands selected for composition")

@@ -15,7 +15,6 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
-import numpy as np
 
 from .curve_metadata import ENERGY, detector_type_before_conversion, normalize_detector_type, read_filter_header
 from .sites import instrument_sites, is_ground_based, own_site, platform
@@ -50,11 +49,8 @@ def is_auxiliary_path(path: PathLike, root: Optional[PathLike] = None, dirs: Seq
     Scanners of *published* curves skip these, so a composed ``products/filter/G.dat`` never shadows ``G.dat``.
     """
     path = Path(path)
-    if root is not None:
-        try:
-            path = path.relative_to(root)
-        except ValueError:
-            pass
+    if root is not None and path.is_relative_to(root):
+        path = path.relative_to(root)
     return any(part in dirs for part in path.parts)
 
 
@@ -147,24 +143,13 @@ class AtmosphereSpec:
     pwv: Optional[float] = None  # precipitable water vapour, mm
 
     def __post_init__(self):
-        if self.airmass is None:
-            if self.pwv is not None:
-                raise ComponentError("an atmosphere of unstated airmass has no pwv to choose")
-        elif not np.isfinite(self.airmass) or self.airmass < 1:
-            raise ComponentError("airmass must be finite and at least 1")
-        if self.pwv is not None and (not np.isfinite(self.pwv) or self.pwv < 0):
-            raise ComponentError("pwv must be finite and nonnegative")
-        if self.site is not None:
-            _require_inside(self.site, "atmosphere site")
-            if Path(self.site).name != self.site:
-                raise ComponentError("atmosphere site must be a single directory name")
+        if self.airmass is None and self.pwv is not None:  # its label would name a pwv it does not have
+            raise ComponentError("an atmosphere of unstated airmass has no pwv to choose")
 
     @classmethod
     def coerce(cls, value: Union["AtmosphereSpec", Mapping[str, object], None]) -> Optional["AtmosphereSpec"]:
         if value is None or isinstance(value, AtmosphereSpec):
             return value
-        if "airmass" not in value:
-            raise ComponentError("atmosphere needs at least 'airmass' (and 'pwv' for SkyCalc sites)")
         return cls(
             site=None if value.get("site") is None else str(value["site"]),
             airmass=None if value["airmass"] is None else float(value["airmass"]),  # type: ignore[arg-type]
@@ -257,13 +242,13 @@ def set_problems(directory: PathLike, claims: Optional[Mapping[str, Iterable[str
     curves = sorted(p.name for p in directory.glob("*.dat") if p.is_file())
     if not curves:
         return []
-    found = []
+    manifest = directory / MANIFEST_NAME
     try:
-        data = json.loads((directory / MANIFEST_NAME).read_text(encoding="utf-8")) \
-            if (directory / MANIFEST_NAME).is_file() else None
+        data = json.loads(manifest.read_text(encoding="utf-8")) if manifest.is_file() else None
         archived = archived_bands(directory)
     except (OSError, ValueError, AttributeError) as exc:
-        return [f"{directory / MANIFEST_NAME} cannot be read ({exc})"]
+        return [f"{manifest} cannot be read ({exc})"]
+    found = []
     index = directory / directory.name
     listed = index_names(index.read_text(encoding="utf-8")) if index.is_file() else None
     if listed is None:
@@ -275,22 +260,23 @@ def set_problems(directory: PathLike, claims: Optional[Mapping[str, Iterable[str
         if unlisted := [name for name in curves if name not in listed and Path(name).stem not in archived]:
             found.append(f"{directory} holds {', '.join(unlisted)}, which its index does not list")
     if data is not None:
-        named = data.get("facility") and data.get("instrument")
-        other = (describes_other_folder(directory, str(data["facility"]), str(data["instrument"])) if named
-                 else f"{directory / MANIFEST_NAME} names no set")
-        indexed = {Path(name).stem for name in listed or []}
-        if other:
+        if not (data.get("facility") and data.get("instrument")):
+            found.append(f"{manifest} names no set")
+        elif other := describes_other_folder(directory, str(data["facility"]), str(data["instrument"])):
             found.append(other)
-        elif listed is not None and (beyond := sorted(set(data.get("bands") or []) - set(archived) - indexed)):
-            found.append(f"{directory / MANIFEST_NAME} declares {', '.join(beyond)}, which its index does not "
-                         "list (an incomplete set, or a stale manifest)")
+        elif listed is not None:
+            indexed = {Path(name).stem for name in listed}
+            if beyond := sorted(set(data.get("bands") or []) - set(archived) - indexed):
+                found.append(f"{manifest} declares {', '.join(beyond)}, which its index does not list "
+                             "(an incomplete set, or a stale manifest)")
     mine = (claims or {}).get(f"{directory.parent.name}/{directory.name}")
-    for name in curves if mine is not None else ():  # a set no claim describes (a user's own) is not judged
-        filter_id = read_filter_header(directory / name).get("FilterID")
-        source = curve_source(filter_id)
-        owners = sorted(other for other, made_of in claims.items() if source in made_of) if source not in mine else []
-        if owners:
-            found.append(f"{directory / name} is {filter_id}, a curve of {', '.join(owners)}, not of this set")
+    if mine is not None:  # a set no claim describes (a user's own) is not judged
+        for name in curves:
+            filter_id = read_filter_header(directory / name).get("FilterID")
+            source = curve_source(filter_id)
+            owners = sorted(other for other, made_of in claims.items() if source in made_of)
+            if source not in mine and owners:
+                found.append(f"{directory / name} is {filter_id}, a curve of {', '.join(owners)}, not of this set")
     return found
 
 
@@ -510,12 +496,8 @@ class InstrumentManifest:
         view = deepcopy(self)
         for key, name in selection.items():
             canonical = recipe_name(parse_components(key))
-            named = self.variants.get(canonical, {})
-            if name not in named:
-                have = ", ".join(sorted(named)) or "none"
-                raise ComponentError(f"{self.facility}/{self.instrument} has no {canonical} variant "
-                                     f"{name!r} (available: {have})")
-            view.components[canonical] = {str(b): str(rel) for b, rel in dict(named[name]["files"]).items()}
+            files = self.variants[canonical][name]["files"]
+            view.components[canonical] = {str(b): str(rel) for b, rel in dict(files).items()}
         return view
 
     # ---- queries -----------------------------------------------------
