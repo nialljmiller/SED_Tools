@@ -5,7 +5,7 @@ from .grids import msg as _module
 
 # What `from sed_tools.msg_spectra_grabber import *` gave in 0.5.0.
 __all__ = """
-AXIS_ROLE_OVERRIDES BeautifulSoup DISCOVERY_TIMEOUT HTTPAdapter MSGSpectraGrabber Retry
+BeautifulSoup DISCOVERY_TIMEOUT HTTPAdapter MSGSpectraGrabber Retry
 ThreadPoolExecutor as_completed csv discovery_failure h5py logger logging mount_discovery np os re
 requests tqdm urljoin
 """.split()

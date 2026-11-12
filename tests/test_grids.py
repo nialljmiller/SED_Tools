@@ -1227,11 +1227,29 @@ def msg_cut_exclusions_are_not_failures(t):
 @row
 def msg_axis_role_beyond_the_grid_raises(t):
     grabber, _ = _grabber(t, "msg")
-    grabber.model_axes["sg-C3K-test"] = {
+    grabber.model_axes["sg-Test"] = {
         "axes": [np.array([5000.0, 6000.0]), np.array([-1.0, 0.0]), np.array([4.0, 4.5])],
         "shape": (2, 2, 2), "vlin": np.array([0]), "roles": {"teff": 0, "meta": 1, "logg": 3}}
     with pytest.raises(RuntimeError, match="logg is mapped to axis 3, but the grid has 3 axes"):
-        grabber._params_from_index("sg-C3K-test", 0)
+        grabber._params_from_index("sg-Test", 0)
+
+
+@row
+def msg_axis_roles_come_from_the_axes_labels(t):
+    # As in C3K and every alpha-enhanced MSG grid: by their values alone, [alpha/Fe] was taken for log g (it lies in
+    # log g's range too), and a table keyed on one grid's name corrected C3K only. MSG labels every axis.
+    grabber, _ = _grabber(t, "msg")
+    path = t.tmp / "axes.h5"
+    with h5py.File(path, "w") as f:
+        for i, (label, values) in enumerate((("Teff", [3000.0, 4000.0]), ("[Fe/H]", [-1.0, 0.0]),
+                                             ("[alpha/Fe]", [0.0, 0.4]), ("log(g)", [4.0, 4.5]))):
+            f[f"vgrid/axes[{i}]/x"] = values
+            f[f"vgrid/axes[{i}]"].attrs["label"] = np.bytes_(label)
+    with h5py.File(path, "r+") as f:
+        assert grabber._load_axes_and_vlin(f)["roles"] == {"teff": 0, "logg": 3, "meta": 1}
+        for i in range(4):
+            del f[f"vgrid/axes[{i}]"].attrs["label"]
+        assert grabber._load_axes_and_vlin(f)["roles"] == {"teff": 0, "meta": 1, "logg": 2}  # unlabelled: the guess
 
 
 BOSZ_SCRIPT = f"{mast.SCRIPTS_DIR}/hlsp_bosz_bosz2024_sim_r1000_m%2B0.00_v1_bulkdl.sh"
