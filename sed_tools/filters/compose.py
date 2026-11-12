@@ -304,11 +304,10 @@ def compose_band(
     policies: List[Optional[str]] = []
     tolerances: List[Optional[float]] = []
     for key, path in steps:
-        policies.append(None)
-        tolerances.append(None)
+        policy = tolerance = None
         if key == ATMOSPHERE:  # its manifest exists: atmosphere_file found the file through it
             grid = atmosphere_grid(atmosphere_root, spec.site)  # type: ignore[arg-type,union-attr]
-            policies[-1], tolerances[-1] = grid.outside_range, grid.coverage_tolerance
+            policy, tolerance = grid.outside_range, grid.coverage_tolerance
         elif not path.resolve().is_relative_to(instrument_dir.resolve()):
             raise ComponentError(f"{path}: component resolves outside its instrument directory")
         curve = read_curve(path)
@@ -326,6 +325,8 @@ def compose_band(
             raise ComponentError(f"{path.name} already includes {sorted(overlap)}; refusing to double count")
         covered.extend(contains)
         curves.append(curve)
+        policies.append(policy)
+        tolerances.append(tolerance)
         sources.append(curve.header.get("FilterID") or (
             str(path.relative_to(path.parents[2])) if len(path.parents) > 2 else path.name))
 

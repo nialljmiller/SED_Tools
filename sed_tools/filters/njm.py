@@ -294,7 +294,7 @@ class NJMFilterGrabber:
         """Discover available filters for a facility/instrument."""
         if not self._available:
             return []
-        
+
         instrument_url = f"{self.filters_url}/{facility}/{instrument}/"
         try:
             response = self._get(f"{instrument_url}{instrument}", timeout=10)
@@ -354,10 +354,8 @@ class NJMFilterGrabber:
             filters = self.discover_filters(facility, instrument)
         if not filters:
             return SetDownload(listed=[])
-        default_dir = Path(self.base_dir) / facility / instrument
-        output_dir = Path(output_dir) if output_dir is not None else default_dir
+        output_dir = Path(output_dir) if output_dir is not None else Path(self.base_dir) / facility / instrument
         output_dir.mkdir(parents=True, exist_ok=True)
-        elsewhere = output_dir != default_dir
 
         print(f"[njm] Downloading filters: {facility}/{instrument}")
         print(f"  Found {len(filters)} filters")
@@ -372,15 +370,9 @@ class NJMFilterGrabber:
               f"{len(failed)} failed")
         if downloaded:
             # Only beside curves fetched now: the mirror's files describe its current curves.
-            if elsewhere:
-                self._save_catalogue_files(facility, instrument, output_dir)
-            else:
-                self.download_catalogue_files(facility, instrument)
+            self._save_catalogue_files(facility, instrument, output_dir)
         try:
-            if elsewhere:
-                self._save_components(facility, instrument, output_dir)
-            else:
-                self.download_components(facility, instrument)
+            self._save_components(facility, instrument, output_dir)
         except (requests.RequestException, RuntimeError, ValueError) as exc:
             result.other_failures.append(f"components: {exc}")
         if remote_index and not (output_dir / "manifest.json").is_file():
@@ -695,9 +687,9 @@ class NJMFilterGrabber:
         """Get information about available filters for an instrument."""
         if not self._available:
             return {}
-        
+
         filters = self.discover_filters(facility, instrument)
-        
+
         return {
             "facility": facility,
             "instrument": instrument,
@@ -769,21 +761,21 @@ def drop_unlisted_bands(directory, listed):
 def main():
     """Standalone CLI for testing."""
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="Download filters from NJM mirror")
     parser.add_argument("--facility", help="Specific facility to download")
     parser.add_argument("--instrument", help="Specific instrument to download (requires --facility)")
     parser.add_argument("--list", action="store_true", help="List available facilities/instruments")
     parser.add_argument("--output", default="../data/filters/", help="Output directory")
-    
+
     args = parser.parse_args()
-    
+
     grabber = NJMFilterGrabber(base_dir=args.output)
-    
+
     if not grabber.is_available():
         print("NJM mirror is not available")
         return 1
-    
+
     if args.list:
         print("\nAvailable facilities:")
         facilities = grabber.discover_facilities()
@@ -794,14 +786,14 @@ def main():
                 filters = grabber.discover_filters(fac, inst)
                 print(f"    - {inst} ({len(filters)} filters)")
         return 0
-    
+
     if args.instrument:
         grabber.download_filters(args.facility, args.instrument)
     elif args.facility:
         grabber.download_all_filters(facility=args.facility)
     else:
         grabber.download_all_filters()
-    
+
     return 0
 
 

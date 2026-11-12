@@ -49,11 +49,8 @@ def is_auxiliary_path(path: PathLike, root: Optional[PathLike] = None, dirs: Seq
     Scanners of *published* curves skip these, so a composed ``products/filter/G.dat`` never shadows ``G.dat``.
     """
     path = Path(path)
-    if root is not None:
-        try:
-            path = path.relative_to(root)
-        except ValueError:
-            pass
+    if root is not None and path.is_relative_to(root):
+        path = path.relative_to(root)
     return any(part in dirs for part in path.parts)
 
 
