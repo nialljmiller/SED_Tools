@@ -18,9 +18,9 @@ from .._constants import H as PLANCK_H, C as SPEED_C, K as BOLTZMANN_K, SIGMA
 from ..cube.fileio import load as load_cube
 from ..ui_utils import (ask_number as _ask_number, banner as _banner, menu_choice as _menu_choice, refused_without,
                        section as _section)
-from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, DEFAULT_WL_POINTS, Engine, Network, action_menu, data_loaders, fit,
-                     log_grid, model_configs, normalised_params, param_scaler, predict, print_libraries, resample,
-                     sample_spectra, training_libraries, write_spectrum)
+from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, DEFAULT_WL_POINTS, Engine, Network, action_menu, confirmed,
+                     data_loaders, fit, log_grid, model_configs, normalised_params, param_scaler, predict,
+                     print_libraries, resample, sample_spectra, training_libraries, write_spectrum)
 from .common import mlp  # noqa: F401  (kept: `from sed_tools.ml.completer import *` gives mlp, as before)
 
 logger = logging.getLogger("sed_tools.ml_sed_completer")
@@ -985,15 +985,6 @@ def run_interactive_workflow(base_dir: str, models_dir: str = "models") -> Optio
     ])
 
 
-def _confirmed(prompt: str) -> bool:
-    """Ask a [Y/n] question; anything but an empty or y... answer prints "Cancelled"."""
-    answer = input(prompt).strip().lower()
-    if answer and not answer.startswith('y'):
-        print("Cancelled")
-        return False
-    return True
-
-
 def _extendable_grids(base_dir: str) -> List[Dict[str, Any]]:
     """Grids under base_dir with a readable lookup_table.csv."""
     import pandas as pd
@@ -1035,7 +1026,7 @@ def _train_menu(base_dir: str, models_dir: str) -> None:
     print(f"\nModel will be saved to: {output_path}/")
     for name in ("model.pt", "config.json", "training_plots.png", "prediction_examples.png"):
         print(f"  - {name}")
-    if not _confirmed("\nStart training? [Y/n]: "):
+    if not confirmed("\nStart training? [Y/n]: "):
         return
 
     _banner("TRAINING...")
@@ -1096,7 +1087,7 @@ def _extend_menu(base_dir: str, models_dir: str) -> None:
     output_name = source['name'] + "_ml_extended"
     output_dir = os.path.join(base_dir, output_name)
     print(f"Output will be saved to: {output_name}/")
-    if not _confirmed("Start extension? [Y/n]: "):
+    if not confirmed("Start extension? [Y/n]: "):
         return
 
     _banner("EXTENDING SEDs...")

@@ -253,6 +253,7 @@ ALL_NAN = {
     "auto_trainer_stops_on_a_trial_with_no_usable_epoch": (mg.SEDGeneratorNetwork, auto_train_best)}
 BAD_ANSWERS = {
     "completer_workflow_rejects_bad_answers_cancelled": (mc, ["1", "1", "", "", "", "n"], "Cancelled"),
+    "generator_workflow_rejects_bad_answers_cancelled": (mg, ["1", "1", "", "", "", "n"], "Cancelled"),
     "completer_workflow_rejects_bad_answers_invalid_choice": (mc, ["9"], "Invalid choice"),
     "generator_workflow_rejects_zero_and_negative_menu_numbers_0": (mg, ["3", "0"], "Invalid selection"),
     "generator_workflow_rejects_zero_and_negative_menu_numbers_minus_1": (mg, ["3", "-1"], "Invalid selection")}
