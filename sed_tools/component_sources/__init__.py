@@ -27,11 +27,7 @@ AUTOMATIC_BUILDERS = ("lsst", "hst", "jwst", "hsc", "decam", "vista", "ztf", "sk
 
 
 def get_builder(name: str) -> Callable[..., Path]:
-    try:
-        module = importlib.import_module(BUILDERS[name.lower()], __name__)
-    except KeyError:
-        raise ValueError(f"Unknown component source '{name}'. Available: {sorted(BUILDERS)}") from None
-    return module.build
+    return importlib.import_module(BUILDERS[name.lower()], __name__).build
 
 
 def compare_to_published(instrument_dir, components=("filter", "optics", "qe"), temperatures=(3000.0, 30000.0)):

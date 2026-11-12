@@ -150,8 +150,6 @@ def build(
     session=None,
     svo_client: SVOMetadataClient = None,
 ) -> Path:
-    if instrument not in RELEASES:
-        raise ValueError(f"No LSST release for {instrument!r}; available: {sorted(RELEASES)}")
     release, suffix, published_from = RELEASES[instrument]
     tag = tag or release
     if session is None:

@@ -99,8 +99,6 @@ NOTES = {
 
 
 def build(filter_root, *, instrument, session=None, **_ignored) -> Path:
-    if instrument not in QE_VARIANTS:
-        raise ValueError(f"No GMOS builder for {instrument!r}; available: {sorted(QE_VARIANTS)}")
     if session is None:
         import requests
 

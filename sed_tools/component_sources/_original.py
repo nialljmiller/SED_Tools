@@ -376,19 +376,12 @@ def _each_published(facility_dir: Path, names, table: Mapping, build_one: Callab
 
 
 def make_builder(recipes: Mapping[str, Tuple[str, Recipe]]):
-    """``build(filter_root, *, instrument, session=None)`` for one source module."""
+    """``build(filter_root, *, instrument, session=None)`` for one source module: ``recipes`` maps each
+    instrument to (its facility, its recipe)."""
 
-    def build(filter_root, *, instrument, session=None, facility=None, atmosphere_root=None,
-              **_ignored) -> Path:
-        try:
-            fac, recipe = recipes[instrument]
-        except KeyError:
-            raise ValueError(f"No original-source recipe for {instrument!r}; "
-                             f"available: {sorted(recipes)}") from None
-        if facility is not None and facility != fac:
-            raise ValueError(f"{instrument} belongs to {fac}, not {facility}")
+    def build(filter_root, *, instrument, session=None, atmosphere_root=None, **_ignored) -> Path:
         fetcher = Fetcher(session)
-        spec = recipe(fetcher)
+        spec = recipes[instrument][1](fetcher)
         return write_instrument(filter_root, spec, atmosphere_root=atmosphere_root, session=fetcher.session)
 
     return build

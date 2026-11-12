@@ -190,12 +190,8 @@ def _curve(path: Path) -> Tuple[np.ndarray, np.ndarray]:
     return a[:, 0], a[:, 1]
 
 
-def build(filter_root, *, instrument, session=None, facility=None, **_ignored) -> Path:
+def build(filter_root, *, instrument, session=None, **_ignored) -> Path:
     """Write missing published curves, the components and the manifest, then record the checks."""
-    if instrument not in CAMERAS:
-        raise ValueError(f"No Cassini ISS camera {instrument!r}; available: {sorted(CAMERAS)}")
-    if facility is not None and facility != FACILITY:
-        raise ValueError(f"{instrument} belongs to {FACILITY}, not {facility}")
     spec = _camera(instrument, Fetcher(session))
     inst_dir = write_instrument(filter_root, spec)
 
