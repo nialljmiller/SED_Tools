@@ -16,7 +16,7 @@ import numpy as np
 
 from ..filters.compose import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, AtmosphereGrid,
                                  InstrumentManifest, add_component)
-from ..filters.curve_metadata import (ENERGY, PHOTON, SVOMetadataClient, read_filter_header,
+from ..filters.curve_metadata import (ENERGY, PHOTON, SOURCE_SVO, SVOMetadataClient, read_filter_header,
                                svo_components_header, svo_detector, svo_fps_url, write_filter_file)
 from ._original import (CONNECT_TIMEOUT, Curve, common_product,  # noqa: F401  importable from here, as before
                         download, product)
