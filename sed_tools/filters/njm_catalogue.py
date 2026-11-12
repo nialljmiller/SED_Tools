@@ -47,9 +47,10 @@ class CatalogueError(RuntimeError):
 def parse_target(target: str) -> Tuple[str, str, Optional[str]]:
     """``"Facility/Instrument"`` or ``"Facility/Instrument/Band"`` -> (facility, instrument, band)."""
     parts = [p for p in str(target).strip().strip("/").split("/") if p]
-    if len(parts) in (2, 3):
-        return parts[0], parts[1], parts[2] if len(parts) == 3 else None
-    raise ValueError(f"expected Facility/Instrument or Facility/Instrument/Band, got {target!r}")
+    if len(parts) == 2:
+        parts.append(None)
+    facility, instrument, band = parts
+    return facility, instrument, band
 
 
 class FilterCatalogue:
@@ -74,7 +75,7 @@ class FilterCatalogue:
         self.filter_root = Path(filter_root)
         self.cache_root = cache_root(self.filter_root)
         self.offline = offline
-        self.max_workers = max(1, min(int(max_workers), MAX_CONCURRENT))
+        self.max_workers = min(max_workers, MAX_CONCURRENT)  # NJM blocks bursts
         self.index_max_age = index_max_age
         self._mirror = mirror
         self._mirror_lock = threading.Lock()
@@ -311,8 +312,6 @@ class FilterCatalogue:
     def _instrument_file(self, facility: str, instrument: str, kind: str, *,
                          prefer_installed: bool, refresh: bool) -> dict:
         """The file as installed, cached or served (see :meth:`instrument_file`)."""
-        if kind not in (PROPERTIES, INFO):
-            raise ValueError(f"kind must be {PROPERTIES!r} or {INFO!r}")
         installed = self._installed(facility, instrument, kind) if prefer_installed and not refresh else None
         if installed is not None:
             try:
@@ -447,14 +446,8 @@ class FilterCatalogue:
                detector_type: Optional[str] = None, where: Optional[Mapping[str, Any]] = None,
                properties: bool = True, refresh: bool = False) -> pd.DataFrame:
         """Find served bands; see :meth:`sed_tools.api.Filters.search`."""
-        wanted_detector = None
-        if detector_type is not None:
-            wanted_detector = normalize_detector_type(detector_type)
-            if wanted_detector is None:
-                raise ValueError(f"Unknown detector type: {detector_type!r}")
+        wanted_detector = normalize_detector_type(detector_type) or detector_type  # another word matches no band
         criteria = _criteria(wavelength, pivot, fwhm, where, wanted_detector)
-        if criteria and not properties:
-            raise ValueError("property criteria need properties=True")
         needles = {"facility": facility, "instrument": instrument, "band": band}
         rows, entries = self._named_bands(text, needles, wanted_detector, refresh)
 
@@ -526,8 +519,6 @@ def _is_range(value) -> bool:
 
 
 def _range(value, *, angstrom: bool = False):
-    if not _is_range(value):
-        raise ValueError(f"expected a (low, high) range, got {value!r}")
     if hasattr(value, "unit"):
         value = list(value)
     convert = _to_angstrom if angstrom else float

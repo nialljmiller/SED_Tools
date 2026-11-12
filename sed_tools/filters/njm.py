@@ -795,11 +795,7 @@ def main():
                 print(f"    - {inst} ({len(filters)} filters)")
         return 0
     
-    if args.instrument and not args.facility:
-        print("Error: --instrument requires --facility")
-        return 1
-    
-    if args.facility and args.instrument:
+    if args.instrument:
         grabber.download_filters(args.facility, args.instrument)
     elif args.facility:
         grabber.download_all_filters(facility=args.facility)

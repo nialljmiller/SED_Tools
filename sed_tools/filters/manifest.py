@@ -15,7 +15,6 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
-import numpy as np
 
 from .curve_metadata import ENERGY, detector_type_before_conversion, normalize_detector_type, read_filter_header
 from .sites import instrument_sites, is_ground_based, own_site, platform
@@ -147,24 +146,13 @@ class AtmosphereSpec:
     pwv: Optional[float] = None  # precipitable water vapour, mm
 
     def __post_init__(self):
-        if self.airmass is None:
-            if self.pwv is not None:
-                raise ComponentError("an atmosphere of unstated airmass has no pwv to choose")
-        elif not np.isfinite(self.airmass) or self.airmass < 1:
-            raise ComponentError("airmass must be finite and at least 1")
-        if self.pwv is not None and (not np.isfinite(self.pwv) or self.pwv < 0):
-            raise ComponentError("pwv must be finite and nonnegative")
-        if self.site is not None:
-            _require_inside(self.site, "atmosphere site")
-            if Path(self.site).name != self.site:
-                raise ComponentError("atmosphere site must be a single directory name")
+        if self.airmass is None and self.pwv is not None:  # its label would name a pwv it does not have
+            raise ComponentError("an atmosphere of unstated airmass has no pwv to choose")
 
     @classmethod
     def coerce(cls, value: Union["AtmosphereSpec", Mapping[str, object], None]) -> Optional["AtmosphereSpec"]:
         if value is None or isinstance(value, AtmosphereSpec):
             return value
-        if "airmass" not in value:
-            raise ComponentError("atmosphere needs at least 'airmass' (and 'pwv' for SkyCalc sites)")
         return cls(
             site=None if value.get("site") is None else str(value["site"]),
             airmass=None if value["airmass"] is None else float(value["airmass"]),  # type: ignore[arg-type]
@@ -511,12 +499,8 @@ class InstrumentManifest:
         view = deepcopy(self)
         for key, name in selection.items():
             canonical = recipe_name(parse_components(key))
-            named = self.variants.get(canonical, {})
-            if name not in named:
-                have = ", ".join(sorted(named)) or "none"
-                raise ComponentError(f"{self.facility}/{self.instrument} has no {canonical} variant "
-                                     f"{name!r} (available: {have})")
-            view.components[canonical] = {str(b): str(rel) for b, rel in dict(named[name]["files"]).items()}
+            files = self.variants[canonical][name]["files"]
+            view.components[canonical] = {str(b): str(rel) for b, rel in dict(files).items()}
         return view
 
     # ---- queries -----------------------------------------------------

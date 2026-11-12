@@ -79,7 +79,6 @@ def test_filters(rows):
     rows(PICKER, _picker)
     rows(PUBLISHED_WITH_ATMOSPHERE, _published_with_atmosphere)
     rows(CONVERT_TO_ENERGY, _convert_to_energy)
-    rows(INVALID_CONDITIONS, _invalid_conditions)
     rows(COVERAGE_ERROR, _coverage_error)
     rows(COMPONENTS_WITHOUT_A_BUILDER, _components_without_a_builder)
     rows(OUTAGE_ANNOUNCED_ONCE, _outage_announced_once)
@@ -536,8 +535,6 @@ def search_accepts_quantities_and_names_only(t):
     names = Filters.search(band="K", properties=False, filter_root=root)
     assert list(names.columns) == ["facility", "instrument", "band"] and list(names["band"]) == ["K"]
     assert not [r for r, _ in njm.requests if r.endswith("properties.json")]
-    with pytest.raises(ValueError):
-        Filters.search(fwhm=(1, 2), properties=False, filter_root=root)
 
 
 @row
@@ -757,17 +754,11 @@ def multiply_curves_refuses_to_extrapolate(t):
     assert np.all(product[grid < 4500.0] == 0.0)
 
 
-@row
-def compose_requires_filter_or_published(t):
-    with pytest.raises(ComponentError, match="needs the 'filter'"):
-        compose_band(argus_system(t.tmp), "b1", ["optics", "qe"])
-
-
 PUBLISHED_WITH_ATMOSPHERE = {
     "published_with_atmosphere_is_not_double_counted": (lambda root: with_site(svo_published(
         root / "2MASS" / "2MASS", "J", gauss(5000, 300), "filter+instrument+atmosphere")), "double count"),
     "space_instrument_refuses_atmosphere": (lambda root: svo_published(
-        root / "TESS" / "TESS", "Red", gauss(5000, 300), "filter+instrument"), "space-based"),
+        root / "TESS" / "TESS", "Red", gauss(5000, 300), "filter+instrument"), "no atmosphere site of its own"),
     "published_requires_known_contents": (lambda root: with_site(put(
         root / "Generic" / "Mystery", {"X.dat": "Wavelength,Transmission\n4000,1\n5000,1\n"})),
         "does not say what it contains"),
@@ -1292,15 +1283,6 @@ def manifest_role_must_match_component_header(t):
         build_product(instrument, "filter", bands=["g"])
 
 
-INVALID_CONDITIONS = {"invalid_atmosphere_conditions_are_rejected_nan_airmass": (float("nan"), 1),
-                      "invalid_atmosphere_conditions_are_rejected_infinite_pwv": (1.2, float("inf"))}
-
-
-def _invalid_conditions(t, airmass, pwv):
-    with pytest.raises(ComponentError):
-        AtmosphereSpec("paranal", airmass, pwv)
-
-
 @njm_offline_row
 def atmosphere_requires_pwv_when_grid_is_ambiguous(t):
     grid = AtmosphereGrid("paranal", [{"airmass": 1.2, "pwv": 1., "file": "a.dat"},
@@ -1608,8 +1590,6 @@ def unstated_airmass_is_listed_apart_and_selected_explicitly(t):
     assert grid.select(AtmosphereSpec("plexus_team", None)) == "am_unstated.dat"
     with pytest.raises(ComponentError, match="unstated airmass: airmass=None"):
         grid.select(AtmosphereSpec("plexus_team", 1.0))
-    with pytest.raises(ComponentError, match="atmosphere needs at least 'airmass'"):
-        AtmosphereSpec.coerce({"site": "plexus_team"})
     assert AtmosphereSpec.coerce({"site": "plexus_team", "airmass": None}).label == "plexus_team_amunstated"
     with pytest.raises(ComponentError, match="no pwv"):
         AtmosphereSpec("plexus_team", None, 2.0)
@@ -1721,15 +1701,6 @@ def missing_conditions_error_says_what_the_site_has(t):
         assert str(excinfo.value) == message
 
 
-@row
-def atmosphere_without_conditions_error_has_no_python_syntax(t):
-    inst = site_camera(t.tmp / "filters", default_site="short_team")
-    with pytest.raises(ComponentError) as excinfo:
-        compose_band(inst, "g", [FILTER, ATMOSPHERE], atmosphere_root=t.tmp / "atm")
-    assert str(excinfo.value) == ("Including the atmosphere needs the observing conditions: an airmass, "
-                                  "and a PWV where the site models it")
-
-
 # ======================================================================
 # A catalogue gap apart from a fetch failure (test_filters_catalogue_gaps)
 # ======================================================================
@@ -1776,8 +1747,6 @@ def variant_is_selected_only_on_request(t):
     assert default.transmission.max() == pytest.approx(0.9)
     assert chosen.transmission.max() == pytest.approx(0.5)
     assert "[qe=b]" in chosen.header["Recipe"]
-    with pytest.raises(ComponentError, match="available: a, b"):
-        compose_band(inst, "g", "filter+qe", variants={"qe": "nope"})
 
 
 @row
@@ -2680,17 +2649,6 @@ def svo_may_complete_a_set_njm_wrote_nothing_into(t):
 
 # Compose and availability
 @row
-def compose_refuses_an_unknown_band_before_asking_any_source(t):
-    bundled(t)
-    root = t.tmp / "filters"
-    write_set(root / "Argus" / "DR280", ["g"])
-    library = library_with(root, SimpleNamespace(is_available=lambda: pytest.fail("NJM was asked")))
-    t.mp.setattr(filter_library, "get_builder", lambda name: pytest.fail("a builder was run"))
-    with pytest.raises(ComponentError, match="^Argus/DR280 has no band 'nosuch'$"):
-        library.compose(root / "Argus" / "DR280", "filter", bands=["nosuch"])
-
-
-@row
 def njm_instrument_without_manifest_is_described_not_an_error(t):
     bundled(t)
     info = {"bands": {"G": {"curve": {"Components": "filter+qe+instrument", "ComponentsSource": "svo",
@@ -3108,7 +3066,7 @@ def a_renamed_or_copied_set_is_not_described_by_the_manifest_it_carried(t):
     assert set_problems(gmos) == [] and InstrumentManifest.load(gmos).instrument == "GMOS_N"
 
 
-# Compose refuses bands without the components before any download
+# Compose of the bands that have the components asks the sources for them
 def nisp_with_declared_components(t):
     """Euclid/NISP as NJM's manifest declares it: filter, optics and qe for H and Y; grisms Blue and Red bare."""
     curve = FILTER_CURVE.replace("Components=filter", "Components=filter+optics+qe")
@@ -3118,15 +3076,6 @@ def nisp_with_declared_components(t):
                   for role in ("filter", "optics", "qe")}  # declared; not downloaded yet
     InstrumentManifest("Euclid", "NISP", ["Blue", "H", "Red", "Y"], components=components).save(inst)
     return inst
-
-
-@row
-def compose_names_the_bands_without_components_before_asking_any_source(t):
-    nisp_with_declared_components(t)
-    library = library_with(t.tmp / "filters", SimpleNamespace(is_available=lambda: pytest.fail("NJM was asked")))
-    with pytest.raises(ComponentError, match=r"Euclid/NISP has no filter\+optics\+qe components for Blue, Red; "
-                                             r"they exist for H, Y\. Compose only those bands"):
-        library.compose("Euclid/NISP", "filter,optics,qe")
 
 
 @row

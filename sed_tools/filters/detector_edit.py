@@ -67,8 +67,6 @@ def curve_files(path: PathLike, bands: Optional[Sequence[str]] = None) -> List[P
     path = Path(path)
     if path.is_file():
         return [path]
-    if not path.is_dir():
-        raise FileNotFoundError(f"No filter curve or set at {path}")
     listed = index_listing(path)
     names = [Path(name).stem for name in listed] if listed else [p.stem for p in sorted(path.glob("*.dat"))]
     names = [name for name in names if name not in archived_bands(path)]
