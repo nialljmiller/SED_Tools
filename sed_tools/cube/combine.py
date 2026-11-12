@@ -28,6 +28,8 @@ logger = logging.getLogger("sed_tools.combine_stellar_atm")
 # The lookup columns only save_combined_data writes, and the default output name.
 _COMBINED_COLUMNS = {"source_model", "original_file"}
 _DEFAULT_COMBINED_NAME = "combined_models"
+# The common-grid wavelengths a spectrum and its reference must share for one to be normalised to the other.
+_MIN_COMMON_POINTS = 100
 
 
 def find_stellar_models(base_dir=None):
@@ -203,12 +205,36 @@ def create_common_wavelength_grid(all_models_data, sample_size=20):
     return wavelength_grid
 
 
-def identify_reference_model(all_models_data):
-    """Identify reference spectral grid (prefer Kurucz)."""
-    names = [os.path.basename(model_data["model_dir"]) for model_data in all_models_data]
-    reference = next((i for i, name in enumerate(names) if "kurucz" in name.lower()), 0)
-    print(f"Reference spectral grid: {names[reference]}")
+def identify_reference_model(all_models_data, wavelength_grid):
+    """The grid the others are normalised to. compute_normalization_factors scales each spectrum to the reference
+    spectrum nearest it in (Teff, log g, [M/H]), so this is the grid the other grids' spectra lie nearest: the
+    smallest sum of those distances, each parameter scaled to the range of all the grids. Only grids whose first
+    spectrum spans _MIN_COMMON_POINTS of the common wavelength grid are chosen, when any does; ties go to the grid
+    named first."""
+    params = [np.column_stack([d[key] for key in ("teff", "logg", "meta")]).astype(float) for d in all_models_data]
+    params = [p[np.isfinite(p).all(axis=1)] for p in params]
+    every = np.vstack(params)
+    low, span = (every.min(axis=0), np.ptp(every, axis=0)) if len(every) else (0.0, np.ones(3))
+    span[span == 0] = 1.0
+    from scipy.spatial import KDTree
+
+    def distance(i):
+        tree = KDTree((params[i] - low) / span)
+        return sum(tree.query((p - low) / span)[0].sum() for j, p in enumerate(params) if j != i)
+
+    comparable = [i for i, d in enumerate(all_models_data) if _common_points(d, wavelength_grid) >= _MIN_COMMON_POINTS]
+    reference = min(comparable or range(len(all_models_data)), key=distance)
+    print(f"Reference spectral grid: {os.path.basename(all_models_data[reference]['model_dir'])}")
     return reference
+
+
+def _common_points(model_data, wavelength_grid):
+    """How many wavelengths of the common grid the grid's first spectrum spans; 0 if it has none it can read."""
+    try:
+        wl, _ = prepare_sed(os.path.join(model_data["model_dir"], model_data["files"][0]))
+    except (IndexError, OSError, ValueError):
+        return 0  # build_combined_flux_cube lists the spectra it cannot read
+    return int(np.count_nonzero((wavelength_grid >= wl.min()) & (wavelength_grid <= wl.max())))
 
 
 def compute_normalization_factors(target_data, reference_data, wavelength_grid):
@@ -290,8 +316,8 @@ def _normalization_factor(file_target, file_ref, wavelength_grid):
     wl_min = max(wl_tgt.min(), wl_ref.min(), wavelength_grid.min())
     wl_max = min(wl_tgt.max(), wl_ref.max(), wavelength_grid.max())
     mask = (wavelength_grid >= wl_min) & (wavelength_grid <= wl_max)
-    if mask.sum() < 100:
-        return 1.0, "fewer than 100 common wavelength points"
+    if mask.sum() < _MIN_COMMON_POINTS:
+        return 1.0, f"fewer than {_MIN_COMMON_POINTS} common wavelength points"
 
     from scipy.interpolate import interp1d
 
@@ -321,7 +347,7 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
     print(f"\nBuilding flux cube: {flux_cube.shape}")
     print(f"Memory: {flux_cube.nbytes / (1024**2):.1f} MB")
 
-    ref_idx = identify_reference_model(all_models_data)
+    ref_idx = identify_reference_model(all_models_data, wavelength_grid)
     ref_data = all_models_data[ref_idx]
 
     norm_factors = {}

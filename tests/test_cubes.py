@@ -499,6 +499,30 @@ def normalisation_warns_when_spectra_keep_native_scale(t):
 
 
 @row
+def combine_normalises_to_the_grid_the_others_lie_nearest(t):
+    # The reference used to be the first grid named Kurucz, else the first grid named.
+    from sed_tools.combine_stellar_atm import identify_reference_model
+
+    def grid(name, teffs, first_spectrum):
+        (t.tmp / name).mkdir()
+        (t.tmp / name / "s.txt").write_text(first_spectrum)
+        return {"files": np.array(["s.txt"] * len(teffs)), "teff": np.array(teffs), "logg": np.full(len(teffs), 4.0),
+                "meta": np.zeros(len(teffs)), "model_dir": str(t.tmp / name)}
+
+    wide, optical = "1000 1\n30000 1\n", "3000 1\n7000 1\n"  # 441 and 81 of the common grid's 441 points
+    common = np.linspace(3000.0, 25000.0, 441)
+    hot, broad = grid("hot", [9000.0, 9500.0], wide), grid("broad", [4000.0, 6000.0, 8000.0, 9000.0], optical)
+    assert identify_reference_model([hot, broad], common) == 0  # broad lies nearer, but is too short to compare
+    (t.tmp / "broad" / "s.txt").write_text(wide)
+    assert identify_reference_model([hot, broad], common) == 1
+    (t.tmp / "broad" / "s.txt").write_text(optical)
+    (t.tmp / "hot" / "s.txt").unlink()
+    assert identify_reference_model([hot, broad], common) == 1  # neither can be compared: the nearest of all
+    hot["teff"], broad["teff"] = np.full(2, np.nan), np.full(4, np.nan)
+    assert identify_reference_model([hot, broad], common) == 0  # no parameters to measure: the first
+
+
+@row
 def common_wavelength_grid_needs_a_usable_spectrum(t):
     # Used to fail with OverflowError (int of -inf).
     from sed_tools.combine_stellar_atm import create_common_wavelength_grid
