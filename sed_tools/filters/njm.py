@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """The NJM filter client: lists and downloads curves, catalogue files, components and atmospheres from the mirror."""
 
 import json
@@ -498,45 +497,6 @@ class NJMFilterGrabber:
         (output_dir / output_dir.name).write_text(response.text, encoding="utf-8")
         return index_names(response.text)
 
-    def download_all_filters(self, facility: Optional[str] = None) -> int:
-        """Download every instrument's filters (of ``facility`` only, if given); returns how many were downloaded.
-
-        Every instrument is attempted; then RuntimeError lists those whose download was incomplete.
-        """
-        if not self._available:
-            print("[njm] Mirror not available")
-            return 0
-
-        total_downloaded = 0
-
-        facilities = [facility] if facility else self.discover_facilities()
-
-        if not facilities:
-            print("[njm] No facilities found")
-            return 0
-
-        print(f"[njm] Downloading filters from {len(facilities)} facilities...")
-
-        failed = []
-        for fac in facilities:
-            print(f"\n[njm] Facility: {fac}")
-            try:
-                instruments = self.discover_instruments(fac)
-            except requests.RequestException as exc:
-                failed.append(f"{fac}: {exc}")
-                continue
-
-            for inst in instruments:
-                try:
-                    total_downloaded += self.download_filters(fac, inst)
-                except (requests.RequestException, RuntimeError) as exc:
-                    failed.append(f"{fac}/{inst}: {exc}")
-
-        print(f"\n[njm] Total filters downloaded: {total_downloaded}")
-        if failed:
-            raise RuntimeError(f"{len(failed)} NJM downloads are incomplete:\n" + "\n".join(failed))
-        return total_downloaded
-
     # ---- Catalogue files (see sed_tools.filter_catalogue)
     CATALOGUE_FILES = ("properties.json", "info.json")
 
@@ -757,46 +717,3 @@ def drop_unlisted_bands(directory, listed):
     logger.warning("%s: NJM's index of the set does not list %s; %s", path, ", ".join(sorted({*stale, *kept})),
                    f"{', '.join(kept)} kept in the folder under archived_bands" if kept else "no longer expected")
 
-
-def main():
-    """Standalone CLI for testing."""
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Download filters from NJM mirror")
-    parser.add_argument("--facility", help="Specific facility to download")
-    parser.add_argument("--instrument", help="Specific instrument to download (requires --facility)")
-    parser.add_argument("--list", action="store_true", help="List available facilities/instruments")
-    parser.add_argument("--output", default="../data/filters/", help="Output directory")
-
-    args = parser.parse_args()
-
-    grabber = NJMFilterGrabber(base_dir=args.output)
-
-    if not grabber.is_available():
-        print("NJM mirror is not available")
-        return 1
-
-    if args.list:
-        print("\nAvailable facilities:")
-        facilities = grabber.discover_facilities()
-        for fac in facilities:
-            print(f"\n  {fac}:")
-            instruments = grabber.discover_instruments(fac)
-            for inst in instruments:
-                filters = grabber.discover_filters(fac, inst)
-                print(f"    - {inst} ({len(filters)} filters)")
-        return 0
-
-    if args.instrument:
-        grabber.download_filters(args.facility, args.instrument)
-    elif args.facility:
-        grabber.download_all_filters(facility=args.facility)
-    else:
-        grabber.download_all_filters()
-
-    return 0
-
-
-if __name__ == "__main__":
-    import sys
-    sys.exit(main())

@@ -26,11 +26,10 @@ import requests
 from sed_tools import cli
 from sed_tools.api import SED, Filters
 from sed_tools.filter_components import ComponentError
-from sed_tools.njm_filter_grabber import NJMFilterGrabber
 
-from support import (CLEAN, CURVE, GRABBERS, KURUCZ, NJM, Session, answer, cpu_torch, fake_grabber, filters_api,
-                     fixed_completer, fixed_generator, narrow_terminal, njm_index, run_cli, run_module, scenarios,
-                     wide_lines, write_flux_cube, write_lookup)
+from support import (CLEAN, GRABBERS, KURUCZ, answer, cpu_torch, fake_grabber, filters_api, fixed_completer,
+                     fixed_generator, narrow_terminal, run_cli, run_module, scenarios, wide_lines, write_flux_cube,
+                     write_lookup)
 
 # runpy warns that an old path imported earlier in the session is in sys.modules; python -m starts afresh.
 pytestmark = pytest.mark.filterwarnings("ignore:.*found in sys.modules after import of package:RuntimeWarning")
@@ -344,7 +343,7 @@ def _filter_browser(t, listing_errors=None):
 def filter_batch_downloads_the_rest_then_lists_failures(t):
     fetched = _filter_browser(t, {"A": ["SVO A: timed out"]})
     t.mp.setattr("sys.stdin", Stdin(True))  # a terminal: the count is confirmed
-    answer(t.mp, "1,2", "y")
+    answer(t.mp, "1,2,", "y")  # an empty item (the trailing comma) is skipped
     assert cli.run_filters_flow() == 1
     out = t.capsys.readouterr().out
     assert fetched == ["A/Cam1", "A/Cam2", "B/Cam1"]
@@ -516,16 +515,13 @@ def _in_its_folder(t):
 
 #: Each old path with a main(), and its help's description.
 HELP = {
-    "combine_filters": "Combine filter sets into one MESA-compatible instrument",
     "combine_stellar_atm": "Combine stellar spectral grids",
     "flux_cube_tool": "Inspect and interpolate a flux cube",
     "grid_densifier": "Densify a flux_cube.bin Teff grid using SEDGenerator.",
     "ml_sed_completer": "ML-powered SED Completer (PyTorch)",
     "ml_sed_generator": "ML SED Generator",
     "msg_spectra_grabber": "Extract MSG stellar spectra to ASCII with correct params",
-    "njm_filter_grabber": "Download filters from NJM mirror",
     "precompute_flux_cube": "Precompute flux cube for stellar spectral grids",
-    "svo_filter_grabber": "Interactively browse the SVO Filter Profile Service",
     "svo_regen_spectra_lookup":
         "Rewrite lookup_table.csv in every spectral grid folder from the headers of its spectra",
 }
@@ -556,30 +552,11 @@ def _johnson(t, band, curve):
 
 
 @main_row
-def combine_filters_writes_the_combined_set(t):
-    _johnson(t, "B", "4000,0\n4400,1\n4800,0\n")
-    assert run_module(t.mp, "combine_filters", "Optical", "Generic/Johnson", "--base", str(t.tmp)) == 0
-    out = t.tmp / "Combined" / "Optical"
-    assert (out / "Optical").read_text().split() == ["B.dat"]
-    assert t.capsys.readouterr().out == f"[filters] Combined filter set written to {out}\n"
-
-
-@main_row
 def filters_combine_command_writes_the_combined_set(t):
     _johnson(t, "V", "5000,0\n5500,1\n6000,0\n")
     assert run_cli(t.mp, "filters-combine", "Mine/Set", "Generic/Johnson", "--base", str(t.tmp)) == 0
     assert (t.tmp / "Mine" / "Set" / "Set").read_text().split() == ["V.dat"]
     assert t.capsys.readouterr().out == f"[filters] Combined filter set written to {t.tmp / 'Mine' / 'Set'}\n"
-
-
-@main_row
-def svo_filter_grabber_ignores_arguments_after_the_folder_as_in_041(t):
-    from sed_tools.filters import svo
-
-    seen = []
-    t.mp.setattr(svo, "run_interactive", seen.append)
-    assert svo.main([str(t.tmp), "extra"]) == 0
-    assert seen == [str(t.tmp)]
 
 
 @main_row
@@ -653,35 +630,6 @@ def grid_densifier_passes_its_arguments_on(t):
     assert run_module(t.mp, "grid_densifier", "--flux-cube", "in.bin", "--output", "out.bin",
                       "--teff-spacing", "250") == 0
     assert calls == [{"src": "in.bin", "dst": "out.bin", "teff_spacing": 250.0, "ml_model": None}]
-
-
-def _njm_served(t):
-    """NJM serves one facility with one camera of one band; downloads are recorded instead of made."""
-    files = {"index.json": njm_index({"Fac": {"Cam": {"filters": ["g"]}}}), "filters/Fac/Cam/Cam": "g.dat\n",
-             "filters/Fac/Cam/g.dat": CURVE}
-    t.mp.setattr(NJMFilterGrabber, "_check_availability", lambda self: True)
-    t.mp.setattr("sed_tools.filters.njm.requests.Session", lambda: Session(files, base=NJM))
-    calls = []
-    t.mp.setattr(NJMFilterGrabber, "download_filters", lambda self, *a: calls.append(("set", *a)))
-    t.mp.setattr(NJMFilterGrabber, "download_all_filters", lambda self, **k: calls.append(("all", k)))
-    return calls
-
-
-@main_row
-def njm_filter_grabber_lists_and_downloads(t):
-    calls, out = _njm_served(t), str(t.tmp / "filters")
-    assert run_module(t.mp, "njm_filter_grabber", "--list", "--output", out) == 0
-    assert "Fac:\n    - Cam (1 filters)" in t.capsys.readouterr().out.split("Available facilities:")[1]
-    for argv in (["--facility", "Fac", "--instrument", "Cam"], ["--facility", "Fac"], []):
-        assert run_module(t.mp, "njm_filter_grabber", *argv, "--output", out) == 0
-    assert calls == [("set", "Fac", "Cam"), ("all", {"facility": "Fac"}), ("all", {})]
-
-
-@main_row
-def njm_filter_grabber_exits_1_when_njm_is_down(t):
-    t.mp.setattr(NJMFilterGrabber, "_check_availability", lambda self: False)
-    assert run_module(t.mp, "njm_filter_grabber", "--list", "--output", str(t.tmp)) == 1
-    assert t.capsys.readouterr().out.endswith("NJM mirror is not available\n")
 
 
 @main_row

@@ -5,6 +5,11 @@ Changelog
 Version 0.7.0 (unreleased)
 --------------------------
 
+- The standalone command lines ``python -m sed_tools.njm_filter_grabber``,
+  ``python -m sed_tools.svo_filter_grabber`` (the interactive SVO browser:
+  ``run_interactive`` and ``main``) and ``python -m sed_tools.combine_filters``
+  are removed, with ``NJMFilterGrabber.download_all_filters``. ``sed-tools
+  filters`` downloads sets and ``sed-tools filters-combine`` combines them.
 - SED_Tools no longer checks arguments only to word a user's mistake. A
   misused option, name or value now fails where Python or the library fails
   (``KeyError``, ``ValueError``, ``TypeError``, ``FileNotFoundError``), and a

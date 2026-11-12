@@ -1,9 +1,7 @@
-#!/usr/bin/env python3
 """Combine filter sets into one MESA-compatible set: a directory of ``*.dat`` curves and the index file listing them."""
 
 from __future__ import annotations
 
-import argparse
 import logging
 import os
 from pathlib import Path
@@ -152,35 +150,3 @@ def combine_filter_sets(
     write_filter_index(output_dir)  # named after the folder, where MESA opens it
     return output_dir
 
-
-def main(argv: Optional[Sequence[str]] = None) -> int:
-    parser = argparse.ArgumentParser(
-        description="Combine filter sets into one MESA-compatible instrument"
-    )
-    parser.add_argument("output", help="Output name or Facility/Instrument path")
-    parser.add_argument("inputs", nargs="+", help="Filter-set directories or .dat files")
-    parser.add_argument("--base", default=str(FILTER_DIR_DEFAULT), help="Base filter directory")
-    parser.add_argument("--facility", default=None, help="Output facility label")
-    parser.add_argument("--instrument", default=None, help="Output instrument/index-file name")
-    parser.add_argument(
-        "--on-conflict",
-        choices=["rename", "overwrite", "error"],
-        default="rename",
-        help="How duplicate filter filenames are handled",
-    )
-
-    args = parser.parse_args(argv)
-    output_dir = combine_filter_sets(
-        args.output,
-        args.inputs,
-        filter_root=args.base,
-        facility=args.facility,
-        instrument=args.instrument,
-        on_conflict=args.on_conflict,
-    )
-    print(f"[filters] Combined filter set written to {output_dir}")
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

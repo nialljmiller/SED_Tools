@@ -52,14 +52,13 @@ from sed_tools.filter_metadata import (ENERGY, PHOTON, SOURCE_ASSUMED, SOURCE_IN
                                        write_filter_file, write_filter_header)
 from sed_tools.filter_properties import (AB_JY, curve_properties, extinction_law, extinction_ratio, filter_properties,
                                          instrument_properties)
-from sed_tools.filters import svo
 from sed_tools.filters.compose import read_curve
 from sed_tools.filters.manifest import check_sets, set_problems
 from sed_tools.filters.njm import drop_unlisted_bands
 from sed_tools.filters.properties import load_vega, properties_record
 from sed_tools.flux_cube_tool import infer_unit_from_values, load_filter_curve, load_spectrum, load_two_column_file
 from sed_tools.njm_filter_grabber import NJMFilterGrabber, SetDownload
-from sed_tools.svo_filter_grabber import Facility, FilterRow, Instrument, SVOFilterBrowser, _download_facilities
+from sed_tools.svo_filter_grabber import Facility, FilterRow, Instrument, SVOFilterBrowser
 from sed_tools.ui_utils import prompt_choice
 
 from support import (CURVE, NJM, STALE, WL, Resp, Session, answer, atmosphere_site, derived, gauss, njm_index,
@@ -1847,23 +1846,6 @@ def unknown_components_header_is_reported(t):
     assert "Fac/Cam band g" in t.caplog.text and "'warp'" in t.caplog.text
 
 
-@default_svo_row
-def svo_bulk_download_finishes_then_reports_failed_instruments(t):
-    downloaded = []
-
-    def download(filters):
-        downloaded.append(filters[0])
-        if filters[0] == "A/one.g":
-            raise RuntimeError("1 of 1 SVO filters could not be saved")
-
-    browser = SimpleNamespace(
-        list_instruments=lambda key: [Instrument(key, "one", "One"), Instrument(key, "two", "Two")],
-        list_filters=lambda fac, inst: [f"{fac}/{inst}.g"], download_filters=download)
-    with pytest.raises(RuntimeError, match="Bulk download incomplete:\nA/One: 1 of 1"):
-        _download_facilities(browser, [Facility("A", "A"), Facility("B", "B")])
-    assert downloaded == ["A/one.g", "A/two.g", "B/one.g", "B/two.g"]
-
-
 # njm_filter_grabber, on a stand-in session
 @default_svo_row
 def directory_listing_is_empty_only_when_nothing_is_there(t):
@@ -1919,31 +1901,6 @@ def atmosphere_is_false_only_when_not_served(t):
     assert grabber.download_atmosphere(str(t.tmp), "nowhere") is False
     with pytest.raises(requests.HTTPError, match="500"):
         grabber.download_atmosphere(str(t.tmp), "down")
-
-
-@default_svo_row
-def download_all_filters_finishes_then_lists_incomplete_instruments(t):
-    grabber, attempted = njm_filters(t, t.tmp, {}, tags=True), []
-
-    def instruments(facility):
-        if facility == "Down":
-            raise requests.HTTPError("500 for filters/Down/")
-        return ["A", "B", "C"]
-
-    def download(facility, instrument):
-        attempted.append(instrument)
-        if instrument == "A":
-            raise RuntimeError("NJM download of Fac/A is incomplete")
-        if instrument == "B":
-            raise requests.HTTPError("502 for filters/Fac/B/")
-        return 2
-
-    grabber.discover_facilities, grabber.discover_instruments = lambda: ["Down", "Fac"], instruments
-    grabber.download_filters = download
-    with pytest.raises(RuntimeError, match="3 NJM downloads are incomplete:\nDown: 500 .*\n"
-                                           "Fac/A: NJM download of Fac/A is incomplete\nFac/B: 502"):
-        grabber.download_all_filters()
-    assert attempted == ["A", "B", "C"]
 
 
 @default_svo_row
@@ -3171,86 +3128,6 @@ def _archived_copies_apart(t, *spelling):
         data = getattr(catalogue, kind)(*spelling)
         assert list(data["bands"]) == ["100", "857"]  # the *_svo rows used to be listed with them
         assert list(data["archived_bands"]) == ["100_svo", "857_svo"]
-
-
-# ======================================================================
-# The SVO filter browser at a terminal, answered through input() (test_filters_svo_interactive)
-# ======================================================================
-def alpha_beta(t):
-    """The browser run_interactive makes: SVO lists Alpha (cameras Cam, with bands g and r, and Dead, with none)
-    and Beta (camera IR, with band J); ``saved`` lists the filter IDs whose curves it fetched."""
-    made = svo_browser(t.tmp, {("Alpha", "Cam"): ["g", "r"], ("Alpha", "Dead"): [], ("Beta", "IR"): ["J"]})
-    t.mp.setattr(svo, "SVOFilterBrowser", lambda base_dir: made)
-    return made
-
-
-@row
-def one_instrument_is_downloaded_then_the_browser_is_left(t):
-    browser = alpha_beta(t)
-    # single-facility mode, Alpha, Cam, download, no other camera; then single-facility mode and quit
-    answer(t.mp, "", "1", "1", "", "", "", "q")
-    svo.run_interactive(str(t.tmp))
-    assert browser.saved == ["Alpha/Cam.g", "Alpha/Cam.r"]
-    assert (t.tmp / "Alpha" / "Cam" / "Cam").read_text().split() == ["g.dat", "r.dat"]
-    out = t.capsys.readouterr().out
-    assert "Instrument: Cam (Cam)" in out and "Filters  : 2 available" in out
-    assert out.rstrip().endswith("Exiting.")
-
-
-@row
-def instruments_can_be_declined_skipped_when_empty_and_left(t):
-    browser = alpha_beta(t)
-    answer(t.mp, "", "1",
-           "2",            # Dead has no filters
-           "1", "n",       # Cam, but do not download
-           "1", "y", "y",  # Cam, downloaded; another from Alpha
-           "b",            # back to the facilities
-           "", "2", "q")   # Beta, then quit at its instruments
-    svo.run_interactive(str(t.tmp))
-    assert browser.saved == ["Alpha/Cam.g", "Alpha/Cam.r"]
-    out = t.capsys.readouterr().out
-    assert "No filters found for Dead." in out
-    assert "Instruments for Beta" in out and out.rstrip().endswith("Exiting.")
-
-
-@row
-def bulk_mode_downloads_every_instrument_of_the_facilities_chosen(t):
-    browser = alpha_beta(t)
-    answer(t.mp, "9",          # not a facility
-           ",",                # none chosen
-           "1,2", "n",         # chosen, then not confirmed
-           "1-2", "", "y",     # downloaded; another set
-           "2", "y", "")       # Beta again, then done
-    svo.run_interactive(str(t.tmp))
-    assert browser.saved == ["Alpha/Cam.g", "Alpha/Cam.r", "Beta/IR.J", "Beta/IR.J"]
-    out = t.capsys.readouterr().out
-    assert "Invalid selection: Selection out of bounds: 9" in out and "No facilities selected." in out
-    assert "  [skip] Dead: no filters found" in out
-    assert "Facility: Alpha (2 instruments)" in out and "Downloading 1 filters for IR" in out
-
-
-@row
-def with_nothing_listed_the_browser_says_so(t):
-    browser = alpha_beta(t)
-    browser.list_facilities = lambda: [Facility("Empty", "Empty")]
-    browser.list_instruments = lambda facility: []
-    answer(t.mp, "", "1", "", "q")
-    svo.run_interactive(str(t.tmp))
-    assert "No instruments found for Empty." in t.capsys.readouterr().out
-    browser.list_facilities = lambda: []
-    svo.run_interactive(str(t.tmp))
-    assert t.capsys.readouterr().out == "No facilities discovered.\n"
-
-
-@row
-def main_browses_into_its_base_dir_and_exits_1_when_a_curve_fails(t):
-    browser = alpha_beta(t)
-    answer(t.mp, "", "q")
-    assert svo.main([str(t.tmp)]) == 0
-    browser.metadata_client = SimpleNamespace(get_filter=lambda filter_id: None)  # SVO serves no curve
-    answer(t.mp, "", "2", "1", "")
-    assert svo.main([str(t.tmp)]) == 1
-    assert "1 of 1 SVO filters could not be saved" in t.capsys.readouterr().out
 
 
 # ======================================================================
