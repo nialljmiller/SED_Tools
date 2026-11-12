@@ -25,7 +25,7 @@ import numpy as np
 
 from ..filters.compose import InstrumentManifest
 from ._common import SimpleSource, SiteAtmosphere, Table, build_simple
-from ._original import CONNECT_TIMEOUT
+from ._original import CONNECT_TIMEOUT, download  # noqa: F401  CONNECT_TIMEOUT stays importable here
 
 DES_STD = "https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc1884.txt"
 BANDS = ("g", "r", "i", "z", "Y")
@@ -35,9 +35,7 @@ RECIPE = "filter+optics+qe"
 def _des_table(session):
     from astropy.io import fits
 
-    resp = session.get(DES_STD, timeout=(CONNECT_TIMEOUT, 300))
-    resp.raise_for_status()
-    return fits.open(io.BytesIO(resp.content))[1].data
+    return fits.open(io.BytesIO(download(session, DES_STD)))[1].data
 
 
 def _instrument_only(band):
