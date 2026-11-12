@@ -2,7 +2,7 @@
   "description": "Y4KCam (Yale 4K x 4K Camera) was an optical imager mounted on the SMARTS 1.0-meter (formerly Yale 1m) telescope at CTIO, utilizing a 4096x4096 CCD and standard broad-band optical filters.",
   "short_description": "Y4KCam optical imager filters, SMARTS 1.0-m telescope at CTIO",
   "facility_description": "The SMARTS 1.0-meter telescope is located at Cerro Tololo Inter-American Observatory (CTIO) in Chile, operated by the SMARTS consortium.",
-  "notes": "Y4KCam operated on the 1.0m telescope. Curves from OSU/SMARTS lack explicit open redistribution licences.",
+  "notes": "Y4KCam operated on the 1.0m telescope. Curves from OSU/SMARTS lack explicit open redistribution licences. DetectorType of sdss_g, sdss_i, sdss_r, sdss_u, sdss_z set to photon, DetectorTypeSource inferred (2026-11-11), the label every served copy of the same curve now carries: R. Pogge (OSU) publishes these curves as the filter vendor's raw transmission: they 'do not include the CCD quantum efficiency, atmospheric absorption, or any of the telescope or instrument optics' (Y4KCam Filters page, https://www.astronomy.ohio-state.edu/Y4KCam/filters.html; the MODS Filters page gives the same curves as 'Raw Tx', 'measured in parallel light by the filter vendor'). Y4KCam is 'a 4Kx4K CCD camera' and the MODS detectors are 'monolithic E2V CCDs'. A filter-only transmission used with a CCD counts photons. SVO's DetectorType is not used.",
   "licence": {
     "redistribution": "unknown",
     "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License and can not be used for non-NOIRLab products.\"",

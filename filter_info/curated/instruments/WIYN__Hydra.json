@@ -21,5 +21,6 @@
       "references": [],
       "applies_to": "all bands"
     }
-  ]
+  ],
+  "notes": "DetectorType of UliqTek_2a, UliqTek_2b, Uliq_1, UliqTek_3, Ca_2, BHarris_1, gSDSS_1, MWash_0, DDO51_0 set to photon, DetectorTypeSource inferred (2026-11-11), the label every served copy of the same curve now carries: CTIO publishes this curve as its own percent-transmission scan of the filter alone (e.g. 'C.T.I.O Filters 3530-280 u Strömgren … R. Gonzalez June 1994', columns 'Wl. %'; https://noirlab.edu/science/programs/ctio/filters/3x3-inch-and-4x4-inch-filters and the archived www.ctio.noao.edu/instruments/filters/FILTER-CURVES/). These 3x3- and 4x4-inch filters are the CTIO 0.9-m's, whose imager Tek2K 'is a 2K optical CCD imager'. NOIRLab's Hydra filter list, the source of the WIYN/Hydra copies, serves the WIYN Bench Spectrograph, also read by a CCD (https://www.wiyn.org/Instruments/wiynbench.html). A filter-only transmission used with a CCD counts photons. SVO's DetectorType is not used."
 }

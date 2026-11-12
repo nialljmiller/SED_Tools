@@ -1,3 +1,4 @@
 {
-  "short_description": "LBT Multi-Object Double Spectrographs (MODS): SDSS u, g, r, i, z"
+  "short_description": "LBT Multi-Object Double Spectrographs (MODS): SDSS u, g, r, i, z",
+  "notes": "DetectorType of sdss_g, sdss_i, sdss_r, sdss_u, sdss_z set to photon, DetectorTypeSource inferred (2026-11-11), the label every served copy of the same curve now carries: R. Pogge (OSU) publishes these curves as the filter vendor's raw transmission: they 'do not include the CCD quantum efficiency, atmospheric absorption, or any of the telescope or instrument optics' (Y4KCam Filters page, https://www.astronomy.ohio-state.edu/Y4KCam/filters.html; the MODS Filters page gives the same curves as 'Raw Tx', 'measured in parallel light by the filter vendor'). Y4KCam is 'a 4Kx4K CCD camera' and the MODS detectors are 'monolithic E2V CCDs'. A filter-only transmission used with a CCD counts photons. SVO's DetectorType is not used."
 }

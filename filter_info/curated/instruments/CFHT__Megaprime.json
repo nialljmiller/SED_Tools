@@ -2,7 +2,7 @@
   "description": "MegaPrime is the wide-field prime focus upper end assembly and instrument system at CFHT supporting MegaCam, containing broadband filters as well as narrowband and intermediate filters.",
   "short_description": "CFHT MegaPrime broad-, narrow- and medium-band filters (full, filter)",
   "facility_description": "The Canada-France-Hawaii Telescope (CFHT) is a 3.6-meter optical and infrared telescope operated by NRC (Canada), CNRS/INSU (France), and the University of Hawaii, located on Maunakea in Hawaii.",
-  "notes": "MegaPrime designates the prime focus upper end environment accommodating MegaCam, its wide-field corrector optics, and filter juke-box. Filter profiles in this inventory include the Sloan-like broadband sets (including _fil variants) and specialized narrowband filters (e.g. CaHK, Halpha, OIII, TiO, NB920).",
+  "notes": "MegaPrime designates the prime focus upper end environment accommodating MegaCam, its wide-field corrector optics, and filter juke-box. Filter profiles in this inventory include the Sloan-like broadband sets (including _fil variants) and specialized narrowband filters (e.g. CaHK, Halpha, OIII, TiO, NB920). DetectorType of uS_fil, CaHK_fil, cfh9303 set to photon, DetectorTypeSource inferred (2026-11-11), the label every served copy of the same curve now carries: CFHT's MegaPrime interference-filter page gives this curve as the filter's transmission ('Max. Trans. (%)', https://www.cfht.hawaii.edu/Instruments/Filters/megaprime.html, curves/cfh<N>.dat). The filter is for MegaCam, which 'consists of 40 2048 x 4612 pixel CCDs'. A filter-only transmission used with a CCD counts photons. SVO's DetectorType is not used.",
   "licence": {
     "redistribution": "unknown",
     "terms": "",
