@@ -18,20 +18,20 @@ import zlib
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List, Optional, Tuple
 
-logger = logging.getLogger("sed_tools.mast_spectra_grabber")
-
 import numpy as np
 import requests
 
 from .lookup import write_lookup_csv
 
+logger = logging.getLogger("sed_tools.mast_spectra_grabber")
+
 # ----------------- constants -----------------
 DATA_BASE   = "https://archive.stsci.edu/hlsps/bosz/bosz2024"
 SCRIPTS_DIR = f"{DATA_BASE}/download_scripts"
-RES_KEYS    = ["r500","r1000","r2000","r5000","r10000","r20000","r50000","rorig"]
-METALS      = ["m+0.00","m+0.25","m+0.50","m+0.75",
-               "m-0.25","m-0.50","m-0.75","m-1.00","m-1.25","m-1.50","m-1.75",
-               "m-2.00","m-2.25","m-2.50"]
+RES_KEYS    = ["r500", "r1000", "r2000", "r5000", "r10000", "r20000", "r50000", "rorig"]
+METALS      = ["m+0.00", "m+0.25", "m+0.50", "m+0.75",
+               "m-0.25", "m-0.50", "m-0.75", "m-1.00", "m-1.25", "m-1.50", "m-1.75",
+               "m-2.00", "m-2.25", "m-2.50"]
 
 # BOSZ 2024 filename pattern
 HEAD_RE = re.compile(
@@ -165,8 +165,10 @@ def _detect_inline_wave(text: str) -> bool:
             return False
         wl.append(nums[0])
         has_third_column = has_third_column or len(nums) >= 3
-        if len(wl) > 50: break
-    if not wl: return False
+        if len(wl) > 50:
+            break
+    if not wl:
+        return False
     wl = np.asarray(wl, float)
     if not _is_monotonic_increasing(wl):
         return False
@@ -254,7 +256,7 @@ def _write_spectrum_txt(out_path: str, wl: np.ndarray, fx: np.ndarray, ct: Optio
         f.write("# url = " + src_url + "\n")
         if wave_url_used:
             f.write("# wave_grid = " + wave_url_used + "\n")
-        for k,v in params.items():
+        for k, v in params.items():
             f.write(f"# {k} = {v}\n")
         # No flux unit is declared, on purpose. BOSZ 2024 gives the Eddington flux H_λ in
         # erg/s/cm²/Å, and the surface flux is F_λ = 4πH_λ (Mészáros et al. 2024, eq. 2).
@@ -263,7 +265,7 @@ def _write_spectrum_txt(out_path: str, wl: np.ndarray, fx: np.ndarray, ct: Optio
         f.write("# columns = wavelength_A flux continuum\n")
         if ct is None:
             ct = np.ones_like(fx)
-        for x,y,z in zip(wl, fx, ct):
+        for x, y, z in zip(wl, fx, ct):
             f.write(f"{x:.6f} {y:.8e} {z:.8e}\n")
 
 def _parse_any(text: str, inline: bool, wave: Optional[np.ndarray],
@@ -282,16 +284,20 @@ def _parse_any(text: str, inline: bool, wave: Optional[np.ndarray],
             if fx.size != wave.size:
                 raise ValueError(f"BOSZ {reskey} wavelength-grid length mismatch: wave={wave.size}, flux={fx.size}")
             return wave, fx, ct
-    # last-ditch: 2-col (wave, flux)
+    # last-ditch: the rows of exactly two numbers, as (wave, flux)
     wl_guess, fx_guess = [], []
     for line in text.splitlines():
         s = line.strip()
-        if not s or s.startswith("#"): continue
+        if not s or s.startswith("#"):
+            continue
         parts = s.split()
         if len(parts) == 2:
-            try: a = float(parts[0]); b = float(parts[1])
-            except ValueError: continue
-            wl_guess.append(a); fx_guess.append(b)
+            try:
+                a, b = float(parts[0]), float(parts[1])
+            except ValueError:
+                continue
+            wl_guess.append(a)
+            fx_guess.append(b)
     wl_guess = np.asarray(wl_guess, float)
     fx_guess = np.asarray(fx_guess, float)
     if _is_monotonic_increasing(wl_guess):
