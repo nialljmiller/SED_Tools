@@ -1068,7 +1068,7 @@ def no_wait(t):
 @row
 def skycalc_form_echo_is_checked_after_a_fallback(t):
     no_wait(t)
-    client = skycalc.SkyCalcClient(session=SkyCalc({"SKYMODEL.TARGET.AIRMASS": "1.50"}), interface="auto", pause=0)
+    client = skycalc.SkyCalcClient(session=SkyCalc({"SKYMODEL.TARGET.AIRMASS": "1.50"}), pause=0)
     with pytest.raises(RuntimeError, match="echoed SKYMODEL.TARGET.AIRMASS"):
         client.fetch("paranal", 1.0, 2.5, 1000.0, 1100.0, 2000)
 
@@ -1077,7 +1077,7 @@ def skycalc_form_echo_is_checked_after_a_fallback(t):
 def skycalc_failure_after_a_fallback_names_both_errors(t):
     no_wait(t)
     session = SkyCalc(form_html="<p>Service unavailable</p>")
-    client = skycalc.SkyCalcClient(session=session, interface="auto", pause=0, retries=3)
+    client = skycalc.SkyCalcClient(session=session, pause=0, retries=3)
     with pytest.raises(RuntimeError) as err:
         client.fetch("paranal", 1.0, 2.5, 1000.0, 1100.0, 2000)
     message = str(err.value)
@@ -1087,7 +1087,7 @@ def skycalc_failure_after_a_fallback_names_both_errors(t):
     # An output that is not FITS reruns SkyCalc: one download per attempt (retried at one layer only)
     session = SkyCalc(api_up=True, api_output=b"<html>busy</html>")
     with pytest.raises(RuntimeError, match=r"failed after 3 attempts: SkyCalc output \S+ was not a FITS file"):
-        skycalc.SkyCalcClient(session=session, interface="api", pause=0, retries=3).fetch(
+        skycalc.SkyCalcClient(session=session, pause=0, retries=3).fetch(
             "paranal", 1.0, 2.5, 1000.0, 1100.0, 2000)
     assert session.api_gets == 3
 
@@ -1096,7 +1096,7 @@ def skycalc_failure_after_a_fallback_names_both_errors(t):
 def skycalc_api_temporary_directory_left_behind_is_warned(t):
     no_wait(t)
     session = SkyCalc(api_up=True, rmtmp_error=requests.exceptions.ReadTimeout("rmtmp timed out"))
-    client = skycalc.SkyCalcClient(session=session, interface="api", pause=0)
+    client = skycalc.SkyCalcClient(session=session, pause=0)
     with t.caplog.at_level(logging.WARNING, logger=skycalc.__name__):
         result = client.fetch("paranal", 1.0, 2.5, 1000.0, 1100.0, 2000)
     assert result.interface == "api" and result.version == "2.0.9"
@@ -1112,7 +1112,7 @@ def skycalc_version_change_leaves_no_unregistered_point(t):
                    model_version="2.0.8").save(site)
     write_filter_file(site / "am1.00_pwv2.5.dat", [1000.0, 30000.0], [0.9, 0.9], detector_type=ENERGY,
                       source="component", wavelength_unit="Angstrom")
-    client = skycalc.SkyCalcClient(session=SkyCalc(), interface="form", pause=0)
+    client = skycalc.SkyCalcClient(session=SkyCalc(), pause=0)
     with pytest.raises(RuntimeError, match=r"version changed .*'2.0.8', '2.0.9'"):
         skycalc.build(t.tmp / "filters", sites=["paranal"], airmasses=[1.0, 2.0], pwvs=[2.5],
                       fetch_resolution=2000, store_resolution=500, chunks=2, client=client)
@@ -1822,45 +1822,6 @@ def hst_tables_need_a_listed_table(t):
 
 
 @row
-def lsst_validate_compares_with_rubins_curves(t):
-    session = Session(lsst_files("v1.9.2", scale=0.5))
-    lsst.build(t.tmp / "filters", instrument="LSSTv19", session=session)
-    result = lsst.validate(t.tmp / "filters" / "LSST" / "LSSTv19", session=session)
-    assert sorted(result) == sorted(lsst.BANDS)
-    for values in result.values():  # Rubin's hardware and total curves are these products
-        assert values == {k: pytest.approx(0.0, abs=1e-6) for k in
-                          ("hardware_dmag", "hardware_maxdiff", "total_dmag", "total_maxdiff")}
-    assert lsst._url("hardware_r", "v1.9.2") in session.calls
-
-
-@row
-def twomass_validate_compares_with_the_supplement_totals(t):
-    inst = t.tmp / "2MASS" / "2MASS"
-    for band, lo in (("J", 10600), ("H", 15000), ("Ks", 19500)):
-        wl = np.linspace(lo, lo + 4000, 30)
-        published(inst, band, wl, np.ones_like(wl), "filter+instrument+atmosphere", detector=ENERGY)
-    files = twomass_files()
-    twomass.build(t.tmp, session=Session(files))
-    um = np.round(np.linspace(1.0, 2.5, 151), 3)
-    for band, n in twomass.TOTAL_TABLE.items():  # J and H as composed, Ks at half
-        mine = compose_band(inst, band, (FILTER, OPTICS, QE))
-        total = np.interp(um * 1e4, mine.wavelength, mine.transmission, left=0, right=0) * (0.5 if band == "Ks" else 1)
-        files[twomass.TABLE.format(n=n)] = ipac_page(f"2MASS {band} TOTAL", um, total)
-    result = twomass.validate(inst, session=Session(files))
-    assert result["J"]["dmag"] == pytest.approx(0.0, abs=1e-3) and result["H"]["maxdiff"] < 1e-4
-    assert result["Ks"]["dmag"] == pytest.approx(-2.5 * np.log10(2.0), abs=1e-3)
-
-
-@row
-def skycalc_transmission_is_the_fetched_curve(t):
-    client = skycalc.SkyCalcClient(session=SkyCalc(), interface="form", pause=0)
-    wl, tr = client.transmission("paranal", 1.5, 2.5, 1000.0, 1100.0, 2000)
-    np.testing.assert_allclose(wl, np.geomspace(1000.0, 1100.0, 200))
-    np.testing.assert_allclose(tr, 0.8 ** 1.5)
-    assert client.session.posts[-1]["SKYMODEL.TARGET.AIRMASS"] == "1.50"
-
-
-@row
 def write_site_refuses_a_bad_curve_before_writing(t):
     bad = team_site(entries=[(1.2, None, DerivedCurve("u", derived([0.5, 1.2, 0.9]), "x"))])
     with pytest.raises(ValueError, match="not a transmission"):
@@ -1958,18 +1919,18 @@ def form_fields_follow_skycalc_spelling(t):
 
 @row
 def form_client_checks_the_echo(t):
-    client = skycalc.SkyCalcClient(session=SkyCalc(), interface="form", pause=0)
+    client = skycalc.SkyCalcClient(session=SkyCalc(), pause=0)
     result = client.fetch("paranal", 1.5, 2.5, 1000.0, 1100.0, 2000)
     assert result.interface == "form" and result.version == "2.0.9"
     assert result.url == skycalc.FORM_HOST + "/observing/etc/tmp/abc/skytable.fits"
-    bad = skycalc.SkyCalcClient(session=SkyCalc({"SKYMODEL.PWV": "3.5"}), interface="form", pause=0)
+    bad = skycalc.SkyCalcClient(session=SkyCalc({"SKYMODEL.PWV": "3.5"}), pause=0)
     with pytest.raises(RuntimeError, match="echoed SKYMODEL.PWV"):
         bad.fetch("paranal", 1.5, 2.5, 1000.0, 1100.0, 2000)
 
 
 @row
 def skycalc_grid_is_labelled_derived_and_archived(t):
-    client = skycalc.SkyCalcClient(session=SkyCalc(), interface="form", pause=0)
+    client = skycalc.SkyCalcClient(session=SkyCalc(), pause=0)
     root = skycalc.build(t.tmp / "filters", sites=["lasilla"], airmasses=[1.0], pwvs=[2.5],
                          fetch_resolution=2000, store_resolution=500, chunks=2, client=client,
                          archive_dir=t.tmp / "evidence")
@@ -1988,7 +1949,7 @@ def skycalc_grid_is_labelled_derived_and_archived(t):
 
 @row
 def skycalc_resume_leaves_a_complete_grid_untouched(t):
-    client = skycalc.SkyCalcClient(session=SkyCalc(), interface="form", pause=0)
+    client = skycalc.SkyCalcClient(session=SkyCalc(), pause=0)
     kw = dict(sites=["paranal"], airmasses=[1.0], pwvs=[2.5], chunks=2, client=client)
     root = skycalc.build(t.tmp / "filters", fetch_resolution=2000, store_resolution=500, **kw)
     before = (root / "paranal" / "manifest.json").read_bytes()

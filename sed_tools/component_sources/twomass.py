@@ -67,8 +67,6 @@ FILTER_TABLE = {"J": 5, "H": 8, "Ks": 10}
 DICHROIC_PATH = {"J": (4,), "H": (6, 7), "Ks": (6, 9)}
 MIRROR_REFLECTIONS = 2
 LENSES = 7
-#: Instrument totals (no atmosphere), used only to validate the factors.
-TOTAL_TABLE = {"J": 12, "H": 13, "Ks": 14}
 
 NOTES = (
     "Components from the 2MASS All-Sky Explanatory Supplement III.1.b1 ({page}); wavelengths "
@@ -168,25 +166,3 @@ def build(filter_root: Union[str, Path], *, session=None, **_ignored) -> Path:
                              "page": PAGE, "rsr": RSR_PAGE})
     manifest.save(inst_dir)
     return inst_dir
-
-
-def validate(instrument_dir: Union[str, Path], session=None) -> Dict[str, Dict[str, float]]:
-    """filter x optics x qe against the supplement's instrument totals (tbl12-14).
-
-    Returns per band the photon-weighted magnitude difference for a flat
-    F_nu source and the largest absolute difference on the table grid.
-    """
-    from ..filters.compose import compose_band
-
-    fetch = Fetcher(session)
-    out = {}
-    for band, n in TOTAL_TABLE.items():
-        url = TABLE.format(n=n)
-        ref = pre_table(fetch.text(url, "latin-1", allow_html=True), url)
-        wl, tot = ref[:, 0] * 1e4, ref[:, 1]
-        mine = compose_band(instrument_dir, band, (FILTER, OPTICS, QE))
-        ours = np.interp(wl, mine.wavelength, mine.transmission, left=0.0, right=0.0)
-        ratio = np.trapezoid(ours / wl, wl) / np.trapezoid(tot / wl, wl)
-        out[band] = {"dmag": float(-2.5 * np.log10(ratio)),
-                     "maxdiff": float(np.max(np.abs(ours - tot)))}
-    return out
