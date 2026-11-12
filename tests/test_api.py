@@ -5,10 +5,14 @@ config file and data directory. One test walks the tables below; each row runs i
 
 import importlib
 import importlib.util
+import json
 import logging
 import math
+import os
 import shutil
 import struct
+import subprocess
+import sys
 import types
 from pathlib import Path
 from types import SimpleNamespace
@@ -651,6 +655,26 @@ def reloading_an_old_path_leaves_the_moved_module_as_it_was(t):
     assert tool.__package__ == "sed_tools.cube"
     t.mp.setattr(tool.Path, "rglob", lambda self, pattern: iter(()))  # search no folders
     old_tool.discover_flux_cube_files([])  # its `from .model import` needs the moved module's own package
+
+
+@row
+def every_module_star_imports_and_keeps_its_recorded_names(t):
+    # Older code runs `from sed_tools.svo_filter_grabber import *`: it fails outright once a module's __all__
+    # names something gone, and a dropped name breaks whoever used it. tests/star_imports.py records the
+    # surface in tests/fixtures/star_imports.json (its docstring gives the one command); names may be added.
+    # A module whose optional dependency is not installed is skipped. Run apart, so that importing every
+    # module leaves this process as it was.
+    out = t.tmp / "surface.json"
+    done = subprocess.run([sys.executable, str(Path(__file__).with_name("star_imports.py")), "--out", str(out)],
+                          env={**os.environ, "HOME": str(t.tmp)}, capture_output=True, text=True)
+    assert done.returncode == 0, done.stderr
+    now = json.loads(out.read_text())
+    recorded = json.loads((Path(__file__).parent / "fixtures" / "star_imports.json").read_text())
+    failing = {module: names for module, names in now.items() if isinstance(names, str)}
+    lost = {module: "the module is gone" if module not in now else sorted(set(names) - set(now[module]))
+            for module, names in recorded.items()
+            if module not in now or (isinstance(now[module], list) and set(names) - set(now[module]))}
+    assert not failing and not lost, f"star imports that fail: {failing}; recorded names no longer given: {lost}"
 
 
 # ----------------------------------------------------------------------
