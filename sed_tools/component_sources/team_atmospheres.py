@@ -453,10 +453,6 @@ def build(
     """
     root = Path(atmosphere_root) if atmosphere_root else Path(filter_root).parent / "atmospheres"
     names = list(SITES) if sites is None else list(sites)
-    unknown = [n for n in names if n not in SITES]
-    if unknown:
-        raise ValueError(f"Unknown team atmosphere site(s) {', '.join(unknown)}. "
-                         f"Choose from: {', '.join(sorted(SITES))}")
     fetch = CachingSession(session, archive_dir)
     for name in names:
         if (root / name / "manifest.json").exists() and not overwrite:

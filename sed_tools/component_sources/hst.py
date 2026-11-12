@@ -30,7 +30,8 @@ import numpy as np
 
 from ..filters.compose import FILTER, OPTICS, QE, InstrumentManifest, add_component
 from ..filters.curve_metadata import PHOTON, SVOMetadataClient
-from ._original import CONNECT_TIMEOUT, _each_published, merged_product
+from ._original import (CONNECT_TIMEOUT, _each_published, download,  # noqa: F401  CONNECT_TIMEOUT stays importable here
+                        merged_product)
 
 logger = logging.getLogger(__name__)
 
@@ -105,9 +106,7 @@ class SynphotTables:
         self._cache: Dict[str, Tuple[np.ndarray, np.ndarray]] = {}
 
     def _get(self, url: str) -> bytes:
-        resp = self.session.get(url, timeout=(CONNECT_TIMEOUT, 300))
-        resp.raise_for_status()
-        return resp.content
+        return download(self.session, url)
 
     def _latest(self, kind: str) -> str:
         html = self._get(f"{TRDS}/mtab/").decode("utf-8", "replace")

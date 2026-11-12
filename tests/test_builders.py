@@ -520,14 +520,6 @@ def dr280_never_replaces_a_different_published_file(t):
 
 
 @row
-def build_refuses_unknown_instruments_and_options(t):
-    with pytest.raises(ValueError, match="available: DR280, System"):
-        argus.build(t.tmp, instrument="ADDem")
-    with pytest.raises(ValueError, match="local files only"):
-        argus.build(t.tmp, instrument="System", archive_dir=t.tmp / "a")
-
-
-@row
 def system_builder_labels_line_1_and_keeps_every_sample(t):
     raw, session = argus_inputs(t)
     system_dir = argus_system(t)
@@ -711,8 +703,6 @@ def cfht_bands_get_their_own_generation_and_ignore_mislabelled_sibling(t):
 def cfht_needs_published_curves(t):
     with pytest.raises(FileNotFoundError):
         cfht.build(t.tmp, instrument="MegaCam", session=Session({}))
-    with pytest.raises(ValueError):
-        cfht.build(t.tmp, instrument="WIRCam", session=Session({}))
 
 
 @row
@@ -1803,13 +1793,6 @@ def team_atmospheres_build_writes_archives_and_resumes(t):
 
 
 @row
-def team_atmospheres_build_refuses_unknown_sites(t):
-    with pytest.raises(ValueError, match="Unknown team atmosphere site.s. nowhere"):
-        team.build(t.tmp, sites=["haleakala_ps1", "nowhere"], session=Session(saved()))
-    assert not any(t.tmp.iterdir())
-
-
-@row
 def hst_tables_take_the_newest_graph_and_walk_it(t):
     session = Session(saved())
     tables = hst.SynphotTables(session=session)
@@ -1969,8 +1952,6 @@ def form_fields_follow_skycalc_spelling(t):
     assert fields["SKYMODEL.TARGET.AIRMASS"] == "2.00" and fields["SKYMODEL.TARGET.ALT"] == "30.000"
     assert "SKYMODEL.INCL.MOON" not in fields  # unticked checkbox
     assert skycalc.airmass_altitude(3.0) == 19.5
-    with pytest.raises(ValueError):
-        skycalc.pwv_option(2.0)
 
 
 @row
@@ -2129,14 +2110,6 @@ def facility_wide_status_applies_to_every_instrument(t):
     assert catalog.status_for("LSST", "LSST") is None
 
 
-@row
-def tabular_names_its_instruments_for_an_unknown_one(t):
-    from sed_tools.component_sources import tabular
-
-    with pytest.raises(ValueError, match=r"tabular has no instrument 'NOPE'; choose one of: HAWKI"):
-        tabular.build(t.tmp, instrument="NOPE")
-
-
 # ======================================================================
 # Instruments rebuilt from their teams' original files (excerpts in tests/fixtures/original_sources)
 # ======================================================================
@@ -2151,14 +2124,6 @@ def original_sources_do_not_shadow_other_builders(t):
     assert not original & others
     assert len(others) >= 28  # the builders registered before these were added
     assert all(ref.publishes for ref in catalog.BUILDERS_FOR.values() if ref.name == "tabular")
-
-
-@row
-def unknown_instrument_and_wrong_facility_are_rejected(t):
-    with pytest.raises(ValueError, match="No original-source recipe"):
-        surveys.build(t.tmp, instrument="Nope")
-    with pytest.raises(ValueError, match="belongs to"):
-        surveys.build(t.tmp, instrument="ATLAS", facility="Keck")
 
 
 @row

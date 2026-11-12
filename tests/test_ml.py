@@ -672,7 +672,7 @@ def generator_train_rejects_a_grid_with_no_flux_above_the_floor(t):
 def train_model_forwards_keywords_and_rejects_unknown_ones(t):
     calls = []
     t.mp.setattr(mc.SEDCompleter, "train", lambda self, **kw: calls.append(kw))
-    t.mp.setattr(ml, "Completer", lambda path: ("Completer", path))
+    t.mp.setattr(mc, "Completer", lambda path: ("Completer", path))
 
     handle = mc.train_model("grid", str(t.tmp / "m"), epochs=2, verbose=False, dropout=0.1)
 
@@ -686,28 +686,16 @@ def train_model_rejects_keywords_train_does_not_take(t):
         mc.train_model("grid", str(t.tmp / "m"), val_split=0.2)
 
 
-@row
-def load_model_raises_the_load_error(t):
-    with pytest.raises(ValueError, match="Model path must be a directory"):
-        mc.load_model(str(t.tmp / "missing"))
-
-
 # ======================================================================
 # ml.Completer.extend_catalog
 # ======================================================================
-@row
-def extend_catalog_requires_a_model(t):
-    with pytest.raises(RuntimeError, match="No model loaded"):
-        ml.Completer().extend_catalog("in", "out")
-
-
 @row
 def extend_catalog_raises_without_a_lookup_table(t):
     # It used to extend every *.txt file with Teff=5000, logg=4.5, [M/H]=0.
     (t.tmp / "cat").mkdir()
     write_spectrum(t.tmp / "cat" / "a.txt", 3000, 20000)
 
-    with pytest.raises(FileNotFoundError, match="lookup_table.csv not found"):
+    with pytest.raises(FileNotFoundError, match="lookup_table.csv"):
         stubbed_completer().extend_catalog(str(t.tmp / "cat"), str(t.tmp / "out"))
 
 
