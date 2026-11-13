@@ -168,8 +168,7 @@ def percent_table(text: str, url: str, cols=(0, 1)):
     return wl, tr
 
 
-def build(filter_root: Union[str, Path], *, instrument: str = "Megaprime", session=None,
-          **_ignored) -> Path:
+def build(filter_root: Union[str, Path], *, instrument: str = "Megaprime", session=None) -> Path:
     inst_dir = Path(filter_root) / FACILITY / instrument
     present = published_bands(inst_dir)
     mapping = {b: c for b, c in BANDS[instrument].items() if b in present}

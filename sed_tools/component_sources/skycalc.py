@@ -197,36 +197,26 @@ def _utc_now() -> str:
 class SkyCalcClient:
     """Run SkyCalc through its JSON API, falling back to the web form.
 
-    ``interface`` is ``"api"``, ``"form"`` or ``"auto"`` (API first; switch to
-    the form for the rest of the session if the API host cannot be reached).
+    The API is tried first; if its host cannot be reached, the form is used
+    for the rest of the session.
     """
 
     def __init__(self, session=None, timeout: float = 600.0, retries: int = 4,
-                 base_url: str = BASE_URL, form_url: str = FORM_URL, interface: str = "auto",
+                 base_url: str = BASE_URL, form_url: str = FORM_URL,
                  pause: float = 1.0, connect_timeout: float = CONNECT_TIMEOUT):
         if session is None:
             import requests
 
             session = requests.Session()
-        if interface not in ("auto", "api", "form"):
-            raise ValueError("interface must be 'auto', 'api' or 'form'")
         self.session = session
-        # A dead host must fail fast (then "auto" switches to the form); the
-        # model run itself may take minutes.
+        # A dead host must fail fast (then the form is used); the model run
+        # itself may take minutes.
         self.timeout = (connect_timeout, timeout)
         self.retries = retries
         self.base_url = base_url.rstrip("/")
         self.form_url = form_url
-        self.interface = interface
         self.pause = pause
-        self._api_error: Optional[Exception] = None  # why "auto" switched to the form
-
-    def transmission(
-        self, site: str, airmass: float, pwv: float, wmin_nm: float, wmax_nm: float, resolution: float
-    ) -> Tuple[np.ndarray, np.ndarray]:
-        """Return (wavelength_nm, transmission) for one SkyCalc run."""
-        result = self.fetch(site, airmass, pwv, wmin_nm, wmax_nm, resolution)
-        return result.wavelength_nm, result.transmission
+        self._api_error: Optional[Exception] = None  # why the client switched to the form
 
     def fetch(self, site: str, airmass: float, pwv: float, wmin_nm: float, wmax_nm: float,
               resolution: float) -> SkyCalcResult:
@@ -237,7 +227,7 @@ class SkyCalcClient:
         )
         last_error: Optional[Exception] = None
         for attempt in range(self.retries):
-            use_form = self.interface == "form"
+            use_form = self._api_error is not None
             try:
                 result = self._form(params) if use_form else self._api(params)
                 time.sleep(self.pause)
@@ -249,9 +239,8 @@ class SkyCalcClient:
                 last_error = exc
             except (RequestException, OSError) as exc:
                 last_error = exc
-                if self.interface == "auto" and not use_form and _unreachable(exc):
+                if not use_form and _unreachable(exc):
                     logger.warning("SkyCalc API host %s unreachable (%s); using the web form", self.base_url, exc)
-                    self.interface = "form"
                     self._api_error = exc
                     continue
             time.sleep(5 * (attempt + 1))
@@ -415,10 +404,7 @@ def _fetch_point(client, site: str, airmass: float, pwv: float, edges: np.ndarra
     tr_parts: List[np.ndarray] = []
     results: List[SkyCalcResult] = []
     for i, (lo, hi) in enumerate(zip(edges[:-1], edges[1:])):
-        if hasattr(client, "fetch"):
-            result = client.fetch(site, airmass, pwv, lo, hi, fetch_resolution)
-        else:
-            result = SkyCalcResult(*client.transmission(site, airmass, pwv, lo, hi, fetch_resolution))
+        result = client.fetch(site, airmass, pwv, lo, hi, fetch_resolution)
         if archive is not None and result.content:
             archive.add(f"{stem}_chunk{i}.fits.gz", result, site=site, airmass=airmass,
                         pwv=pwv, chunk=i, wmin_nm=float(lo), wmax_nm=float(hi))

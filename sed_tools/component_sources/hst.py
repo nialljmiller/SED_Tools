@@ -29,7 +29,7 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Uni
 import numpy as np
 
 from ..filters.compose import FILTER, OPTICS, QE, InstrumentManifest, add_component
-from ..filters.curve_metadata import PHOTON, SVOMetadataClient
+from ..filters.curve_metadata import PHOTON
 from ._original import (CONNECT_TIMEOUT, _each_published, download,  # noqa: F401  CONNECT_TIMEOUT stays importable here
                         merged_product)
 
@@ -274,14 +274,12 @@ def build(
     *,
     instruments: Optional[Iterable[str]] = None,
     session=None,
-    svo_client: Optional[SVOMetadataClient] = None,
     tables: Optional[SynphotTables] = None,
 ) -> List[Path]:
     """Populate components for the HST imagers in :data:`MODES`.
 
     Instruments without published curves are left out; once the others are
-    built, a FileNotFoundError lists them.  ``svo_client`` is accepted for
-    compatibility and is not used.
+    built, a FileNotFoundError lists them.
     """
     filter_root = Path(filter_root)
     tables = tables or SynphotTables(session=session)

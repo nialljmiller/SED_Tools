@@ -35,7 +35,6 @@ CALDB_ROOTS = (
     "https://heasarc.gsfc.nasa.gov/FTP/caldb/data/swift/uvota/",
     "https://nasa-heasarc.s3.amazonaws.com/caldb/data/swift/uvota/",
 )
-CALDB_PAGE = "https://heasarc.gsfc.nasa.gov/docs/heasarc/caldb/swift/"
 POOLE = "https://doi.org/10.1111/j.1365-2966.2007.12563.x (Poole et al. 2008, arXiv:0708.2259)"
 BREEVELD = "https://arxiv.org/abs/1102.4717 (Breeveld et al. 2011, AIP Conf. Proc. 1358, 373)"
 #: Geometric collecting area of the UVOT primary mirror, cm^2 (Poole et al. 2008, sect. 4 (i)).
@@ -222,6 +221,6 @@ def uvot(fetch: Fetcher) -> Instrument:
                       outside_range="error")
 
 
-RECIPES = {"UVOT": ("Swift", uvot)}
+RECIPES = {"UVOT": uvot}
 
 build = make_builder(RECIPES)

@@ -62,7 +62,7 @@ def read_gunn(session):
     return out
 
 
-def build(filter_root, *, session=None, **_ignored) -> Path:
+def build(filter_root, *, session=None) -> Path:
     if session is None:
         import requests
 

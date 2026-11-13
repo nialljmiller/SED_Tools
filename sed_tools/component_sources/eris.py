@@ -104,7 +104,7 @@ def read_zip(raw: bytes):
     return cameras, dichroic
 
 
-def build(filter_root: Union[str, Path], *, session=None, **_ignored) -> Path:
+def build(filter_root: Union[str, Path], *, session=None) -> Path:
     inst_dir = Path(filter_root) / FACILITY / INSTRUMENT
     present = published_bands(inst_dir)
     cameras, dichroic = read_zip(Fetcher(session).get(ZIP_URL))

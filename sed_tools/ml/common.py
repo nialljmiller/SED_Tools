@@ -359,6 +359,15 @@ def print_libraries(libraries: List[Dict[str, Any]], title: str) -> None:
         print(f"  {i:2d}) {library['name']:30s} ({library['n_seds']} SEDs)")
 
 
+def confirmed(prompt: str) -> bool:
+    """The menus' "Start ...? [Y/n]" question: an empty or y... answer is yes; any other prints "Cancelled"."""
+    answer = input(prompt).strip().lower()
+    if answer and not answer.startswith('y'):
+        print("Cancelled")
+        return False
+    return True
+
+
 def action_menu(actions) -> Optional[int]:
     """Ask which of ``actions``, each (label, packages it needs, function), to run, and run it.
 

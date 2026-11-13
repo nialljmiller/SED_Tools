@@ -780,14 +780,14 @@ def instrument_without_own_site_gets_no_atmosphere(t):
 
 @row
 def skycalc_build_writes_grid_and_resumes(t):
-    from sed_tools.component_sources.skycalc import build
+    from sed_tools.component_sources.skycalc import SkyCalcResult, build
 
-    def transmission(site, airmass, pwv, lo, hi, resolution):
+    def fetch(site, airmass, pwv, lo, hi, resolution):
         calls.append(site)
         lam = lo * np.exp(np.arange(0, np.log(hi / lo), 1 / 2000.0))
-        return lam, np.full_like(lam, 0.8 ** airmass)
+        return SkyCalcResult(lam, np.full_like(lam, 0.8 ** airmass))
 
-    calls, fake = [], SimpleNamespace(transmission=transmission)
+    calls, fake = [], SimpleNamespace(fetch=fetch)
     root = build(t.tmp / "filters", sites=["paranal"], airmasses=[1.0, 2.0], pwvs=[2.5],
                  fetch_resolution=2000, store_resolution=500, chunks=2, client=fake)
     grid = AtmosphereGrid.load(root / "paranal")

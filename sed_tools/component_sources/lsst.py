@@ -146,12 +146,10 @@ def build(
     *,
     instrument: str = "LSST",
     atmosphere_root: Union[str, Path, None] = None,
-    tag: Optional[str] = None,
     session=None,
     svo_client: SVOMetadataClient = None,
 ) -> Path:
-    release, suffix, published_from = RELEASES[instrument]
-    tag = tag or release
+    tag, suffix, published_from = RELEASES[instrument]
     if session is None:
         import requests
 
@@ -234,39 +232,3 @@ def _write_site(site_dir: Path, atmospheres, tag: str) -> None:
         source=f"Rubin fiducial atmosphere (MODTRAN, with aerosols), lsst/throughputs {tag}",
         notes="Cerro Pachon; fixed water vapour as in Rubin's baseline. " + AIRMASS_EVIDENCE,
     ).save(site_dir)
-
-
-def validate(instrument_dir: Union[str, Path], tag: Optional[str] = None, session=None,
-             atmosphere_root: Union[str, Path, None] = None) -> Dict[str, Dict[str, float]]:
-    """Compare composed products with Rubin's own hardware/total curves.
-
-    Returns, per band, the magnitude difference (composed - Rubin) for a flat
-    F_nu source and the maximum absolute curve difference.  ``tag`` defaults
-    to the instrument's own release.
-    """
-    from ..filters.compose import compose_band
-
-    if session is None:
-        import requests
-
-        session = requests.Session()
-    instrument_dir = Path(instrument_dir)
-    tag = tag or RELEASES.get(instrument_dir.name, (TAG,))[0]
-    atm_root = Path(atmosphere_root) if atmosphere_root else instrument_dir.parent.parent.parent / "atmospheres"
-    out: Dict[str, Dict[str, float]] = {}
-    for band in BANDS:
-        result = {}
-        for kind, kwargs in (
-            ("hardware", {}),
-            ("total", {"atmosphere": {"site": ATMOSPHERE_SITE, "airmass": 1.2}, "atmosphere_root": atm_root}),
-        ):
-            mine = compose_band(instrument_dir, band, [FILTER, OPTICS, QE], **kwargs)
-            wl, ref = _fetch(session, f"{kind}_{band}", tag)
-            wl = wl * 10
-            ours = np.interp(wl, mine.wavelength, mine.transmission, left=0.0, right=0.0)
-            # flat F_nu source, photon counting: weight T*lambda * lambda^-2
-            ratio = np.trapezoid(ours / wl, wl) / np.trapezoid(ref / wl, wl)
-            result[f"{kind}_dmag"] = float(-2.5 * np.log10(ratio))
-            result[f"{kind}_maxdiff"] = float(np.max(np.abs(ours - ref)))
-        out[band] = result
-    return out

@@ -258,12 +258,12 @@ def spectral(fetch: Fetcher) -> Instrument:
 
 
 RECIPES = {
-    "ATLAS": ("ATLAS", atlas),
-    "PS1": ("PAN-STARRS", ps1),
-    "OGLE-IV": ("OGLE", ogle),
-    "WFCAM": ("UKIRT", wfcam),
-    "Sinistro": ("LasCumbres", sinistro),
-    "Spectral": ("LasCumbres", spectral),
+    "ATLAS": atlas,
+    "PS1": ps1,
+    "OGLE-IV": ogle,
+    "WFCAM": wfcam,
+    "Sinistro": sinistro,
+    "Spectral": spectral,
 }
 
 build = make_builder(RECIPES)

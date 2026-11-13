@@ -952,13 +952,12 @@ class MLCompleter:
         save_name : str, optional
             Name for the saved model. Default: '{grid}_completer'
         """
-        from ..ml.completer import train_model
+        from ..ml.completer import Completer, SEDCompleter
 
-        save_name = save_name or f"{grid}_completer"
-        self._model = train_model(grid_dir=str(self.base_dir / grid),
-                                  save_path=str(self.base_dir / self.models_dir / save_name),
-                                  epochs=epochs, batch_size=batch_size)
-        
+        save_path = str(self.base_dir / self.models_dir / (save_name or f"{grid}_completer"))
+        SEDCompleter().train(library_path=str(self.base_dir / grid), output_path=save_path, epochs=int(epochs),
+                             batch_size=int(batch_size))
+        self._model = Completer(save_path)  # the model as saved, loaded back from disk
         return self
     
     def extend(
@@ -983,20 +982,19 @@ class MLCompleter:
         SpectralGrid
             Extended spectral grid
         """
-        from ..ml.completer import extend_catalog
+        from ..ml.common import DEFAULT_WL_MAX, DEFAULT_WL_MIN
 
         output = output or f"{catalog}_extended"
         # extend_catalog raises RuntimeError listing any spectrum it could not extend.
-        extend_catalog(model=self._model, catalog_dir=str(self.base_dir / catalog),
-                       output_dir=str(self.base_dir / output), wavelength_range=wavelength_range)
+        self._model.extend_catalog(input_dir=str(self.base_dir / catalog), output_dir=str(self.base_dir / output),
+                                   extension_range=wavelength_range or (DEFAULT_WL_MIN, DEFAULT_WL_MAX), verbose=False)
         return SED._load_catalog_from_dir(self.base_dir / output, output, 'ml')
     
     def load(self, model_name: str) -> 'MLCompleter':
         """Load a previously trained model."""
-        from ..ml.completer import load_model
-        
-        model_path = self.base_dir / self.models_dir / model_name
-        self._model = load_model(str(model_path))
+        from ..ml.completer import Completer
+
+        self._model = Completer(str(self.base_dir / self.models_dir / model_name))
         return self
 
 

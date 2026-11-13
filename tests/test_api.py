@@ -485,16 +485,15 @@ def ml_generator_trains_lists_and_loads_a_model(t):
 
 
 @row
-def the_041_completer_api_trains_loads_and_describes_a_model(t):
+def the_041_completer_api_loads_and_describes_a_model(t):
     _tiny_training(t)
     lib, first, second = t.tmp / "lib", t.tmp / "models" / "a", t.tmp / "models" / "b"
-    trained = ml.train_completer(str(lib), str(first), epochs=1, batch_size=3, hidden_layers=[8], verbose=False)
-    assert isinstance(trained, SEDCompleter) and trained.config["architecture"]["hidden_layers"] == [8]
-    assert ml.load_completer(str(first)).model is not None
-    completer = ml.Completer()
-    assert repr(completer) == "<Completer(untrained)>"
-    assert completer.train(str(lib), str(second), epochs=1, batch_size=3, hidden_layers=[8]) is completer
-    assert repr(completer) == f"<Completer(trained @ {second})>"
+    for path in (first, second):
+        SEDCompleter().train(str(lib), str(path), epochs=1, batch_size=3, hidden_layers=[8], verbose=False)
+    loaded = ml.load_completer(str(first))
+    assert isinstance(loaded, SEDCompleter) and loaded.config["architecture"]["hidden_layers"] == [8]
+    assert repr(ml.Completer()) == "<Completer(untrained)>"
+    assert repr(ml.Completer(str(second))) == f"<Completer(trained @ {second})>"
     assert ml.Completer().load(str(first)).model_path == str(first)
     assert sorted(m["name"] for m in ml.Completer.available_models(str(t.tmp / "models"))) == ["a", "b"]
 

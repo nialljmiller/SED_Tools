@@ -101,7 +101,7 @@ def spread_note(wl: np.ndarray, qe: np.ndarray) -> str:
             + "; ".join(parts) + ". The spread beyond 2200 nm reflects each detector's cut-off.")
 
 
-def build(filter_root: Union[str, Path], *, session=None, **_ignored) -> Path:
+def build(filter_root: Union[str, Path], *, session=None) -> Path:
     """Add the focal-plane mean QE to ``Roman/WFI``."""
     inst_dir = Path(filter_root) / FACILITY / INSTRUMENT
     published_bands(inst_dir)  # refuses an instrument with no published curves

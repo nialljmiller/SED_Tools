@@ -27,9 +27,8 @@ from sed_tools import cli
 from sed_tools.api import SED, Filters
 from sed_tools.filter_components import ComponentError
 
-from support import (CLEAN, GRABBERS, KURUCZ, answer, cpu_torch, fake_grabber, filters_api, fixed_completer,
-                     fixed_generator, narrow_terminal, run_cli, run_module, scenarios, wide_lines, write_flux_cube,
-                     write_lookup)
+from support import (CLEAN, GRABBERS, KURUCZ, answer, fake_grabber, filters_api, narrow_terminal, run_cli,
+                     run_module, scenarios, wide_lines, write_flux_cube, write_lookup)
 
 # runpy warns that an old path imported earlier in the session is in sys.modules; python -m starts afresh.
 pytestmark = pytest.mark.filterwarnings("ignore:.*found in sys.modules after import of package:RuntimeWarning")
@@ -484,8 +483,6 @@ def _in_its_folder(t):
 #: Each old path with a main(), and its help's description.
 HELP = {
     "flux_cube_tool": "Inspect and interpolate a flux cube",
-    "ml_sed_completer": "ML-powered SED Completer (PyTorch)",
-    "ml_sed_generator": "ML SED Generator",
 }
 
 
@@ -519,58 +516,6 @@ def filters_combine_command_writes_the_combined_set(t):
     assert run_cli(t.mp, "filters-combine", "Mine/Set", "Generic/Johnson", "--base", str(t.tmp)) == 0
     assert (t.tmp / "Mine" / "Set" / "Set").read_text().split() == ["V.dat"]
     assert t.capsys.readouterr().out == f"[filters] Combined filter set written to {t.tmp / 'Mine' / 'Set'}\n"
-
-
-@main_row
-def ml_train_commands_pass_their_options_on(t):
-    from sed_tools.ml.completer import SEDCompleter
-    from sed_tools.ml.generator import SEDGenerator
-
-    calls = []
-    t.mp.setattr(SEDCompleter, "train", lambda self, **kwargs: calls.append(kwargs))
-    t.mp.setattr(SEDGenerator, "train", lambda self, *args, **kwargs: calls.append((args, kwargs)))
-    assert run_module(t.mp, "ml_sed_completer", "train", "--library", "lib", "--output", "out", "--epochs", "3",
-                      "--batch-size", "4", "--lr", "0.01", "--max-samples", "9", "--patience", "2") == 0
-    assert run_module(t.mp, "ml_sed_generator", "train", "--library", "lib", "--output", "out",
-                      "--epochs", "5") == 0
-    assert calls == [{"library_path": "lib", "output_path": "out", "epochs": 3, "batch_size": 4,
-                      "learning_rate": 0.01, "max_samples": 9, "patience": 2},
-                     (("lib", "out"), {"epochs": 5, "batch_size": 64})]
-
-
-@main_row
-def ml_sed_completer_lists_and_completes_with_a_saved_model(t):
-    torch, models = cpu_torch(t), t.tmp / "models"
-    assert run_module(t.mp, "ml_sed_completer", "list", "--models-dir", str(models)) == 0
-    assert t.capsys.readouterr().out == f"No models found in {models}/\n"
-    fixed_completer(torch).save(models / "tiny", hidden_layers=[16, 8])
-    t.capsys.readouterr()
-    assert run_module(t.mp, "ml_sed_completer", "list", "--models-dir", str(models)) == 0
-    out = t.capsys.readouterr().out
-    assert "  tiny\n" in out and "Architecture: 400 -> [16, 8] -> 1000" in out
-    wl = np.logspace(np.log10(3000.0), np.log10(9000.0), 50)
-    np.savetxt(t.tmp / "in.txt", np.column_stack([wl, 1e-10 * (wl / 5000.0) ** -2]))
-    assert run_module(t.mp, "ml_sed_completer", "complete", "--model", str(models / "tiny"), "--input", "in.txt",
-                      "--output", "out.txt", "--teff", "5500", "--logg", "4.5", "--meta", "0", "--wl-min", "1000",
-                      "--wl-max", "20000") == 0
-    extended = np.loadtxt(t.tmp / "out.txt")
-    assert extended[0, 0] <= 1000.0 * 1.01 and extended[-1, 0] >= 20000.0 * 0.99
-    assert "Saved completed SED to: out.txt" in t.capsys.readouterr().out
-
-
-@main_row
-def ml_sed_generator_lists_and_generates_with_a_saved_model(t):
-    torch, models = cpu_torch(t), t.tmp / "models"
-    fixed_generator(torch).save(models / "gen", hidden_layers=[16, 8])
-    t.capsys.readouterr()
-    assert run_module(t.mp, "ml_sed_generator", "list", "--models-dir", str(models)) == 0
-    assert t.capsys.readouterr().out == f"gen: {models / 'gen'}\n"
-    assert run_module(t.mp, "ml_sed_generator", "generate", "--model", str(models / "gen"), "--teff", "5500",
-                      "--logg", "4.5", "--meta", "0", "--output", "sed.txt") == 0
-    lines = (t.tmp / "sed.txt").read_text().splitlines()
-    assert lines[0] == "# wavelength_A flux_erg/s/cm2/A" and "Teff=5500.0 logg=4.5 [M/H]=0.0" in lines[1]
-    assert np.loadtxt(t.tmp / "sed.txt").shape == (1000, 2)
-    assert t.capsys.readouterr().out.endswith("Saved: sed.txt\n")
 
 
 @main_row
@@ -1044,16 +989,19 @@ def njm_cuts_are_asked_in_a_terminal(t):
 
 @menu_row
 def auto_training_takes_trials_and_epochs(t):
-    import sed_tools.ml
-
     calls = []
+
+    class AutoTrainer:
+        def train_best(self, **kwargs):
+            calls.append(kwargs)
+
     t.mp.setattr(importlib.util, "find_spec", lambda name, *a: object())
-    t.mp.setattr(sed_tools.ml, "auto_train_generator", lambda **kwargs: calls.append(kwargs))
+    t.mp.setitem(sys.modules, "sed_tools.ml.tuning", SimpleNamespace(AutoTrainer=AutoTrainer))  # optuna-free
     assert run_cli(t.mp, "ml_generator", "--auto", "--library", "lib", "--output", "out",
                    "--trials", "2", "--epochs", "1") == 0
     assert run_cli(t.mp, "ml_generator", "--auto", "--library", "lib", "--output", "out") == 0
-    assert calls == [{"library": "lib", "output": "out", "n_trials": 2, "epochs": 1},
-                     {"library": "lib", "output": "out"}]
+    assert calls == [{"library_path": "lib", "output_path": "out", "n_trials": 2, "epochs": 1},
+                     {"library_path": "lib", "output_path": "out"}]
 
 
 @menu_row

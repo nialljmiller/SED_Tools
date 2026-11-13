@@ -30,7 +30,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Dict, Iterable, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
 
@@ -181,29 +181,16 @@ def _notes(bands, written: Dict[str, int], clamped: Dict[str, int], deviations: 
     return " ".join(notes)
 
 
-def build(
-    filter_root: Union[str, Path],
-    *,
-    bands: Optional[Iterable[str]] = None,
-    session=None,
-    **_ignored,
-) -> Path:
+def build(filter_root: Union[str, Path], *, session=None) -> Path:
     """Add ESA's NISP filter, optics and QE factors to ``Euclid/NISP``."""
     inst_dir = Path(filter_root) / FACILITY / INSTRUMENT
-    requested = list(bands or BANDS)
-    wanted = [b for b in requested if b in BANDS]
-    if not wanted:
-        raise ValueError(f"No NISP photometric band among {list(bands or [])}; ESA publishes {BANDS}")
-    skipped = [b for b in requested if b not in BANDS]
-    if skipped:
-        logger.warning("Euclid/NISP: ESA publishes factors only for %s; %s skipped", BANDS, skipped)
     fetch = Fetcher(session)
     # Download and check every band before writing anything.
-    tables = {b: parse_table(fetch.text(URL.format(band=b))) for b in wanted}
+    tables = {b: parse_table(fetch.text(URL.format(band=b))) for b in BANDS}
 
     inst_dir.mkdir(parents=True, exist_ok=True)
     written = {}
-    for band in wanted:
+    for band in BANDS:
         negatives = write_published(inst_dir, band, tables[band])
         if negatives >= 0:  # -1: the published curve existed and was kept
             written[band] = negatives
@@ -211,9 +198,9 @@ def build(
     if not index.exists():
         index.write_text("".join(f"{b}.dat\n" for b in BANDS if (inst_dir / f"{b}.dat").is_file()),
                          encoding="utf-8")
-    manifest = _fresh_manifest(inst_dir, wanted)
+    manifest = _fresh_manifest(inst_dir, BANDS)
     clamped, deviations = {}, {}
-    for band in wanted:
+    for band in BANDS:
         negative, deviation = _add_factors(inst_dir, manifest, band, tables[band])
         if negative:
             clamped[band] = negative
