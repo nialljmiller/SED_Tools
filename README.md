@@ -302,7 +302,7 @@ By default `filters-detector` resolves untagged files, retries `assumed` ones (e
 
 #### Filter properties
 
-`sed_tools.filter_properties` computes the characteristics the SVO Filter Profile Service lists for a curve:
+`sed_tools.filters.properties` computes the characteristics the SVO Filter Profile Service lists for a curve:
 - mean, pivot, peak, central, minimum and maximum wavelengths;
 - FWHM and effective width;
 - the Vega-weighted effective and photon wavelengths;
@@ -316,7 +316,7 @@ The pivot, zero points and `Fsun` use the same detector-aware weights as SED_Too
 `AfAv` is computed by the `F99` class of [dust_extinction](https://github.com/karllark/dust_extinction) (Gordon 2024, [JOSS 9(100), 7023](https://doi.org/10.21105/joss.07023)), an optional dependency: `pip install "sed-tools[extinction]"`. Without it, `AfAv` is `None` and a warning says why. It is also `None` where the pivot lies outside the range dust_extinction defines for the law (1000 Å to 3.33 µm); the law is never extrapolated. A(V) is the law's own normalisation (V-band averaged), so `AfAv` is 1 at 5414 Å, not at 5500 Å. SVO's `Af/AV` uses a different law, so the two differ.
 
 ```python
-from sed_tools.filter_properties import curve_properties, load_sun, load_vega
+from sed_tools.filters.properties import curve_properties, load_sun, load_vega
 
 vega = load_vega("vega_flam.csv")                 # wavelength in Å, f_λ in erg/s/cm²/Å
 sun = load_sun("sun_flam.csv")                    # the Sun at 1 AU, same units
@@ -324,7 +324,7 @@ ks = curve_properties("data/filters/2MASS/2MASS/Ks.dat", vega, sun)
 ks["WavelengthPivot"], ks["ZeroPointVega_Jy"], ks["Fsun"], ks["AfAv"]
 ```
 
-`sed_tools.filter_colors` gives each band a colour for plotting, computed from its curve rather than guessed from its name:
+`sed_tools.filters.display` gives each band a colour for plotting, computed from its curve rather than guessed from its name:
 - **Mostly-visible bands** (at least half the throughput between 380 and 750 nm) get their true colour: daylight (CIE D65) seen through the curve, using the CIE 1931 colour-matching functions shipped with the package.
 - **Ultraviolet and infrared bands** get false colours in wavelength order. Next to visible bands they continue bluer or redder; in an all-infrared or all-ultraviolet instrument they span a rainbow shifted toward that regime.
 
@@ -332,7 +332,7 @@ NJM serves the colours in `properties.json` (`DisplayColor`), and its website pl
 
 ```python
 from pathlib import Path
-from sed_tools.filter_colors import instrument_colors
+from sed_tools.filters.display import instrument_colors
 
 colors = instrument_colors(sorted(Path("data/filters/2MASS/2MASS").glob("*.dat")))
 colors["J"]["DisplayColor"]                       # "#6cee2b"
@@ -373,7 +373,7 @@ Filters.plot(bands)                                              # a search resu
 - **Caching.** Catalogue files are cached in `cache/njm/` beside the filter root (next to `atmospheres/`). `index.json` is rechecked daily; the other files are revalidated, by ETag, only when `index.json` changes. Without the mirror the cached copies are used (`filters-info --offline` / `offline=True` never contacts it; `refresh=True` asks again).
 - **Downloads.** A downloaded instrument keeps `properties.json` and `info.json` beside its curves, and these copies are preferred because they describe exactly those curves. The MESA index file still lists only the curves.
 - **Citations.** References are merged across instruments, one per work (bibcode form). For chosen bands, the instrument-wide references plus those bands' own are given. Acknowledgement texts are quoted as the providers ask. References for which NJM has no BibTeX appear in the `.bib` output as `%` comments with what is known; nothing is made up.
-- **Plots.** Curves use `sed_tools.filter_colors`: true colours for visible bands and ordered false colours otherwise. One instrument's bands keep its own colours; a selection across instruments is coloured as one set. Instruments not yet installed are downloaded first. `normalize` is `"peak"` or `"area"`; `vega=True` overlays NJM's `vega/vega_flam.csv`, scaled to the curves.
+- **Plots.** Curves use `sed_tools.filters.display`: true colours for visible bands and ordered false colours otherwise. One instrument's bands keep its own colours; a selection across instruments is coloured as one set. Instruments not yet installed are downloaded first. `normalize` is `"peak"` or `"area"`; `vega=True` overlays NJM's `vega/vega_flam.csv`, scaled to the curves.
 
 #### Filter, optics, QE and atmosphere as separate components
 
@@ -1052,7 +1052,7 @@ info.covers_range(teff_min=5000, teff_max=6000)
 | `sed-tools grids --grids X` | `SED.fetch('X')` |
 | `sed-tools rebuild --grids X` | `sed.grid.write()` |
 | `sed-tools combine` | `SED.combine(['A', 'B'], output='...')` |
-| `sed-tools densify --flux-cube F --output O` | `sed_tools.grid_densifier.densify_grid(src, dst)` |
+| `sed-tools densify --flux-cube F --output O` | `sed_tools.cube.densify.densify_grid(src, dst)` |
 | `sed-tools import --path P --name N` | `SED.import_grid('/path/', name='N')` |
 | `sed-tools coverage --grids X` | `SED.coverage('X')` |
 | `sed-tools ml_completer train` | `SED.ml_completer().train(...)` |

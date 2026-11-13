@@ -24,22 +24,20 @@ import numpy as np
 import pytest
 import requests
 
-from sed_tools import filter_library
 from sed_tools.api import Filters
 from sed_tools.component_sources import (argus, cassini, catalog, cfht, csp, decam, eris, gmos, hsc, hst,
-                                         legacy_surveys, lsst, observatories as obs, sdss, skycalc, space,
-                                         standards, surveys, swift, team_atmospheres as team, twomass, vista, ztf)
+                                         legacy_surveys, lsst, observatories as obs, sdss, skycalc, space, standards,
+                                         surveys, swift, team_atmospheres as team, twomass, vista, ztf)
 from sed_tools.component_sources._common import (DerivedCurve, SimpleSource, Table, build_simple, ensure_published,
                                                  write_site)
 from sed_tools.component_sources._original import Fetcher, clean_curve, make_band, to_angstrom
-from sed_tools.filter_components import (DERIVED, FILTER, OPTICS, QE, SHARED, TEAM, AtmosphereGrid,
-                                         ComponentCoverageError, ComponentError, InstrumentManifest, add_component,
-                                         build_product, compose_band, read_curve)
-from sed_tools.filter_library import FilterLibrary
-from sed_tools.filter_metadata import (ENERGY, PHOTON, SVOFilterRecord, read_filter_header, released_mesa_reads,
-                                       write_filter_file)
-from sed_tools.filters import svo
-from sed_tools.filters.curve_metadata import SVOMetadataClient, _param_text, svo_fps_url
+from sed_tools.filters import library as filters_library, svo
+from sed_tools.filters.compose import (DERIVED, FILTER, OPTICS, QE, SHARED, TEAM, AtmosphereGrid,
+                                       ComponentCoverageError, ComponentError, InstrumentManifest, add_component,
+                                       build_product, compose_band, read_curve)
+from sed_tools.filters.curve_metadata import (ENERGY, PHOTON, SVOFilterRecord, SVOMetadataClient, _param_text,
+                                              read_filter_header, released_mesa_reads, svo_fps_url, write_filter_file)
+from sed_tools.filters.library import FilterLibrary
 from sed_tools.grids import mast, msg, svo as svo_grid
 
 from support import TESTS, WL, Resp, Session, answer, derived, gauss, published_set, scenarios, team_site
@@ -2020,7 +2018,7 @@ def ensure_components_runs_own_builder_and_skips_heavy(t):
     calls = []
     t.mp.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam"), catalog.BuilderRef("fake"))
     t.mp.setitem(catalog.BUILDERS_FOR, ("Fac", "Big"), catalog.BuilderRef("fake", heavy=True))
-    t.mp.setattr(filter_library.NJMFilterGrabber, "_check_availability", lambda self: False)
+    t.mp.setattr(filters_library.NJMFilterGrabber, "_check_availability", lambda self: False)
 
     def build(root, **kw):
         calls.append(("fake", root))
@@ -2029,7 +2027,7 @@ def ensure_components_runs_own_builder_and_skips_heavy(t):
         add_component(inst, FILTER, [4000.0, 5000.0], [1.0, 1.0], band="g", manifest=manifest)
         manifest.save(inst)
 
-    t.mp.setattr(filter_library, "get_builder", lambda name: build)
+    t.mp.setattr(filters_library, "get_builder", lambda name: build)
     for name in ("Cam", "Big", "None"):
         d = t.tmp / "Fac" / name
         d.mkdir(parents=True)
@@ -2042,7 +2040,7 @@ def ensure_components_runs_own_builder_and_skips_heavy(t):
 
 
 def svo_instruments_that_share_a_name_get_their_own_directory(t, name, key, others, expected):
-    from sed_tools.svo_filter_grabber import _would_collide
+    from sed_tools.filters.svo import _would_collide
 
     assert _would_collide(name, key, others) is expected
 
@@ -2109,7 +2107,7 @@ def ogle_files():
 
 @row
 def published_rebuilds_from_original_sources_when_njm_is_down(t):
-    t.mp.setattr(filter_library.NJMFilterGrabber, "_check_availability", lambda self: False)
+    t.mp.setattr(filters_library.NJMFilterGrabber, "_check_availability", lambda self: False)
     session = Session(ogle_files())
     t.mp.setattr(requests, "Session", lambda: session)
     library = FilterLibrary(t.tmp)

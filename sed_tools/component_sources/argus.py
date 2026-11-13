@@ -146,7 +146,7 @@ OPTICS_KEY = "dr280"  # the only DR280 optics: ADDem and production share it
 
 #: Nill's decision for both instruments (2026-10-27).  ``user`` is outside
 #: the SVO precedence order, so an SVO resolution never replaces it, and
-#: composed products keep it (filter_components._band_detector_type).
+#: composed products keep it (filters.compose._band_detector_type).
 DETECTOR_TYPE, DETECTOR_SOURCE = ENERGY, "user"
 DETECTOR_NOTE = (
     "user: the Argus team states that the Argus sensors are energy counting (N. Miller, 2026-10-27). "

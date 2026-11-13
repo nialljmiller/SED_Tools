@@ -1,6 +1,6 @@
 """Spectrum units for the cleaner: unit tables, detection from headers and data, the flux-unit decision and conversion.
 
-The cleaner (clean.py) applies these to a whole grid; spectra_cleaner is its old import path.
+The cleaner (clean.py) applies these to a whole grid.
 """
 
 from __future__ import annotations

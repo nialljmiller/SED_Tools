@@ -506,7 +506,7 @@ class InstrumentManifest:
         """Every atmosphere site of the instrument's own location, default first.
 
         That is ``default_site``, then ``atmosphere_sites``, then the team
-        sites registered for this instrument in :mod:`facility_sites`.
+        sites registered for this instrument in :mod:`sed_tools.filters.sites`.
         """
         names = [self.default_site, *self.atmosphere_sites,
                  *instrument_sites(self.facility, self.instrument)]

@@ -18,8 +18,8 @@ import logging
 import numpy as np
 import pytest
 
-from sed_tools import ml, ml_sed_completer as mc, ml_sed_generator as mg
-from sed_tools.ml import Completer, model_info
+from sed_tools import ml
+from sed_tools.ml import Completer, completer as mc, generator as mg, model_info
 
 from support import (KURUCZ, answer, cpu_torch, fixed_completer, fixed_generator, scenarios, tiny_library,
                      write_flux_cube)
@@ -48,7 +48,7 @@ def kurucz(t):
     """The 12-spectrum golden Kurucz grid (3 Teff x 2 logg x 2 [M/H]) with its flux cube."""
     import shutil
 
-    from sed_tools.precompute_flux_cube import precompute_flux_cube
+    from sed_tools.cube.build import precompute_flux_cube
 
     library = t.tmp / "Kurucz2003all"
     shutil.copytree(KURUCZ, library)
@@ -188,7 +188,7 @@ def training_drops_a_last_batch_of_one_spectrum(t, engine):
 
 def auto_train_best(t, lib, out):
     seeded_optuna(t)
-    from sed_tools.ml_optimized import AutoTrainer
+    from sed_tools.ml.tuning import AutoTrainer
 
     AutoTrainer().train_best(lib, out, n_trials=1, epochs=1)
 
@@ -370,7 +370,7 @@ def extend_catalog_extends_each_spectrum_with_its_own_parameters(t):
     # first spectrum became the header and every other one was extended as
     # Teff 5000, logg 4.5, [M/H] 0; on cleanup/base it raised instead.
     import pandas as pd
-    from sed_tools._lookup_io import write_lookup_csv
+    from sed_tools.grids.lookup import write_lookup_csv
 
     catalog = t.tmp / "catalog"
     catalog.mkdir()
@@ -845,7 +845,7 @@ def generator_generate_menu_takes_the_parameters_typed(t):
 
 @row
 def window_coverage_warns_below_the_80_percent_training_required(t):
-    from sed_tools.ml_sed_completer import _warn_window_coverage
+    from sed_tools.ml.completer import _warn_window_coverage
 
     window = np.arange(10.0)
     with t.caplog.at_level(logging.WARNING, logger="sed_tools.ml_sed_completer"):

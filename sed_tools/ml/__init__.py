@@ -1,8 +1,7 @@
 """The 0.4.1 SED completer API: load_completer, complete_sed, list_models, model_info, Completer.
 
-These functions call the engines directly: SEDCompleter, and the Completer class over it, in ml/completer.py (old
-path sed_tools.ml_sed_completer). SEDGenerator is in ml/generator.py (sed_tools.ml_sed_generator), and its optuna
-tuning in ml/tuning.py. ml/common.py is what they share. Models are trained with api.MLCompleter and api.MLGenerator,
+These functions call the engines directly: SEDCompleter, and the Completer class over it, in ml/completer.py.
+SEDGenerator is in ml/generator.py, and its optuna tuning in ml/tuning.py. ml/common.py is what they share. Models are trained with api.MLCompleter and api.MLGenerator,
 the sed-tools menus, or the engines' own train().
 """
 

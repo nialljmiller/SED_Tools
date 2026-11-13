@@ -39,8 +39,6 @@ The code in `sed_tools/` is grouped by the data it handles:
 - `ml/`: the ML SED completer and generator.
 - Top-level modules: settings (`config.py`), photometry on curves and spectra (`photometry.py`), the NJM mirror (`njm_mirror.py`), and prompts and terminal plots (`ui_utils.py`, `terminal_plots.py`).
 
-The old module paths (`sed_tools.filter_library`, `sed_tools.spectra_cleaner` and the rest) still work: each forwards to the module that now holds its code. New code inside `sed_tools/` should import the new paths.
-
 ## What to Contribute
 
 Areas where contributions are most useful:
@@ -54,7 +52,7 @@ Areas where contributions are most useful:
 
 - Do not open PRs that add unrelated changes bundled together
 - Do not submit changes that have not been tested against real data
-- Do not modify the unit standardization logic in `sed_tools/grids/clean.py` and `sed_tools/grids/units.py` (old path `spectra_cleaner`) without opening an issue and discussing it first — they are the single authority for unit conversion across the entire pipeline
+- Do not modify the unit standardization logic in `sed_tools/grids/clean.py` and `sed_tools/grids/units.py` without opening an issue and discussing it first — they are the single authority for unit conversion across the entire pipeline
 
 ## Contact
 

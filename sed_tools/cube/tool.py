@@ -1,4 +1,4 @@
-"""The flux cube tool (python -m sed_tools.flux_cube_tool --flux-cube PATH): it prompts for what is missing,
+"""The flux cube tool (python -m sed_tools.cube.tool --flux-cube PATH): it prompts for what is missing,
 evaluates the SED, its bolometric magnitude and its AB or Vega magnitude in every filter it finds under filters/
 (or --filters), and saves a plot to plots/. It re-exports FluxCube (cube/fluxcube.py) and the photometry names of
 photometry.py.

@@ -27,7 +27,7 @@ NJM_PAUSE = 300
 NJM_NOT_LISTED = "NJM unavailable"
 
 
-def cache_root(filter_root: "Union[str, Path]") -> "Path":  # quoted: filter_catalogue re-exports it, signature as text
+def cache_root(filter_root: "Union[str, Path]") -> "Path":  # quoted: filters.njm_catalogue re-exports it, signature as text
     """Where NJM catalogue files are cached for a filter root (beside ``atmospheres/``)."""
     return Path(filter_root).parent / "cache" / "njm"
 

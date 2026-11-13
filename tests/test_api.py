@@ -1,6 +1,6 @@
 """Public API, top level and the 0.4.1/0.5.x legacy surface: query, fetch and local, the local grids, the
-filters, tagging and the ML wrappers fail loudly; the 0.4.1 names and old module paths still work; the
-config file and data directory. One test walks the tables below; each row runs isolated (support.Rows).
+filters, tagging and the ML wrappers fail loudly; the 0.4.1 names that remain still work; the config file and
+data directory. One test walks the tables below; each row runs isolated (support.Rows).
 """
 
 import importlib
@@ -13,10 +13,8 @@ import shutil
 import struct
 import subprocess
 import sys
-import types
 from pathlib import Path
 from types import SimpleNamespace
-from unittest import mock
 
 import numpy as np
 import pytest
@@ -24,17 +22,13 @@ import requests
 
 import sed_tools
 import sed_tools.config as config
-import sed_tools.cube.tool as tool
-import sed_tools.filter_library as old_library
-import sed_tools.filters.library as library
-import sed_tools.flux_cube_tool as old_tool
 from sed_tools import api, ml
-from sed_tools._flux import AB_ZERO_FLUX
 from sed_tools.api import SED, Filters, MLGenerator, SpectralGrid, SpectralGridInfo, Spectrum
-from sed_tools.collision_config import CollisionConfig
-from sed_tools.ml_sed_completer import SEDCompleter, SEDCompleterNetwork
-from sed_tools.ml_sed_generator import SEDGenerator
-from sed_tools.models import SED as GridFinder
+from sed_tools.cube.collision import CollisionConfig
+from sed_tools.cube.model import SED as GridFinder
+from sed_tools.cube.tool import AB_ZERO_FLUX
+from sed_tools.ml.completer import SEDCompleter, SEDCompleterNetwork
+from sed_tools.ml.generator import SEDGenerator
 
 from support import (CLEAN, GRABBERS, GRID, KURUCZ, STALE, answer, atmosphere_site, cpu_torch, fake_grabber,
                      filters_api, njm_grids, scenarios, tiny_library, write_flux_cube)
@@ -93,7 +87,7 @@ def fetch_falls_back_to_the_next_source_with_a_warning(t):
     _sources(t, njm=fake_grabber(["Grid"], metadata=RuntimeError("NJM mirror has no files for Grid")),
              svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], download_error=RuntimeError("SVO timed out")),
              msg=fake_grabber(["Grid"], metadata={"m": 1}, downloaded=1))
-    t.mp.setattr("sed_tools.spectra_cleaner.clean_model_dir", lambda *a, **k: dict(CLEAN))
+    t.mp.setattr("sed_tools.grids.clean.clean_model_dir", lambda *a, **k: dict(CLEAN))
     with _api_warnings(t):
         sed = SED.fetch("Grid", model_root=t.tmp)
     assert sed.grid.source == "msg"
@@ -195,7 +189,7 @@ def import_dry_run_counts_spectra_lacking_a_parameter(t):
 
 @row
 def filter_query_warns_about_discovery_errors(t):
-    from sed_tools.filter_library import FilterLibrary
+    from sed_tools.filters.library import FilterLibrary
 
     filters = filters_api(t)
     report = {"entries": [{"key": "HST", "label": "HST", "sources": ["original"]}],
@@ -209,7 +203,7 @@ def filter_query_warns_about_discovery_errors(t):
 
 @row
 def bibtex_citations_raise_when_a_target_failed(t):
-    from sed_tools.filter_catalogue import CatalogueError
+    from sed_tools.filters.njm_catalogue import CatalogueError
 
     filters = filters_api(t)
     result = {"instruments": [], "references": [], "acknowledgements": [], "errors": ["A/B: not cached"]}
@@ -221,7 +215,7 @@ def bibtex_citations_raise_when_a_target_failed(t):
 
 @row
 def plot_warns_when_njm_cannot_resolve_an_instrument_name(t):
-    from sed_tools.filter_catalogue import CatalogueError
+    from sed_tools.filters.njm_catalogue import CatalogueError
 
     filters = filters_api(t)
     fetched = t.tmp / "fetched" / "Fac" / "Cam"
@@ -253,7 +247,7 @@ def _precompute_writes(t, *names):
         for name in names:
             (Path(model_dir) / name).write_text("built")
 
-    t.mp.setattr(importlib.import_module("sed_tools.precompute_flux_cube"), "precompute_flux_cube", fake)
+    t.mp.setattr(importlib.import_module("sed_tools.cube.build"), "precompute_flux_cube", fake)
 
 
 @row
@@ -285,7 +279,7 @@ def ml_generator_writes_outputs_beside_the_loaded_model(t):
         def generate_with_outputs(self, **kwargs):
             calls.append(kwargs["output_dir"])
 
-    t.mp.setattr("sed_tools.ml_sed_generator.SEDGenerator", Generator)
+    t.mp.setattr("sed_tools.ml.generator.SEDGenerator", Generator)
     (t.tmp / "models" / "gen").mkdir(parents=True)
     MLGenerator(base_dir=t.tmp).load("gen").generate_with_outputs(5800, 4.4, 0.0)
     assert calls == [str(t.tmp / "models" / "gen" / "SED")]
@@ -298,7 +292,7 @@ def tagged(path):
 
 def _tag_with(t, bands, tag):
     """Filter files for ``bands`` in the row's folder, tagged by ``tag``; returns Filters."""
-    import sed_tools.filter_metadata as fm
+    import sed_tools.filters.curve_metadata as fm
 
     for band in bands:
         (t.tmp / f"{band}.dat").write_text("Wavelength,Transmission\n1,1\n")
@@ -323,7 +317,7 @@ def tagging_one_facility_finishes_every_file_then_lists_failures(t):
 
 @row
 def tagging_stops_at_once_when_svo_is_unreachable(t):
-    import sed_tools.filter_metadata as fm
+    import sed_tools.filters.curve_metadata as fm
 
     calls = []
 
@@ -530,16 +524,6 @@ def collision_config_repr(t):
 
 
 @row
-def an_old_module_path_lists_the_moved_modules_names(t):
-    import sed_tools.filter_library as old
-    import sed_tools.njm_filter_grabber as old_njm
-
-    assert {"FilterLibrary", "get_builder"} <= set(dir(old))
-    assert {"threading", "urllib3", "NJMFilterGrabber"} <= set(dir(old_njm))  # restored names too
-    assert dir(old_njm) == sorted(dir(old_njm))
-
-
-@row
 def atmospheres_lists_the_installed_sites(t):
     atmosphere_site(t.tmp, "lsst_std", STALE, ["am1.20.dat"])
     assert Filters.atmospheres(t.tmp / "filters", include_remote=False) == {"lsst_std": {
@@ -547,57 +531,9 @@ def atmospheres_lists_the_installed_sites(t):
         "kind": None, "model": None, "model_version": None, "citation": None}}
 
 
-# ----------------------------------------------------------------------
-# Old module paths (sed_tools.filter_library and the rest) forward to the moved modules, also for test tools
-# ----------------------------------------------------------------------
-def _sentinel():
-    return "patched"
-
-
-@row
-def monkeypatch_through_an_old_path_is_undone_on_the_moved_module(t):
-    original = library.get_builder
-    with pytest.MonkeyPatch.context() as m:
-        m.setattr(old_library, "get_builder", _sentinel)
-        assert library.get_builder is _sentinel
-        m.setattr(old_library, "get_builder", len)  # nested
-        assert library.get_builder is len
-    assert library.get_builder is original
-
-
-@row
-def monkeypatch_of_a_new_name_through_an_old_path_is_removed_again(t):
-    with pytest.MonkeyPatch.context() as m:
-        m.setattr(old_library, "not_there_before", 1, raising=False)
-        assert library.not_there_before == 1
-    assert not hasattr(library, "not_there_before")
-
-
-@row
-def mock_patch_through_an_old_path_is_undone_on_the_moved_module(t):
-    original = library.get_builder
-    with mock.patch.object(old_library, "get_builder", _sentinel):
-        assert library.get_builder is _sentinel
-    assert library.get_builder is original
-    with mock.patch("sed_tools.filter_library.get_builder", _sentinel):
-        assert library.get_builder is _sentinel
-    assert library.get_builder is original
-
-
-@row
-def reloading_an_old_path_leaves_the_moved_module_as_it_was(t):
-    importlib.reload(old_tool)
-    assert old_tool.__name__ == "sed_tools.flux_cube_tool"
-    assert type(tool) is types.ModuleType
-    assert tool.__name__ == tool.__spec__.name == "sed_tools.cube.tool"
-    assert tool.__package__ == "sed_tools.cube"
-    t.mp.setattr(tool.Path, "rglob", lambda self, pattern: iter(()))  # search no folders
-    old_tool.discover_flux_cube_files([])  # its `from .model import` needs the moved module's own package
-
-
 @row
 def every_module_star_imports_and_keeps_its_recorded_names(t):
-    # Older code runs `from sed_tools.svo_filter_grabber import *`: it fails outright once a module's __all__
+    # Older code runs `from sed_tools.filters.svo import *`: it fails outright once a module's __all__
     # names something gone, and a dropped name breaks whoever used it. tests/star_imports.py records the
     # surface in tests/fixtures/star_imports.json (its docstring gives the one command); names may be added.
     # A module whose optional dependency is not installed is skipped. Run apart, so that importing every

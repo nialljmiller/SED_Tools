@@ -46,13 +46,13 @@ _BOOKKEEPING_AXES: Set[str] = {
     "url", "wave_grid", "columns", "res", "atmos",
     # teff, logg, meta variants used by various grabbers
     "t_eff", "log_g", "mh", "m_h", "feh",
-    # spectra_cleaner bookkeeping
+    # grids/clean.py bookkeeping
     "renormed",
     # common provenance / model-type labels
     "atmosphere", "model", "model_type", "grid", "library",
     # MAST BOSZ specific
     "vturb", "cm", "am",
-    # Provenance of a combined grid (combine_stellar_atm.save_combined_data) and of
+    # Provenance of a combined grid (cube/combine.py save_combined_data) and of
     # an ML-extended one (Completer.extend_catalog): they differ row to row, but
     # are not physical axes, so such a grid is one cube, not one per row.
     "source_model", "original_file", "extended_by_ml", "wl_min", "wl_max",

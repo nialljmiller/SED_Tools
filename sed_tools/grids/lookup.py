@@ -1,7 +1,4 @@
-"""lookup_table.csv: finding its columns, writing it, and rebuilding it from spectrum headers.
-
-The old import paths sed_tools._lookup_io and sed_tools.svo_regen_spectra_lookup forward here.
-"""
+"""lookup_table.csv: finding its columns, writing it, and rebuilding it from spectrum headers."""
 
 import csv
 import logging
@@ -21,8 +18,8 @@ _META_CANDIDATES  = ["metallicity", "meta", "feh", "[fe/h]", "[m/h]", "m/h", "m_
                      "z", "zh", "zmet", "z/z0", "z/zsun"]
 _FILE_CANDIDATES  = ["file_name", "filename", "file"]
 
-# The column finders and the writer have string annotations, so their signatures read as
-# sed_tools._lookup_io's always have; regenerate_lookup_table's stay evaluated (no future import).
+# The column finders and the writer have string annotations, so their signatures read as they always have;
+# regenerate_lookup_table's stay evaluated (no future import).
 
 
 def find_column(keys: "Iterable[str]", candidates: "List[str]") -> "Optional[str]":

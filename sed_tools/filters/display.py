@@ -202,7 +202,7 @@ def plot_curves(
 ):
     """Plot ``{key: (wavelength Å, transmission)}`` and return the matplotlib Axes.
 
-    ``colors`` defaults to :func:`~sed_tools.filter_colors.display_colors` of the
+    ``colors`` defaults to :func:`~sed_tools.filters.display.display_colors` of the
     curves given.  ``normalize`` is ``None`` (as tabulated), ``"peak"`` (or
     ``True``: maximum 1) or ``"area"`` (∫T dλ = 1, per Å).  ``vega`` is
     ``(wavelength Å, f_λ)``; it is drawn scaled to the tallest curve over the

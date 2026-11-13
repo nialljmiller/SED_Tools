@@ -1,5 +1,5 @@
 """CLI and ``python -m`` entry points: exit statuses and messages, the menus, pickers and prompts, the CLI
-without its optional packages, and every old module path's main().
+without its optional packages, and the flux cube tool's main().
 
 One test walks the tables below; each row runs isolated (support.Rows) and no row uses the network. Rows
 from ``python -m`` runs (MAINS, HELP) start in their own folder; menu and picker rows (MENUS) see an
@@ -25,12 +25,12 @@ import requests
 
 from sed_tools import cli
 from sed_tools.api import SED, Filters
-from sed_tools.filter_components import ComponentError
+from sed_tools.filters.compose import ComponentError
 
 from support import (CLEAN, GRABBERS, KURUCZ, answer, fake_grabber, filters_api, narrow_terminal, run_cli,
                      run_module, scenarios, wide_lines, write_flux_cube, write_lookup)
 
-# runpy warns that an old path imported earlier in the session is in sys.modules; python -m starts afresh.
+# runpy warns that a module imported earlier in the session is in sys.modules; python -m starts afresh.
 pytestmark = pytest.mark.filterwarnings("ignore:.*found in sys.modules after import of package:RuntimeWarning")
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -67,7 +67,7 @@ def availability(**extra):
 
 def summary_inputs(mp, info=None, catalogue=None):
     """Stub what the picker's summary reads (FilterLibrary.available, NJM's catalogue entry); return the calls."""
-    from sed_tools.filter_library import FilterLibrary
+    from sed_tools.filters.library import FilterLibrary
 
     calls = []
     mp.setattr(FilterLibrary, "available",
@@ -88,7 +88,7 @@ GAIA_INSTRUMENTS = [
 
 
 def _picker_library(t, facilities, instruments):
-    from sed_tools.filter_library import FilterLibrary
+    from sed_tools.filters.library import FilterLibrary
 
     t.mp.setattr(FilterLibrary, "facilities", lambda self: {"entries": facilities, "errors": []})
     t.mp.setattr(FilterLibrary, "instruments", lambda self, facility: {"entries": instruments, "errors": []})
@@ -100,7 +100,7 @@ def _picker_library(t, facilities, instruments):
 
 def gaia(t):
     """The filter pickers over GAIA and its instruments, NJM up; returns the sets fetched."""
-    from sed_tools.filter_library import FilterLibrary
+    from sed_tools.filters.library import FilterLibrary
 
     t.mp.setattr(FilterLibrary, "mirror", SimpleNamespace(is_available=lambda: True))
     return _picker_library(t, [{"key": "GAIA", "label": "GAIA", "fetch_key": "GAIA", "sources": ["njm", "svo"],
@@ -311,7 +311,7 @@ def rebuild_and_combine_raise_when_there_are_no_local_grids(t):
 
 def _filter_browser(t, listing_errors=None):
     """Facilities A and B with instruments Cam1 and Cam2; fetching B/Cam2 fails. Returns the sets fetched."""
-    from sed_tools.filter_library import FilterLibrary
+    from sed_tools.filters.library import FilterLibrary
 
     filters_api(t)
     t.mp.setattr(FilterLibrary, "facilities", lambda self: {
@@ -397,7 +397,7 @@ def _densify_calls(t):
     """densify_grid's calls, each checked to bind to its real signature; nothing is densified."""
     import inspect
 
-    module = importlib.import_module("sed_tools.grid_densifier")
+    module = importlib.import_module("sed_tools.cube.densify")
     signature = inspect.signature(module.densify_grid)
     calls = []
 
@@ -473,16 +473,16 @@ def sed_tools_mesa_prepare_exit_status_is_1_on_failure(t):
 
 
 # ----------------------------------------------------------------------
-# python -m <old path>: --help, a bad argument and a short run of every module with a main()
+# python -m <module>: --help, a bad argument and a short run of every module with a main()
 # ----------------------------------------------------------------------
 def _in_its_folder(t):
     """As ``python -m`` from a shell in the row's folder."""
     t.mp.chdir(t.tmp)
 
 
-#: Each old path with a main(), and its help's description.
+#: Each module with a main(), and its help's description.
 HELP = {
-    "flux_cube_tool": "Inspect and interpolate a flux cube",
+    "cube.tool": "Inspect and interpolate a flux cube",
 }
 
 
@@ -708,7 +708,7 @@ def composition_takes_a_typed_recipe(t):
 
 @menu_row
 def composable_bands_compose_in_memory(t):
-    import sed_tools.filter_components as fc
+    import sed_tools.filters.compose as fc
 
     manifest = SimpleNamespace(primary_bands=lambda: ["J", "Z"])
     t.mp.setattr(fc.InstrumentManifest, "load", classmethod(lambda cls, d: manifest))
@@ -869,7 +869,7 @@ def menu_3_shows_filters_info_for_a_picked_instrument(t):
 def _lsst(t, parts):
     """Facility LSST with instrument LSST, whose parts are ``parts`` and whose curves download to
     <tmp>/LSST/LSST; returns the compose calls."""
-    from sed_tools.filter_library import FilterLibrary
+    from sed_tools.filters.library import FilterLibrary
 
     _no_banner(t)
     for listing in ("facilities", "instruments"):
@@ -961,7 +961,7 @@ def _combine_refuses(t, argv, message):
 @menu_row
 def combine_prompt_has_a_space_and_refuses_an_input_name(t):
     built = _combine(t)
-    t.mp.setattr("sed_tools.combine_stellar_atm.select_models_interactive",
+    t.mp.setattr("sed_tools.cube.combine.select_models_interactive",
                  lambda dirs: [d for d in dirs if d[0] in ("Kurucz", "Phoenix")])
     answer(t.mp, "Kurucz")
     with pytest.raises(ValueError, match="The output grid Kurucz is also one of the grids to combine"):
@@ -1007,7 +1007,7 @@ def auto_training_takes_trials_and_epochs(t):
 @menu_row
 def the_picker_finds_an_instrument_installed_under_an_older_spelling(t):
     # 0.4.1 wrote Gemini/GMOS-N; NJM's name is GMOS_N. The picker must see the installed copy, not offer a second one.
-    from sed_tools.filter_library import FilterLibrary
+    from sed_tools.filters.library import FilterLibrary
 
     installed = t.tmp / "Gemini" / "GMOS-N"
     installed.mkdir(parents=True)
@@ -1308,9 +1308,10 @@ def downloading_several_facilities_asks_first_with_the_count(t):
 
 @menu_row
 def every_number_question_is_the_same_one(t):
-    from sed_tools import ml_sed_completer, ml_sed_generator, ui_utils
+    from sed_tools import ui_utils
+    from sed_tools.ml import completer, generator
 
-    assert cli._ask_number is ml_sed_generator._ask_number is ml_sed_completer._ask_number is ui_utils.ask_number
+    assert cli._ask_number is generator._ask_number is completer._ask_number is ui_utils.ask_number
 
 
 def _narrow(t, scenario):

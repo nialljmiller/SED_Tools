@@ -9,7 +9,7 @@ SED_Tools computes itself (ESO SkyCalc, :mod:`.skycalc`) are ``derived``.
 
 Site names follow ``<location>_<team>``, like the existing ``ctio_des`` and
 ``maunakea_hsc``.  Which instruments may use each site is registered in
-:data:`sed_tools.facility_sites._INSTRUMENT_SITES`; an atmosphere is never
+:data:`sed_tools.filters.sites._INSTRUMENT_SITES`; an atmosphere is never
 offered to an instrument at another location.
 
 Entries are stored as published (only wavelengths converted to Angstrom)

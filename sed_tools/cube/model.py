@@ -1,4 +1,4 @@
-"""The local spectral grids' flux cubes as SEDs: SED (sed_tools.models.SED) finds the installed grids that cover a
+"""The local spectral grids' flux cubes as SEDs: SED (sed_tools.cube.model.SED) finds the installed grids that cover a
 point or range, SEDModel interpolates one grid's flux_cube.bin, and EvaluatedSED gives photometry. sed_tools.SED
 (api/) is the public class built on them; "model" here means an atmosphere grid, not an ML model.
 """
@@ -320,7 +320,7 @@ class SEDModel:
 class SED:
     """The installed spectral grids under model_root: find the ones covering a point or range, and evaluate one.
 
-    sed_tools.SED (api/) wraps this class; it is importable as sed_tools.models.SED.
+    sed_tools.SED (api/) wraps this class.
     """
 
     def __init__(

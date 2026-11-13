@@ -3,7 +3,7 @@
 Also here: Completer, the 0.4.1 class over it that loads a model and extends a whole grid (extend_catalog), which
 api.MLCompleter uses; and the sed-tools menu.
 A model folder: model.pt, config.json (architecture, scalers, grid), training_plots.png and prediction_examples.png.
-Old import path sed_tools.ml_sed_completer; sed_tools.ml holds the 0.4.1 functions.
+sed_tools.ml holds the 0.4.1 functions.
 """
 
 import json

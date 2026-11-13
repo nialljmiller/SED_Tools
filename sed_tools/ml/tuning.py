@@ -1,4 +1,4 @@
-"""Hyperparameter search for the SED generator (``sed-tools ml_generator --auto``); old path sed_tools.ml_optimized.
+"""Hyperparameter search for the SED generator (``sed-tools ml_generator --auto``).
 
 Each optuna trial trains a SEDGenerator network briefly; the shape, dropout and learning rate with the lowest validation
 loss are then trained in full by SEDGenerator.train. Needs optuna: ``pip install 'sed-tools[ml-tune]'``.

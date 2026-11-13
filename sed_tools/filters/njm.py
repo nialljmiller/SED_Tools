@@ -448,7 +448,7 @@ class NJMFilterGrabber:
         (output_dir / output_dir.name).write_text(response.text, encoding="utf-8")
         return index_names(response.text)
 
-    # ---- Catalogue files (see sed_tools.filter_catalogue)
+    # ---- Catalogue files (see sed_tools.filters.njm_catalogue)
     CATALOGUE_FILES = ("properties.json", "info.json")
 
     def download_catalogue_files(self, facility: str, instrument: str) -> List[str]:
@@ -486,7 +486,7 @@ class NJMFilterGrabber:
             raise ValueError(f"not an NJM {name}")
         return content
 
-    # ---- Separable components (see sed_tools.filter_components)
+    # ---- Separable components (see sed_tools.filters.compose)
     def fetch_manifest(self, facility: str, instrument: str) -> Optional[Dict]:
         """Return the remote ``manifest.json`` for an instrument, or ``None`` when NJM serves none.
 

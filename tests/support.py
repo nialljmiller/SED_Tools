@@ -24,10 +24,10 @@ import numpy as np
 import pytest
 import requests
 
-from sed_tools.combine_filters import write_filter_index
 from sed_tools.component_sources._common import DerivedCurve, SiteAtmosphere
-from sed_tools.filter_components import TEAM
-from sed_tools.filter_metadata import PHOTON, write_filter_file
+from sed_tools.filters.combine import write_filter_index
+from sed_tools.filters.compose import TEAM
+from sed_tools.filters.curve_metadata import PHOTON, write_filter_file
 
 TESTS = Path(__file__).resolve().parent
 
@@ -109,10 +109,10 @@ def scenarios():
 
 def _reset_sources():
     """What a process knows about NJM and SVO is shared by its clients; each row starts as a new process."""
-    from sed_tools import njm_filter_grabber, svo_filter_grabber
+    from sed_tools.filters import njm, svo
 
-    njm_filter_grabber._STATE.reset()
-    svo_filter_grabber._STATE.reset()
+    njm._STATE.reset()
+    svo._STATE.reset()
 
 
 def _random_state():
@@ -336,7 +336,7 @@ def njm_grid(t):
     built once and shared, as the old module-scoped fixture was."""
     if "root" not in _NJM_GRID:
         from sed_tools.api import _build_flux_cube
-        from sed_tools.spectrum_io import build_h5_bundle
+        from sed_tools.grids.spectrum_io import build_h5_bundle
 
         root = t.tmp.parent / "njm_grid"
         served = root / "stellar_models" / GRID
@@ -351,7 +351,7 @@ def njm_grid(t):
 def njm_grids(t):
     """NJM serving :func:`njm_grid` to the spectra grabbers; returns the server."""
     server = GridServer(njm_grid(t))
-    t.mp.setattr("sed_tools.njm_spectra_grabber.requests.Session", server)
+    t.mp.setattr("sed_tools.grids.njm.requests.Session", server)
     return server
 
 
@@ -441,7 +441,7 @@ def cpu_torch(t):
     import matplotlib
 
     matplotlib.use("Agg")
-    import sed_tools.ml_utils as ml_utils
+    import sed_tools.ml.common as ml_utils
 
     t.mp.setattr(ml_utils, "get_device", lambda: torch.device("cpu"))
     t.mp.setattr(torch.cuda, "is_available", lambda: False)
@@ -466,7 +466,7 @@ def tiny_library(t):
 
 
 def fixed_completer(torch):
-    from sed_tools import ml_sed_completer as mc
+    from sed_tools.ml import completer as mc
 
     torch.manual_seed(0)
     completer = mc.SEDCompleter()
@@ -482,7 +482,7 @@ def fixed_completer(torch):
 
 
 def fixed_generator(torch):
-    from sed_tools import ml_sed_generator as mg
+    from sed_tools.ml import generator as mg
 
     torch.manual_seed(0)
     generator = mg.SEDGenerator()
@@ -502,10 +502,10 @@ def fixed_generator(torch):
 # CLI and API: grabbers and the filters API
 # ======================================================================
 GRABBERS = {
-    "njm": "sed_tools.njm_spectra_grabber.NJMSpectraGrabber",
-    "svo": "sed_tools.svo_spectra_grabber.SVOSpectraGrabber",
-    "msg": "sed_tools.msg_spectra_grabber.MSGSpectraGrabber",
-    "mast": "sed_tools.mast_spectra_grabber.MASTSpectraGrabber",
+    "njm": "sed_tools.grids.njm.NJMSpectraGrabber",
+    "svo": "sed_tools.grids.svo.SVOSpectraGrabber",
+    "msg": "sed_tools.grids.msg.MSGSpectraGrabber",
+    "mast": "sed_tools.grids.mast.MASTSpectraGrabber",
 }
 
 

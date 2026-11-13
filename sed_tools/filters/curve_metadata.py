@@ -50,7 +50,7 @@ weakest (:data:`DETECTOR_SOURCE_PRECEDENCE`):
 resolution of equal or higher precedence, with or without ``force``; a
 weaker resolution is reported in the result and not written.  Types set by
 SED_Tools' composition tools (``user`` overrides, ``composed`` products and
-``component`` files, see :mod:`sed_tools.filter_components`) are outside
+``component`` files, see :mod:`sed_tools.filters.compose`) are outside
 this order and are never replaced by an SVO resolution.
 
 A ``user`` type set on a curve in place (:mod:`sed_tools.filters.detector_edit`)
@@ -95,7 +95,7 @@ DETECTOR_SOURCE_PRECEDENCE = (SOURCE_ORIGINAL, SOURCE_INFERRED, SOURCE_SVO, SOUR
 
 HEADER_KEYS = (
     "FilterID", "DetectorType", "DetectorTypeSource", "WavelengthUnit",
-    # Component bookkeeping (see sed_tools.filter_components)
+    # Component bookkeeping (see sed_tools.filters.compose)
     "Role", "Components", "ComponentsSource", "Recipe", "Atmosphere", "Sources", "DetectorTypeOriginal",
     "DetectorTypeConversion",
 )

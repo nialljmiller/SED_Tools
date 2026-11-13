@@ -57,15 +57,15 @@ class FilterCatalogue:
     """Cached, read-only access to NJM's ``index.json``, ``properties.json`` and ``info.json``.
 
     ``index.json`` lists every facility, instrument and band.  ``properties.json``
-    holds the values computed from each curve by :mod:`sed_tools.filter_properties`
-    and :mod:`sed_tools.filter_colors` (pivot and other wavelengths, widths, zero
+    holds the values computed from each curve by :mod:`sed_tools.filters.properties`
+    and :mod:`sed_tools.filters.display` (pivot and other wavelengths, widths, zero
     points, AB−Vega, DisplayColor, ...).  ``info.json`` holds descriptions, the
     references to cite (with BibTeX where a service supplied it), the providers'
     requested acknowledgements, the licence and what SVO recorded about each band.
     Per-instrument files are fetched only for the instruments a search still
     needs, at most six at a time (NJM blocks bursts).
 
-    ``mirror`` is an :class:`~sed_tools.njm_filter_grabber.NJMFilterGrabber`, or a
+    ``mirror`` is an :class:`~sed_tools.filters.njm.NJMFilterGrabber`, or a
     callable returning one, so that nothing touches the network until it must.
     ``offline=True`` reads installed and cached copies only.
     """

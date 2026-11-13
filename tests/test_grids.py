@@ -22,17 +22,17 @@ import pytest
 import requests
 
 import sed_tools.config as config
-from sed_tools import cli, njm_filter_grabber
-from sed_tools import mast_spectra_grabber as mast, msg_spectra_grabber as msg, njm_spectra_grabber as njm
-from sed_tools import svo_spectra_grabber as svo
+from sed_tools import cli
 from sed_tools._constants import SIGMA, planck_flam
 from sed_tools.api import SED, _bundle_shortfall, _flux_cube_shortfall
-from sed_tools.models import _read_flux_cube_header
-from sed_tools.precompute_flux_cube import spectra_not_in_cube
-from sed_tools.spectra_cleaner import (FLUX_UNITS, clean_model_dir, clean_spectrum_file, detect_units_from_header,
-                                       rebuild_lookup_table, validate_converted_spectrum)
-from sed_tools.spectrum_io import read_text_spectrum
-from sed_tools.svo_regen_spectra_lookup import regenerate_lookup_table
+from sed_tools.cube.build import spectra_not_in_cube
+from sed_tools.cube.model import _read_flux_cube_header
+from sed_tools.filters import njm as filters_njm
+from sed_tools.grids import mast, msg, njm, svo
+from sed_tools.grids.clean import (FLUX_UNITS, clean_model_dir, clean_spectrum_file, detect_units_from_header,
+                                   rebuild_lookup_table, validate_converted_spectrum)
+from sed_tools.grids.lookup import regenerate_lookup_table
+from sed_tools.grids.spectrum_io import read_text_spectrum
 
 from support import (GRID, KURUCZ, NJM, Resp, Session, answer, copy_without_times, njm_grids, run_cli, scenarios,
                      write_flux_cube)
@@ -71,7 +71,7 @@ def _is_standardized(path):
 @row
 def terminal_coverage_reports_missing_representative_spectra(t):
     """A representative spectrum missing from disk used to be dropped silently."""
-    from sed_tools.grid_coverage import grid_coverage
+    from sed_tools.grids.coverage import grid_coverage
 
     (t.tmp / "cool.txt").write_text("# teff = 4000\n# logg = 3.0\n1000 1.0\n2000 2.0\n")
     (t.tmp / "lookup_table.csv").write_text(
@@ -87,7 +87,7 @@ def terminal_coverage_reports_missing_representative_spectra(t):
 @row
 def recovery_warns_about_unreadable_h5(t):
     """An unreadable .h5 used to be skipped with a DEBUG message only."""
-    from sed_tools.spectra_cleaner import recover_wavelengths_from_hdf5
+    from sed_tools.grids.clean import recover_wavelengths_from_hdf5
 
     (t.tmp / "broken.h5").write_bytes(b"not an hdf5 file")
     with t.caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
@@ -119,7 +119,7 @@ def clean_model_dir_records_unreadable_file_and_finishes_the_rest(t):
     _spectrum(t.tmp / "a.txt")
     (t.tmp / "b.txt").mkdir()  # matches *.txt but cannot be read as a file
     _spectrum(t.tmp / "c.txt")
-    t.mp.setattr("sed_tools.spectra_cleaner.random.sample", lambda files, n: [str(t.tmp / "a.txt")])
+    t.mp.setattr("sed_tools.grids.clean.random.sample", lambda files, n: [str(t.tmp / "a.txt")])
     with pytest.raises(RuntimeError, match=r"IsADirectoryError.*\(1\): b\.txt"):
         clean_model_dir(str(t.tmp), rebuild_lookup=False, sample_fraction=0.4)
     assert _is_standardized(t.tmp / "a.txt") and _is_standardized(t.tmp / "c.txt")
@@ -147,7 +147,7 @@ def clean_model_dir_stops_at_once_when_a_rewrite_fails(t):
         calls.append(filepath)
         raise OSError(28, "No space left on device")
 
-    t.mp.setattr("sed_tools.spectra_cleaner.write_standardized_spectrum", disk_full)
+    t.mp.setattr("sed_tools.grids.clean.write_standardized_spectrum", disk_full)
     with pytest.raises(RuntimeError, match=r"a\.txt.*only its new header"):
         clean_model_dir(str(t.tmp), sample_fraction=1.0)
     assert len(calls) == 1
@@ -161,7 +161,7 @@ def clean_model_dir_warns_when_units_come_from_each_file(t):
         _spectrum(t.tmp / f"raw_{i}.txt")
     done = t.tmp / "done.txt"
     done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
-    t.mp.setattr("sed_tools.spectra_cleaner.random.sample", lambda files, n: [str(done)])
+    t.mp.setattr("sed_tools.grids.clean.random.sample", lambda files, n: [str(done)])
     with t.caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
         summary = clean_model_dir(str(t.tmp), sample_fraction=0.1)
     assert len(summary["converted"]) == 9
@@ -190,7 +190,7 @@ def clean_model_dir_counts_renormed_spectra_as_converted_and_warns(t):
 @row
 def coverage_says_why_the_normality_test_was_skipped(t):
     """It said "scipy required" whenever the test was skipped, with scipy installed."""
-    from sed_tools.grid_coverage import coverage_summary, print_coverage
+    from sed_tools.grids.coverage import coverage_summary, print_coverage
 
     def grid(directory, teffs):
         directory.mkdir()
@@ -244,7 +244,7 @@ RECOVERED = {
 
 
 def _recovered(t, build, group, n, expected):
-    from sed_tools.spectra_cleaner import recover_wavelengths_from_hdf5
+    from sed_tools.grids.clean import recover_wavelengths_from_hdf5
 
     with h5py.File(t.tmp / "msg.h5", "w") as f:
         build(f)
@@ -305,7 +305,7 @@ def _terminal(t, *replies):
 
 @row
 def clean_model_dir_stops_on_an_undeclared_flux_unit_naming_the_best_guess(t):
-    from sed_tools.spectra_cleaner import undeclared_flux_unit
+    from sed_tools.grids.clean import undeclared_flux_unit
 
     grid = _grid(t.tmp / "Cool")
     before = _contents(grid)
@@ -358,7 +358,7 @@ def files_cleaned_one_by_one_without_a_declared_flux_unit_are_listed(t):
     grid = _grid(t.tmp / "Cool")
     done = grid / "done.txt"
     done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
-    t.mp.setattr("sed_tools.spectra_cleaner.random.sample", lambda files, n: [str(done)])
+    t.mp.setattr("sed_tools.grids.clean.random.sample", lambda files, n: [str(done)])
     with pytest.raises(RuntimeError, match=r"(?s)3 of 4 spectra .*Flux unit of this spectrum is not declared; "
                                            r"best guess: 'fnu_jy'.* \(3\): s0.txt, s1.txt, s2.txt"):
         clean_model_dir(str(grid), sample_fraction=0.1)
@@ -436,7 +436,7 @@ def _unknown_unit(t, how):
     (src / "declared.txt").write_text("# teff = 3500\n# flux_unit = erg/s/cm2/A\n3000 1.0\n4000 2.0\n")
     done = src / "done.txt"
     done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
-    t.mp.setattr("sed_tools.spectra_cleaner.random.sample", lambda files, n: [str(done)])  # no grid-wide units
+    t.mp.setattr("sed_tools.grids.clean.random.sample", lambda files, n: [str(done)])  # no grid-wide units
     before = _contents(src)
     t.mp.setattr("sed_tools.api.SED._download_from_first_source", lambda *a: pytest.fail("downloaded"))
     with pytest.raises(KeyError, match="Jy"):
@@ -693,7 +693,7 @@ def _outage(t, answers):
 def a_silent_spectra_outage_costs_one_connect_timeout(t):
     grabber, calls = _outage(t, {("GET", INDEX, True): requests.ConnectTimeout("t")})
     assert not grabber.is_available()
-    assert calls == [("GET", INDEX, True, (njm_filter_grabber.NJM_CONNECT_TIMEOUT, 10))]
+    assert calls == [("GET", INDEX, True, (filters_njm.NJM_CONNECT_TIMEOUT, 10))]
 
 
 @row
@@ -853,7 +853,7 @@ def svo_cannot_select_so_the_whole_grid_is_downloaded_then_cut(t):
                        _header(teff, units="# units_standardized = True\n"), (1000, 2000), ("1.0", "2.0"), "{} {}\n")
             return 3
 
-    t.mp.setattr("sed_tools.svo_spectra_grabber.SVOSpectraGrabber", SVO)
+    t.mp.setattr("sed_tools.grids.svo.SVOSpectraGrabber", SVO)
     with t.caplog.at_level(logging.WARNING, logger="sed_tools.api"):
         sed = SED.fetch("Grid", source="svo", model_root=t.tmp, teff_min=5500, teff_max=6500)
     assert [r.getMessage() for r in t.caplog.records] == [
@@ -1374,9 +1374,9 @@ def mast_download_accepts_generic_axis_kwargs(t):
         assert download_url == url
         return "1000 1.0\n2000 1.0\n3000 1.0\n4000 1.0\n"
 
-    t.mp.setattr("sed_tools.mast_spectra_grabber._gather_urls_from_scripts", lambda reskey, metals, session: [url])
-    t.mp.setattr("sed_tools.mast_spectra_grabber._try_wave_urls", lambda reskey, session: (None, None))
-    t.mp.setattr("sed_tools.mast_spectra_grabber._download_text_gz", fake_download_text_gz)
+    t.mp.setattr("sed_tools.grids.mast._gather_urls_from_scripts", lambda reskey, metals, session: [url])
+    t.mp.setattr("sed_tools.grids.mast._try_wave_urls", lambda reskey, session: (None, None))
+    t.mp.setattr("sed_tools.grids.mast._download_text_gz", fake_download_text_gz)
     n = mast.MASTSpectraGrabber(base_dir=str(t.tmp)).download_model_spectra(
         "BOSZ-2024-r1000", {"reskey": "r1000", "metals": ["m+0.00"]},
         teff_range=(5700, 5800), logg_range=(4.0, 5.0), meta_range=(-0.1, 0.1), wl_range=(1500, 3500))

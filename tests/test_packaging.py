@@ -47,9 +47,9 @@ _IMPORT_ALL = """
 import sys
 for name in {blocked!r}:
     sys.modules[name] = None  # importing it now raises ImportError
-import sed_tools, sed_tools.cli, sed_tools.ml, sed_tools.ml_sed_generator, sed_tools.grid_densifier
-import sed_tools.ml_sed_completer
-import sed_tools.combine_stellar_atm
+import sed_tools, sed_tools.cli, sed_tools.ml, sed_tools.ml.generator, sed_tools.cube.densify
+import sed_tools.ml.completer
+import sed_tools.cube.combine
 print(sorted(name for name in {optional!r} if sys.modules.get(name) is not None))
 """
 
@@ -70,7 +70,7 @@ import sys
 sys.modules["scipy"] = None  # every import of scipy or a scipy submodule now raises ImportError
 import numpy as np
 import sed_tools
-import sed_tools.combine_stellar_atm as combine
+import sed_tools.cube.combine as combine
 assert not [m for m, mod in sys.modules.items() if m.startswith("scipy") and mod is not None]
 try:
     combine._fill_gaps(np.zeros((1, 1, 1, 1)), np.ones((1, 1, 1), bool), np.zeros((1, 1, 1), int),

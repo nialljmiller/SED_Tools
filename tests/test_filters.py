@@ -29,35 +29,34 @@ import requests
 from astropy.io import ascii
 from numpy.testing import assert_allclose
 
-import sed_tools.filter_properties as fp
-from sed_tools import cli, filter_library, njm_filter_grabber, svo_filter_grabber
-from sed_tools import filter_metadata as fm
+import sed_tools.filters.properties as fp
+from sed_tools import cli
 from sed_tools.api import Filters
 from sed_tools.cli.filters import _fetch_instrument, review_detector_types
-from sed_tools.combine_filters import combine_filter_sets, write_filter_index
 from sed_tools.component_sources import catalog
-from sed_tools.component_sources.catalog import name_key
 from sed_tools.component_sources._common import DerivedCurve, SiteAtmosphere, write_site
-from sed_tools.filter_catalogue import CatalogueError, FilterCatalogue, cache_root, format_citations
-from sed_tools.filter_colors import display_colors, instrument_colors
-from sed_tools.filter_components import (ATMOSPHERE, FILTER, OPTICS, QE, AtmosphereGrid, AtmosphereSpec,
-                                         ComponentCoverageError, ComponentError, Curve, InstrumentManifest,
-                                         add_component, atmosphere_file, build_product, compose_band,
-                                         multiply_curves, parse_components, resolve_atmosphere)
-from sed_tools.filter_library import FilterLibrary, instrument_catalogue, load_instrument_catalogue
-from sed_tools.filter_metadata import (ENERGY, PHOTON, SOURCE_ASSUMED, SOURCE_INFERRED, SOURCE_SVO, SOURCE_SVO_MATCH,
-                                       SVOFilterRecord, SVOUnreachableError, format_metadata_field, has_column_row,
-                                       migrate_filter_file, migrate_filter_tree, normalize_detector_type,
-                                       read_filter_header, released_mesa_reads, tag_filter_file, tag_filter_tree,
-                                       write_filter_file, write_filter_header)
-from sed_tools.filter_properties import AB_JY, curve_properties, extinction_law, extinction_ratio, filter_properties
-from sed_tools.filters.compose import read_curve
+from sed_tools.component_sources.catalog import name_key
+from sed_tools.cube.tool import infer_unit_from_values, load_filter_curve, load_spectrum, load_two_column_file
+from sed_tools.filters import curve_metadata as fm, library as filters_library, njm as filters_njm, svo as filters_svo
+from sed_tools.filters.combine import combine_filter_sets, write_filter_index
+from sed_tools.filters.compose import (ATMOSPHERE, FILTER, OPTICS, QE, AtmosphereGrid, AtmosphereSpec,
+                                       ComponentCoverageError, ComponentError, Curve, InstrumentManifest, add_component,
+                                       atmosphere_file, build_product, compose_band, multiply_curves, parse_components,
+                                       read_curve, resolve_atmosphere)
+from sed_tools.filters.curve_metadata import (ENERGY, PHOTON, SOURCE_ASSUMED, SOURCE_INFERRED, SOURCE_SVO,
+                                              SOURCE_SVO_MATCH, SVOFilterRecord, SVOUnreachableError,
+                                              format_metadata_field, has_column_row, migrate_filter_file,
+                                              migrate_filter_tree, normalize_detector_type, read_filter_header,
+                                              released_mesa_reads, tag_filter_file, tag_filter_tree, write_filter_file,
+                                              write_filter_header)
+from sed_tools.filters.display import display_colors, instrument_colors
+from sed_tools.filters.library import FilterLibrary, instrument_catalogue, load_instrument_catalogue
 from sed_tools.filters.manifest import check_sets, set_problems
-from sed_tools.filters.njm import drop_unlisted_bands
-from sed_tools.filters.properties import load_vega, properties_record
-from sed_tools.flux_cube_tool import infer_unit_from_values, load_filter_curve, load_spectrum, load_two_column_file
-from sed_tools.njm_filter_grabber import NJMFilterGrabber, SetDownload
-from sed_tools.svo_filter_grabber import Facility, FilterRow, Instrument, SVOFilterBrowser
+from sed_tools.filters.njm import NJMFilterGrabber, SetDownload, drop_unlisted_bands
+from sed_tools.filters.njm_catalogue import CatalogueError, FilterCatalogue, cache_root, format_citations
+from sed_tools.filters.properties import (AB_JY, curve_properties, extinction_law, extinction_ratio, filter_properties,
+                                          load_vega, properties_record)
+from sed_tools.filters.svo import Facility, FilterRow, Instrument, SVOFilterBrowser
 from sed_tools.ui_utils import prompt_choice
 
 from support import (CURVE, NJM, STALE, WL, Resp, Session, answer, atmosphere_site, derived, gauss, njm_index,
@@ -115,9 +114,9 @@ def write_set(directory, bands, *, index=None, manifest_bands=None, archived=Non
 def njm_up(t, tags=False):
     """NJM answers, and its grabber neither pauses nor, unless ``tags``, tags the curves it saves."""
     t.mp.setattr(NJMFilterGrabber, "_check_availability", lambda self: True)
-    t.mp.setattr("sed_tools.njm_filter_grabber.time.sleep", lambda seconds: None)
+    t.mp.setattr("sed_tools.filters.njm.time.sleep", lambda seconds: None)
     if not tags:
-        t.mp.setattr("sed_tools.njm_filter_grabber.tag_filter_file", lambda *a, **k: None)
+        t.mp.setattr("sed_tools.filters.njm.tag_filter_file", lambda *a, **k: None)
 
 
 def njm_filters(t, root, files, tags=False):
@@ -158,7 +157,7 @@ def raising(exc):
 def bundled(t, catalogue=None):
     """Make ``catalogue`` {facility: {instrument: entry}} the instrument catalogue bundled with sed_tools."""
     facilities = {fac: {"instruments": insts} for fac, insts in (catalogue or {}).items()}
-    t.mp.setattr(filter_library, "load_instrument_catalogue", lambda: instrument_catalogue(facilities))
+    t.mp.setattr(filters_library, "load_instrument_catalogue", lambda: instrument_catalogue(facilities))
 
 
 DR2 = {"svo_instruments": ["GAIA/GAIA2"], "bands": ["BP", "G", "RP"],
@@ -471,7 +470,7 @@ def grabber_for(root, server):
 def njm_catalogue(t):
     """A filter root whose Filters catalogue asks an EtagNJM serving catalogue_files(); returns (root, njm)."""
     t.mp.setattr(NJMFilterGrabber, "_check_availability", lambda self: True)
-    t.mp.setattr("sed_tools.njm_filter_grabber.time", SimpleNamespace(sleep=lambda s: None))
+    t.mp.setattr("sed_tools.filters.njm.time", SimpleNamespace(sleep=lambda s: None))
     t.mp.setattr(Filters, "_catalogues", {})
     root, njm = t.tmp / "filters", EtagNJM(catalogue_files())
     root.mkdir()
@@ -1159,7 +1158,7 @@ def cli_reports_kept_types(t):
     wl, tr = [15000.0, 16000.0, 17000.0, 18000.0], [0.0, 0.9, 0.95, 0.0]
     before, path = naco_h(t.tmp, wl, tr, PHOTON, SOURCE_INFERRED)
     client = SVOClient({"Paranal/NACO.H_CONICA": svo_record("Paranal/NACO.H_CONICA", ENERGY, wl, tr)})
-    t.mp.setattr("sed_tools.filter_metadata.SVOMetadataClient", lambda *a, **k: client)
+    t.mp.setattr("sed_tools.filters.curve_metadata.SVOMetadataClient", lambda *a, **k: client)
     run_cli(t.mp, "filters-detector", str(t.tmp), "--force")
     out = t.capsys.readouterr().out
     assert "1 files, 0 changed" in out
@@ -1178,7 +1177,7 @@ TEST_INDEX = njm_index({"Test": {"Camera": {"filters": ["g", "r"], "detector_typ
 
 def njm_offline(t):
     """Every NJM client of the filter library finds NJM down (test_filter_library's autouse fixture)."""
-    t.mp.setattr(filter_library.NJMFilterGrabber, "_check_availability", lambda self: False)
+    t.mp.setattr(filters_library.NJMFilterGrabber, "_check_availability", lambda self: False)
 
 
 def _offline_then(t, scenario):
@@ -1235,7 +1234,7 @@ class BurstBlockedNJM:
 def blocked_grabber(t, session):
     """An NJMFilterGrabber on ``session`` whose waits are recorded, not waited; returns it and the waits."""
     delays = []
-    t.mp.setattr("sed_tools.njm_filter_grabber.time", SimpleNamespace(sleep=delays.append))
+    t.mp.setattr("sed_tools.filters.njm.time", SimpleNamespace(sleep=delays.append))
     grabber = NJMFilterGrabber(base_dir=str(t.tmp))  # its availability is patched off by the row's setup
     grabber.session = session
     return grabber, delays
@@ -1283,7 +1282,7 @@ def atmosphere_requires_pwv_when_grid_is_ambiguous(t):
 def skycalc_fallback_requests_only_the_instruments_site(t):
     instrument = with_site(components_camera(t.tmp / "filters", ground_based=True))
     library, calls = FilterLibrary(instrument.parent.parent), []
-    t.mp.setattr(filter_library, "get_builder", lambda name: lambda root, **kw: calls.append(kw) or skycalc_paranal(
+    t.mp.setattr(filters_library, "get_builder", lambda name: lambda root, **kw: calls.append(kw) or skycalc_paranal(
         library.atmosphere_root / "paranal"))
     library.compose(instrument, "filter", atmosphere={"airmass": 1.2, "pwv": 2.5})
     assert calls[0]["sites"] == ["paranal"]
@@ -1331,12 +1330,12 @@ def outages_and_refusals_are_still_reported_as_down(t):
     assert REAL_AVAILABILITY_CHECK(grabber) is False
     assert down.calls == [("HEAD", "")] and delays == []
 
-    njm_filter_grabber._STATE.reset()  # each case as in a new process: an outage pauses NJM process-wide
+    filters_njm._STATE.reset()  # each case as in a new process: an outage pauses NJM process-wide
     missing = BurstBlockedNJM({"index.json": TEST_INDEX}, head_status=404)
     grabber, delays = blocked_grabber(t, missing)
     assert REAL_AVAILABILITY_CHECK(grabber) is False and missing.calls == [("HEAD", "")]
 
-    njm_filter_grabber._STATE.reset()
+    filters_njm._STATE.reset()
     blocked = BurstBlockedNJM({"index.json": TEST_INDEX}, blocked=10)  # still blocked after the retries
     grabber, delays = blocked_grabber(t, blocked)
     assert REAL_AVAILABILITY_CHECK(grabber) is False
@@ -1375,7 +1374,7 @@ def original_source_failure_falls_back_to_svo(t):
         list_instruments=lambda f: [Instrument("Paranal", "HAWKI", "HAWKI")],
         list_filters=lambda f, i: [FilterRow("Paranal/HAWKI.J", "J", "Paranal", "HAWKI", "")],
         download_filters=download_svo)
-    t.mp.setattr(filter_library, "get_builder", lambda name: raising(requests.ConnectionError("ESO offline")))
+    t.mp.setattr(filters_library, "get_builder", lambda name: raising(requests.ConnectionError("ESO offline")))
     directory = t.tmp / "Paranal" / "HAWKI"
     directory.mkdir(parents=True)
     assert library.published("Paranal", "HAWKI") == directory
@@ -1620,7 +1619,7 @@ def library_rebuilds_a_missing_team_site(t):
         calls.append(kw)
         write_site(kw["atmosphere_root"], team_site("haleakala_ps1"), None)
 
-    t.mp.setattr(filter_library, "get_builder", lambda name: calls.append(name) or build)
+    t.mp.setattr(filters_library, "get_builder", lambda name: calls.append(name) or build)
     path = library.prepare_atmosphere(InstrumentManifest.load(inst), AtmosphereSpec(None, 1.2))
     assert path.name == "am1.20.dat"
     assert calls[0] == "team_atmospheres" and calls[1]["sites"] == ["haleakala_ps1"]
@@ -1832,7 +1831,7 @@ def unknown_components_header_is_reported(t):
     assert "Fac/Cam band g" in t.caplog.text and "'warp'" in t.caplog.text
 
 
-# njm_filter_grabber, on a stand-in session
+# filters/njm.py, on a stand-in session
 @default_svo_row
 def directory_listing_is_empty_only_when_nothing_is_there(t):
     grabber = njm_filters(t, t.tmp, {"filters/Fac/": '<a href="Cam/">Cam/</a>', "filters/Down/": 500}, tags=True)
@@ -1893,7 +1892,7 @@ def atmosphere_is_false_only_when_not_served(t):
 def svo_failure_while_checking_a_mirror_curve_keeps_the_curve(t):
     grabber = njm_filters(t, t.tmp, {"filters/Fac/Cam/Cam": "g.dat\n", "filters/Fac/Cam/g.dat": MIRROR_CURVE},
                           tags=True)
-    t.mp.setattr("sed_tools.njm_filter_grabber.tag_filter_file",
+    t.mp.setattr("sed_tools.filters.njm.tag_filter_file",
                  raising(fm.SVOUnreachableError("SVO Filter Profile Service unreachable")))
     with t.caplog.at_level(logging.WARNING):
         assert grabber.download_filters("Fac", "Cam") == 1
@@ -1902,7 +1901,7 @@ def svo_failure_while_checking_a_mirror_curve_keeps_the_curve(t):
             "(SVO Filter Profile Service unreachable)") in t.caplog.text
 
 
-# filter_library with NJM failures
+# filters/library.py with NJM failures
 @default_svo_row
 def njm_components_failure_does_not_discard_complete_curves(t):
     manifest = {"facility": "Fac", "instrument": "Cam", "bands": ["g"],
@@ -1938,7 +1937,7 @@ def njm_component_failure_is_reported_before_the_original_source(t):
     library = library_with(t.tmp, SimpleNamespace(is_available=lambda: True, download_components=raising(
         RuntimeError("1 component files of Fac/Cam were not downloaded"))))
     t.mp.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam"), catalog.BuilderRef("test"))
-    t.mp.setattr(filter_library, "get_builder", lambda name: lambda root, **kwargs: None)
+    t.mp.setattr(filters_library, "get_builder", lambda name: lambda root, **kwargs: None)
     with t.caplog.at_level(logging.WARNING):
         assert not library.prepare_components(directory, components="filter+qe")
     assert ("NJM cannot provide the components of Fac/Cam (1 component files of Fac/Cam were not downloaded); "
@@ -1949,7 +1948,7 @@ def njm_component_failure_is_reported_before_the_original_source(t):
 def njm_atmosphere_failure_is_reported_before_its_source(t):
     library = library_with(t.tmp / "filters", SimpleNamespace(download_atmosphere=raising(
         requests.HTTPError("502 for atmospheres/paranal/manifest.json"))))
-    t.mp.setattr(filter_library, "get_builder", lambda name: lambda root, **kwargs: skycalc_paranal(
+    t.mp.setattr(filters_library, "get_builder", lambda name: lambda root, **kwargs: skycalc_paranal(
         library.atmosphere_root / "paranal"))
     manifest = InstrumentManifest("Paranal", "Cam", ["g"], ground_based=True, default_site="paranal")
     with t.caplog.at_level(logging.WARNING):
@@ -2054,7 +2053,7 @@ def published_carries_every_source_reason(t):
         list_filters=lambda fac, inst: [FilterRow("Fac/Cam.g", "g", "Fac", "Cam", "")],
         download_filters=raising(fm.SVOUnreachableError("SVO Filter Profile Service unreachable"))))
     t.mp.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam"), catalog.BuilderRef("test", publishes=True))
-    t.mp.setattr(filter_library, "get_builder", lambda name: lambda root, **kwargs: None)
+    t.mp.setattr(filters_library, "get_builder", lambda name: lambda root, **kwargs: None)
     with t.caplog.at_level(logging.WARNING), pytest.raises(ComponentError) as info:
         library.published("Fac", "Cam")
     assert str(info.value) == ("No source can provide Fac/Cam: NJM: NJM download of Fac/Cam is incomplete; "
@@ -2195,7 +2194,7 @@ def a_builder_that_would_write_beside_an_installed_spelling_is_not_run(t):
     root = t.tmp / "filters"
     legacy = write_set(root / "Herschel" / "Pacs_", ["blue"], manifest_bands=["blue", "red"])  # incomplete
     library = library_with(root, NJM_DOWN, svo_stub({}, {}, down=True))
-    t.mp.setattr(filter_library, "get_builder", lambda name: pytest.fail("the builder was run"))
+    t.mp.setattr(filters_library, "get_builder", lambda name: pytest.fail("the builder was run"))
     with t.caplog.at_level(logging.WARNING), pytest.raises(ComponentError) as raised:
         library.published("Herschel", "PACS")
     assert f"its builder writes Herschel/PACS, which would be a second copy beside {legacy}" in str(raised.value)
@@ -2224,7 +2223,7 @@ def svo_that_does_not_answer_is_waited_for_once_per_process(t):
         calls.append(url)
         raise requests.ReadTimeout("read timed out")
 
-    t.mp.setattr(svo_filter_grabber, "svo_get", get)
+    t.mp.setattr(filters_svo, "svo_get", get)
     first = FilterLibrary(t.tmp / "a")
     errors = first.facilities()["errors"] + first.instruments("GAIA")["errors"]
     second = FilterLibrary(t.tmp / "b")  # another library, as Filters.fetch makes
@@ -2243,13 +2242,13 @@ def svo_that_does_not_answer_is_waited_for_once_per_process(t):
 @row
 def svo_is_asked_again_after_its_pause(t):
     clock = [1000.0]
-    t.mp.setattr(svo_filter_grabber, "monotonic", lambda: clock[0])
-    t.mp.setattr(svo_filter_grabber, "svo_get", raising(SVOUnreachableError("SVO Filter Profile Service unreachable.")))
+    t.mp.setattr(filters_svo, "monotonic", lambda: clock[0])
+    t.mp.setattr(filters_svo, "svo_get", raising(SVOUnreachableError("SVO Filter Profile Service unreachable.")))
     with pytest.raises(SVOUnreachableError):
         SVOFilterBrowser(base_dir=str(t.tmp)).list_facilities()
-    assert svo_filter_grabber.svo_unavailable()
-    clock[0] += svo_filter_grabber.SVO_PAUSE
-    assert svo_filter_grabber.svo_unavailable() is None
+    assert filters_svo.svo_unavailable()
+    clock[0] += filters_svo.SVO_PAUSE
+    assert filters_svo.svo_unavailable() is None
 
 
 # filters-info and filters-cite
@@ -2633,7 +2632,7 @@ class CountingSession:
 def grabbers_on_one_session(t, head, n=3):
     """``n`` grabbers made one after another, all on one CountingSession; returns (grabbers, session)."""
     session = CountingSession(head)
-    t.mp.setattr(njm_filter_grabber.requests, "Session", lambda: session)
+    t.mp.setattr(filters_njm.requests, "Session", lambda: session)
     return [NJMFilterGrabber(base_dir=str(t.tmp)) for _ in range(n)], session
 
 
@@ -2668,7 +2667,7 @@ def the_outage_is_checked_again_once_the_pause_expires(t):
     t.mp.setattr("sed_tools.njm_mirror.monotonic", lambda: clock[0])
     with t.caplog.at_level(logging.WARNING, logger="sed_tools.njm_filter_grabber"):
         _, session = grabbers_on_one_session(t, requests.ConnectionError("refused"), n=1)
-        clock[0] += njm_filter_grabber.NJM_PAUSE + 1
+        clock[0] += filters_njm.NJM_PAUSE + 1
         again = NJMFilterGrabber(base_dir=str(t.tmp))
     assert not again.is_available() and len(session.calls) == 2
     assert t.caplog.text.count("is unavailable (refused)") == 1  # still the same outage
@@ -2688,7 +2687,7 @@ def a_reachable_mirror_is_checked_once_and_its_ssl_fallback_is_kept(t):
         sessions.append(SimpleNamespace(headers={}, verify=True, head=head))
         return sessions[-1]
 
-    t.mp.setattr(njm_filter_grabber.requests, "Session", new_session)
+    t.mp.setattr(filters_njm.requests, "Session", new_session)
     with t.caplog.at_level(logging.WARNING, logger="sed_tools.njm_filter_grabber"):
         first = NJMFilterGrabber(base_dir=str(t.tmp))
         second = NJMFilterGrabber(base_dir=str(t.tmp))
@@ -2760,11 +2759,11 @@ def legacy_sources(t):
         "facilities": sorted(detailed), "facilities_detailed": detailed}})
     served, svo_down = Session(files, base=NJM), raising(RuntimeError("SVO is down (test)"))
     njm_up(t)
-    t.mp.setattr(njm_filter_grabber.requests, "Session", lambda: served)
-    t.mp.setattr(filter_library, "SVOFilterBrowser", lambda **kwargs: SimpleNamespace(
+    t.mp.setattr(filters_njm.requests, "Session", lambda: served)
+    t.mp.setattr(filters_library, "SVOFilterBrowser", lambda **kwargs: SimpleNamespace(
         list_facilities=svo_down, list_instruments=svo_down, list_filters=svo_down, download_filters=svo_down))
-    t.mp.setattr(filter_library, "get_builder", lambda name: pytest.fail(f"builder {name} was run"))
-    t.mp.setattr(filter_library, "load_instrument_catalogue", lambda: instrument_catalogue(detailed))
+    t.mp.setattr(filters_library, "get_builder", lambda name: pytest.fail(f"builder {name} was run"))
+    t.mp.setattr(filters_library, "load_instrument_catalogue", lambda: instrument_catalogue(detailed))
     t.mp.setattr(Filters, "_catalogues", {})
     t.mp.setenv("COLUMNS", "100")
     return t.tmp / "filters", served
@@ -2819,7 +2818,7 @@ def a_set_installed_under_an_old_spelling_is_used_as_it_is(t):
     # 0.4.1 saved SVO's Gemini/GMOS-N; NJM's spelling is GMOS_N. The installed set is used, offline.
     root, served = legacy_sources(t)
     old = put(root / "Gemini" / "GMOS-N", {"b.dat": FILTER_CURVE, "GMOS-N": "b.dat\n"})
-    filter_library.InstrumentManifest.from_published(old).save(old)
+    filters_library.InstrumentManifest.from_published(old).save(old)
     assert Filters.fetch("Gemini", "GMOS-N", filter_root=root) == old
     assert (Filters.compose("Gemini/GMOS-N", "filter", filter_root=root) / "b.dat").is_file()
     assert served.calls == []
@@ -2828,7 +2827,7 @@ def a_set_installed_under_an_old_spelling_is_used_as_it_is(t):
 @row
 def query_keeps_svo_spelling_beside_the_download_key(t):
     root, _ = legacy_sources(t)
-    t.mp.setattr(filter_library, "SVOFilterBrowser", lambda **kwargs: SimpleNamespace(
+    t.mp.setattr(filters_library, "SVOFilterBrowser", lambda **kwargs: SimpleNamespace(
         list_facilities=lambda: [Facility("PLANCK", "PLANCK", "Planck mission")]))
     t.mp.setattr(Filters, "_filter_root", root)
     for asked in ("PLANCK", "planck", "Planck"):
@@ -3070,7 +3069,7 @@ def compose_leaves_variants_to_the_sources_that_register_them(t):
 @row
 def no_index_json_is_fetched_for_the_record_while_njm_is_paused(t):
     made = njm_filters(t, t.tmp / "filters", fac_cam_set())
-    njm_filter_grabber.NJMFilterGrabber._pause("test outage", "NJM is down (test)")
+    filters_njm.NJMFilterGrabber._pause("test outage", "NJM is down (test)")
     with t.caplog.at_level(logging.WARNING):
         assert made._njm_record("Fac", "Cam") is None
     assert made.session.calls == [] and "Cannot read NJM's index.json" not in t.caplog.text
@@ -3085,7 +3084,7 @@ BUNDLED_AVAILABILITY = {"bundled_availability_leaves_the_detector_unknown_with_a
 def _bundled_availability(t, builder):
     bundled(t, {"GAIA": {"DR2": DR2}})
     if not builder:
-        t.mp.delitem(filter_library.BUILDERS_FOR, ("GAIA", "DR2"))
+        t.mp.delitem(filters_library.BUILDERS_FOR, ("GAIA", "DR2"))
     info = library_with(t.tmp / "filters", NJM_DOWN, svo_stub({}, {}, down=True)).available("GAIA", "DR2")
     assert info["availability_source"] == ("original" if builder else "unknown")
     # GAIA/DR2's builder writes photon-counting curves; this used to say energy, "unverified"
@@ -3588,7 +3587,7 @@ def _mirror_download(t, served):
     t.mp.setattr(NJMFilterGrabber, "_check_availability", lambda self: True)  # no network
     grabber = NJMFilterGrabber(base_dir=str(t.tmp))
     grabber._available, grabber._get, grabber.download_components = True, get, lambda facility, instrument: 0
-    t.mp.setattr("sed_tools.njm_filter_grabber.tag_filter_file", lambda path, **kw: tag_filter_file(
+    t.mp.setattr("sed_tools.filters.njm.tag_filter_file", lambda path, **kw: tag_filter_file(
         path, client=SimpleNamespace(get_filter=lambda fid: pytest.fail("no SVO lookup needed"))))
 
     assert grabber.download_filters("GAIA", "GAIA", ["G"]) == 1

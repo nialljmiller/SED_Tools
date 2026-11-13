@@ -1,7 +1,7 @@
 """SEDGenerator, the engine that makes a whole SED from (Teff, logg, [M/H]) alone, with no input spectrum.
 
 A model folder: model.pt, config.json (model_type 'sed_generator', scalers, grid, parameter ranges) and two plots.
-Old import path sed_tools.ml_sed_generator. The completer engine is ml/completer.py.
+The completer engine is ml/completer.py.
 """
 
 import json

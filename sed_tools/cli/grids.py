@@ -73,7 +73,7 @@ def run_rebuild_flow(
 ) -> None:
     """Clean each chosen local grid and rebuild its lookup table, HDF5 bundle and flux cube.
 
-    ``flux_unit`` (a ``spectra_cleaner.FLUX_UNITS`` name) is used for grids
+    ``flux_unit`` (a ``sed_tools.grids.units.FLUX_UNITS`` name) is used for grids
     whose spectra do not declare their flux unit; without it sed-tools asks.
     Every grid that can be rebuilt is; then RuntimeError lists each grid that
     could not be, and why.

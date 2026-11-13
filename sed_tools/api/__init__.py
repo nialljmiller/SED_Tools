@@ -471,7 +471,7 @@ class SED:
         model_root : str or Path, optional
             Base directory for spectral grids
         flux_unit : str, optional
-            The spectra's flux unit for cleaning (see spectra_cleaner.clean_model_dir);
+            The spectra's flux unit for cleaning (see grids.clean.clean_model_dir);
             required when their headers do not declare one, and never used
             in place of a declared unit.
 
@@ -741,7 +741,7 @@ class SED:
         build_h5 : build the HDF5 bundle.
         dry_run : only report how many files have parseable headers; do not copy.
         flux_unit : the spectra's flux unit for cleaning (see
-            spectra_cleaner.clean_model_dir); required when their headers do
+            grids.clean.clean_model_dir); required when their headers do
             not declare one, and never used in place of a declared unit.
 
         Returns a summary dict.  A spectrum that cleaning leaves unusable
@@ -800,7 +800,7 @@ class SED:
 
         Every grid named in ``catalogs`` is combined, including an earlier
         combine output; only discovery of "all" grids leaves those out
-        (see :mod:`sed_tools.combine_stellar_atm`).
+        (see :mod:`sed_tools.cube.combine`).
 
         Parameters
         ----------
