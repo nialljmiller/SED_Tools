@@ -1,11 +1,11 @@
 {
   "version": "1.0",
-  "generated": "2026-11-12T04:44:50.949568",
+  "generated": "2026-11-13T06:29:33.021903",
   "statistics": {
     "total_models": 8,
     "complete_models": 7,
     "total_spectra": 24625,
-    "total_size_bytes": 110708778338,
+    "total_size_bytes": 110716785489,
     "total_size_human": "103.11 GB",
     "total_facilities": 219,
     "total_filters": 12257
@@ -27,8 +27,8 @@
       "has_lookup_table": true,
       "has_h5_bundle": true,
       "spectra_count": 448,
-      "size_bytes": 57599089,
-      "size_human": "54.93 MB",
+      "size_bytes": 63522770,
+      "size_human": "60.58 MB",
       "manifest_passes": true
     },
     "Kurucz": {
@@ -37,8 +37,8 @@
       "has_lookup_table": true,
       "has_h5_bundle": true,
       "spectra_count": 3808,
-      "size_bytes": 282630619,
-      "size_human": "269.54 MB",
+      "size_bytes": 282858481,
+      "size_human": "269.75 MB",
       "manifest_passes": true
     },
     "Kurucz2003all": {
@@ -47,8 +47,8 @@
       "has_lookup_table": true,
       "has_h5_bundle": true,
       "spectra_count": 8092,
-      "size_bytes": 920213139,
-      "size_human": "877.58 MB",
+      "size_bytes": 920668779,
+      "size_human": "878.02 MB",
       "manifest_passes": true
     },
     "NextGen2": {
@@ -57,7 +57,7 @@
       "has_lookup_table": true,
       "has_h5_bundle": true,
       "spectra_count": 2712,
-      "size_bytes": 4024776947,
+      "size_bytes": 4024918258,
       "size_human": "3.75 GB",
       "manifest_passes": true
     },
@@ -67,8 +67,8 @@
       "has_lookup_table": true,
       "has_h5_bundle": true,
       "spectra_count": 588,
-      "size_bytes": 42284874,
-      "size_human": "40.33 MB",
+      "size_bytes": 42436305,
+      "size_human": "40.47 MB",
       "manifest_passes": true
     },
     "bt-cond": {
@@ -77,7 +77,7 @@
       "has_lookup_table": true,
       "has_h5_bundle": true,
       "spectra_count": 6028,
-      "size_bytes": 102631289521,
+      "size_bytes": 102631414951,
       "size_human": "95.58 GB",
       "manifest_passes": false
     },
@@ -87,7 +87,7 @@
       "has_lookup_table": true,
       "has_h5_bundle": true,
       "spectra_count": 1650,
-      "size_bytes": 1350290030,
+      "size_bytes": 1351142228,
       "size_human": "1.26 GB",
       "manifest_passes": true
     },
@@ -97,7 +97,7 @@
       "has_lookup_table": true,
       "has_h5_bundle": true,
       "spectra_count": 1299,
-      "size_bytes": 1399694119,
+      "size_bytes": 1399823717,
       "size_human": "1.30 GB",
       "manifest_passes": true
     }
