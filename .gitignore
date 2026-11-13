@@ -42,6 +42,7 @@ sed_bb_overlay.png
 rawcube_diag_*.png
 
 # server branch exceptions
+!data/bulk_download.php
 !data/counter.php
 !data/index.html
 !data/index.json
