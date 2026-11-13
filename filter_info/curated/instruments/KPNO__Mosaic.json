@@ -2,7 +2,7 @@
   "description": "NOIRLab lists full-size filters for the Mosaic imagers, including Harris B, V, and R, U, I, and SDSS i and r. KPNO copies were measured at NOAO, and the former CTIO Mosaic-2 filters are also at KPNO for Mosaic-1. Tabulated 4 m properties are for parallel light.",
   "short_description": "KPNO Mosaic imager filters: Harris, SDSS, BATC medium bands and more",
   "facility_description": "These Mosaic filters are catalogued for the Nicholas U. Mayall 4-meter Telescope at Kitt Peak National Observatory.",
-  "notes": "The Mosaic list is paginated. Harris B/R, I, and i SDSS were read on page=1 sorted by title; U, V Harris, and r SDSS on page=2. Each band has more than one physical filter (KPNO k-numbers and former CTIO c-numbers). The page says that as of 24 April 2012 all CTIO Mosaic-2 filters were transferred to KPNO for Mosaic-1, and that KPNO Mosaic filters were measured at NOAO. The NOIRLab Kitt Peak acknowledgement is for observations, not these curves, so it is not stored. The public copyright page does not place filter scans under CC BY 4.0 and does not say the work is a US government work, so redistribution is unknown. No magnitude system is stated. Fukugita 1996 is not cited: the table names the filters i SDSS and r SDSS but does not cite that paper. U (2026-11-12): the curve is NOIRLab's k1044, 'Us solid U k1044' (https://noirlab.edu/science/filters/kp1044), which NOIRLab lists separately from Mosaic's U filter k1001 (liquid CuSO4 + UG1; https://noirlab.edu/science/filters/kp1001-1). NJM also serves SVO's copies of k1001 (KPNO/Mosaic.U) and k1044 (KPNO/MOSAIC.U_solid); the band's SVO match now points at the k1044 record.",
+  "notes": "The Mosaic list is paginated. Harris B/R, I, and i SDSS were read on page=1 sorted by title; U, V Harris, and r SDSS on page=2. Each band has more than one physical filter (KPNO k-numbers and former CTIO c-numbers). The page says that as of 24 April 2012 all CTIO Mosaic-2 filters were transferred to KPNO for Mosaic-1, and that KPNO Mosaic filters were measured at NOAO. The NOIRLab Kitt Peak acknowledgement is for observations, not these curves, so it is not stored. The public copyright page does not place filter scans under CC BY 4.0 and does not say the work is a US government work, so redistribution is unknown. No magnitude system is stated. Fukugita 1996 is not cited: the table names the filters i SDSS and r SDSS but does not cite that paper. U (2026-11-12): the curve is NOIRLab's k1044, 'Us solid U k1044' (https://noirlab.edu/science/filters/kp1044), which NOIRLab lists separately from Mosaic's U filter k1001 (liquid CuSO4 + UG1; https://noirlab.edu/science/filters/kp1001-1). NJM also serves SVO's copies of k1001 (KPNO/Mosaic.U) and k1044 (KPNO/MOSAIC.U_solid); the band's SVO match now points at the k1044 record. Band U renamed Us (2026-11-13, decision P2): the curve is NOIRLab's k1044 'Us solid U', not Mosaic's U (k1001); the curve file, index, manifest and this record now call it Us, so MESA inlists that named KPNO/Mosaic U need Us.",
   "licence": {
     "redistribution": "unknown",
     "terms": "\"Also note that music, scientific papers, code, and text other than press releases, announcements, images of the week and captions on this site are not released under the Creative Commons Attribution 4.0 International License and can not be used for non-NOIRLab products.\"",
@@ -42,12 +42,6 @@
       "Band": "R Harris",
       "Comments": "Properties shown for the 4 m filters are for parallel light."
     },
-    "U": {
-      "Description": "Mosaic Us, the solid U filter k1044 (Barr interference filter; NOIRLab 'Us solid U k1044'), not Mosaic's U k1001 (liquid CuSO4 + UG1), which NOIRLab lists separately.",
-      "Band": "U",
-      "Comments": "Unlike most KPNO Mosaic filters, the U filter is not parfocal. All KPNO Mosaic filters were measured at NOAO.",
-      "svo_filterID": "KPNO/MOSAIC.U_solid"
-    },
     "I": {
       "Description": "Mosaic I filters. I c6028 is listed at 8050 Å with FWHM 1500 Å, and I Nearly-Mould k1005 at 8204.53 Å with FWHM 1914.59 Å.",
       "Band": "I",
@@ -64,6 +58,12 @@
       "Band": "r SDSS",
       "PhotSystem": "SDSS",
       "Comments": "Named r SDSS on the Mosaic filter table. Properties for the 4 m filters are for parallel light."
+    },
+    "Us": {
+      "Description": "Mosaic Us, the solid U filter k1044 (Barr interference filter; NOIRLab 'Us solid U k1044'), not Mosaic's U k1001 (liquid CuSO4 + UG1), which NOIRLab lists separately.",
+      "Band": "Us",
+      "Comments": "Unlike most KPNO Mosaic filters, the U filter is not parfocal. All KPNO Mosaic filters were measured at NOAO.",
+      "svo_filterID": "KPNO/MOSAIC.U_solid"
     }
   }
 }
