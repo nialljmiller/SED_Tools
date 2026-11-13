@@ -348,7 +348,7 @@ def deimos(fetch: Fetcher) -> Instrument:
 # ====================================================================== KPNO
 KPNO_DOCS = "https://noirlab.edu/science/sites/default/files/media/archives/documents/"
 KPNO_FILTERS = {  # band: (k number, file, regex the "Filter:" header line must match)
-    "U": (1044, "k1044bp.txt", r"MOSA USOLID"),
+    "Us": (1044, "k1044bp.txt", r"MOSA USOLID"),
     "B": (1002, "k1002bp_jul04.txt", r"Filter: K1002\b"),
     "V": (1003, "k1003bp_jul04.txt", r"Filter: K1003\b"),
     "R": (1004, "k1004bp_aug04.txt", r"Filter: K1004\b"),
