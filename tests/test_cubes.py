@@ -485,39 +485,44 @@ def combine_raises_after_writing_when_a_copy_fails(t):
     assert (models / "combined" / "lookup_table.csv").exists()
 
 
-def _planck_grid(t, name, nodes, scale=1.0):
-    """A grid of pi*B_lambda spectra at the (Teff, log g, [M/H]) nodes, ``scale`` times their own flux in the files."""
+def _planck_grid(t, name, nodes, scale=1.0, columns=("teff", "logg", "metallicity")):
+    """A grid of pi*B_lambda spectra, ``scale`` times their own flux in the files, at ``nodes``: one tuple of values per
+    spectrum, for the lookup ``columns`` (Teff first)."""
     folder = t.tmp / "models" / name
     folder.mkdir(parents=True)
     wl = np.geomspace(1000.0, 3.0e5, 2000)
-    rows = ["#file_name,teff,logg,metallicity"]
-    for i, (teff, logg, meta) in enumerate(nodes):
-        np.savetxt(folder / f"s{i}.txt", np.column_stack([wl, scale * _constants.planck_flam(wl, teff)]))
-        rows.append(f"s{i}.txt,{teff},{logg},{meta}")
+    rows = ["#file_name," + ",".join(columns)]
+    for i, values in enumerate(nodes):
+        np.savetxt(folder / f"s{i}.txt", np.column_stack([wl, scale * _constants.planck_flam(wl, values[0])]))
+        rows.append(f"s{i}.txt," + ",".join(str(v) for v in values))
     (folder / "lookup_table.csv").write_text("\n".join(rows) + "\n")
 
 
-def _nodes_over_their_own_spectra(t, grids):
-    """Combine ``grids``; {(Teff, log g, [M/H]): the node's integral over its own spectrum's} for every node a spectrum
-    fills. The combine guard: its own spectrum is the last row of the combined lookup table at the node (later grids
-    overwrite earlier ones), read from the combined folder's copy and resampled onto the cube's wavelengths as the
-    cube is built; every ratio must be within 1 % of 1 (NJM's check 4 on every served grid)."""
+def _combined_cubes(t, grids):
+    """Combine ``grids`` into models/combined: {cube folder: {(Teff, log g, [M/H]) of each lookup row: the node's
+    integral over that row's spectrum's}}. The combine guard: each folder's lookup table has one row per node a
+    spectrum fills, and that node holds the row's spectrum (the combined folder's copy, resampled onto the cube's
+    wavelengths as the cube is built) to 1 %, as NJM's check 4 requires of every served grid."""
     from sed_tools.api import SED
     from sed_tools.cube import fileio
     from sed_tools.grids.spectrum_io import read_text_spectrum
 
     np.random.seed(0)
     SED.combine(grids, output="combined", model_root=t.tmp / "models", visualization=False)
-    folder = t.tmp / "models" / "combined"
-    teff, logg, meta, wl, flux = fileio.load(folder / "flux_cube.bin")
-    rows = [line.split(",") for line in (folder / "lookup_table.csv").read_text().splitlines()[1:]]
-    own = {(float(r[1]), float(r[2]), float(r[3])): r[0] for r in rows}
-    ratios = {}
-    for node, file_name in own.items():
-        it, il, im = (int(np.argmin(np.abs(axis - value))) for axis, value in zip((teff, logg, meta), node))
-        own_flux = resample_to_grid(*read_text_spectrum(folder / file_name), wl)
-        ratios[node] = np.trapezoid(flux[:, im, il, it], wl) / np.trapezoid(own_flux, wl)
-    return ratios
+    cubes = {}
+    for folder in (p.parent for p in sorted((t.tmp / "models" / "combined").rglob("flux_cube.bin"))):
+        teff, logg, meta, wl, flux = fileio.load(folder / "flux_cube.bin")
+        rows = [line.split(",") for line in (folder / "lookup_table.csv").read_text().splitlines()[1:]]
+        nodes = [(float(r[1]), float(r[2]), float(r[3])) for r in rows]
+        assert len(set(nodes)) == len(nodes), f"{folder}: two lookup rows at one node"
+        ratios = {}
+        for node, row in zip(nodes, rows):
+            it, il, im = (int(np.argmin(np.abs(axis - value))) for axis, value in zip((teff, logg, meta), node))
+            own_flux = resample_to_grid(*read_text_spectrum(folder / row[0]), wl)
+            ratios[node] = np.trapezoid(flux[:, im, il, it], wl) / np.trapezoid(own_flux, wl)
+        assert all(abs(r - 1) <= 0.01 for r in ratios.values()), (folder, ratios)
+        cubes[folder.name] = ratios
+    return cubes
 
 
 @row
@@ -526,8 +531,21 @@ def combined_cube_nodes_hold_their_own_spectra(t):
     # 3500 and 3600 K nodes held 0.00055 and 0.00048 of their own flux, scaled to the 800 K blackbody's.
     _planck_grid(t, "cool", [(800.0, 4.5, 0.0), (900.0, 4.5, 0.0)])
     _planck_grid(t, "warm", [(3500.0, 4.5, 0.0), (3600.0, 4.5, 0.0)])
-    ratios = _nodes_over_their_own_spectra(t, ["cool", "warm"])
-    assert len(ratios) == 4 and all(abs(r - 1) <= 0.01 for r in ratios.values()), ratios
+    assert [len(ratios) for ratios in _combined_cubes(t, ["cool", "warm"]).values()] == [4]
+
+
+@row
+def combine_places_a_grid_without_log_g_at_every_log_g(t):
+    # A grid without log g or [M/H] (a blackbody) used to be placed at log g 0 and [M/H] 0, as stars of that log g.
+    # It holds the same spectrum at every log g, so it fills every value the other grids give the axis, except
+    # where a spectrum placed by its own log g is: the stars keep 5000 K, though the blackbodies are named later.
+    _planck_grid(t, "stars", [(5000.0, 4.0, 0.0), (5000.0, 4.5, 0.0), (6000.0, 4.0, 0.0), (6000.0, 4.5, 0.0)])
+    _planck_grid(t, "bb", [(5000.0,), (7000.0,)], scale=2.0, columns=("teff",))
+    [ratios] = _combined_cubes(t, ["stars", "bb"]).values()
+    assert sorted(ratios) == [(teff, logg, 0.0) for teff in (5000.0, 6000.0, 7000.0) for logg in (4.0, 4.5)]
+    lookup = (t.tmp / "models" / "combined" / "lookup_table.csv").read_text().splitlines()
+    assert [line.split(",")[4] for line in lookup[1:]] == ["stars"] * 4 + ["bb"] * 2
+    assert lookup[-2:] == ["bb_000005.txt,7000.0,4.0,0.0,bb,s1.txt", "bb_000005.txt,7000.0,4.5,0.0,bb,s1.txt"]
 
 
 @row
@@ -536,8 +554,7 @@ def combine_keeps_each_grids_flux_at_shared_nodes(t):
     # flux here: combine is not a calibration step, so the second grid's 3 % stays.
     _planck_grid(t, "a", [(5000.0, 4.5, 0.0), (5500.0, 4.5, 0.0), (6000.0, 4.5, 0.0)])
     _planck_grid(t, "b", [(5000.0, 4.5, 0.0), (5500.0, 4.5, 0.0)], scale=1.03)
-    ratios = _nodes_over_their_own_spectra(t, ["a", "b"])
-    assert len(ratios) == 3 and all(abs(r - 1) <= 0.01 for r in ratios.values()), ratios
+    assert [len(ratios) for ratios in _combined_cubes(t, ["a", "b"]).values()] == [3]
     lookup = (t.tmp / "models" / "combined" / "lookup_table.csv").read_text()
     assert "b_000003.txt,5000.0,4.5,0.0,b,s0.txt" in lookup  # the shared nodes are b's, 3 % brighter than a's
 
@@ -977,23 +994,24 @@ def find_stellar_models_leaves_out_earlier_combine_outputs(t):
 
 @row
 def non_interactive_combine_does_not_fold_in_the_previous_output(t):
-    # The second run used to combine Kurucz2003all, Kurucz2003all__alpha_04 and combined_models: 48 spectra,
-    # each of the 24 twice.
+    # The second run used to combine the two grids and combined_models: each spectrum twice.
     import matplotlib
     import pandas as pd
 
     from sed_tools.cli import run_combine_flow
 
     matplotlib.use("Agg")
-    two_grids = _golden_pair(t)
+    _planck_grid(t, "a", [(5000.0, 4.5, 0.0), (5500.0, 4.5, 0.0), (6000.0, 4.5, 0.0)])
+    _planck_grid(t, "b", [(7000.0, 4.5, 0.0), (7500.0, 4.5, 0.0)])
+    two_grids = t.tmp / "models"
     np.random.seed(0)
     run_combine_flow(str(two_grids), interactive=False)
     run_combine_flow(str(two_grids), output_name="combined2", interactive=False)
     out = t.capsys.readouterr().out
     assert "Selected 2 spectral grids to combine:" in out and "- combined_models" not in out
     lookup = pd.read_csv(two_grids / "combined2" / "lookup_table.csv")
-    assert len(lookup) == 24
-    assert set(lookup["source_model"]) == {"Kurucz2003all", "Kurucz2003all__alpha_04"}
+    assert len(lookup) == 5
+    assert set(lookup["source_model"]) == {"a", "b"}
 
 
 @row

@@ -1,9 +1,13 @@
 """Combine several stellar spectral grids into one grid folder with a unified flux cube.
+Each spectrum keeps the flux in its file. A grid that does not state log g or [M/H] (a blackbody grid) holds the
+same spectrum at every value of that axis, so its spectra are copied to every value the other grids give it; where
+spectra meet at a node, the one placed by more of its grid's own values wins, then the grid named later.
 :func:`find_stellar_models` leaves out earlier combine outputs, so combining "all" never folds their copies
 back in: a grid whose lookup table has the ``source_model`` and ``original_file`` columns (only
 :func:`save_combined_data` writes them), or whose folder is ``combined_models``. One named explicitly is combined.
 """
 
+import itertools
 import os
 import shutil
 
@@ -103,7 +107,8 @@ def select_models_interactive(model_dirs):
 
 
 def load_model_data(model_path):
-    """Load lookup table and extract parameter information."""
+    """The grid's lookup table: ``files``, ``teff``, ``logg`` and ``meta``, ``model_dir``, and ``unstated``, the axes
+    (logg, meta) it has no column for, which read as NaN. Raises ValueError for a table without a Teff column."""
     lookup_file = os.path.join(model_path, "lookup_table.csv")
 
     with open(lookup_file, "r") as f:
@@ -115,12 +120,16 @@ def load_model_data(model_path):
     file_col = columns[0]
     teff_col, logg_col, meta_col = (find_teff_column(columns), find_logg_column(columns),
                                     find_metallicity_column(columns))
+    if teff_col is None:
+        raise ValueError(f"{lookup_file} has no Teff column (teff, t_eff, temperature or temp); "
+                         "a grid cannot be combined without it.")
     return {
         "files": df[file_col].values,
-        "teff": df[teff_col].values if teff_col else np.zeros(len(df)),
-        "logg": df[logg_col].values if logg_col else np.zeros(len(df)),
-        "meta": df[meta_col].values if meta_col else np.zeros(len(df)),
+        "teff": df[teff_col].values,
+        "logg": df[logg_col].values if logg_col else np.full(len(df), np.nan),
+        "meta": df[meta_col].values if meta_col else np.full(len(df), np.nan),
         "model_dir": model_path,
+        "unstated": {axis for axis, col in (("logg", logg_col), ("meta", meta_col)) if col is None},
     }
 
 
@@ -137,9 +146,11 @@ def prepare_sed(filepath):
 
 
 def create_unified_grid(all_models_data):
-    """Create unified parameter grids from all spectral grids."""
+    """Create unified parameter grids from all spectral grids: each axis holds the values of the grids that state
+    it, or 0.0 alone when none does (a lone blackbody grid's log g and [M/H], as the cube builder reads them)."""
     def clean_grid(key, tol):
-        grid = np.unique(np.sort(np.concatenate([d[key] for d in all_models_data])))
+        stated = [d[key] for d in all_models_data if key not in d.get("unstated", ())]
+        grid = np.unique(np.sort(np.concatenate(stated))) if stated else np.array([0.0])
         if len(grid) <= 1:
             return grid
         cleaned = [grid[0]]
@@ -199,11 +210,43 @@ def create_common_wavelength_grid(all_models_data, sample_size=20):
     return wavelength_grid
 
 
+def _placements(all_models_data, teff_grid, logg_grid, meta_grid):
+    """``(placed, failed)``: placed is {node index: (grid, row)}, the spectrum that fills each node; failed is
+    {(grid, row): why} for every row with a non-finite value of an axis its grid states.
+
+    A spectrum goes to its own Teff, and to its own log g and [M/H] where its grid states them, else to every value
+    of that axis ("any value": a blackbody is the same at every log g). Where spectra meet at a node, the one placed
+    by more of its grid's own values (``_rank``) wins, and between equals the grid named later.
+    """
+    placed, ranks, failed = {}, {}, {}
+    for g, data in enumerate(all_models_data):
+        unstated = data.get("unstated", set())
+        rank = _rank(data)
+        for i, (file, teff, logg, meta) in enumerate(zip(data["files"], data["teff"], data["logg"], data["meta"])):
+            stated = [teff] + [value for axis, value in (("logg", logg), ("meta", meta)) if axis not in unstated]
+            if not np.all(np.isfinite(stated)):
+                failed[g, i] = (f"{os.path.join(data['model_dir'], file)}: non-finite parameters "
+                                f"(teff={teff}, logg={logg}, meta={meta})")
+                continue
+            axes = ([_nearest_idx(teff_grid, teff)],
+                    range(len(logg_grid)) if "logg" in unstated else [_nearest_idx(logg_grid, logg)],
+                    range(len(meta_grid)) if "meta" in unstated else [_nearest_idx(meta_grid, meta)])
+            for node in itertools.product(*axes):
+                if rank >= ranks.get(node, -1):
+                    placed[node], ranks[node] = (g, i), rank
+    return placed, failed
+
+
+def _rank(data):
+    """How many of the combined axes a grid states besides Teff: log g, [M/H] and its extra axes."""
+    return 2 - len(data.get("unstated", ())) + len(data.get("extra", {}))
+
+
 def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid):
     """Build the combined flux cube from all spectral grids.
 
     Each spectrum keeps the absolute flux in its file (the cleaner ties it to the spectrum's own sigma T^4): no
-    spectrum is scaled to another grid's. Later grids overwrite earlier ones at shared nodes. Raises ValueError,
+    spectrum is scaled to another grid's. Each fills the nodes :func:`_placements` gives it. Raises ValueError,
     before anything is written, listing every spectrum that cannot be read or has non-finite parameters.
     """
     n_teff, n_logg, n_meta, n_lambda = len(teff_grid), len(logg_grid), len(meta_grid), len(wavelength_grid)
@@ -215,30 +258,31 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
     print(f"\nBuilding flux cube: {flux_cube.shape}")
     print(f"Memory: {flux_cube.nbytes / (1024**2):.1f} MB")
 
-    # Fill the cube; later grids overwrite earlier ones at shared nodes
-    failures = []
+    placed, failed = _placements(all_models_data, teff_grid, logg_grid, meta_grid)
+    failures = list(failed.values())
+    nodes_of = {}
+    for node, spectrum in placed.items():
+        nodes_of.setdefault(spectrum, []).append(node)
+
     for model_idx, model_data in enumerate(all_models_data):
         model_name = os.path.basename(model_data["model_dir"])
         print(f"\nProcessing {model_name}...")
-
-        rows = zip(model_data["files"], model_data["teff"], model_data["logg"], model_data["meta"])
-        for file, teff, logg, meta in tqdm(rows, total=len(model_data["files"]),
-                                           desc=f"Spectral grid {model_idx + 1}"):
-            filepath = os.path.join(model_data["model_dir"], file)
-            if not all(np.isfinite([teff, logg, meta])):
-                failures.append(f"{filepath}: non-finite parameters "
-                                f"(teff={teff}, logg={logg}, meta={meta})")
+        for i, file in enumerate(tqdm(model_data["files"], desc=f"Spectral grid {model_idx + 1}")):
+            if (model_idx, i) in failed:
                 continue
+            filepath = os.path.join(model_data["model_dir"], file)
             try:
-                wl, fl = prepare_sed(filepath)
+                wl, fl = prepare_sed(filepath)  # every spectrum is read, so every unreadable one is listed
             except (OSError, ValueError) as exc:
                 failures.append(str(exc))
                 continue
-
-            node = (_nearest_idx(teff_grid, teff), _nearest_idx(logg_grid, logg), _nearest_idx(meta_grid, meta))
-            flux_cube[node] = resample_to_grid(wl, fl, wavelength_grid)
-            filled_map[node] = True
-            source_map[node] = model_idx
+            nodes = nodes_of.get((model_idx, i), [])
+            if nodes:
+                resampled = resample_to_grid(wl, fl, wavelength_grid)
+                for node in nodes:
+                    flux_cube[node] = resampled
+                    filled_map[node] = True
+                    source_map[node] = model_idx
 
     if failures:
         raise ValueError(
@@ -278,10 +322,12 @@ def _fill_gaps(flux_cube, filled_map, source_map, teff_grid, logg_grid, meta_gri
 
 def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
                        wavelength_grid, flux_cube, all_models_data):
-    """Save the combined data and create unified lookup table.
+    """Save the combined flux cube, a copy of every spectrum, and the lookup table of the cube's filled nodes.
 
-    A spectrum already present in output_dir under its new name is not copied
-    again. Raises OSError after writing the lookup table if any copy failed.
+    The lookup table has one row per node a spectrum fills (:func:`_placements`), at the spectrum's own values and,
+    for an axis its grid does not state, the node's; so a copied spectrum has a row at each of its nodes, and a
+    spectrum that fills no node has none. A spectrum already present in output_dir under its new name is not
+    copied again. Raises OSError after writing the lookup table if any copy failed.
     """
     os.makedirs(output_dir, exist_ok=True)
 
@@ -293,33 +339,11 @@ def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
 
     print(f"\nSaved flux cube: {binary_file}")
 
-    print("\nCopying SED files...")
-    lookup_data = []
-    file_counter = 0
-    copy_failures = []
-
-    for model_data in tqdm(all_models_data, desc="Copying"):
-        model_name = os.path.basename(model_data["model_dir"])
-        for orig_file, teff, logg, meta in zip(model_data["files"], model_data["teff"], model_data["logg"],
-                                               model_data["meta"]):
-            new_filename = f"{model_name}_{file_counter:06d}.txt"
-            lookup_data.append({"file_name": new_filename, "teff": teff, "logg": logg, "meta": meta,
-                                "source_model": model_name, "original_file": orig_file})
-
-            src_path = os.path.join(model_data["model_dir"], orig_file)
-            dst_path = os.path.join(output_dir, new_filename)
-            if not os.path.exists(dst_path):
-                try:
-                    shutil.copy2(src_path, dst_path)
-                except OSError as exc:
-                    copy_failures.append(f"{src_path}: {exc}")
-
-            file_counter += 1
-
-    lookup_df = pd.DataFrame(lookup_data)
+    names, copy_failures = _copy_spectra(output_dir, all_models_data)
+    lookup_df = _lookup_rows(all_models_data, (teff_grid, logg_grid, meta_grid), names)
     lookup_file = os.path.join(output_dir, "lookup_table.csv")
     with open(lookup_file, "w") as f:
-        f.write("#file_name,teff,logg,meta,source_model,original_file\n")
+        f.write("#" + ",".join(lookup_df.columns) + "\n")
         lookup_df.to_csv(f, index=False, header=False)
 
     print(f"Saved lookup table: {lookup_file}")
@@ -332,6 +356,46 @@ def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
             "(copies already made are kept):\n  " + "\n  ".join(copy_failures)
         )
     return lookup_df
+
+
+def _copy_spectra(output_dir, all_models_data):
+    """Copy every spectrum into output_dir as <grid>_<n>.txt, numbered through all grids in order:
+    ({(grid, row): new name}, the copies that failed)."""
+    print("\nCopying SED files...")
+    names, failures = {}, []
+    counter = 0
+    for g, model_data in enumerate(tqdm(all_models_data, desc="Copying")):
+        model_name = os.path.basename(model_data["model_dir"])
+        for i, orig_file in enumerate(model_data["files"]):
+            names[g, i] = f"{model_name}_{counter:06d}.txt"
+            src_path = os.path.join(model_data["model_dir"], orig_file)
+            dst_path = os.path.join(output_dir, names[g, i])
+            if not os.path.exists(dst_path):
+                try:
+                    shutil.copy2(src_path, dst_path)
+                except OSError as exc:
+                    failures.append(f"{src_path}: {exc}")
+            counter += 1
+    return names, failures
+
+
+def _lookup_rows(all_models_data, grids, names):
+    """The combined lookup table: a row per filled node, in grid and row order (see :func:`save_combined_data`)."""
+    placed, _ = _placements(all_models_data, *grids)
+    nodes_of = {}
+    for node, spectrum in sorted(placed.items()):
+        nodes_of.setdefault(spectrum, []).append(node)
+    rows = []
+    for g, model_data in enumerate(all_models_data):
+        model_name = os.path.basename(model_data["model_dir"])
+        unstated = model_data.get("unstated", set())
+        for i, orig_file in enumerate(model_data["files"]):
+            for node in nodes_of.get((g, i), []):
+                values = {axis: grid[k] if axis in unstated else model_data[axis][i]
+                          for axis, grid, k in zip(("teff", "logg", "meta"), grids, node)}
+                rows.append({"file_name": names[g, i], **values, "source_model": model_name,
+                             "original_file": orig_file})
+    return pd.DataFrame(rows, columns=["file_name", "teff", "logg", "meta", "source_model", "original_file"])
 
 
 def _nearest_idx(arr, val):
