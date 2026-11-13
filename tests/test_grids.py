@@ -1150,6 +1150,30 @@ def svo_and_msg_lookup_rows_are_in_file_name_order(t):
         assert names == ["Grid_fid1.txt", "Grid_fid10.txt", "Grid_fid2.txt"]
 
 
+# A 2 x 3 x 2 x 2 grid laid out as MSG writes it (src/vgrid/vgrid_io_sm.fypp), C/O first as in sg-SPHINX. Its
+# spectra specints[1..3] sit at the 1-based, Fortran-order (first axis fastest) linear vertices 2, 9 and 23: the last
+# is below the grid's 24 vertices, as C3K's and Coelho14's last vertices are below theirs.
+MSG_AXES = (("C/O", [0.5, 0.9]), ("Teff", [3000.0, 3500.0, 4000.0]), ("[Fe/H]", [-1.0, 0.0]), ("log(g)", [4.0, 5.0]))
+MSG_VERTICES = [2, 9, 23]
+MSG_PARAMETERS = [(3000.0, 4.0, -1.0), (3500.0, 4.0, 0.0), (4000.0, 5.0, 0.0)]  # (teff, logg, meta), worked by hand
+
+
+def _msg_vgrid(f, revision=3):
+    """MSG_AXES and MSG_VERTICES as a vgrid group of *revision*: 1 names the axes 'axes(r)' and 2 'axes[r]', both
+    with a 'mask' over the vertices; 3 names them 'axes[r]' and lists the vertices in 'v_lin_seq'. Revision 1 labels
+    the metallicity 'Z/Zo', as the revision-1 grids (OSTAR2002, BSTAR2006) do."""
+    vgrid = f.create_group("vgrid")
+    vgrid.attrs.update({"TYPE": np.bytes_("vgrid_t"), "REVISION": revision, "rank": len(MSG_AXES)})
+    for r, (label, x) in enumerate(MSG_AXES, 1):
+        axis = vgrid.create_group(f"axes({r})" if revision == 1 else f"axes[{r}]")
+        axis.attrs["label"] = np.bytes_("Z/Zo" if revision == 1 and label == "[Fe/H]" else label)
+        axis["x"] = x
+    if revision == 3:
+        vgrid["v_lin_seq"] = MSG_VERTICES
+    else:
+        vgrid["mask"] = np.isin(np.arange(1, 25), MSG_VERTICES).astype(np.int32)
+
+
 def _msg_grid(t):
     """A grabber whose sg-Test.h5 holds three spectra: one good, one with no flux dataset, one with an undecodable
     wavelength segment."""
@@ -1158,9 +1182,7 @@ def _msg_grid(t):
     wave = np.linspace(3000.0, 9000.0, 50)
     (t.tmp / "sg-Test").mkdir()
     with h5py.File(t.tmp / "sg-Test" / "sg-Test.h5", "w") as f:
-        for i, values in enumerate(([5000.0, 6000.0], [-1.0, 0.0], [4.0, 4.5])):
-            f[f"vgrid/axes[{i}]/x"] = values
-        f["vgrid/v_lin_seq"] = [1, 2, 3]
+        _msg_vgrid(f)
         good = f.create_group("specsource/specints[1]")
         good["flux"] = np.ones(50)
         good["range/x"] = wave
@@ -1219,37 +1241,65 @@ def msg_failed_extractions_raise_after_the_rest(t):
 def msg_cut_exclusions_are_not_failures(t):
     grabber, model_dir = _msg_grid(t)
     spectra = grabber.get_model_metadata("sg-Test")[:1]
-    assert grabber.download_model_spectra("sg-Test", spectra, teff_range=(5500, 7000)) == 0
-    assert grabber.download_model_spectra("sg-Test", spectra, teff_range=(4500, 5500)) == 1
+    assert grabber.download_model_spectra("sg-Test", spectra, teff_range=(3200, 4000)) == 0
+    assert grabber.download_model_spectra("sg-Test", spectra, teff_range=(2500, 3200)) == 1
     assert (model_dir / "lookup_table.csv").exists()
 
 
-@row
-def msg_axis_role_beyond_the_grid_raises(t):
+def _msg_vgrid_read(t, revision, departure, error):
     grabber, _ = _grabber(t, "msg")
-    grabber.model_axes["sg-Test"] = {
-        "axes": [np.array([5000.0, 6000.0]), np.array([-1.0, 0.0]), np.array([4.0, 4.5])],
-        "shape": (2, 2, 2), "vlin": np.array([0]), "roles": {"teff": 0, "meta": 1, "logg": 3}}
-    with pytest.raises(RuntimeError, match="logg is mapped to axis 3, but the grid has 3 axes"):
-        grabber._params_from_index("sg-Test", 0)
+    grabber.model_urls["sg-Test"] = MSG_FILE
+    (t.tmp / "sg-Test").mkdir()
+    with h5py.File(t.tmp / "sg-Test" / "sg-Test.h5", "w") as f:
+        _msg_vgrid(f, revision)
+        for n in (1, 2, 3):
+            f[f"specsource/specints[{n}]/flux"] = np.ones(50)
+            f[f"specsource/specints[{n}]/range/x"] = np.linspace(3000.0, 9000.0, 50)
+        if departure:
+            departure(f)
+    if error:
+        with pytest.raises(RuntimeError, match=error):
+            grabber.get_model_metadata("sg-Test")
+        return
+    spectra = grabber.get_model_metadata("sg-Test")
+    assert [(s["teff"], s["logg"], s["meta"]) for s in spectra] == MSG_PARAMETERS
+    for _ in range(2):  # the second run finds the spectra on disk: their lookup rows keep their parameters
+        assert grabber.download_model_spectra("sg-Test", spectra) == 3
+        assert (t.tmp / "sg-Test" / "lookup_table.csv").read_text().splitlines()[1:] == [
+            f"sg-Test_fid{n}.txt,{teff},{logg},{meta}" for n, (teff, logg, meta) in enumerate(MSG_PARAMETERS, 1)]
 
 
-@row
-def msg_axis_roles_come_from_the_axes_labels(t):
-    # As in C3K and every alpha-enhanced MSG grid: by their values alone, [alpha/Fe] was taken for log g (it lies in
-    # log g's range too), and a table keyed on one grid's name corrected C3K only. MSG labels every axis.
-    grabber, _ = _grabber(t, "msg")
-    path = t.tmp / "axes.h5"
-    with h5py.File(path, "w") as f:
-        for i, (label, values) in enumerate((("Teff", [3000.0, 4000.0]), ("[Fe/H]", [-1.0, 0.0]),
-                                             ("[alpha/Fe]", [0.0, 0.4]), ("log(g)", [4.0, 4.5]))):
-            f[f"vgrid/axes[{i}]/x"] = values
-            f[f"vgrid/axes[{i}]"].attrs["label"] = np.bytes_(label)
-    with h5py.File(path, "r+") as f:
-        assert grabber._load_axes_and_vlin(f)["roles"] == {"teff": 0, "logg": 3, "meta": 1}
-        for i in range(4):
-            del f[f"vgrid/axes[{i}]"].attrs["label"]
-        assert grabber._load_axes_and_vlin(f)["roles"] == {"teff": 0, "meta": 1, "logg": 2}  # unlabelled: the guess
+def _msg_axes_from_0(f):
+    for r in range(1, 5):
+        f.move(f"vgrid/axes[{r}]", f"vgrid/axes[{r - 1}]")
+
+
+def _msg_replace(path, data):
+    def departure(f):
+        del f[path]
+        f[path] = data
+    return departure
+
+
+#: name: (MSG vgrid revision, how the file departs from MSG's layout or None, the error that stops its download or
+#: None). Until 13 Nov 2026 the reader looked for axes from axes[0], so it read none from any MSG file, and every MSG
+#: spectrum had NaN Teff, logg and [M/H]; it also took v_lin_seq as 0-based unless its maximum was the grid size, and
+#: tried C order before Fortran order. Grids whose spectra lack parameters now fail before anything is extracted.
+MSG_VGRIDS = {
+    "msg_revision_3_reads_axes_from_1_and_v_lin_seq_in_fortran_order": (3, None, None),
+    "msg_revision_2_reads_axes_from_1_and_the_mask": (2, None, None),
+    "msg_revision_1_reads_parenthesised_axes_and_the_mask": (1, None, None),
+    "msg_axes_numbered_from_0_fail": (3, _msg_axes_from_0, r"no vgrid group laid out as MSG writes it \(.*axes\[4\]"),
+    "msg_v_lin_seq_from_0_fails": (3, _msg_replace("vgrid/v_lin_seq", [0, 8, 22]), "index -1 is out of bounds"),
+    "msg_unknown_vgrid_revision_fails": (3, lambda f: f["vgrid"].attrs.__setitem__("REVISION", 4), "revision 4"),
+    "msg_grid_without_a_teff_axis_fails": (
+        3, lambda f: f["vgrid/axes[2]"].attrs.__setitem__("label", "T"),
+        r"none of the axes of .*\('C/O', 'T', '\[Fe/H\]', 'log\(g\)'\) reads as teff"),
+    "msg_spectra_unmatched_by_the_vgrid_fail": (
+        3, lambda f: f.__delitem__("specsource/specints[3]"), "places 3 spectra but it holds 2"),
+    "msg_spectra_without_a_finite_value_fail": (
+        3, _msg_replace("vgrid/axes[4]/x", [4.0, np.nan]), "1 of 3 spectra have no finite logg"),
+}
 
 
 BOSZ_SCRIPT = f"{mast.SCRIPTS_DIR}/hlsp_bosz_bosz2024_sim_r1000_m%2B0.00_v1_bulkdl.sh"
@@ -1511,5 +1561,6 @@ def test_grids(rows):
     rows(HEADERS, _header_unit)
     rows(ZERO_BOUNDS, _query_bound)
     rows(WARNED, _warns)
+    rows(MSG_VGRIDS, _msg_vgrid_read)
     rows(REFUSED, _refused)
     rows(UNKNOWN_UNIT, _unknown_unit)
