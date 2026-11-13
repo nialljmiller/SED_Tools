@@ -44,7 +44,7 @@
     "bibcode:1990PASP..102.1181B",
     "bibcode:1996AJ....111.1748F"
   ],
-  "notes": "The sensitivity page states the magnitude systems explicitly: Vega for Johnson-Cousins, AB for the SDSS filters and for Y. It also says a throughput estimate should fold in the FDCCD quantum efficiency, the Primary Focus Unit transmittance and the primary-mirror reflectivity; those are not in the filter-only lists. Miyazaki et al. 2002 is the camera paper and predates the Y filter, so Y is not given that paper as a profile reference. Bessell 1990 and Fukugita et al. 1996 are the photometric-system papers, not the scan sources.",
+  "notes": "The sensitivity page states the magnitude systems explicitly: Vega for Johnson-Cousins, AB for the SDSS filters and for Y. It also says a throughput estimate should fold in the FDCCD quantum efficiency, the Primary Focus Unit transmittance and the primary-mirror reflectivity; those are not in the filter-only lists. Miyazaki et al. 2002 is the camera paper and predates the Y filter, so Y is not given that paper as a profile reference. Bessell 1990 and Fukugita et al. 1996 are the photometric-system papers, not the scan sources. B, z (2026-11-12): each curve is NAOJ's filter-only transmission (https://subarutelescope.org/Archive/Instruments/SCam/sensitivity.html: 'You may need to consider Quantum efficiency of FDCCD ... as well as transmission curves below for estimating more exact throughput of each filter'). SVO's record of the same ID is the COSMOS system response of the same filter (with CCD, optics, mirror and atmosphere at airmass 1.2), which NJM also serves as an SVO copy.",
   "bands": {
     "B": {
       "Description": "Suprime-Cam Johnson-Cousins B",

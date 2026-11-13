@@ -22,5 +22,49 @@
       "applies_to": "all bands"
     }
   ],
-  "notes": "DetectorType of UliqTek_2a, UliqTek_2b, Uliq_1, UliqTek_3, Ca_2, BHarris_1, gSDSS_1, MWash_0, DDO51_0 set to photon, DetectorTypeSource inferred (2026-11-11), the label every served copy of the same curve now carries: CTIO publishes this curve as its own percent-transmission scan of the filter alone (e.g. 'C.T.I.O Filters 3530-280 u Strömgren … R. Gonzalez June 1994', columns 'Wl. %'; https://noirlab.edu/science/programs/ctio/filters/3x3-inch-and-4x4-inch-filters and the archived www.ctio.noao.edu/instruments/filters/FILTER-CURVES/). These 3x3- and 4x4-inch filters are the CTIO 0.9-m's, whose imager Tek2K 'is a 2K optical CCD imager'. NOIRLab's Hydra filter list, the source of the WIYN/Hydra copies, serves the WIYN Bench Spectrograph, also read by a CCD (https://www.wiyn.org/Instruments/wiynbench.html). A filter-only transmission used with a CCD counts photons. SVO's DetectorType is not used."
+  "notes": "DetectorType of UliqTek_2a, UliqTek_2b, Uliq_1, UliqTek_3, Ca_2, BHarris_1, gSDSS_1, MWash_0, DDO51_0 set to photon, DetectorTypeSource inferred (2026-11-11), the label every served copy of the same curve now carries: CTIO publishes this curve as its own percent-transmission scan of the filter alone (e.g. 'C.T.I.O Filters 3530-280 u Strömgren … R. Gonzalez June 1994', columns 'Wl. %'; https://noirlab.edu/science/programs/ctio/filters/3x3-inch-and-4x4-inch-filters and the archived www.ctio.noao.edu/instruments/filters/FILTER-CURVES/). These 3x3- and 4x4-inch filters are the CTIO 0.9-m's, whose imager Tek2K 'is a 2K optical CCD imager'. NOIRLab's Hydra filter list, the source of the WIYN/Hydra copies, serves the WIYN Bench Spectrograph, also read by a CCD (https://www.wiyn.org/Instruments/wiynbench.html). A filter-only transmission used with a CCD counts photons. SVO's DetectorType is not used. UliqTek_2a, UliqTek_2b, Uliq_1, UliqTek_3, Ca_2, BHarris_1, gSDSS_1, MWash_0, gGunn_T_0, DDO51_0, iSDSS, rSDSS, rGunn_T, vStrom (2026-11-12): NOIRLab's Hydra filter list (https://noirlab.edu/science/programs/ctio/filters/Hydra) attaches to each of these filters a data file or plot of another CTIO filter, and SVO's records, which NJM copies, follow it. Each file's or plot's own header names the scan it holds; the band's Description gives it.",
+  "bands": {
+    "UliqTek_2a": {
+      "Description": "CTIO 3530/280 u Strömgren 4x4 scan (R. Gonzalez, June 1994), not U liq. CuSO4 Tek set #2: NOIRLab's data file for that filter, ct3570/660_1.txt, holds this scan."
+    },
+    "UliqTek_2b": {
+      "Description": "CTIO 3530/280 u Strömgren 4x4 scan (R. Gonzalez, June 1994), not U liq. CuSO4 Tek set #2: NOIRLab's data file for that filter, ct3570/660_2.txt, holds this scan."
+    },
+    "Uliq_1": {
+      "Description": "CTIO 3575/600 U liq. CuSO4 Tek set #1 3x3 scan (R. Gonzalez, 3 Sep 1993), not U liq. CuSO4 set#1 4mts: NOIRLab's data file for that filter, ct3580/610_1.txt, holds this scan."
+    },
+    "UliqTek_3": {
+      "Description": "CTIO 3580/610 U (CuSO4 liq. + UG-1) 4x4 scan (R. Gonzalez, 14 Nov 1993), not U liq. CuSO4 Tek set#3: NOIRLab's data file for that filter, 3580-610.txt, holds this scan."
+    },
+    "Ca_2": {
+      "Description": "CTIO 3623/605 U liq. CuSO4 Tek set #3 3x3 scan (R. Gonzalez, 24 Aug 1993), not the Ca H&K line filter: NOIRLab's data file for that filter, ct3960/100_2.txt, holds this scan."
+    },
+    "BHarris_1": {
+      "Description": "CTIO 4118/146 v Strömgren 4x4 scan (R. Gonzalez, June 1994), not B Harris set#1: NOIRLab's data file for that filter, ct4185/1030_1.txt, holds this scan."
+    },
+    "gSDSS_1": {
+      "Description": "CTIO 4697/196 b Strömgren 4x4 scan (R. Gonzalez, June 1994), not SDSS g: NOIRLab's data file for that filter, ct4759/1430_1.txt, holds this scan."
+    },
+    "MWash_0": {
+      "Description": "CTIO 5019/50 4x4 scan (R. Gonzalez, Feb 1995), not M Washington: NOIRLab's data file for that filter, ct5040/990_0.txt, holds this scan."
+    },
+    "gGunn_T_0": {
+      "Description": "M Washington 4x4 scan (ESO 1993; CTIO 5040/990), not g Gunn-T: NOIRLab's data file for that filter, ct5118/900_0.txt, holds this scan."
+    },
+    "DDO51_0": {
+      "Description": "CTIO 5118/900 g Gunn-T scan ('FILTER IDENTIFICATION GUNN \"G\" SET 3', measured 20 Apr 1988), not DDO 51: NOIRLab's data file for that filter, ct5130/155_0.txt, holds this scan."
+    },
+    "iSDSS": {
+      "Description": "CTIO 6738/50 4x4 filter, digitised from NOIRLab's plot for SDSS i, which is titled '6738-50 4x4\"': not SDSS i."
+    },
+    "rSDSS": {
+      "Description": "T1 Washington 3x3 filter (ESO 1993; CTIO 6152/625), digitised from NOIRLab's plot for SDSS r, which is titled '6152-625': not SDSS r."
+    },
+    "rGunn_T": {
+      "Description": "CTIO 6600/75 4x4 filter (R. Gonzalez, April 1995), digitised from NOIRLab's plot for r Gunn-T, which is titled '6600-75 4x4\"': not r Gunn-T."
+    },
+    "vStrom": {
+      "Description": "C Washington 4x4 filter (ESO 1993; CTIO 4000/1030), digitised from NOIRLab's plot for v Strömgren, which is titled '40001030': not v Strömgren."
+    }
+  }
 }

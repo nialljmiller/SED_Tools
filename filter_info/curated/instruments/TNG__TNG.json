@@ -14,5 +14,6 @@
       "references": [],
       "applies_to": "all bands"
     }
-  ]
+  ],
+  "notes": "TNG33, TNG38 (2026-11-12): TNG publishes one manufacturer curve for filters #33 and #38 ('# Filters #33 and #38 are from the same batch', https://www.tng.iac.es/instruments/filters/Filt33_38.txt); #33 sits on DOLORES and #38 on OIG, so the two bands rightly hold one curve. SVO's records differ only by four rows at wavelength 0."
 }

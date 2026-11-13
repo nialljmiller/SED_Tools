@@ -26,5 +26,5 @@
   },
   "bands": {},
   "evidence": [],
-  "notes": "Band curves are the equal-weight mean of MCST's per-channel (detector) RSRs, built for NJM (see manifest notes and the recipe tools/recipes/d6_modis.py); MCST publishes per-channel curves only. SVO's Terra/MODIS.BandNN records cite the MCST page and agree in pivot to <=0.05 % for most bands (Band35 +0.25 %, Band36 +0.54 %). DetectorType energy is assumed."
+  "notes": "Band curves are the equal-weight mean of MCST's per-channel (detector) RSRs, built for NJM (see manifest notes and the recipe tools/recipes/d6_modis.py); MCST publishes per-channel curves only. SVO's Terra/MODIS.BandNN records cite the MCST page and agree in pivot to <=0.05 % for most bands (Band35 +0.25 %, Band36 +0.54 %). DetectorType energy is assumed. Band36 (2026-11-12): the curve is NJM's equal-weight mean of MCST's 10 per-channel in-band RSRs (Terra_RSR_in-band.xlsx, sheet band_36). SVO's record is MCST's other table, MODIS_PFM_IB_OOB_RSR_merged.xls, whose Band 36 column MCST itself ends at 14.213 um with the response still at 0.825."
 }

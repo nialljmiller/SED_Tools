@@ -19,7 +19,7 @@
     "bibcode:2002PASP..114..180T",
     "doi:10.1086/429382"
   ],
-  "notes": "Transmission profiles from the IRTF NSFCam filter page (absolute transmission, filter only). The page says the H and Br-gamma profiles include a sandwiched blocker, many other filters are used with a PK50 blocker (profiles with and without it are given), and the older broad-band filters were replaced by Mauna Kea (MK) versions. DetectorType photon, DetectorTypeSource inferred (2026-10-26): no owner states the integration convention for the curve file, but the filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters. The source is 'inferred' because this rests on the published curve content and the documented detector, not on an explicit owner statement.",
+  "notes": "Transmission profiles from the IRTF NSFCam filter page (absolute transmission, filter only). The page says the H and Br-gamma profiles include a sandwiched blocker, many other filters are used with a PK50 blocker (profiles with and without it are given), and the older broad-band filters were replaced by Mauna Kea (MK) versions. DetectorType photon, DetectorTypeSource inferred (2026-10-26): no owner states the integration convention for the curve file, but the filter page gives 'absolute transmissions (on a scale of 0 to 1)' and 'only the transmission of the filter itself' (https://irtfweb.ifa.hawaii.edu/~nsfcam/filters.html), and NSFCam has 'a 256x256 InSb detector' (https://irtfweb.ifa.hawaii.edu/~nsfcam/), so the curves integrate as photon counters. The source is 'inferred' because this rests on the published curve content and the documented detector, not on an explicit owner statement. CO, CONT, L (2026-11-12): each curve is IRTF's cold (80-100 K) FTIR scan of the filter alone over 1.28-26.7 um ('Filter scans were performed on a Perkin-Elmer 1600 Series FTIR Bandpass limited from 1.3uM to 27uM', IRTF Online), from the NSFCam filter page. CO and CONT were used with the PK50 blocker, for which IRTF publishes separate 'plus blocker' curves; L was not. SVO's record of the same ID is an in-band slice of this scan. BRG (2026-11-12): the curve equals IRTF's bare cold scan of the Brackett-gamma filter (1.28-26.7 um). IRTF's filter page lists this file as the profile 'including the blocker', yet it transmits 0.83 at 4.23 um, where the PK50 blocks; IRTF publishes no other Brackett-gamma curve. SVO's record of the same ID is an in-band slice of this scan. PAB (2026-11-12): the curve is IRTF's cold scan of the Paschen-beta filter; the scan begins at 1.282 um, the line centre, so it holds only the red half of the passband plus the filter's 3.2-4.6 um leaks. SVO's record of the same ID is the start of the same scan. J, KP, KS, LP (2026-11-12): each curve is IRTF's cold scan of NSFCam's original broad-band filter, which IRTF replaced on 15 September 1999 by the Mauna Kea version ('Note that many of the broadband filters listed here have been replaced with the new ``Mauna Kea'' versions (whose transmission profiles are also given below) and are no longer used'). SVO's record of the matching ID is the Mauna Kea filter, which NJM serves as the MK band, so these bands keep no SVO match and JMK takes SVO's IRTF/NSFCam.J. The original J scan starts at 1.282 um, inside its 1.10-1.42 um band. HEI, PAG (2026-11-12): the filter's passband (He I 1.083 um, Paschen-gamma 1.094 um) lies below the scan's 1.282 um start, so IRTF's file holds only the filter's out-of-band transmission (at most 0.9 and 1.4 % within 1.28-5.6 um); no IRTF file contains the passband. SVO's record is a 1.5 um window of the same leak spectrum.",
   "bands": {
     "HMK": {
       "Description": "NSFCam MKO HMK filter",
@@ -71,7 +71,8 @@
           "ref": "doi:10.1086/429382",
           "label": "Tokunaga & Vacca (2005)"
         }
-      ]
+      ],
+      "svo_filterID": "IRTF/NSFCam.J"
     },
     "KMK": {
       "Description": "NSFCam MKO KMK filter",
@@ -144,19 +145,23 @@
       "svo_filterID": "IRTF/NSFCam.Kp"
     },
     "KS": {
-      "Description": "NSFCam KS broad-band filter"
+      "Description": "NSFCam KS broad-band filter",
+      "svo_filterID": null
     },
     "M": {
       "Description": "NSFCam M broad-band filter"
     },
     "LP": {
-      "Description": "NSFCam LP broad-band filter"
+      "Description": "NSFCam LP broad-band filter",
+      "svo_filterID": null
     },
     "J": {
-      "Description": "NSFCam J broad-band filter"
+      "Description": "NSFCam J broad-band filter",
+      "svo_filterID": null
     },
     "KP": {
-      "Description": "NSFCam KP broad-band filter"
+      "Description": "NSFCam KP broad-band filter",
+      "svo_filterID": null
     },
     "L": {
       "Description": "NSFCam L broad-band filter"

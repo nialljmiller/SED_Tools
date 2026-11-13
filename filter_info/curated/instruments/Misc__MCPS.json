@@ -5,5 +5,6 @@
     "terms": "",
     "url": "https://www.as.arizona.edu/~dennis/mcsurvey/Home.html",
     "scope": "No owner statement found. The page SVO cites (https://www.as.arizona.edu/~dennis/mcsurvey/Home.html) did not answer with curl on 2026-10-26 (http:// variant returned 404, https://www.as.arizona.edu/ timed out); the Internet Archive capture of 2022 carries no copyright, licence or credit text. SVO also cites http://casa.colorado.edu/~ginsbura/filtersets.htm, which is not the owner. The curves are SVO Filter Profile Service records recovered from Internet Archive captures (svo2.cab.inta-csic.es did not answer on 2026-10-26); SVO states no licence (page footer '© SVO') and asks for the acknowledgement listed in info.json."
-  }
+  },
+  "notes": "I (2026-11-12): each curve is Johnson (1965, ApJ 141, 923), Appendix, 'The Photometer Response Functions', Tables A1-A3, value for value. Johnson writes 'Except for the U filter, these response functions include no corrections for atmospheric extinction' and 'The R and I response functions include the reflectivity of two aluminized mirrors', and each response belongs to its detector (L I with an InSb detector, L II with a PbS cell). So U is filter+qe+atmosphere, R and I filter+optics+qe, and B, V, J and M filter+qe, ComponentsSource original, on every copy of these curves."
 }

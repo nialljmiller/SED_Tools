@@ -17,7 +17,7 @@
     "url": "https://www.eso.org/sci/facilities/lasilla/instruments/wfi/inst/filters.html",
     "scope": "Site-wide page footer, not a data licence. Hosted under Nill's 2026-10-26 'host everything' decision."
   },
-  "notes": "WFI page: 'The transmission data and characteristics given in the below table for the WFI filters were measured by the opticians at La Silla.' Its TEXT links (http://www.ls.eso.org/...) answer over https. Red leaks kept (page column 'Leak'). SVO's WFI IDs without '_filter' are compositions and are not built.",
+  "notes": "WFI page: 'The transmission data and characteristics given in the below table for the WFI filters were measured by the opticians at La Silla.' Its TEXT links (http://www.ls.eso.org/...) answer over https. Red leaks kept (page column 'Leak'). SVO's WFI IDs without '_filter' are compositions and are not built. ESO844_filter, ESO848_filter (2026-11-12): each curve is ESO's La Silla scan over 300-1200 nm (https://www.ls.eso.org/sci/facilities/lasilla/instruments/wfi/inst/filters/844.dat, 848.dat); ESO's WFI filter table marks both filters Leak 'y' ('most leaks beyond CCD QE cut-off'). SVO's record is the same scan cut to the main passband. ESO877_filter (2026-11-12): the curve is ESO's scan u360specs.txt (WFI filter table: 'Broadhurst filter U350/6, old name: U/360'). SVO's record is the same scan cut at 3200 A, inside the band's blue side; ESO puts the filter's red leak at 0.60 % at 1102 nm.",
   "bands": {},
   "evidence": []
 }
