@@ -1369,6 +1369,7 @@ def original_source_failure_falls_back_to_svo(t):
                           detector_type=PHOTON, source="svo", extra={"Components": "filter"})
         InstrumentManifest("Paranal", "HAWKI", ["J"]).save(t.tmp / "Paranal" / "HAWKI")
 
+    bundled(t)  # no SVO equivalent recorded for HAWKI (NJM's claims of 13 Nov 2026 give it one): SVO's own lists
     library = FilterLibrary(t.tmp)
     library.svo = SimpleNamespace(
         list_facilities=lambda: [Facility("Paranal", "Paranal")],
