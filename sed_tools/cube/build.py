@@ -15,16 +15,13 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
 from .._constants import available_memory_bytes as _available_ram_bytes
-from ..grids.lookup import (  # noqa: F401  (write_lookup_csv: importable here, as always)
+from ..grids.lookup import (
     find_file_column, find_logg_column, find_metallicity_column, find_teff_column,
-    write_lookup_csv,
 )
 from .collision import copy_global_config_to_model, discover_extra_axes, load_config
 from .fileio import flux_offset, write_header
-# _extra_key_to_filename, _subdir_name and _value_to_safe_str: importable here, as always.
-from .variants import (_build_filtered_cube, _build_mean_cube, _extra_key_to_filename,  # noqa: F401
-                       _group_by_extra_axes, _parameter_arrays, _print_summary, _split_into_subgrids, _subdir_name,
-                       _value_to_safe_str, _warn_averaged_rows)
+from .variants import (_build_filtered_cube, _build_mean_cube, _group_by_extra_axes, _parameter_arrays, _print_summary,
+                       _split_into_subgrids, _warn_averaged_rows)
 from ..grids.spectrum_io import read_text_spectrum
 
 logger = logging.getLogger(__name__)

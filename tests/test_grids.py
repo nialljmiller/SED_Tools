@@ -28,11 +28,11 @@ from sed_tools.api import SED, _bundle_shortfall, _flux_cube_shortfall
 from sed_tools.cube.build import spectra_not_in_cube
 from sed_tools.cube.model import _read_flux_cube_header
 from sed_tools.filters import njm as filters_njm
-from sed_tools.grids import mast, msg, njm, svo
-from sed_tools.grids.clean import (FLUX_UNITS, clean_model_dir, clean_spectrum_file, detect_units_from_header,
-                                   rebuild_lookup_table, validate_converted_spectrum)
+from sed_tools.grids import mast, msg, njm, pipeline, svo
+from sed_tools.grids.clean import clean_model_dir, clean_spectrum_file, rebuild_lookup_table
 from sed_tools.grids.lookup import regenerate_lookup_table
 from sed_tools.grids.spectrum_io import read_text_spectrum
+from sed_tools.grids.units import FLUX_UNITS, detect_units_from_header, validate_converted_spectrum
 
 from support import (GRID, KURUCZ, NJM, Resp, Session, answer, copy_without_times, njm_grids, run_cli, scenarios,
                      write_flux_cube)
@@ -119,7 +119,7 @@ def clean_model_dir_records_unreadable_file_and_finishes_the_rest(t):
     _spectrum(t.tmp / "a.txt")
     (t.tmp / "b.txt").mkdir()  # matches *.txt but cannot be read as a file
     _spectrum(t.tmp / "c.txt")
-    t.mp.setattr("sed_tools.grids.clean.random.sample", lambda files, n: [str(t.tmp / "a.txt")])
+    t.mp.setattr("sed_tools.grids.units.random.sample", lambda files, n: [str(t.tmp / "a.txt")])
     with pytest.raises(RuntimeError, match=r"IsADirectoryError.*\(1\): b\.txt"):
         clean_model_dir(str(t.tmp), rebuild_lookup=False, sample_fraction=0.4)
     assert _is_standardized(t.tmp / "a.txt") and _is_standardized(t.tmp / "c.txt")
@@ -161,7 +161,7 @@ def clean_model_dir_warns_when_units_come_from_each_file(t):
         _spectrum(t.tmp / f"raw_{i}.txt")
     done = t.tmp / "done.txt"
     done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
-    t.mp.setattr("sed_tools.grids.clean.random.sample", lambda files, n: [str(done)])
+    t.mp.setattr("sed_tools.grids.units.random.sample", lambda files, n: [str(done)])
     with t.caplog.at_level(logging.WARNING, logger="sed_tools.grids.clean"):
         summary = clean_model_dir(str(t.tmp), sample_fraction=0.1)
     assert len(summary["converted"]) == 9
@@ -305,7 +305,7 @@ def _terminal(t, *replies):
 
 @row
 def clean_model_dir_stops_on_an_undeclared_flux_unit_naming_the_best_guess(t):
-    from sed_tools.grids.clean import undeclared_flux_unit
+    from sed_tools.grids.units import undeclared_flux_unit
 
     grid = _grid(t.tmp / "Cool")
     before = _contents(grid)
@@ -358,7 +358,7 @@ def files_cleaned_one_by_one_without_a_declared_flux_unit_are_listed(t):
     grid = _grid(t.tmp / "Cool")
     done = grid / "done.txt"
     done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
-    t.mp.setattr("sed_tools.grids.clean.random.sample", lambda files, n: [str(done)])
+    t.mp.setattr("sed_tools.grids.units.random.sample", lambda files, n: [str(done)])
     with pytest.raises(RuntimeError, match=r"(?s)3 of 4 spectra .*Flux unit of this spectrum is not declared; "
                                            r"best guess: 'fnu_jy'.* \(3\): s0.txt, s1.txt, s2.txt"):
         clean_model_dir(str(grid), sample_fraction=0.1)
@@ -371,7 +371,7 @@ def cli_stops_on_no(t):
     grid = _grid(t.tmp / "Cool")
     prompts = _terminal(t, "n")
     with pytest.raises(ValueError, match="No flux unit chosen for Cool; it was not cleaned"):
-        cli._ask_flux_unit("Cool", sorted(str(p) for p in grid.glob("*.txt")))
+        cli.grids._ask_flux_unit("Cool", sorted(str(p) for p in grid.glob("*.txt")))
     assert len(prompts) == 1
 
 
@@ -379,7 +379,7 @@ def cli_stops_on_no(t):
 def cli_does_not_ask_when_the_flux_unit_is_declared(t):
     grid = _grid(t.tmp / "Declared", "erg/cm2/s/A")
     prompts = _terminal(t)
-    assert cli._ask_flux_unit("Declared", sorted(str(p) for p in grid.glob("*.txt"))) is None
+    assert cli.grids._ask_flux_unit("Declared", sorted(str(p) for p in grid.glob("*.txt"))) is None
     assert prompts == []
 
 
@@ -436,7 +436,7 @@ def _unknown_unit(t, how):
     (src / "declared.txt").write_text("# teff = 3500\n# flux_unit = erg/s/cm2/A\n3000 1.0\n4000 2.0\n")
     done = src / "done.txt"
     done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
-    t.mp.setattr("sed_tools.grids.clean.random.sample", lambda files, n: [str(done)])  # no grid-wide units
+    t.mp.setattr("sed_tools.grids.units.random.sample", lambda files, n: [str(done)])  # no grid-wide units
     before = _contents(src)
     t.mp.setattr("sed_tools.api.SED._download_from_first_source", lambda *a: pytest.fail("downloaded"))
     with pytest.raises(KeyError, match="Jy"):
@@ -550,7 +550,7 @@ TYPED = {
 def _typed(t, answers, unit):
     grid = _grid(t.tmp / "Cool")
     prompts = _terminal(t, *answers)
-    assert cli._ask_flux_unit("Cool", sorted(str(p) for p in grid.glob("*.txt"))) == unit
+    assert cli.grids._ask_flux_unit("Cool", sorted(str(p) for p in grid.glob("*.txt"))) == unit
     assert prompts == ["Flux unit of Cool (type its name, e.g. fnu_jy), or n to leave it uncleaned: "] * len(answers)
     out = t.capsys.readouterr().out
     assert "flam        erg/s/cm²/Å (F_λ)" in out and "fnu_jy      Jansky (F_ν)" in out
@@ -804,9 +804,9 @@ def an_unreadable_cube_is_out_of_date(t):
 @row
 def the_rebuild_hint_names_base_only_when_the_grid_is_elsewhere(t):
     t.mp.setattr("sed_tools.grids.pipeline.STELLAR_DIR_DEFAULT", t.tmp / "default")
-    assert cli._rebuild_command(GRID, str(t.tmp / "default" / GRID)) == f"sed-tools rebuild --grids {GRID}"
+    assert pipeline._rebuild_command(GRID, str(t.tmp / "default" / GRID)) == f"sed-tools rebuild --grids {GRID}"
     elsewhere = t.tmp / "my grids"
-    assert (cli._rebuild_command(GRID, str(elsewhere / GRID))
+    assert (pipeline._rebuild_command(GRID, str(elsewhere / GRID))
             == f"sed-tools rebuild --grids {GRID} --base '{elsewhere}'")
 
 

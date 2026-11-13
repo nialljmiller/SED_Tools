@@ -13,12 +13,11 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 
 from ..cube.fileio import load as load_cube
-from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, DEFAULT_WL_POINTS, Engine, Network, action_menu, confirmed,
-                     data_loaders, fit, log_grid, model_configs, normalised_params, param_scaler, predict,
-                     print_libraries, resample, sample_spectra, training_libraries, write_spectrum)
-from .common import mlp  # noqa: F401  (kept: `from sed_tools.ml.generator import *` gives mlp, as before)
+from .common import (Engine, Network, action_menu, confirmed, data_loaders, fit, log_grid, model_configs,
+                     normalised_params, param_scaler, predict, print_libraries, resample, sample_spectra,
+                     training_libraries, write_spectrum)
 from ..ui_utils import (ask_number as _ask_number, ask_numbers as _ask_numbers, banner as _banner,
-                       menu_choice as _menu_choice, refused_without, section as _section)
+                        menu_choice as _menu_choice, section as _section)
 
 logger = logging.getLogger(__name__)
 

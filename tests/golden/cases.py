@@ -216,12 +216,13 @@ def interpolation_and_photometry(work, out):
 
 @case
 def flux_cube_tool_band_averages(work, out):
-    from sed_tools.cube import tool as fct
+    from sed_tools import photometry as fct
     from sed_tools.cube.build import precompute_flux_cube as precompute
+    from sed_tools.cube.fluxcube import FluxCube
 
     model = copy_tree(MODELS / "Kurucz2003all", work / "Kurucz2003all")
     precompute(str(model), str(model / "flux_cube.bin"))
-    cube = fct.FluxCube.from_file(str(model / "flux_cube.bin"))
+    cube = FluxCube.from_file(str(model / "flux_cube.bin"))
     results = {}
     for teff, logg, meta in GRID_POINTS:
         wavelength, flux = cube.interpolate_spectrum(teff, logg, meta)

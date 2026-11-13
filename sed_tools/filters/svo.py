@@ -16,9 +16,9 @@ import requests
 from bs4 import BeautifulSoup
 
 from .manifest import ComponentError, InstrumentManifest, archived_bands, curve_source, write_filter_index
-from .curve_metadata import (ENERGY, SOURCE_ASSUMED, SOURCE_SVO, SVO_ALTERNATIVES, SVOMetadataClient,
-                             SVOUnreachableError, read_filter_header, svo_components_header, svo_detector, svo_fps_url,
-                             svo_get, write_filter_file)
+from .curve_metadata import (ENERGY, SOURCE_ASSUMED, SVO_ALTERNATIVES, SVOMetadataClient, SVOUnreachableError,
+                             read_filter_header, svo_components_header, svo_detector, svo_fps_url, svo_get,
+                             write_filter_file)
 
 SVO_READ_TIMEOUT = 300  # give a connected SVO a generous time to respond
 #: Seconds SVO is left alone, by every browser in the process, after it did not answer.

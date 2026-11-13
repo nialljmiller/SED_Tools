@@ -16,12 +16,10 @@ import numpy as np
 
 from .._constants import H as PLANCK_H, C as SPEED_C, K as BOLTZMANN_K, SIGMA
 from ..cube.fileio import load as load_cube
-from ..ui_utils import (ask_number as _ask_number, banner as _banner, menu_choice as _menu_choice, refused_without,
-                       section as _section)
-from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, DEFAULT_WL_POINTS, Engine, Network, action_menu, confirmed,
-                     data_loaders, fit, log_grid, model_configs, normalised_params, param_scaler, predict,
-                     print_libraries, resample, sample_spectra, training_libraries, write_spectrum)
-from .common import mlp  # noqa: F401  (kept: `from sed_tools.ml.completer import *` gives mlp, as before)
+from ..ui_utils import ask_number as _ask_number, banner as _banner, menu_choice as _menu_choice, section as _section
+from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, Engine, Network, action_menu, confirmed, data_loaders, fit,
+                     log_grid, model_configs, normalised_params, param_scaler, predict, print_libraries, resample,
+                     sample_spectra, training_libraries, write_spectrum)
 
 logger = logging.getLogger(__name__)
 

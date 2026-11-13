@@ -239,11 +239,11 @@ def spectra_flow_raises_when_no_grid_is_discovered(t):
 def axis_cut_prompt_takes_ranges_and_never_reads_a_typo_as_no_cut(t):
     grabber = SimpleNamespace(get_grid_info=lambda name, model_url=None: None)
     answer(t.mp, "3500,8000", "", "", "")
-    cuts = cli.prompt_njm_axis_cuts("Grid", grabber)
+    cuts = cli.grids.prompt_njm_axis_cuts("Grid", grabber)
     assert cuts == {"teff_range": (3500.0, 8000.0), "logg_range": None, "meta_range": None, "wl_range": None}
     answer(t.mp, "3500 to 8000")
     with pytest.raises(ValueError):  # not None, which would download the whole grid
-        cli.prompt_njm_axis_cuts("Grid", grabber)
+        cli.grids.prompt_njm_axis_cuts("Grid", grabber)
 
 
 def _rebuild(t):
@@ -286,8 +286,10 @@ def rebuild_asks_which_grids(t):
 
 @row
 def rebuild_never_writes_its_bundle_over_a_downloaded_grid_file(t):
+    from sed_tools.grids.pipeline import build_h5_bundle_from_txt
+
     _rebuild(t)
-    t.mp.setattr(cli.grids, "build_h5_bundle_from_txt", cli.build_h5_bundle_from_txt)  # the real bundle
+    t.mp.setattr(cli.grids, "build_h5_bundle_from_txt", build_h5_bundle_from_txt)  # the real bundle
     msg = t.tmp / "sg-Test"
     msg.mkdir()
     (msg / "s.txt").write_text("1000 1\n")
@@ -389,7 +391,7 @@ def offer_composition_folds_in_the_site_and_airmass_typed(t):
     t.mp.setattr(filters, "compose",
                  classmethod(lambda cls, *a, **k: built.append(k["atmosphere"]) or t.tmp / "product"))
     answer(t.mp, "y", "1", "1", "1.2", "")  # site 1 of the numbered atmosphere choice
-    cli._offer_composition(t.tmp / "Fac" / "Cam")
+    cli.filters._offer_composition(t.tmp / "Fac" / "Cam")
     assert built == [{"site": "paranal", "airmass": 1.2, "pwv": None}]
 
 
@@ -423,7 +425,7 @@ def densify_passes_only_what_densify_grid_accepts(t):
 
 @row
 def cleaning_report_reads_the_summary_clean_model_dir_returns(t):
-    cli._print_cleaning_report(dict(CLEAN, total=4, converted=["a", "b"], recovered=["c"], skipped_already=["d"],
+    cli.grids._print_cleaning_report(dict(CLEAN, total=4, converted=["a", "b"], recovered=["c"], skipped_already=["d"],
                                     catalog_units={"wavelength": "angstrom", "flux": "flam"},
                                     detection_stats={"status": "consensus"}))
     out = t.capsys.readouterr().out
@@ -461,7 +463,7 @@ def composition_says_when_the_atmosphere_list_failed(t):
     _paranal(t, lambda cls, *a, **k: _raise(RuntimeError("NJM mirror unreachable")))
     answer(t.mp, "y", "1", "", "y")
     with pytest.raises(RuntimeError, match="could not list the atmosphere grids for paranal: NJM mirror unreachable"):
-        cli._offer_composition(t.tmp / "Fac" / "Cam")
+        cli.filters._offer_composition(t.tmp / "Fac" / "Cam")
 
 
 @row
@@ -674,7 +676,7 @@ AVAILABILITY = {
 
 def _availability_lists(t, fields, says, unsaid):
     narrow_terminal(t)
-    cli.print_filter_availability(availability(**fields))
+    cli.filters.print_filter_availability(availability(**fields))
     out = " ".join(t.capsys.readouterr().out.split())
     assert says in out
     assert unsaid not in out
@@ -692,7 +694,7 @@ AIRMASS = {
 def _airmass_defaults(t, grid, typed, airmass, pwv):
     narrow_terminal(t)
     prompts = answer(t.mp, *typed)
-    assert cli._ask_conditions("site", grid) == (airmass, pwv)
+    assert cli.filters._ask_conditions("site", grid) == (airmass, pwv)
     shown = "unstated" if not grid["airmass"] else f"{grid['airmass'][0]:g}"
     assert prompts[0] == f"Airmass [{shown}]: "
 
@@ -702,7 +704,7 @@ def composition_takes_a_typed_recipe(t):
     composed = _composed(t)
     t.mp.setattr(Filters, "available", classmethod(lambda cls, *a, **k: availability()))
     answer(t.mp, "y", "published,optics")
-    cli._offer_composition(t.tmp / "Fac" / "Cam")
+    cli.filters._offer_composition(t.tmp / "Fac" / "Cam")
     assert composed[0][1]["components"] == ["published", "optics"] and "detector_type" not in composed[0][1]
 
 
@@ -714,7 +716,7 @@ def composable_bands_compose_in_memory(t):
     t.mp.setattr(fc.InstrumentManifest, "load", classmethod(lambda cls, d: manifest))
     t.mp.setattr(fc, "compose_band", lambda directory, band, components, **kwargs:
                  _raise(ComponentError("covers 9000-56000 A")) if band == "Z" else None)
-    working, failed = cli._composable_bands(t.tmp / "Paranal" / "VISTA",
+    working, failed = cli.filters._composable_bands(t.tmp / "Paranal" / "VISTA",
                                             {"components": ["filter"], "atmosphere": None, "variants": None})
     assert working == ["J"] and failed == {"Z": "covers 9000-56000 A"}
 
@@ -736,7 +738,7 @@ def pressing_enter_at_the_atmosphere_choice_folds_in_none(t):
     t.mp.setattr(Filters, "available", classmethod(lambda cls, *a, **k: availability(
         atmosphere=True, atmosphere_site="lsst_std", atmosphere_sites=["lsst_std"])))
     prompts = answer(t.mp, "y", "1", "")
-    cli._offer_composition(t.tmp / "LSST" / "LSST")
+    cli.filters._offer_composition(t.tmp / "LSST" / "LSST")
     assert [p for p in prompts if p.startswith("Atmosphere")] == ["Atmosphere [0, none]: "]
     assert composed[0][1]["atmosphere"] is None and listings == [True]  # one listing; installed sites are checked daily
     out = t.capsys.readouterr().out
@@ -757,14 +759,14 @@ LICENCE = {"redistribution": "attribution",
 @menu_row
 def the_description_block_names_in_full_and_cuts_descriptions_at_the_edge(t):
     t.mp.setenv("COLUMNS", "40")
-    cli._print_instrument_descriptions("Cameras", [
+    cli.filters._print_instrument_descriptions("Cameras", [
         {"key": "PointGrey_Grasshopper2_14S5C", "description": "Point Grey Grasshopper2 14S5C colour camera"},
         {"key": "SQM", "description": ""}])
     assert t.capsys.readouterr().out.splitlines() == [
         "", "Cameras: 2 instruments",
         "  PointGrey_Grasshopper2_14S5C  Point G…",
         "  SQM                           no desc…"]
-    cli._print_instrument_descriptions("Solo", [{"key": "A" * 40, "description": "text"}])
+    cli.filters._print_instrument_descriptions("Solo", [{"key": "A" * 40, "description": "text"}])
     assert t.capsys.readouterr().out.splitlines() == ["", "Solo: 1 instrument", "  " + "A" * 40]
 
 
@@ -816,7 +818,7 @@ def the_summary_fits_80_columns_in_about_a_dozen_lines(t):
                         atmosphere_sites=["paranal", "lasilla"], published="filter+instrument+atmosphere")
     entry = {"info": {"licence": LICENCE, "references": ["a"], "description": "Long. Text."},
              "properties": None, "errors": []}
-    lines = cli._pick_summary("Fac/Cam", {"description": "word " * 30}, info, entry, "SVO")
+    lines = cli.filters._pick_summary("Fac/Cam", {"description": "word " * 30}, info, entry, "SVO")
     assert all(len(line) <= 80 for line in lines) and len(lines) <= 13
     flat = "\n".join(lines)
     assert "Fac/Cam  (60 bands)" in flat and "… (" in flat and "more)" in flat
@@ -830,14 +832,15 @@ def the_summary_says_where_a_download_comes_from(t):
     up = SimpleNamespace(mirror=SimpleNamespace(is_available=lambda: True), root=Path("/data/filters"))
     down = SimpleNamespace(mirror=SimpleNamespace(is_available=lambda: False))
     entry = {"sources": ["svo", "local", "njm", "original"]}
-    assert cli._download_origin(up, entry, None) == "NJM, then the original source, then SVO"
-    assert cli._download_origin(down, entry, None) == "the original source, then SVO; NJM is unreachable"
-    assert cli._download_origin(up, {"sources": ["local"]}, None) == "only the installed copy, which is incomplete"
-    assert cli._download_origin(up, entry, up.root / "GAIA" / "DR2") == "installed in /data/filters/GAIA/DR2"
+    assert cli.filters._download_origin(up, entry, None) == "NJM, then the original source, then SVO"
+    assert cli.filters._download_origin(down, entry, None) == "the original source, then SVO; NJM is unreachable"
+    assert (cli.filters._download_origin(up, {"sources": ["local"]}, None)
+            == "only the installed copy, which is incomplete")
+    assert cli.filters._download_origin(up, entry, up.root / "GAIA" / "DR2") == "installed in /data/filters/GAIA/DR2"
     up.root = Path("/a/data/directory/long/enough/that/its/path/does/not/fit/beside/the/name/filters")
-    origin = cli._download_origin(up, entry, up.root / "GAIA" / "DR2")
+    origin = cli.filters._download_origin(up, entry, up.root / "GAIA" / "DR2")
     assert origin == "installed in the filter directory, as GAIA/DR2"
-    lines = cli._pick_summary("GAIA/DR2", {}, availability(), {"info": None, "properties": None, "errors": []},
+    lines = cli.filters._pick_summary("GAIA/DR2", {}, availability(), {"info": None, "properties": None, "errors": []},
                               origin)
     assert "  From       : installed in the filter directory, as GAIA/DR2" in lines
     assert all(len(line) <= 80 for line in lines)
@@ -914,7 +917,7 @@ def band_descriptions_wrap_to_the_terminal(t):
     props = {"G": {"WavelengthPivot": 6217.6, "FWHM": 4548.2, "DetectorType": "photon"}}
     info = {"bands": {"G": {"MagSys": "Vega", "Description": "GAIA Gbp filter, DR2 Maíz Apellániz & Weiler "
                                                             "revision (faint, G>10.87)"}}}
-    cli.print_catalogue_entry("GAIA/GAIA", {"info": info, "properties": {"bands": props}, "errors": []})
+    cli.filters.print_catalogue_entry("GAIA/GAIA", {"info": info, "properties": {"bands": props}, "errors": []})
     lines = t.capsys.readouterr().out.splitlines()
     assert all(len(line) <= 80 for line in lines) and len(lines) > 2
 
@@ -984,7 +987,7 @@ def coverage_prints_each_failure_once(t):
 def njm_cuts_are_asked_in_a_terminal(t):
     t.mp.setattr("sys.stdin", Stdin(True))
     t.mp.setattr(cli.grids, "prompt_njm_axis_cuts", lambda name, g, model_url=None: {"teff_range": (1.0, 2.0)})
-    assert cli._download_cuts("G", "njm", None, {"model_url": "u"}, {}) == {"teff_range": (1.0, 2.0)}
+    assert cli.grids._download_cuts("G", "njm", None, {"model_url": "u"}, {}) == {"teff_range": (1.0, 2.0)}
 
 
 @menu_row
@@ -1014,7 +1017,7 @@ def the_picker_finds_an_instrument_installed_under_an_older_spelling(t):
     (installed / "g.dat").write_text("Wavelength,Transmission\n4000,0.1\n5000,0.5\n6000,0.1\n")
     (installed / "GMOS-N").write_text("g.dat\n")
     library = FilterLibrary(t.tmp)
-    facility, instrument, directory = cli._picked_names(library, {"key": "Gemini"}, {"key": "GMOS_N"})
+    facility, instrument, directory = cli.filters._picked_names(library, {"key": "Gemini"}, {"key": "GMOS_N"})
     assert (facility, instrument) == ("Gemini", "GMOS_N")
     assert directory is None or directory.resolve() == installed.resolve()
     assert library.installed_directory("Gemini", "GMOS_N").resolve() == installed.resolve()
@@ -1022,7 +1025,7 @@ def the_picker_finds_an_instrument_installed_under_an_older_spelling(t):
 
 @menu_row
 def filters_info_says_when_the_catalogue_is_the_cached_copy(t):
-    cli.print_catalogue_entry("Fac/Cam", {"info": {"description": "d"}, "properties": None, "errors": [],
+    cli.filters.print_catalogue_entry("Fac/Cam", {"info": {"description": "d"}, "properties": None, "errors": [],
                                           "origin": {"source": "cache", "checked": 0.0 + 1761600000,
                                                      "njm_unreachable": True}})
     out = " ".join(t.capsys.readouterr().out.split())  # the field wraps to the terminal
@@ -1221,11 +1224,11 @@ def picker_shows_the_longest_label_in_full(t):
 @menu_row
 def number_prompts_take_a_number_a_default_or_a_word(t):
     answer(t.mp, "1.5")
-    assert cli._ask_number("Airmass: ") == 1.5
+    assert cli.filters._ask_number("Airmass: ") == 1.5
     answer(t.mp, "")
-    assert cli._ask_number("PWV: ", default=None) is None
+    assert cli.filters._ask_number("PWV: ", default=None) is None
     answer(t.mp, "UNSTATED")
-    assert cli._ask_number("Airmass: ", words=("unstated",)) == "unstated"
+    assert cli.filters._ask_number("Airmass: ", words=("unstated",)) == "unstated"
 
 
 @menu_row
@@ -1242,7 +1245,7 @@ def composition_offers_the_bands_that_work(t):
     answer(t.mp, "y")
     request = {"components": ["filter"], "variants": None, "detector_type": None, "allow_heavy": False,
                "atmosphere": {"site": "paranal", "airmass": 1.0, "pwv": 1.0}}
-    cli._compose_the_bands_that_work(t.tmp / "Paranal" / "VISTA", request, ComponentError("no"))
+    cli.filters._compose_the_bands_that_work(t.tmp / "Paranal" / "VISTA", request, ComponentError("no"))
     assert calls == [["J", "H"]]
     assert "Z: covers 9000-56000 A" in t.capsys.readouterr().out
 
@@ -1256,7 +1259,7 @@ def the_pickers_show_names_only(t):
     assert "   1. GAIA" in out and "Gaia mission" not in out  # no facility descriptions are invented
     pickers = out.split("\nGAIA: 5 instruments\n")[0] + out.split("Instruments for GAIA")[1]
     assert not any(text in pickers for text in ("[njm", "[svo", "Tags show", "Evans et al."))
-    assert cli._picker_labels(GAIA_INSTRUMENTS + [{"key": "Other"}]) == [
+    assert cli.filters._picker_labels(GAIA_INSTRUMENTS + [{"key": "Other"}]) == [
         "DR2", "DR2r", "GAIA", "GAIA0", "Gaia2m", "Other"]
 
 
@@ -1291,7 +1294,7 @@ def the_instrument_picker_shows_full_names_in_columns(t):
 def picker_cuts_long_labels_with_an_ellipsis(t):
     t.mp.setenv("COLUMNS", "40")
     answer(t.mp, "q")
-    cli.prompt_choice(["x" * 50], "Things")
+    cli.filters.prompt_choice(["x" * 50], "Things")
     assert "x" * 23 + "…" in t.capsys.readouterr().out
 
 
@@ -1311,7 +1314,7 @@ def every_number_question_is_the_same_one(t):
     from sed_tools import ui_utils
     from sed_tools.ml import completer, generator
 
-    assert cli._ask_number is generator._ask_number is completer._ask_number is ui_utils.ask_number
+    assert cli.filters._ask_number is generator._ask_number is completer._ask_number is ui_utils.ask_number
 
 
 def _narrow(t, scenario):

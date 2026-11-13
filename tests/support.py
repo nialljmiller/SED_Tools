@@ -26,8 +26,8 @@ import requests
 
 from sed_tools.component_sources._common import DerivedCurve, SiteAtmosphere
 from sed_tools.filters.combine import write_filter_index
-from sed_tools.filters.compose import TEAM
 from sed_tools.filters.curve_metadata import PHOTON, write_filter_file
+from sed_tools.filters.manifest import TEAM
 
 TESTS = Path(__file__).resolve().parent
 

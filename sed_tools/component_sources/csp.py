@@ -20,7 +20,6 @@ from typing import Dict, Tuple
 
 import numpy as np
 
-from ..filters.compose import InstrumentManifest  # noqa: F401  importable from here, as before
 from ..filters.curve_metadata import PHOTON
 from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, safe_member, support
 

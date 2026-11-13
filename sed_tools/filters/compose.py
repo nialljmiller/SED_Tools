@@ -15,16 +15,13 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Uni
 import numpy as np
 
 from .curve_metadata import (ENERGY, PHOTON, SOURCES_SEPARATOR, detector_type_before_conversion,
-                              normalize_detector_type, read_filter_header, write_filter_file)
+                             normalize_detector_type, read_filter_header, write_filter_file)
 from .detector_edit import unconverted_transmission
-from .manifest import (  # noqa: F401 - every manifest name stays importable from here (filter_components)
-    ATMOSPHERE, ATMOSPHERE_KINDS, AUXILIARY_DIRS, COMPONENTS_DIR, COMPOSABLE_ROLES, DERIVED, FILTER,
-    FILTER_SIBLING_SUFFIXES, INSTRUMENT, MANIFEST_NAME, MANIFEST_SCHEMA, OPTICS, PRODUCTS_DIR, PUBLISHED, QE,
-    ROLES, SHARED, TEAM, _RECIPES, _SVO_TOKENS, _VARIANT_NAME, AtmosphereGrid, AtmosphereSpec, ComponentError,
-    InstrumentManifest, PathLike, _require_inside, archived_bands, index_listing, index_names, is_auxiliary_path,
-    math_isclose, parse_components, recipe_name, write_filter_index,
+from .manifest import (
+    ATMOSPHERE, COMPOSABLE_ROLES, FILTER, INSTRUMENT, MANIFEST_NAME, OPTICS, PUBLISHED, QE, SHARED, _VARIANT_NAME,
+    AtmosphereGrid, AtmosphereSpec, ComponentError, InstrumentManifest, PathLike, parse_components, recipe_name,
+    write_filter_index,
 )
-from .sites import instrument_sites, is_ground_based, own_site, platform  # noqa: F401
 
 logger = logging.getLogger(__name__)
 

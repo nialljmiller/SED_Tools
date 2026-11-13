@@ -15,7 +15,6 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
-import numpy as np  # noqa: F401  (kept: `from sed_tools.filters.manifest import *` gives np, as before)
 
 from .curve_metadata import ENERGY, detector_type_before_conversion, normalize_detector_type, read_filter_header
 from .sites import instrument_sites, is_ground_based, own_site, platform

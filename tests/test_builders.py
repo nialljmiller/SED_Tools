@@ -32,12 +32,12 @@ from sed_tools.component_sources._common import (DerivedCurve, SimpleSource, Tab
                                                  write_site)
 from sed_tools.component_sources._original import Fetcher, clean_curve, make_band, to_angstrom
 from sed_tools.filters import library as filters_library, svo
-from sed_tools.filters.compose import (DERIVED, FILTER, OPTICS, QE, SHARED, TEAM, AtmosphereGrid,
-                                       ComponentCoverageError, ComponentError, InstrumentManifest, add_component,
-                                       build_product, compose_band, read_curve)
+from sed_tools.filters.compose import ComponentCoverageError, add_component, build_product, compose_band, read_curve
 from sed_tools.filters.curve_metadata import (ENERGY, PHOTON, SVOFilterRecord, SVOMetadataClient, _param_text,
                                               read_filter_header, released_mesa_reads, svo_fps_url, write_filter_file)
 from sed_tools.filters.library import FilterLibrary
+from sed_tools.filters.manifest import (DERIVED, FILTER, OPTICS, QE, SHARED, TEAM, AtmosphereGrid, ComponentError,
+                                        InstrumentManifest)
 from sed_tools.grids import mast, msg, svo as svo_grid
 
 from support import TESTS, WL, Resp, Session, answer, derived, gauss, published_set, scenarios, team_site

@@ -30,8 +30,7 @@ import numpy as np
 
 from ..filters.compose import FILTER, OPTICS, QE, InstrumentManifest, add_component
 from ..filters.curve_metadata import PHOTON
-from ._original import (CONNECT_TIMEOUT, _each_published, download,  # noqa: F401  CONNECT_TIMEOUT stays importable here
-                        merged_product)
+from ._original import _each_published, download, merged_product
 
 logger = logging.getLogger(__name__)
 

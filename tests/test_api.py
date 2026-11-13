@@ -26,9 +26,9 @@ from sed_tools import api, ml
 from sed_tools.api import SED, Filters, MLGenerator, SpectralGrid, SpectralGridInfo, Spectrum
 from sed_tools.cube.collision import CollisionConfig
 from sed_tools.cube.model import SED as GridFinder
-from sed_tools.cube.tool import AB_ZERO_FLUX
 from sed_tools.ml.completer import SEDCompleter, SEDCompleterNetwork
 from sed_tools.ml.generator import SEDGenerator
+from sed_tools.photometry import AB_ZERO_FLUX
 
 from support import (CLEAN, GRABBERS, GRID, KURUCZ, STALE, answer, atmosphere_site, cpu_torch, fake_grabber,
                      filters_api, njm_grids, scenarios, tiny_library, write_flux_cube)

@@ -2,7 +2,6 @@
 
 from typing import Sequence, Optional, List, Union, Tuple
 import importlib.util
-import math  # noqa: F401  (kept: `from sed_tools.ui_utils import *` gives what 0.5.0 gave)
 import re
 import shutil
 import sys

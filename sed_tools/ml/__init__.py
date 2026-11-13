@@ -7,9 +7,8 @@ the sed-tools menus, or the engines' own train().
 
 import json
 import logging
-import os  # noqa: F401  (os and Optional are unused here, but sed_tools.ml had them in 0.4.1)
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple  # noqa: F401
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 

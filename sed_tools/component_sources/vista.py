@@ -18,7 +18,7 @@ import tarfile
 from dataclasses import dataclass
 
 from ._common import SimpleSource, Table, build_simple
-from ._original import CONNECT_TIMEOUT, download  # noqa: F401  CONNECT_TIMEOUT stays importable here
+from ._original import download
 
 BUNDLE = "https://www.eso.org/sci/facilities/paranal/decommissioned/vircam/inst/Filters_QE_Atm_curves.tar.gz"
 

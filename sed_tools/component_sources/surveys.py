@@ -18,8 +18,7 @@ import zipfile
 import numpy as np
 
 from ..filters.curve_metadata import PHOTON
-from ._original import (Component, Fetcher, Instrument, make_band, make_builder,
-                        safe_member, tar_members)  # noqa: F401  safe_member stays importable here
+from ._original import Component, Fetcher, Instrument, make_band, make_builder, tar_members
 from .team_atmospheres import HALEAKALA_PS1
 
 # --------------------------------------------------------------------- ATLAS

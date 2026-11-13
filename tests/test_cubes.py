@@ -22,12 +22,13 @@ import pytest
 from sed_tools import _constants
 from sed_tools.api import _build_flux_cube, _flux_cube_shortfall
 from sed_tools.cube import mesa_export, tool
-from sed_tools.cube.build import _extra_key_to_filename, resample_to_grid, spectra_not_in_cube
+from sed_tools.cube.build import resample_to_grid, spectra_not_in_cube
 from sed_tools.cube.collision import CollisionConfig, copy_global_config_to_model, load_config, match_filter_value
 from sed_tools.cube.densify import densify_grid
 from sed_tools.cube.mesa_export import list_variants
 from sed_tools.cube.model import SED, SEDModel, _build_filter_index
 from sed_tools.cube.tool import FluxCube, bolometric_magnitude
+from sed_tools.cube.variants import _extra_key_to_filename
 from sed_tools.grids.clean import clean_model_dir
 from sed_tools.grids.lookup import regenerate_lookup_table
 from sed_tools.photometry import PC_TO_M, RSUN_TO_M
@@ -1349,7 +1350,7 @@ def a_non_numeric_line_inside_a_filter_curve_raises(t):
 
 @row
 def header_lines_before_the_data_are_still_skipped(t):
-    from sed_tools.cube.tool import load_two_column_file
+    from sed_tools.photometry import load_two_column_file
 
     path = t.tmp / "vega.csv"
     path.write_text("Vega reference\nwavelength,flux\n4000.0,1e-9\n5000.0,2e-9\n")

@@ -1,59 +1,37 @@
 """The ``sed-tools`` command: the argument parser, the subcommand handlers, the menu and main().
 
-The menu flows are in cli/grids.py (spectral grids, ML and tools) and cli/filters.py (filter sets);
-this module re-exports them.
+The menu flows are in cli/grids.py (spectral grids, ML and tools) and cli/filters.py (filter sets).
 """
 
 import argparse
-import glob  # noqa: F401  (kept: `from sed_tools.cli import *` gives what 0.5.0 gave)
-import inspect  # noqa: F401  (kept, as glob)
 import json
 import logging
 import os
-import re  # noqa: F401  (kept, as glob)
-import shlex  # noqa: F401  (kept, as glob)
 import sys
-import textwrap  # noqa: F401  (kept, as glob)
-import time  # noqa: F401  (kept, as glob)
 import traceback
 from collections import Counter
-from pathlib import Path  # noqa: F401  (kept, as glob)
-from typing import Dict, List, Optional, Sequence, Tuple  # noqa: F401  (Sequence kept, as glob)
+from typing import Dict, List, Optional, Tuple
 
-import numpy as np  # noqa: F401  (kept, as glob)
 from requests import RequestException
 
-# Several names below are imported only so that they stay importable from sed_tools.cli.
 from ..api import SED, Filters
 from ..component_sources import AUTOMATIC_BUILDERS, BUILDERS, get_builder
 from ..config import set_data_dir, show_config
 from ..cube.model import FILTER_DIR_DEFAULT, STELLAR_DIR_DEFAULT
-from ..filters.compose import ComponentError
+from ..filters.manifest import ComponentError
 from ..filters.njm_catalogue import CatalogueError
-from ..grids.clean import FLUX_GUESS_WHY, FLUX_UNITS, clean_model_dir, undeclared_flux_unit
-from ..grids.lookup import regenerate_lookup_table
-from ..grids.mast import MASTSpectraGrabber
-from ..grids.msg import MSGSpectraGrabber
-from ..grids.njm import NJMSpectraGrabber
-from ..grids.pipeline import _build_data_products, _rebuild_command, build_h5_bundle_from_txt, local_grids
-from ..grids.spectrum_io import build_h5_bundle, read_text_spectrum  # noqa: F401  (read_text_spectrum kept, as glob)
-from ..grids.svo import SVOSpectraGrabber
-from ..terminal_plots import terminal_color_enabled, terminal_width
-from ..ui_utils import (OPTIONAL_EXTRAS, _ansi, ask_number as _ask_number, missing_package_error, missing_packages,
-                        parse_multi_selection, parse_numeric_range, prompt_choice, refused_without)
+from ..grids.units import FLUX_UNITS
+from ..grids.pipeline import local_grids
+from ..terminal_plots import terminal_color_enabled
+from ..ui_utils import _ansi, missing_package_error, refused_without
 from .filters import (
-    _FilterSetOption, _UNSTATED, _ask_conditions, _atmosphere_sites, _availability_errors, _browse_instruments,
-    _catalogue_entry, _composable_bands, _compose_the_bands_that_work, _default_site, _download_origin,
-    _fetch_instrument, _installed_availability, _offer_composition, _offer_download, _pick_summary, _picked_names,
-    _picker_labels, _print_filter_set, _print_instrument_descriptions, print_catalogue_entry,
-    print_filter_availability, run_filter_combine_flow, run_filter_compose_flow, run_filter_info_flow,
-    run_filters_flow,
+    _UNSTATED, _availability_errors, _catalogue_entry, _print_filter_set, run_filter_combine_flow,
+    run_filter_compose_flow, run_filter_info_flow, run_filters_flow,
 )
 from .grids import (
-    _ask_flux_unit, _ask_import_flux_unit, _download_cuts, _download_from_first_source, _print_cleaning_report,
-    _report_import_flux_unit, ensure_dir, prompt_njm_axis_cuts, run_combine_flow, run_coverage_flow,
-    run_grid_densifier_flow, run_import_flow, run_mesa_prepare_flow, run_ml_completer_flow, run_ml_generator_flow,
-    run_rebuild_flow, run_spectra_flow,
+    _ask_import_flux_unit, _report_import_flux_unit, run_combine_flow, run_coverage_flow, run_grid_densifier_flow,
+    run_import_flow, run_mesa_prepare_flow, run_ml_completer_flow, run_ml_generator_flow, run_rebuild_flow,
+    run_spectra_flow,
 )
 
 logger = logging.getLogger(__name__)

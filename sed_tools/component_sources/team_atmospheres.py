@@ -24,22 +24,19 @@ URL, retrieval time and SHA-256)::
 
 from __future__ import annotations
 
-import datetime  # noqa: F401 - `from ... import *` has given it since 0.5.0
 import gzip
-import hashlib  # noqa: F401 - `from ... import *` has given it since 0.5.0
 import io
-import json  # noqa: F401 - `from ... import *` has given it since 0.5.0
 import logging
 import re
 import tarfile
 from pathlib import Path
-from typing import Dict, Iterable, Optional, Sequence, Tuple, Union  # noqa: F401 - Tuple, as above
+from typing import Dict, Iterable, Optional, Sequence, Union
 
 import numpy as np
 
-from ..filters.compose import TEAM
+from ..filters.manifest import TEAM
 from ._common import DerivedCurve, SiteAtmosphere, write_site
-from ._original import CONNECT_TIMEOUT, CachingSession, Curve, download  # noqa: F401  CONNECT_TIMEOUT stays importable here
+from ._original import CachingSession, Curve, download
 
 logger = logging.getLogger(__name__)
 

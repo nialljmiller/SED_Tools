@@ -7,13 +7,11 @@ grids/pipeline.py and cube/check.py.
 
 from __future__ import annotations
 
-import csv  # noqa: F401  (kept: `from sed_tools.api import *` gives what 0.5.0 gave)
 import logging
-import math  # noqa: F401  (kept, as csv)
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union  # noqa: F401  (Sequence kept)
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -763,7 +761,8 @@ class SED:
         if dry_run:
             return {**result, "n_missing": len(missing), "dest": str(dest), "dry_run": True}
 
-        from ..grids.clean import check_flux_unit, clean_model_dir
+        from ..grids.units import check_flux_unit
+        from ..grids.clean import clean_model_dir
 
         check_flux_unit(str(src_dir), [str(f) for f in files], flux_unit)
 

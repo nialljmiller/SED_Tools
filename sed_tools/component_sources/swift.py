@@ -17,8 +17,6 @@ tree.
 
 from __future__ import annotations
 
-import gzip  # noqa: F401 - `from ... import *` has given it since 0.5.0
-import io  # noqa: F401 - `from ... import *` has given it since 0.5.0
 import logging
 from typing import Dict, Sequence, Tuple
 

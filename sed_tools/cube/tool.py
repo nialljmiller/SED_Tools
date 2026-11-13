@@ -1,7 +1,6 @@
 """The flux cube tool (python -m sed_tools.cube.tool --flux-cube PATH): it prompts for what is missing,
 evaluates the SED, its bolometric magnitude and its AB or Vega magnitude in every filter it finds under filters/
-(or --filters), and saves a plot to plots/. It re-exports FluxCube (cube/fluxcube.py) and the photometry names of
-photometry.py.
+(or --filters), and saves a plot to plots/.
 """
 
 from __future__ import annotations
@@ -10,8 +9,6 @@ import argparse
 import logging
 import math
 import os
-import struct  # noqa: F401  (struct, dataclass and read_axes: importable here, as in 0.5.0)
-from dataclasses import dataclass  # noqa: F401
 from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
 
@@ -19,16 +16,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from . import model as _model
-from .fileio import read_axes  # noqa: F401
 from .fluxcube import FluxCube
-from ..filters.curve_metadata import ENERGY, PHOTON, normalize_detector_type, read_filter_header  # noqa: F401
-# Re-exported: these names are imported from sed_tools.flux_cube_tool.
-from ..photometry import (  # noqa: F401
-    AB_ZERO_FLUX, FILTER_EXTENSIONS, PC_TO_M, RSUN_TO_M, SPEED_OF_LIGHT_ANG_PER_S, UNIT_TO_ANGSTROM, VEGA_ZP_KEYS,
-    FilterCurve, Spectrum, _band_magnitude, _standardize_file_wavelengths, _warn_outside_sed,
-    band_average_flux_lambda, band_average_flux_lambda_from_arrays, band_average_flux_nu, bolometric_magnitude,
-    filter_weight, get_metadata_float, infer_unit_from_values, integrate_flux, load_filter_curve, load_spectrum,
-    load_two_column_file, normalize_metadata_key, parse_metadata_value, standardize_wavelength_array)
+from ..photometry import (
+    FILTER_EXTENSIONS, PC_TO_M, RSUN_TO_M, FilterCurve, Spectrum, _band_magnitude, _warn_outside_sed,
+    bolometric_magnitude, load_filter_curve, load_spectrum,
+)
 
 logger = logging.getLogger(__name__)
 

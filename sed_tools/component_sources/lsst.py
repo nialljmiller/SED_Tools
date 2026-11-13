@@ -39,10 +39,9 @@ from typing import Dict, Optional, Tuple, Union
 
 import numpy as np
 
-from ..filters.compose import (ATMOSPHERE, FILTER, OPTICS, QE, SHARED, AtmosphereGrid,
-                                 InstrumentManifest, add_component)
-from ..filters.curve_metadata import (ENERGY, PHOTON, SOURCE_ASSUMED, SOURCE_SVO, SVOMetadataClient,
-                               svo_components_header, svo_detector, write_filter_file)
+from ..filters.compose import ATMOSPHERE, FILTER, OPTICS, QE, SHARED, AtmosphereGrid, InstrumentManifest, add_component
+from ..filters.curve_metadata import (ENERGY, PHOTON, SOURCE_ASSUMED, SVOMetadataClient, svo_components_header,
+                                      svo_detector, write_filter_file)
 from ._original import CONNECT_TIMEOUT
 
 FACILITY = "LSST"

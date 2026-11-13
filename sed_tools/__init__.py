@@ -21,14 +21,9 @@ from .api import (
     local,
     query,
 )
-from .cli import (
-    ensure_dir,
-    menu,
-    run_combine_flow,
-    run_filters_flow,
-    run_rebuild_flow,
-    run_spectra_flow,
-)
+from .cli import menu
+from .cli.filters import run_filters_flow
+from .cli.grids import ensure_dir, run_combine_flow, run_rebuild_flow, run_spectra_flow
 from .grids.spectrum_io import build_h5_bundle as build_h5_bundle_from_txt
 from .grids.spectrum_io import list_text_spectra, read_text_spectrum as load_txt_spectrum
 from .grids.mast import MASTSpectraGrabber

@@ -15,10 +15,10 @@ from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
 import numpy as np
 
 from ..config import get_data_dir
-from ..filters.compose import is_auxiliary_path
+from ..filters.manifest import is_auxiliary_path
 from ..photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve, Spectrum, _warn_outside_sed,
-                          band_average_flux_lambda, band_average_flux_lambda_from_arrays, band_average_flux_nu,
-                          get_metadata_float, load_filter_curve, load_spectrum)
+                          band_average_flux_lambda, band_average_flux_nu, get_metadata_float, load_filter_curve,
+                          load_spectrum)
 from .fileio import read_axes
 from .fluxcube import FluxCube
 

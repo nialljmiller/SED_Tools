@@ -33,7 +33,7 @@ import numpy as np
 
 from ..filters.compose import FILTER, OPTICS, QE, InstrumentManifest, add_component, recipe_name
 from ._common import Table, register_variant
-from ._original import CONNECT_TIMEOUT, download  # noqa: F401  CONNECT_TIMEOUT stays importable here
+from ._original import download
 
 DOI = "http://www.ioa.s.u-tokyo.ac.jp/~doi/sdss"
 GUNN = "https://www.sdss4.org/wp-content/uploads/2017/04/filter_curves.fits"

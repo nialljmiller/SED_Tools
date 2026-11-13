@@ -36,7 +36,6 @@ from sed_tools.cli.filters import _fetch_instrument, review_detector_types
 from sed_tools.component_sources import catalog
 from sed_tools.component_sources._common import DerivedCurve, SiteAtmosphere, write_site
 from sed_tools.component_sources.catalog import name_key
-from sed_tools.cube.tool import infer_unit_from_values, load_filter_curve, load_spectrum, load_two_column_file
 from sed_tools.filters import curve_metadata as fm, library as filters_library, njm as filters_njm, svo as filters_svo
 from sed_tools.filters.combine import combine_filter_sets, write_filter_index
 from sed_tools.filters.compose import (ATMOSPHERE, FILTER, OPTICS, QE, AtmosphereGrid, AtmosphereSpec,
@@ -50,13 +49,15 @@ from sed_tools.filters.curve_metadata import (ENERGY, PHOTON, SOURCE_ASSUMED, SO
                                               released_mesa_reads, tag_filter_file, tag_filter_tree, write_filter_file,
                                               write_filter_header)
 from sed_tools.filters.display import display_colors, instrument_colors
-from sed_tools.filters.library import FilterLibrary, instrument_catalogue, load_instrument_catalogue
+from sed_tools.filters.library import FilterLibrary
 from sed_tools.filters.manifest import check_sets, set_problems
+from sed_tools.filters.names import instrument_catalogue, load_instrument_catalogue
 from sed_tools.filters.njm import NJMFilterGrabber, SetDownload, drop_unlisted_bands
 from sed_tools.filters.njm_catalogue import CatalogueError, FilterCatalogue, cache_root, format_citations
 from sed_tools.filters.properties import (AB_JY, curve_properties, extinction_law, extinction_ratio, filter_properties,
                                           load_vega, properties_record)
 from sed_tools.filters.svo import Facility, FilterRow, Instrument, SVOFilterBrowser
+from sed_tools.photometry import infer_unit_from_values, load_filter_curve, load_spectrum, load_two_column_file
 from sed_tools.ui_utils import prompt_choice
 
 from support import (CURVE, NJM, STALE, WL, Resp, Session, answer, atmosphere_site, derived, gauss, njm_index,
@@ -2339,7 +2340,7 @@ def filters_info_and_the_picker_summary_say_the_set_is_incomplete(t):
             "reachable to complete it") in out
 
     info = Filters.available("GAIA", "GAIA", filter_root=root, include_remote=False)
-    lines = cli._pick_summary("GAIA/GAIA", {}, info, {"info": None, "properties": None, "errors": []}, "SVO")
+    lines = cli.filters._pick_summary("GAIA/GAIA", {}, info, {"info": None, "properties": None, "errors": []}, "SVO")
     assert "  Incomplete : 4 of 6 bands installed; missing Gbp_bright, Gbp_faint" in lines
     assert all(len(line) <= 80 for line in lines)
 
@@ -3090,7 +3091,7 @@ def _bundled_availability(t, builder):
     # GAIA/DR2's builder writes photon-counting curves; this used to say energy, "unverified"
     assert info["detector_type"] is None
     assert info["detector_type_sources"] == {"BP": "unknown", "G": "unknown", "RP": "unknown"}
-    cli.print_filter_availability(info)
+    cli.filters.print_filter_availability(info)
     out = t.capsys.readouterr().out
     assert "  Detector                 : not known until the curves are installed\n" in out
     assert "energy" not in out and "unverified" not in out
