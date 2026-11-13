@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-11-13T16:34:55.132215",
+  "generated": "2026-11-13T16:55:21.758047",
   "statistics": {
     "total_models": 8,
     "complete_models": 7,
@@ -8,7 +8,7 @@
     "total_size_bytes": 110716777177,
     "total_size_human": "103.11 GB",
     "total_facilities": 221,
-    "total_filters": 12236
+    "total_filters": 12235
   },
   "models": [
     "Husfeld",
@@ -17114,7 +17114,7 @@
           },
           "Mosaic": {
             "name": "Mosaic",
-            "filter_count": 54,
+            "filter_count": 53,
             "filters": [
               "B",
               "BATC_337",
@@ -17153,7 +17153,6 @@
               "Rs_Steidel",
               "U_2010",
               "U_Dey",
-              "U_solid",
               "Un_Steidel",
               "Us",
               "V",
@@ -17172,10 +17171,10 @@
               "zd_DECam"
             ],
             "published_paths": {
-              "filter": 54
+              "filter": 53
             },
             "detector_types": {
-              "energy": 47,
+              "energy": 46,
               "photon": 7
             },
             "separate_components": {
@@ -17184,8 +17183,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 541827,
-            "size_human": "529.13 KB",
+            "size_bytes": 532004,
+            "size_human": "519.54 KB",
             "description": "KPNO Mosaic imager filters: Harris, SDSS, BATC medium bands and more",
             "svo_instruments": [
               "KPNO/MOSAIC",
