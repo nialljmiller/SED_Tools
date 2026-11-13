@@ -1,0 +1,13 @@
+#file_name,teff,logg,meta,alpha,lh,vtur,source_model,original_file
+Kurucz2003all__alpha_04_000012.txt,5750.0,4.0,-0.5,0.4,1.25,2,Kurucz2003all__alpha_04,Kurucz2003all_fid20323.txt
+Kurucz2003all__alpha_04_000013.txt,5750.0,4.5,-0.5,0.4,1.25,2,Kurucz2003all__alpha_04,Kurucz2003all_fid20324.txt
+Kurucz2003all__alpha_04_000014.txt,6000.0,4.0,-0.5,0.4,1.25,2,Kurucz2003all__alpha_04,Kurucz2003all_fid20334.txt
+Kurucz2003all__alpha_04_000015.txt,6000.0,4.5,-0.5,0.4,1.25,2,Kurucz2003all__alpha_04,Kurucz2003all_fid20335.txt
+Kurucz2003all__alpha_04_000016.txt,6250.0,4.0,-0.5,0.4,1.25,2,Kurucz2003all__alpha_04,Kurucz2003all_fid20344.txt
+Kurucz2003all__alpha_04_000017.txt,6250.0,4.5,-0.5,0.4,1.25,2,Kurucz2003all__alpha_04,Kurucz2003all_fid20345.txt
+Kurucz2003all__alpha_04_000018.txt,5750.0,4.0,0.0,0.4,1.25,2,Kurucz2003all__alpha_04,Kurucz2003all_fid23179.txt
+Kurucz2003all__alpha_04_000019.txt,5750.0,4.5,0.0,0.4,1.25,2,Kurucz2003all__alpha_04,Kurucz2003all_fid23180.txt
+Kurucz2003all__alpha_04_000020.txt,6000.0,4.0,0.0,0.4,1.25,2,Kurucz2003all__alpha_04,Kurucz2003all_fid23190.txt
+Kurucz2003all__alpha_04_000021.txt,6000.0,4.5,0.0,0.4,1.25,2,Kurucz2003all__alpha_04,Kurucz2003all_fid23191.txt
+Kurucz2003all__alpha_04_000022.txt,6250.0,4.0,0.0,0.4,1.25,2,Kurucz2003all__alpha_04,Kurucz2003all_fid23200.txt
+Kurucz2003all__alpha_04_000023.txt,6250.0,4.5,0.0,0.4,1.25,2,Kurucz2003all__alpha_04,Kurucz2003all_fid23201.txt
