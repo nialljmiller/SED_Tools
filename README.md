@@ -49,8 +49,8 @@ templates, planetary spectra or stellar population spectra.
 Use `sed-tools grids` and `--grids` to discover and download spectral grids.
 The earlier `spectra` command and `--models` option remain supported aliases.
 In Python, `SpectralGrid`, `SpectralGridInfo`, `sed.grid`, `sed.available_grids()`
-and `find_grids` are the preferred names; `Catalog`, `CatalogInfo`, `sed.cat`,
-`sed.available_models()` and `find_atmospheres` remain compatible. Existing keyword arguments such as
+and `find_grids` are the preferred names; `Catalog`, `CatalogInfo` and `sed.cat`
+remain compatible. Existing keyword arguments such as
 `catalog` and `model_root`, and the `stellar_models/` storage directory,
 retain their established names.
 
@@ -984,8 +984,6 @@ spec = grid[0]
 # Data arrays
 spec.wavelength    # np.ndarray (Angstroms)
 spec.flux          # np.ndarray (erg/cm²/s/Å)
-spec.wl            # Alias for wavelength
-spec.fl            # Alias for flux
 
 # Stellar parameters
 spec.teff          # Effective temperature (K)

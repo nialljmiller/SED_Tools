@@ -341,9 +341,8 @@ def tagging_stops_at_once_when_svo_is_unreachable(t):
 # Public API (0.4.1 names, most of them) that nothing else calls: Spectrum, SpectralGrid, SpectralGridInfo
 # ----------------------------------------------------------------------
 @row
-def spectrum_aliases_and_dict(t):
+def spectrum_to_dict(t):
     s = _spectrum(5000.0, 4.5, 0.0, "5000.0.txt")
-    assert s.wl is s.wavelength and s.fl is s.flux
     assert s.to_dict() == {"wavelength": s.wavelength, "flux": s.flux, "teff": 5000.0, "logg": 4.5,
                            "metallicity": 0.0, "filename": "5000.0.txt"}
 
@@ -380,8 +379,8 @@ def query_fetch_and_local_reach_the_njm_and_svo_grids(t):
     local = api.local(GRID, filter_root=t.tmp / "filters")
     node = next(s for s in local.grid if (s.logg, s.metallicity) == (4.5, 0.0))
     at_node = local(6000.0, 4.5, 0.0)
-    assert len(local.grid) == 4 and np.array_equal(at_node.wavelength, node.wl)
-    assert np.allclose(at_node.flux, node.fl, rtol=1e-9, atol=0)
+    assert len(local.grid) == 4 and np.array_equal(at_node.wavelength, node.wavelength)
+    assert np.allclose(at_node.flux, node.flux, rtol=1e-9, atol=0)
 
 
 def _installed(t):
@@ -617,7 +616,7 @@ def every_module_star_imports_and_keeps_its_recorded_names(t):
 
 
 # ----------------------------------------------------------------------
-# Programmatic use as 0.4.1 documented it: grid names, find_atm/find_atmospheres, interpolation, photometry
+# Programmatic use as 0.4.1 documented it: grid names, find_atm, interpolation, photometry
 # ----------------------------------------------------------------------
 DEMO_WL = np.array([4000.0, 5000.0])
 
@@ -645,12 +644,11 @@ def _gaia_photometry(t):
 
 @row
 def spectral_grid_names_preserve_api_compatibility(t):
-    from sed_tools import Catalog, CatalogInfo, SpectralGrid, SpectralGridInfo, find_atmospheres, find_grids
+    from sed_tools import Catalog, CatalogInfo, SpectralGrid, SpectralGridInfo
     from sed_tools.api import SED
 
     assert SpectralGrid is Catalog
     assert SpectralGridInfo is CatalogInfo
-    assert find_grids is find_atmospheres
     grid = SpectralGrid(name="example", source="local")
     sed = SED(catalog=grid)
     assert sed.grid is sed.cat is grid
@@ -662,7 +660,7 @@ def spectral_grid_discovery_names(t):
 
     _cube(t, "demo", [4000.0, 6000.0], [3.0, 5.0])
     sed = SED(model_root=t.tmp)
-    assert sed.available_grids() == sed.available_models() == ["demo"]
+    assert sed.available_grids() == ["demo"]
     matches = find_grids(teff_range=(4500.0, 5500.0), model_root=t.tmp)
     assert [match.name for match in matches] == ["demo"]
 

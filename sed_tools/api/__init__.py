@@ -123,16 +123,6 @@ class Spectrum:
     filename: Optional[str] = None
     source_catalog: Optional[str] = None
     
-    @property
-    def wl(self) -> np.ndarray:
-        """Alias for wavelength."""
-        return self.wavelength
-    
-    @property
-    def fl(self) -> np.ndarray:
-        """Alias for flux."""
-        return self.flux
-    
     def to_dict(self) -> Dict[str, Any]:
         return {name: getattr(self, name) for name in ('wavelength', 'flux', 'teff', 'logg', 'metallicity', 'filename')}
     
@@ -897,8 +887,6 @@ class SED:
     def available_grids(self) -> List[str]:
         """List locally available spectral grids."""
         return self._core.available_grids()
-
-    available_models = available_grids
     
     def find_model(
         self,

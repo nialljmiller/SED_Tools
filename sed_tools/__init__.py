@@ -87,9 +87,6 @@ def find_grids(
     )
 
 
-find_atmospheres = find_grids
-
-
 def find_atm(**kwargs) -> list[ModelMatch]:
     """Backward-compatible alias for :func:`find_grids`."""
     return find_grids(**kwargs)
@@ -121,7 +118,6 @@ __all__ = [
     "ensure_dir",
     "fetch",
     "find_atm",
-    "find_atmospheres",
     "find_grids",
     "list_txt_spectra",
     "load_txt_spectrum",

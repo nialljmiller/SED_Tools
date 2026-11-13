@@ -83,16 +83,6 @@ def write_lookup_csv(
     return n
 
 
-def scan_existing_files(base_dir):
-    """Map each folder name under base_dir to the paths of the .txt spectra in it."""
-    existing_files = {}
-    for root, _, files in os.walk(base_dir):
-        for file in files:
-            if file.endswith(".txt"):
-                existing_files.setdefault(os.path.basename(root), []).append(os.path.join(root, file))
-    return existing_files
-
-
 # parse_header gives these as NaN when a spectrum's header does not state them
 _PARAMETERS = ("teff", "logg", "metallicity")
 
