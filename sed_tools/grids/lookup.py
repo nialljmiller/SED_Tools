@@ -158,20 +158,3 @@ def regenerate_lookup_table(
         writer = csv.DictWriter(csv_file, fieldnames=header)
         writer.writerows(metadata_rows)
     print(f"Lookup table regenerated: {lookup_table_path}")
-
-
-def main():
-    """Rewrite lookup_table.csv in every grid folder under STELLAR_DIR_DEFAULT."""
-    import argparse
-    from ..cube.model import STELLAR_DIR_DEFAULT
-    base_dir = str(STELLAR_DIR_DEFAULT)
-    argparse.ArgumentParser(description="Rewrite lookup_table.csv in every spectral grid folder from the headers "
-                                        f"of its spectra. The grid folders are those under {base_dir}.").parse_args()
-    os.makedirs(base_dir, exist_ok=True)
-    for model, files in scan_existing_files(base_dir).items():
-        print(f"Processing spectral grid: {model}")
-        regenerate_lookup_table(model, files, os.path.dirname(files[0]))  # a split grid's subgrids too
-
-
-if __name__ == "__main__":
-    main()

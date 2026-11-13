@@ -20,7 +20,7 @@ from collections import Counter
 from pathlib import Path  # noqa: F401  (kept, as glob)
 from typing import Dict, List, Optional, Sequence, Tuple  # noqa: F401  (Sequence kept, as glob)
 
-import numpy as np
+import numpy as np  # noqa: F401  (kept, as glob)
 from requests import RequestException
 
 # Several names below are imported only so that they stay importable from sed_tools.cli.
@@ -36,7 +36,7 @@ from ..grids.mast import MASTSpectraGrabber
 from ..grids.msg import MSGSpectraGrabber
 from ..grids.njm import NJMSpectraGrabber
 from ..grids.pipeline import _build_data_products, _rebuild_command, build_h5_bundle_from_txt, local_grids
-from ..grids.spectrum_io import build_h5_bundle, read_text_spectrum
+from ..grids.spectrum_io import build_h5_bundle, read_text_spectrum  # noqa: F401  (read_text_spectrum kept, as glob)
 from ..grids.svo import SVOSpectraGrabber
 from ..terminal_plots import terminal_color_enabled, terminal_width
 from ..ui_utils import (OPTIONAL_EXTRAS, _ansi, ask_number as _ask_number, missing_package_error, missing_packages,
@@ -61,10 +61,6 @@ logger = logging.getLogger(__name__)
 #: The errors a workflow raises for a request it cannot meet. main() and the
 #: menu print their message; anything else is a bug and keeps its traceback.
 EXPECTED_ERRORS = (RuntimeError, ValueError, OSError, ComponentError, CatalogueError, RequestException, EOFError)
-
-
-def load_txt_spectrum(txt_path: str) -> Tuple[np.ndarray, np.ndarray]:
-    return read_text_spectrum(txt_path)
 
 
 def run_config_flow() -> None:
@@ -170,7 +166,7 @@ def _add_filter_product_options(parser, *, components=None):
 def _add_grid_download_parser(sub) -> None:
     sp = sub.add_parser("grids", aliases=["spectra"], help="Download and build spectral grids")
     sp.add_argument("--source",
-                    choices=["njm", "svo", "msg", "mast", "both", "all"],
+                    choices=["njm", "svo", "msg", "mast", "all"],
                     default="all",
                     help="Which provider(s) to use. NJM mirror is checked first when available.")
     sp.add_argument("--grids", "--models", dest="models", nargs="*", default=None,
@@ -262,10 +258,6 @@ def _add_filter_component_parsers(sub) -> None:
     fbp.add_argument("--pwv", nargs="+", type=float, default=None, help="SkyCalc PWV grid (mm)")
 
 
-# densify accepts --ml-gap-threshold only at this default, since densify_grid has no such threshold.
-_ML_GAP_THRESHOLD_DEFAULT = 5000.0
-
-
 def _add_grid_build_parsers(sub) -> None:
     rp = sub.add_parser("rebuild", help="Rebuild lookup table + HDF5 + flux cube")
     _add_base_option(rp, STELLAR_DIR_DEFAULT, "Base spectral grid dir")
@@ -303,16 +295,8 @@ def _add_grid_build_parsers(sub) -> None:
     p_densify.add_argument("--flux-cube", required=True, help="The flux_cube.bin to densify")
     p_densify.add_argument("--output", required=True, help="Where to write the densified flux cube")
     p_densify.add_argument("--teff-spacing", type=float, default=1000.0, help="Target Teff spacing in K")
-    p_densify.add_argument("--method", default="auto",
-                           choices=["auto", "interp", "ml", "blackbody"],
-                           help="auto: fill gaps inside the grid's Teff range with --ml-model if given, and "
-                                "elsewhere with a blackbody scaled to the nearest spectrum; ml: the same, "
-                                "--ml-model required; blackbody: blackbodies only; interp: not implemented, refused")
     p_densify.add_argument("--ml-model", default=None,
                            help="Trained ML generator for gaps inside the grid's Teff range")
-    p_densify.add_argument("--ml-gap-threshold", type=float, default=_ML_GAP_THRESHOLD_DEFAULT,
-                           help="Not implemented: refused unless left at its default")
-    p_densify.add_argument("--no-lookup", action="store_true", help="No effect: densify writes only the flux cube")
 
 
 def _add_grid_tool_parsers(sub) -> None:
@@ -515,19 +499,9 @@ def _cmd_ml_generator(args, parser):
 
 def _cmd_densify(args, parser):
     """densify_grid fills each Teff gap with --ml-model inside the source grid's Teff range, and
-    with a blackbody scaled to the nearest real spectrum otherwise; options it cannot honour are refused."""
+    with a blackbody scaled to the nearest real spectrum otherwise."""
     from ..cube.densify import densify_grid
 
-    if args.method == "interp":
-        parser.error("--method interp is not implemented: densify fills gaps with --ml-model or blackbodies")
-    if args.method == "ml" and not args.ml_model:
-        parser.error("--method ml needs --ml-model")
-    if args.method == "blackbody" and args.ml_model:
-        parser.error("--method blackbody does not use --ml-model; leave one of them out")
-    if args.ml_gap_threshold != _ML_GAP_THRESHOLD_DEFAULT:
-        parser.error("--ml-gap-threshold is not implemented: with --ml-model, every gap inside the source "
-                     "grid's Teff range is filled by the model")
-    # --no-lookup needs nothing: densify_grid writes only the flux cube.
     densify_grid(src=args.flux_cube, dst=args.output, teff_spacing=args.teff_spacing, ml_model=args.ml_model)
     return 0
 

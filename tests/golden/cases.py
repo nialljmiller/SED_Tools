@@ -206,7 +206,7 @@ def interpolation_and_photometry(work, out):
     for teff, logg, meta in GRID_POINTS:
         evaluated = sed(teff, logg, meta)
         key = f"{teff}_{logg}_{meta}"
-        np.save(out / f"sed_{key}.npy", np.vstack([evaluated.wl, evaluated.fl]))
+        np.save(out / f"sed_{key}.npy", np.vstack([evaluated.wavelength, evaluated.flux]))
         bands = [str(p) for i in INSTRUMENTS for p in curves(i)]
         ab = evaluated.photometry(*bands, system="AB")
         vega = evaluated.photometry(*bands, system="Vega", vega_spectrum=INPUTS / "reference/vega_flam.csv")

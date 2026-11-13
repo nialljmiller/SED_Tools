@@ -840,7 +840,7 @@ def completer_list_models_leaves_out_generators_so_choosing_cannot_raise(t):
 @row
 def generator_number_prompts_take_the_numbers_typed(t):
     answer(t.mp, "")
-    assert mg._ask_number("Epochs [200]: ", 200, whole=True, positive=True) == 200
+    assert mg._ask_number("Epochs [200]: ", 200, whole=True) == 200
     answer(t.mp, "-0.5")
     assert mg._ask_number("[M/H]: ") == -0.5
     answer(t.mp, "5000, 5500")

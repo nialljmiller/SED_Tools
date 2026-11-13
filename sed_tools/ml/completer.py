@@ -1164,8 +1164,8 @@ def _train_menu(base_dir: str, models_dir: str) -> None:
     print(f"\nTraining on: {selected['name']}")
 
     print("\nTraining parameters:")
-    epochs = _ask_number("  Epochs [100]: ", 100, whole=True, positive=True)
-    batch_size = _ask_number("  Batch size [32]: ", 32, whole=True, positive=True)
+    epochs = _ask_number("  Epochs [100]: ", 100, whole=True)
+    batch_size = _ask_number("  Batch size [32]: ", 32, whole=True)
     default_name = f"sed_model_{selected['name']}"
     model_name = input(f"  Model name [{default_name}]: ").strip() or default_name
     output_path = os.path.join(models_dir, model_name)
@@ -1187,8 +1187,8 @@ def _ask_extension_range(model_grid: np.ndarray) -> Tuple[float, float]:
     print(f"\nWavelength range to extend to (the model covers {default_lo:g}-{default_hi:g} Å).")
     print("Every spectrum keeps all its own points; points are added only beyond its ends.")
     while True:
-        lo = _ask_number(f"  Shortest wavelength in Å [{default_lo:g}]: ", default_lo, positive=True)
-        hi = _ask_number(f"  Longest wavelength in Å [{default_hi:g}]: ", default_hi, positive=True)
+        lo = _ask_number(f"  Shortest wavelength in Å [{default_lo:g}]: ", default_lo)
+        hi = _ask_number(f"  Longest wavelength in Å [{default_hi:g}]: ", default_hi)
         if lo < hi:
             return lo, hi
         print(f"  {lo:g} Å is not below {hi:g} Å; try again.")

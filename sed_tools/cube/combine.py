@@ -4,7 +4,6 @@ back in: a grid whose lookup table has the ``source_model`` and ``original_file`
 :func:`save_combined_data` writes them), or whose folder is ``combined_models``. One named explicitly is combined.
 """
 
-import argparse
 import logging
 import os
 import shutil
@@ -29,6 +28,8 @@ logger = logging.getLogger("sed_tools.combine_stellar_atm")
 # The lookup columns only save_combined_data writes, and the default output name.
 _COMBINED_COLUMNS = {"source_model", "original_file"}
 _DEFAULT_COMBINED_NAME = "combined_models"
+# The common-grid wavelengths a spectrum and its reference must share for one to be normalised to the other.
+_MIN_COMMON_POINTS = 100
 
 
 def find_stellar_models(base_dir=None):
@@ -129,17 +130,12 @@ def load_model_data(model_path):
     }
 
 
-def load_sed(filepath):
-    """Load wavelength and flux from a spectrum file, skipping comment lines."""
-    return read_text_spectrum(filepath)
-
-
-def prepare_sed(filepath, teff):
+def prepare_sed(filepath):
     """Load a spectrum already in standard units (Angstrom, erg/cm²/s/Å, from the spectra cleaner), unscaled.
 
     Raises OSError if the file cannot be read, and ValueError if it gives fewer than two readable points.
     """
-    wl, flux = load_sed(filepath)
+    wl, flux = read_text_spectrum(filepath)
     if wl.size < 2:
         raise ValueError(f"{filepath}: fewer than 2 readable wavelength/flux rows "
                          "(empty or not a spectrum)")
@@ -176,7 +172,7 @@ def create_common_wavelength_grid(all_models_data, sample_size=20):
         for idx in indices:
             filepath = os.path.join(model_data["model_dir"], model_data["files"][idx])
             try:
-                wavelengths, _ = load_sed(filepath)
+                wavelengths, _ = read_text_spectrum(filepath)
             except OSError:
                 # Every spectrum is read again when the cube is built, and that
                 # pass raises one error listing all unreadable files.
@@ -209,12 +205,36 @@ def create_common_wavelength_grid(all_models_data, sample_size=20):
     return wavelength_grid
 
 
-def identify_reference_model(all_models_data):
-    """Identify reference spectral grid (prefer Kurucz)."""
-    names = [os.path.basename(model_data["model_dir"]) for model_data in all_models_data]
-    reference = next((i for i, name in enumerate(names) if "kurucz" in name.lower()), 0)
-    print(f"Reference spectral grid: {names[reference]}")
+def identify_reference_model(all_models_data, wavelength_grid):
+    """The grid the others are normalised to. compute_normalization_factors scales each spectrum to the reference
+    spectrum nearest it in (Teff, log g, [M/H]), so this is the grid the other grids' spectra lie nearest: the
+    smallest sum of those distances, each parameter scaled to the range of all the grids. Only grids whose first
+    spectrum spans _MIN_COMMON_POINTS of the common wavelength grid are chosen, when any does; ties go to the grid
+    named first."""
+    params = [np.column_stack([d[key] for key in ("teff", "logg", "meta")]).astype(float) for d in all_models_data]
+    params = [p[np.isfinite(p).all(axis=1)] for p in params]
+    every = np.vstack(params)
+    low, span = (every.min(axis=0), np.ptp(every, axis=0)) if len(every) else (0.0, np.ones(3))
+    span[span == 0] = 1.0
+    from scipy.spatial import KDTree
+
+    def distance(i):
+        tree = KDTree((params[i] - low) / span)
+        return sum(tree.query((p - low) / span)[0].sum() for j, p in enumerate(params) if j != i)
+
+    comparable = [i for i, d in enumerate(all_models_data) if _common_points(d, wavelength_grid) >= _MIN_COMMON_POINTS]
+    reference = min(comparable or range(len(all_models_data)), key=distance)
+    print(f"Reference spectral grid: {os.path.basename(all_models_data[reference]['model_dir'])}")
     return reference
+
+
+def _common_points(model_data, wavelength_grid):
+    """How many wavelengths of the common grid the grid's first spectrum spans; 0 if it has none it can read."""
+    try:
+        wl, _ = prepare_sed(os.path.join(model_data["model_dir"], model_data["files"][0]))
+    except (IndexError, OSError, ValueError):
+        return 0  # build_combined_flux_cube lists the spectra it cannot read
+    return int(np.count_nonzero((wavelength_grid >= wl.min()) & (wavelength_grid <= wl.max())))
 
 
 def compute_normalization_factors(target_data, reference_data, wavelength_grid):
@@ -239,7 +259,6 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
     valid_mask = np.isfinite(ref_params).all(axis=1)
     ref_params = ref_params[valid_mask]
     ref_files = np.array(reference_data["files"])[valid_mask]
-    ref_teff = np.array(reference_data["teff"])[valid_mask]
 
     if len(ref_params) == 0:
         # build_combined_flux_cube then stops, listing the reference grid's non-finite rows.
@@ -267,7 +286,7 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
         file_ref = os.path.join(reference_data["model_dir"], ref_files[idx])
 
         try:
-            factor, reason = _normalization_factor(file_target, teff, file_ref, ref_teff[idx], wavelength_grid)
+            factor, reason = _normalization_factor(file_target, file_ref, wavelength_grid)
         except (OSError, ValueError) as exc:  # unreadable target or reference spectrum
             failures.append(str(exc))
             continue
@@ -289,16 +308,16 @@ def compute_normalization_factors(target_data, reference_data, wavelength_grid):
     return np.array(norm_factors)
 
 
-def _normalization_factor(file_target, teff, file_ref, ref_teff, wavelength_grid):
+def _normalization_factor(file_target, file_ref, wavelength_grid):
     """Reference over target integrated flux on their common range, as (factor, None), or (1.0, reason)."""
-    wl_tgt, flux_tgt = prepare_sed(file_target, teff)
-    wl_ref, flux_ref = prepare_sed(file_ref, ref_teff)
+    wl_tgt, flux_tgt = prepare_sed(file_target)
+    wl_ref, flux_ref = prepare_sed(file_ref)
 
     wl_min = max(wl_tgt.min(), wl_ref.min(), wavelength_grid.min())
     wl_max = min(wl_tgt.max(), wl_ref.max(), wavelength_grid.max())
     mask = (wavelength_grid >= wl_min) & (wavelength_grid <= wl_max)
-    if mask.sum() < 100:
-        return 1.0, "fewer than 100 common wavelength points"
+    if mask.sum() < _MIN_COMMON_POINTS:
+        return 1.0, f"fewer than {_MIN_COMMON_POINTS} common wavelength points"
 
     from scipy.interpolate import interp1d
 
@@ -328,7 +347,7 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
     print(f"\nBuilding flux cube: {flux_cube.shape}")
     print(f"Memory: {flux_cube.nbytes / (1024**2):.1f} MB")
 
-    ref_idx = identify_reference_model(all_models_data)
+    ref_idx = identify_reference_model(all_models_data, wavelength_grid)
     ref_data = all_models_data[ref_idx]
 
     norm_factors = {}
@@ -353,14 +372,14 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
                                 f"(teff={teff}, logg={logg}, meta={meta})")
                 continue
             try:
-                wl, fl = prepare_sed(filepath, teff)
+                wl, fl = prepare_sed(filepath)
             except (OSError, ValueError) as exc:
                 failures.append(str(exc))
                 continue
             fl *= norm_factors[model_idx][i]
 
             node = (_nearest_idx(teff_grid, teff), _nearest_idx(logg_grid, logg), _nearest_idx(meta_grid, meta))
-            flux_cube[node] = resample_to_grid(wl, fl, teff, wavelength_grid)
+            flux_cube[node] = resample_to_grid(wl, fl, wavelength_grid)
             filled_map[node] = True
             source_map[node] = model_idx
 
@@ -598,50 +617,3 @@ def _print_combination_summary(teff_grid, logg_grid, meta_grid, source_map, mode
     for idx, name in enumerate(model_names):
         n = np.sum(source_map == idx)
         print(f"  {name}: {n:,} ({100 * n / source_map.size:.1f}%)")
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Combine stellar spectral grids")
-    parser.add_argument("--data_dir", default="../data/stellar_models/",
-                       help="Base directory containing spectral grids")
-    parser.add_argument("--output", default="combined_models", help="Output directory name")
-    parser.add_argument("--interactive", action="store_true", default=True,
-                       help="Interactive spectral grid selection")
-    args = parser.parse_args()
-
-    model_dirs = find_stellar_models(args.data_dir)
-    if not model_dirs:
-        print(f"No spectral grids found in {args.data_dir}")
-        return
-
-    selected = select_models_interactive(model_dirs)  # --interactive is always on (store_true, default True)
-    if not selected:
-        print("No spectral grids selected.")
-        return
-
-    print(f"\nSelected {len(selected)} spectral grids:")
-    for name, _ in selected:
-        print(f"  - {name}")
-
-    print("\nLoading spectral grid data...")
-    all_models_data = [load_model_data(path) for _, path in selected]
-
-    print("\nCreating parameter grids...")
-    teff_grid, logg_grid, meta_grid = create_unified_grid(all_models_data)
-    wavelength_grid = create_common_wavelength_grid(all_models_data)
-
-    flux_cube, source_map = build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid)
-
-    output_dir = os.path.join(args.data_dir, args.output)
-    save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
-                      wavelength_grid, flux_cube, all_models_data)
-
-    visualize_parameter_space(teff_grid, logg_grid, meta_grid, source_map,
-                             all_models_data, output_dir,
-                             wavelength_grid=wavelength_grid, flux_cube=flux_cube)
-
-    print(f"\nDone! Output: {output_dir}")
-
-
-if __name__ == "__main__":
-    main()

@@ -150,12 +150,11 @@ def refused_without(*modules: str) -> bool:
     return message is not None
 
 
-def ask_number(prompt: str, default=NO_DEFAULT, *, whole: bool = False, positive: bool = False,
-               words: Sequence[str] = ()):
+def ask_number(prompt: str, default=NO_DEFAULT, *, whole: bool = False, words: Sequence[str] = ()):
     """The number typed (an int if ``whole``), or the one of ``words`` typed.
 
     A blank answer gives ``default`` when there is one (None included); anything else raises ValueError, as
-    int() or float() does. ``positive`` is not checked; it is kept so that 0.5.x calls still work.
+    int() or float() does.
     """
     raw = input(prompt).strip()
     if not raw and default is not NO_DEFAULT:

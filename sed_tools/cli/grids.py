@@ -302,14 +302,8 @@ def run_spectra_flow(
 
 
 def _spectra_sources(source: str) -> List[str]:
-    """Source names from --source: one name, a comma-separated list, 'both' or 'all'."""
-    if source.lower() == "all":
-        return ["njm", "svo", "msg", "mast"]
-    if source.lower() == "both":
-        return ["njm", "svo", "msg"]
-    if "," in source:
-        return [s.strip().lower() for s in source.split(",")]
-    return [source.lower()]
+    """Source names from --source: one name, or 'all'."""
+    return ["njm", "svo", "msg", "mast"] if source.lower() == "all" else [source.lower()]
 
 
 def _spectra_grabbers(src_list: List[str], base_dir: str, workers: int) -> Dict:

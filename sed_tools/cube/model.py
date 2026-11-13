@@ -88,16 +88,6 @@ class EvaluatedSED:
     def metallicity(self) -> float:
         return self.metadata["metallicity"]
 
-    @property
-    def wl(self) -> np.ndarray:
-        """Alias for wavelength."""
-        return self.wavelength
-
-    @property
-    def fl(self) -> np.ndarray:
-        """Alias for flux."""
-        return self.flux
-
     def photometry(
         self,
         *filters: FilterSpec,
@@ -182,15 +172,11 @@ class SEDModel:
         flux_cube_path: Union[str, os.PathLike[str]],
         filters_dir: Optional[Union[str, os.PathLike[str]]] = None,
         *,
-        interpolation: str = "hermite",
         fill_gaps: bool = True,
     ) -> None:
         self.name = name
         self.flux_cube_path = Path(flux_cube_path)
         self.filters_dir = Path(filters_dir) if filters_dir is not None else None
-        self.interpolation = interpolation.lower()
-        if self.interpolation != "hermite":
-            raise ValueError("Only Hermite interpolation is supported at present")
         self.fill_gaps = fill_gaps
 
         metadata = _read_flux_cube_header(self.flux_cube_path)
@@ -343,7 +329,6 @@ class SED:
         model_root: Union[str, os.PathLike[str], None] = None,
         filter_root: Union[str, os.PathLike[str], None] = None,
         atm: Optional[Union[str, os.PathLike[str], ModelMatch, "SEDModel"]] = None,
-        interpolation: str = "hermite",
         fill_gaps: bool = True,
     ) -> None:
         self.model_root = Path(model_root) if model_root else STELLAR_DIR_DEFAULT
@@ -352,7 +337,7 @@ class SED:
         self._active_model: Optional[SEDModel] = None
 
         if atm is not None:
-            self.model(atm, interpolation=interpolation, fill_gaps=fill_gaps, activate=True)
+            self.model(atm, fill_gaps=fill_gaps, activate=True)
 
     # --- Model discovery ---
 
@@ -362,8 +347,6 @@ class SED:
             return []
         entries = sorted(self.model_root.iterdir())
         return [entry.name for entry in entries if entry.is_dir() and (entry / "flux_cube.bin").is_file()]
-
-    available_models = available_grids
 
     def find_model(
         self,
@@ -375,7 +358,7 @@ class SED:
         allow_partial: bool = False,
     ) -> List[ModelMatch]:
         candidates: List[ModelMatch] = []
-        for name in self.available_models():
+        for name in self.available_grids():
             cube_path = self.model_root / name / "flux_cube.bin"
             metadata = self._get_metadata(cube_path)
             grids = [metadata[key] for key in ("teff", "logg", "meta")]
@@ -418,7 +401,7 @@ class SED:
         requested = [_normalize_range(wanted) for wanted in (teff_range, logg_range, metallicity_range)]
 
         candidates: List[ModelMatch] = []
-        for name in self.available_models():
+        for name in self.available_grids():
             cube_path = self.model_root / name / "flux_cube.bin"
             metadata = self._get_metadata(cube_path)
             grids = [metadata[key] for key in ("teff", "logg", "meta")]
@@ -437,15 +420,12 @@ class SED:
             ))
         return sorted(candidates)[:limit]
 
-    find_atmospheres = find_grids
-
     # --- Model loading ---
 
     def model(
         self,
         model: Union[str, os.PathLike[str], ModelMatch, SEDModel],
         *,
-        interpolation: str = "hermite",
         fill_gaps: bool = True,
         activate: bool = True,
     ) -> SEDModel:
@@ -455,7 +435,7 @@ class SED:
             flux_path, name = self._resolve_model_inputs(model)
             result = SEDModel(name=name, flux_cube_path=flux_path,
                               filters_dir=self.filter_root if self.filter_root.exists() else None,
-                              interpolation=interpolation, fill_gaps=fill_gaps)
+                              fill_gaps=fill_gaps)
 
         if activate:
             self._active_model = result

@@ -414,13 +414,11 @@ def _densify_calls(t):
 def densify_passes_only_what_densify_grid_accepts(t):
     calls = _densify_calls(t)
     base = ["densify", "--flux-cube", "in.bin", "--output", "out.bin", "--teff-spacing", "250"]
-    assert run_cli(t.mp, *base, "--no-lookup") == 0
-    assert run_cli(t.mp, *base, "--method", "ml", "--ml-model", "gen") == 0
-    assert run_cli(t.mp, *base, "--method", "blackbody") == 0
+    assert run_cli(t.mp, *base) == 0
+    assert run_cli(t.mp, *base, "--ml-model", "gen") == 0
     assert calls == [
         {"src": "in.bin", "dst": "out.bin", "teff_spacing": 250.0, "ml_model": None},
         {"src": "in.bin", "dst": "out.bin", "teff_spacing": 250.0, "ml_model": "gen"},
-        {"src": "in.bin", "dst": "out.bin", "teff_spacing": 250.0, "ml_model": None},
     ]
 
 
@@ -476,54 +474,18 @@ def sed_tools_mesa_prepare_exit_status_is_1_on_failure(t):
 
 
 # ----------------------------------------------------------------------
-# Usage errors: exit 2 in plain words, under the subcommand's usage, before any work is done
-# ----------------------------------------------------------------------
-_DENSIFY = ["densify", "--flux-cube", "in.bin", "--output", "out.bin"]
-
-#: name: (argv, what stderr says).
-USAGE = {
-    "densify_refuses_options_it_cannot_honour_interp": (
-        [*_DENSIFY, "--method", "interp"], "--method interp is not implemented"),
-    "densify_refuses_options_it_cannot_honour_ml_without_a_model": (
-        [*_DENSIFY, "--method", "ml"], "--method ml needs --ml-model"),
-    "densify_refuses_options_it_cannot_honour_blackbody_with_a_model": (
-        [*_DENSIFY, "--method", "blackbody", "--ml-model", "gen"], "--method blackbody does not use --ml-model"),
-    "densify_refuses_options_it_cannot_honour_gap_threshold": (
-        [*_DENSIFY, "--ml-gap-threshold", "2000"], "--ml-gap-threshold is not implemented"),
-}
-
-
-def _usage_error(t, argv, message):
-    narrow_terminal(t)
-    densified = _densify_calls(t)
-    with pytest.raises(SystemExit) as stop:
-        run_cli(t.mp, *argv)
-    err = t.capsys.readouterr().err
-    assert stop.value.code == 2 and message in err and "_bound" not in err
-    assert err.startswith(f"usage: sed-tools {argv[0]}") and densified == []
-
-
-# ----------------------------------------------------------------------
 # python -m <old path>: --help, a bad argument and a short run of every module with a main()
 # ----------------------------------------------------------------------
 def _in_its_folder(t):
-    """As ``python -m`` from a shell in the row's folder, whose stellar_models/ is the default grid folder."""
+    """As ``python -m`` from a shell in the row's folder."""
     t.mp.chdir(t.tmp)
-    # svo_regen_spectra_lookup without argument parsing rewrote every lookup table under it, even for --help
-    t.mp.setattr("sed_tools.cube.model.STELLAR_DIR_DEFAULT", t.tmp / "stellar_models")
 
 
 #: Each old path with a main(), and its help's description.
 HELP = {
-    "combine_stellar_atm": "Combine stellar spectral grids",
     "flux_cube_tool": "Inspect and interpolate a flux cube",
-    "grid_densifier": "Densify a flux_cube.bin Teff grid using SEDGenerator.",
     "ml_sed_completer": "ML-powered SED Completer (PyTorch)",
     "ml_sed_generator": "ML SED Generator",
-    "msg_spectra_grabber": "Extract MSG stellar spectra to ASCII with correct params",
-    "precompute_flux_cube": "Precompute flux cube for stellar spectral grids",
-    "svo_regen_spectra_lookup":
-        "Rewrite lookup_table.csv in every spectral grid folder from the headers of its spectra",
 }
 
 
@@ -557,79 +519,6 @@ def filters_combine_command_writes_the_combined_set(t):
     assert run_cli(t.mp, "filters-combine", "Mine/Set", "Generic/Johnson", "--base", str(t.tmp)) == 0
     assert (t.tmp / "Mine" / "Set" / "Set").read_text().split() == ["V.dat"]
     assert t.capsys.readouterr().out == f"[filters] Combined filter set written to {t.tmp / 'Mine' / 'Set'}\n"
-
-
-@main_row
-def combine_stellar_atm_combines_the_grids_chosen(t):
-    assert run_module(t.mp, "combine_stellar_atm", "--data_dir", str(t.tmp)) == 0
-    assert f"No spectral grids found in {t.tmp}" in t.capsys.readouterr().out
-    shutil.copytree(KURUCZ, t.tmp / KURUCZ.name)
-    answer(t.mp, "q")
-    assert run_module(t.mp, "combine_stellar_atm", "--data_dir", str(t.tmp)) == 0
-    assert "No spectral grids selected." in t.capsys.readouterr().out
-    assert not (t.tmp / "combined_models").exists()
-    answer(t.mp, "1")
-    assert run_module(t.mp, "combine_stellar_atm", "--data_dir", str(t.tmp), "--output", "omni") == 0
-    assert (t.tmp / "omni" / "flux_cube.bin").is_file() and (t.tmp / "omni" / "lookup_table.csv").is_file()
-    assert t.capsys.readouterr().out.endswith(f"Done! Output: {t.tmp / 'omni'}\n")
-
-
-@main_row
-def precompute_flux_cube_builds_the_cube_it_is_given(t):
-    grid = shutil.copytree(KURUCZ, t.tmp / "grid")
-    assert run_module(t.mp, "precompute_flux_cube", "--model_dir", str(grid), "--output", "cube.bin") == 0
-    assert (t.tmp / "cube.bin").stat().st_size > 16
-
-
-@main_row
-def precompute_flux_cube_asks_for_the_grid_and_the_output(t):
-    assert run_module(t.mp, "precompute_flux_cube") == "No model directories found."
-    shutil.copytree(KURUCZ, t.tmp / "data" / "stellar_models" / KURUCZ.name)
-    (t.tmp / "data" / "stellar_models" / "notes.txt").write_text("not a grid\n")
-    answer(t.mp, "0")
-    assert run_module(t.mp, "precompute_flux_cube") == "Invalid selection."
-    # Listed once (it was listed as ./data/stellar_models/<grid> and as data/stellar_models/<grid>)
-    menu = [line for line in t.capsys.readouterr().out.splitlines() if line[:1].isdigit()]
-    assert menu == [f"1. data/stellar_models/{KURUCZ.name}"]
-    answer(t.mp, "1", "")  # the first grid listed, and the default output beside it
-    assert run_module(t.mp, "precompute_flux_cube") == 0
-    assert "No --model_dir provided. Discovering local model directories" in t.capsys.readouterr().out
-    assert len(list(t.tmp.glob("**/flux_cube.bin"))) == 1
-
-
-@main_row
-def svo_regen_spectra_lookup_rewrites_every_grids_lookup_table(t):
-    stellar = t.tmp / "stellar_models"  # the default grid folder
-    for name in ("A", "B"):
-        (stellar / name).mkdir(parents=True)
-        (stellar / name / "s.txt").write_text("# teff = 5000\n# logg = 4.5\n# metallicity = 0.0\n4000 1\n5000 2\n")
-    (stellar / "A" / "A_alpha_0p40").mkdir()  # a split grid's subgrid, which crashed it until 0.6.0
-    (stellar / "A" / "A_alpha_0p40" / "s.txt").symlink_to("../s.txt")
-    assert run_module(t.mp, "svo_regen_spectra_lookup") == 0
-    for folder in ("A", "B", "A/A_alpha_0p40"):
-        assert (stellar / folder / "lookup_table.csv").read_text().splitlines()[1] == "s.txt,4.5,0.0,5000.0"
-    assert t.capsys.readouterr().out.count("Processing spectral grid:") == 3
-
-
-@main_row
-def msg_spectra_grabber_runs_the_grids_it_is_given(t):
-    from sed_tools.grids.msg import MSGSpectraGrabber
-
-    runs = []
-    t.mp.setattr(MSGSpectraGrabber, "discover_and_run", lambda self, selected_models=None:
-                 runs.append((self.base_dir, self.max_workers, selected_models)))
-    assert run_module(t.mp, "msg_spectra_grabber", "--output", str(t.tmp), "--workers", "2",
-                      "--models", "A", "B") == 0
-    assert runs == [(str(t.tmp), 2, ["A", "B"])]
-
-
-@main_row
-def grid_densifier_passes_its_arguments_on(t):
-    calls = []
-    t.mp.setattr("sed_tools.cube.densify.densify_grid", lambda **kwargs: calls.append(kwargs))
-    assert run_module(t.mp, "grid_densifier", "--flux-cube", "in.bin", "--output", "out.bin",
-                      "--teff-spacing", "250") == 0
-    assert calls == [{"src": "in.bin", "dst": "out.bin", "teff_spacing": 250.0, "ml_model": None}]
 
 
 @main_row
@@ -1484,7 +1373,6 @@ def _narrow(t, scenario):
 def test_cli(rows):
     rows(SCENARIOS)
     rows(FILTERS_INFO, _filters_info)
-    rows(USAGE, _usage_error)
     rows({f"{module}_help_prints_the_usage_and_exits_0": module for module in HELP}, _help)
     rows({f"{module}_a_bad_argument_prints_the_usage_and_exits_2": module for module in HELP}, _bad_argument)
     rows(MAINS, _in_its_folder_run)

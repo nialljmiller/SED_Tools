@@ -16,7 +16,7 @@ from tqdm import tqdm
 
 from ._http import DISCOVERY_TIMEOUT, discovery_failure, mount_discovery, retrying_session
 from .hdf5_wavelengths import _is_physical_wavelength_array as _is_physical_wavelength, _search_all_datasets
-from .lookup import write_lookup_csv
+from .lookup import find_logg_column, find_metallicity_column, find_teff_column, write_lookup_csv
 
 logger = logging.getLogger("sed_tools.msg_spectra_grabber")
 
@@ -27,14 +27,6 @@ def _bracket_number(name):
     """The number in a name's first '[n]' (as in 'specints[12]'), or 0; for sorting groups numerically."""
     m = _SEG_IDX.search(name)
     return int(m.group(1)) if m else 0
-
-
-# Known axis-role overrides per model (0-based axis indices in vgrid/axes[i]/x)
-AXIS_ROLE_OVERRIDES = {
-    # C3K grids: axes[1]=Teff, axes[2]=[M/H], axes[3]=alpha, axes[4]=logg
-    # → zero-based: teff=0, meta=1, logg=3
-    "sg-C3K": {"teff": 0, "meta": 1, "logg": 3},
-}
 
 
 def _dataset_if_exists(g, names):
@@ -140,8 +132,22 @@ def _pick_flux(spec_g):
     raise RuntimeError("No suitable flux dataset")
 
 
+def _axis_label(axis_group):
+    """The label an MSG axis group carries ('Teff', 'log(g)', '[Fe/H]', '[alpha/Fe]', ...), or ''."""
+    label = axis_group.attrs.get("label", b"")
+    return (label.decode() if isinstance(label, bytes) else str(label)).strip()
+
+
+def _roles_from_labels(labels):
+    """Axis roles from the axes' own labels, matched as lookup-table columns are (find_teff_column and the rest)."""
+    index = {label: j for j, label in enumerate(labels) if label}
+    found = {role: find(index) for role, find in
+             (("teff", find_teff_column), ("logg", find_logg_column), ("meta", find_metallicity_column))}
+    return {role: index[label] for role, label in found.items() if label is not None}
+
+
 def _guess_roles_from_axes(axes):
-    """Axis roles when no override applies: Teff has the largest values, [M/H] lies in [-3.5, 1.5], log g in
+    """Axis roles when the axes carry no labels: Teff has the largest values, [M/H] lies in [-3.5, 1.5], log g in
     [-1.5, 6.8] (and is not the [M/H] axis)."""
     role = {}
     if not axes:
@@ -156,10 +162,6 @@ def _guess_roles_from_axes(axes):
     if cand_logg:
         role["logg"] = cand_logg[0]
     return role
-
-
-def _role_override_for_model(model_name):
-    return next((mapping.copy() for key, mapping in AXIS_ROLE_OVERRIDES.items() if key in model_name), {})
 
 
 def _in_range(val, rng):
@@ -207,13 +209,14 @@ class MSGSpectraGrabber:
             logger.warning("MSG: no grids linked from %s; MSG spectral grids are not offered", self.index_url)
         return sorted(self.model_urls.keys())
 
-    def _load_axes_and_vlin(self, f: h5py.File, model_name: str):
-        axes = []
+    def _load_axes_and_vlin(self, f: h5py.File):
+        axes, labels = [], []
         i = 0
         while f"vgrid/axes[{i}]" in f:
             ax = f[f"vgrid/axes[{i}]"]
             if "x" in ax and isinstance(ax["x"], h5py.Dataset):
                 axes.append(np.array(ax["x"][()], dtype=float).ravel())
+                labels.append(_axis_label(ax))
             i += 1
         shape = tuple(len(a) for a in axes)
         vlin = None
@@ -224,7 +227,7 @@ class MSGSpectraGrabber:
                 if int(vlin.max()) == prod:  # 1-based
                     vlin = vlin - 1
                 vlin = np.clip(vlin, 0, prod - 1)
-        roles = _role_override_for_model(model_name) or _guess_roles_from_axes(axes)
+        roles = _roles_from_labels(labels) or _guess_roles_from_axes(axes)
         return {"axes": axes, "shape": shape, "vlin": vlin, "roles": roles}
 
     def get_model_metadata(self, model_name):
@@ -269,7 +272,7 @@ class MSGSpectraGrabber:
 
             names = sorted((k for k in f[spec_root].keys() if k.startswith("specints[")), key=_bracket_number)
 
-            self.model_axes[model_name] = self._load_axes_and_vlin(f, model_name)
+            self.model_axes[model_name] = self._load_axes_and_vlin(f)
 
             # order_index: the index into vlin, same order as the groups
             spectra = [{"fid": i + 1, "gname": f"{spec_root}/{nm}", "order_index": i} for i, nm in enumerate(names)]
@@ -431,40 +434,7 @@ class MSGSpectraGrabber:
 
     def _write_lookup(self, out_dir, rows):
         path = os.path.join(out_dir, "lookup_table.csv")
-        write_lookup_csv(rows, path, columns=["file_name", "teff", "logg", "meta"], comment=False, restval=float("nan"))
+        # In file-name order, as the cleaner writes its tables: the extractions finish in any order
+        write_lookup_csv(sorted(rows, key=lambda row: row["file_name"]), path,
+                         columns=["file_name", "teff", "logg", "meta"], comment=False, restval=float("nan"))
         print(f"    Lookup table saved: {path}")
-
-    def discover_and_run(self, selected_models=None):
-        """Extract every grid named (default: all MSG lists); RuntimeError at the end lists the grids that failed."""
-        avail = self.discover_models()
-        if not avail:
-            print("No MSG spectral grids found.")
-            return
-        selected = selected_models or avail
-        total = 0
-        failed = []
-        for name in selected:
-            print(f"\n[msg] Processing spectral grid: {name}")
-            try:
-                meta = self.get_model_metadata(name)
-                total += self.download_model_spectra(name, meta)
-            except RuntimeError as e:  # finish the other grids, then report
-                failed.append(f"{name}: {e}")
-        print(f"\n[MSG] Done. Extracted {total} spectra total.")
-        if failed:
-            raise RuntimeError(f"MSG: {len(failed)} of {len(selected)} grid(s) failed:\n  " + "\n  ".join(failed))
-
-
-def main():
-    import argparse
-    p = argparse.ArgumentParser(description="Extract MSG stellar spectra to ASCII with correct params")
-    p.add_argument("--output", default="../data/stellar_models/")
-    p.add_argument("--workers", type=int, default=6)
-    p.add_argument("--models", nargs="*")
-    a = p.parse_args()
-    g = MSGSpectraGrabber(base_dir=a.output, max_workers=a.workers)
-    g.discover_and_run(selected_models=a.models)
-
-
-if __name__ == "__main__":
-    main()

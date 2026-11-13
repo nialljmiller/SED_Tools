@@ -23,8 +23,7 @@ from sed_tools import _constants, flux_cube_tool as tool, mesa_prepare
 from sed_tools._flux import FluxCube
 from sed_tools._resample import resample_to_grid
 from sed_tools.api import _build_flux_cube, _flux_cube_shortfall
-from sed_tools.collision_config import (CollisionConfig, copy_global_config_to_model, load_config,
-                                        match_filter_value, write_default_config)
+from sed_tools.collision_config import CollisionConfig, copy_global_config_to_model, load_config, match_filter_value
 from sed_tools.flux_cube_tool import bolometric_magnitude
 from sed_tools.grid_densifier import densify_grid
 from sed_tools.mesa_prepare import list_variants
@@ -500,6 +499,30 @@ def normalisation_warns_when_spectra_keep_native_scale(t):
 
 
 @row
+def combine_normalises_to_the_grid_the_others_lie_nearest(t):
+    # The reference used to be the first grid named Kurucz, else the first grid named.
+    from sed_tools.combine_stellar_atm import identify_reference_model
+
+    def grid(name, teffs, first_spectrum):
+        (t.tmp / name).mkdir()
+        (t.tmp / name / "s.txt").write_text(first_spectrum)
+        return {"files": np.array(["s.txt"] * len(teffs)), "teff": np.array(teffs), "logg": np.full(len(teffs), 4.0),
+                "meta": np.zeros(len(teffs)), "model_dir": str(t.tmp / name)}
+
+    wide, optical = "1000 1\n30000 1\n", "3000 1\n7000 1\n"  # 441 and 81 of the common grid's 441 points
+    common = np.linspace(3000.0, 25000.0, 441)
+    hot, broad = grid("hot", [9000.0, 9500.0], wide), grid("broad", [4000.0, 6000.0, 8000.0, 9000.0], optical)
+    assert identify_reference_model([hot, broad], common) == 0  # broad lies nearer, but is too short to compare
+    (t.tmp / "broad" / "s.txt").write_text(wide)
+    assert identify_reference_model([hot, broad], common) == 1
+    (t.tmp / "broad" / "s.txt").write_text(optical)
+    (t.tmp / "hot" / "s.txt").unlink()
+    assert identify_reference_model([hot, broad], common) == 1  # neither can be compared: the nearest of all
+    hot["teff"], broad["teff"] = np.full(2, np.nan), np.full(4, np.nan)
+    assert identify_reference_model([hot, broad], common) == 0  # no parameters to measure: the first
+
+
+@row
 def common_wavelength_grid_needs_a_usable_spectrum(t):
     # Used to fail with OverflowError (int of -inf).
     from sed_tools.combine_stellar_atm import create_common_wavelength_grid
@@ -616,7 +639,7 @@ def densified_ml_nodes_do_not_depend_on_the_block_size(t):
     for i_t, te in ((1, 5000.0), (3, 7000.0), (4, 8000.0)):
         for i_l, logg in enumerate(dense.logg_grid):
             for i_m, meta in enumerate(dense.meta_grid):
-                expected = resample_to_grid(*generate(None, te, logg, meta), te, dense.wavelengths)
+                expected = resample_to_grid(*generate(None, te, logg, meta), dense.wavelengths)
                 np.testing.assert_array_equal(dense.flux[i_t, i_l, i_m], expected)
 
 
@@ -625,14 +648,18 @@ def densified_ml_nodes_do_not_depend_on_the_block_size(t):
 # or go back; split, mean and combined grids; averaged rows; 80 columns
 # ----------------------------------------------------------------------
 def _variant_grid(t):
-    """``<base>/Grid`` with two alpha variants, each with its spectra and its cube; returns base."""
+    """``<base>/Grid`` with two alpha variants, split as ``sed-tools rebuild`` splits them: a subgrid per variant
+    with its lookup table and cube, listed in variants_index.csv; returns base."""
     grid = t.tmp / "stellar" / "Grid"
     write_lookup(grid, [*COLUMNS, "alpha"], [("a.txt", 5000, 4.0, 0.0, "0.0"), ("b.txt", 5000, 4.0, 0.0, "0.4")])
-    for name in ("a.txt", "b.txt"):
+    index = ["variant_name,alpha,n_spectra,path"]
+    for name, alpha in (("a.txt", "0.0"), ("b.txt", "0.4")):
         (grid / name).write_text("4000 1.0\n5000 2.0\n")
-    for alpha in ("0.0", "0.4"):
-        write_flux_cube(grid / "fluxcube_library" / f"flux_cube__alpha_{alpha}.bin", [5000.0], [4.0], [0.0],
-                        [4000.0, 5000.0], np.ones((1, 1, 1, 2)))
+        write_lookup(grid / f"alpha_{alpha}", [*COLUMNS, "alpha"], [(name, 5000, 4.0, 0.0, alpha)])
+        write_flux_cube(grid / f"alpha_{alpha}" / "flux_cube.bin", [5000.0], [4.0], [0.0], [4000.0, 5000.0],
+                        np.ones((1, 1, 1, 2)))
+        index.append(f"alpha_{alpha},{alpha},1,alpha_{alpha}")
+    (grid / "variants_index.csv").write_text("\n".join(index) + "\n")
     return grid.parent
 
 
@@ -1226,21 +1253,11 @@ def load_config_root_dir_overrides_builtin(t):
 
 
 @row
-def write_default_config_then_copy_to_model(t):
+def global_config_is_copied_to_the_model(t):
     root, model = _root_and_model(t)
-    path = write_default_config(root)
-    assert path.exists() and 'strategy = "split"' in path.read_text()
+    (root / "sed_tools.defaults").write_text('[on_collision]\nstrategy = "split"\n')
     copy_global_config_to_model(root, model)
-    assert (model / "sed_tools.defaults").read_text() == path.read_text()
-
-
-@row
-def write_default_config_does_not_overwrite_by_default(t):
-    root, _ = _root_and_model(t)
-    path = write_default_config(root)
-    path.write_text("# manually edited\n")
-    write_default_config(root, overwrite=False)
-    assert path.read_text() == "# manually edited\n"
+    assert (model / "sed_tools.defaults").read_text() == (root / "sed_tools.defaults").read_text()
 
 
 # ----------------------------------------------------------------------
@@ -1344,14 +1361,6 @@ def header_lines_before_the_data_are_still_skipped(t):
 # Resampling, grid coverage, the config's ui table, and finding atmospheres and filters
 # ----------------------------------------------------------------------
 @row
-def teff_argument_does_not_affect_output(t):
-    # Documented: teff is kept for the interface, not used to extrapolate.
-    wl_src, fl_src, wl_tgt = np.linspace(4000.0, 8000.0, 20), np.linspace(1.0, 2.0, 20), np.linspace(4500.0, 7500.0, 15)
-    np.testing.assert_array_equal(resample_to_grid(wl_src, fl_src, teff=3000.0, wl_tgt=wl_tgt),
-                                  resample_to_grid(wl_src, fl_src, teff=50000.0, wl_tgt=wl_tgt))
-
-
-@row
 def read_grid_nodes_fallback_has_path(t):
     from sed_tools.grid_coverage import read_grid_nodes
 
@@ -1380,16 +1389,16 @@ def set_data_dir_preserves_nested_ui(t):
 
 
 @row
-def find_atmospheres_prefers_full_coverage(t):
-    root = t.tmp / "stellar_models"  # header-only cubes: find_atmospheres reads only the axes
+def find_grids_prefers_full_coverage(t):
+    root = t.tmp / "stellar_models"  # header-only cubes: find_grids reads only the axes
     _raw_cube(root / "model_a" / "flux_cube.bin", [4000.0, 5000.0, 6000.0], [1.0, 2.0, 3.0], [-1.0, 0.0, 1.0],
               [4000.0, 5000.0])
     _raw_cube(root / "model_b" / "flux_cube.bin", [4500.0, 5200.0], [1.5, 2.5], [-0.5, 0.2], [4000.0, 5000.0])
     sed = SED(model_root=root)
     ranges = {"teff_range": (4600.0, 5500.0), "logg_range": (1.8, 2.4), "metallicity_range": (-0.3, 0.1)}
-    matches = sed.find_atmospheres(**ranges)
+    matches = sed.find_grids(**ranges)
     assert [m.name for m in matches] == ["model_a"] and matches[0].covers_range is True
-    partial = sed.find_atmospheres(**ranges, allow_partial=True)
+    partial = sed.find_grids(**ranges, allow_partial=True)
     assert {m.name for m in partial} == {"model_a", "model_b"} and any(not m.covers_range for m in partial)
 
 

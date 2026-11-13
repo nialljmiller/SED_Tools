@@ -136,12 +136,9 @@ class Spectrum:
     def to_dict(self) -> Dict[str, Any]:
         return {name: getattr(self, name) for name in ('wavelength', 'flux', 'teff', 'logg', 'metallicity', 'filename')}
     
-    def save(self, path: Union[str, Path], format: str = 'txt') -> None:
+    def save(self, path: Union[str, Path]) -> None:
         """Save spectrum to file."""
-        path = Path(path)
-        if format != 'txt':
-            raise ValueError(f"Unsupported format: {format}")
-        with open(path, 'w') as f:
+        with open(Path(path), 'w') as f:
             for line in (f"teff = {self.teff}", f"logg = {self.logg}", f"metallicity = {self.metallicity}",
                          "wavelength_unit = angstrom", "flux_unit = erg/cm2/s/A", "units_standardized = True"):
                 f.write(f"# {line}\n")
@@ -518,10 +515,15 @@ class SED:
             If no source could supply the grid; the message gives each source's error.
             Also if the spectra do not declare their flux unit and flux_unit is not
             given; the message gives the best guess.
+        KeyError
+            If flux_unit is not a known name, before anything is downloaded.
         RuntimeError
             If a failed download left files behind (another source is then
             not tried), or cleaning left spectra unusable.
         """
+        if flux_unit is not None:
+            from ..grids.units import FLUX_UNITS
+            FLUX_UNITS[flux_unit]  # the conversion, looked up before anything is downloaded
         base_dir = Path(model_root) if model_root else cls._model_root
         base_dir.mkdir(parents=True, exist_ok=True)
 

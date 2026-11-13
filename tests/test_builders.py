@@ -829,7 +829,7 @@ def param_text(t):
 def probe_finds_a_contiguous_grid(t, present):
     grabber = svo_grid.SVOSpectraGrabber(base_dir=str(t.tmp))
     t.mp.setattr(grabber, "_head_exists", lambda model, fid: fid in present)
-    grabber.expand_window, grabber.expand_max_gap = 12, 20
+    grabber.expand_max_gap = 20
     assert grabber._bounded_probe("Kurucz") == present
 
 

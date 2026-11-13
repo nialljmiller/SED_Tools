@@ -7,7 +7,7 @@ from .cube import collision as _module
 __all__ = """
 Any CollisionConfig Dict List MESA_AXES Optional Path Set Tuple VALID_STRATEGIES annotations
 copy_global_config_to_model discover_extra_axes load_config load_defaults_config load_toml
-match_filter_value merge_config re write_default_config
+match_filter_value merge_config re
 """.split()
 
 _old_path.forward(__name__, _module)

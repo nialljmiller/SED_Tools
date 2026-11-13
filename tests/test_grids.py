@@ -427,6 +427,7 @@ UNKNOWN_UNIT = {
     "an_unknown_flux_unit_leaves_the_source_folder_untouched_on_import": "copy",
     "an_unknown_flux_unit_leaves_the_source_folder_untouched_on_import_with_move": "move",
     "an_unknown_flux_unit_leaves_every_spectrum_untouched_when_cleaning_one_by_one": "clean",
+    "an_unknown_flux_unit_downloads_nothing_on_fetch": "fetch",
 }
 
 
@@ -437,8 +438,11 @@ def _unknown_unit(t, how):
     done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
     t.mp.setattr("sed_tools.spectra_cleaner.random.sample", lambda files, n: [str(done)])  # no grid-wide units
     before = _contents(src)
+    t.mp.setattr("sed_tools.api.SED._download_from_first_source", lambda *a: pytest.fail("downloaded"))
     with pytest.raises(KeyError, match="Jy"):
-        if how == "clean":
+        if how == "fetch":
+            SED.fetch("Grid", source="svo", model_root=t.tmp / "models", flux_unit="Jy")
+        elif how == "clean":
             clean_model_dir(str(src), flux_unit="Jy")
         else:
             SED.import_grid(src, model_root=t.tmp / "models", move=how == "move", build_cube=False, build_h5=False,
@@ -1135,6 +1139,17 @@ def svo_complete_download_writes_lookup_table(t):
     assert lookup[0] == "#file_name,logg,metallicity,teff" and len(lookup) == 3
 
 
+@row
+def svo_and_msg_lookup_rows_are_in_file_name_order(t):
+    # The rows came in the order the threaded downloads finished, so the same download wrote different files.
+    rows = [{"file_name": f"Grid_fid{fid}.txt", "teff": fid} for fid in (2, 10, 1)]
+    for source in ("svo", "msg"):
+        grabber, _ = _grabber(t, source)
+        grabber._write_lookup(str(t.tmp), rows)
+        names = [line.split(",")[0] for line in (t.tmp / "lookup_table.csv").read_text().splitlines()[1:]]
+        assert names == ["Grid_fid1.txt", "Grid_fid10.txt", "Grid_fid2.txt"]
+
+
 def _msg_grid(t):
     """A grabber whose sg-Test.h5 holds three spectra: one good, one with no flux dataset, one with an undecodable
     wavelength segment."""
@@ -1212,11 +1227,29 @@ def msg_cut_exclusions_are_not_failures(t):
 @row
 def msg_axis_role_beyond_the_grid_raises(t):
     grabber, _ = _grabber(t, "msg")
-    grabber.model_axes["sg-C3K-test"] = {
+    grabber.model_axes["sg-Test"] = {
         "axes": [np.array([5000.0, 6000.0]), np.array([-1.0, 0.0]), np.array([4.0, 4.5])],
         "shape": (2, 2, 2), "vlin": np.array([0]), "roles": {"teff": 0, "meta": 1, "logg": 3}}
     with pytest.raises(RuntimeError, match="logg is mapped to axis 3, but the grid has 3 axes"):
-        grabber._params_from_index("sg-C3K-test", 0)
+        grabber._params_from_index("sg-Test", 0)
+
+
+@row
+def msg_axis_roles_come_from_the_axes_labels(t):
+    # As in C3K and every alpha-enhanced MSG grid: by their values alone, [alpha/Fe] was taken for log g (it lies in
+    # log g's range too), and a table keyed on one grid's name corrected C3K only. MSG labels every axis.
+    grabber, _ = _grabber(t, "msg")
+    path = t.tmp / "axes.h5"
+    with h5py.File(path, "w") as f:
+        for i, (label, values) in enumerate((("Teff", [3000.0, 4000.0]), ("[Fe/H]", [-1.0, 0.0]),
+                                             ("[alpha/Fe]", [0.0, 0.4]), ("log(g)", [4.0, 4.5]))):
+            f[f"vgrid/axes[{i}]/x"] = values
+            f[f"vgrid/axes[{i}]"].attrs["label"] = np.bytes_(label)
+    with h5py.File(path, "r+") as f:
+        assert grabber._load_axes_and_vlin(f)["roles"] == {"teff": 0, "logg": 3, "meta": 1}
+        for i in range(4):
+            del f[f"vgrid/axes[{i}]"].attrs["label"]
+        assert grabber._load_axes_and_vlin(f)["roles"] == {"teff": 0, "meta": 1, "logg": 2}  # unlabelled: the guess
 
 
 BOSZ_SCRIPT = f"{mast.SCRIPTS_DIR}/hlsp_bosz_bosz2024_sim_r1000_m%2B0.00_v1_bulkdl.sh"
@@ -1330,24 +1363,6 @@ def mast_failed_first_spectrum_does_not_stop_the_rest(t):
     with pytest.raises(RuntimeError, match="1 of 2 BOSZ spectra.*\n.*t05750.*first one dropped"):
         grabber.download_model_spectra("BOSZ-2024-r1000", {"reskey": "r1000", "metals": ["m+0.00"]})
     assert len(list((t.tmp / "BOSZ-2024-r1000").glob("*t06000*.txt"))) == 1
-
-
-@row
-def msg_discover_and_run_finishes_other_grids_then_raises(t):
-    index = f'<a href="{MSG_FILE}">a</a><a href="http://user.astro.wisc.edu/msg/grids/sg-Other.h5">b</a>'
-    grabber, _ = _grabber(t, "msg", {MSG_INDEX: index})
-    done = []
-
-    def metadata(name):
-        if name == "sg-Test":
-            raise RuntimeError("download failed")
-        return [{"fid": 1}]
-
-    t.mp.setattr(grabber, "get_model_metadata", metadata)
-    t.mp.setattr(grabber, "download_model_spectra", lambda name, meta: done.append(name) or 1)
-    with pytest.raises(RuntimeError, match="1 of 2 grid\\(s\\) failed:\n  sg-Test: download failed"):
-        grabber.discover_and_run()
-    assert done == ["sg-Other"]
 
 
 @row
@@ -1479,20 +1494,12 @@ def bolometric_renorm_rescales_a_spectrum_100x_too_large(t):
 
 
 @row
-def text_spectrum_compatibility_aliases(t):
-    from sed_tools.cli import load_txt_spectrum
-    from sed_tools.precompute_flux_cube import load_sed
-    from sed_tools.spectra_cleaner import read_spectrum_data
-
+def text_spectrum_reader_keeps_the_finite_pairs(t):
     path = t.tmp / "sample.txt"
     path.write_text("# header\n1, 2\ninvalid\n3 4 extra\ninf 5\n")
-    expected = read_text_spectrum(path)
-    np.testing.assert_array_equal(expected[0], [1.0, 3.0])
-    np.testing.assert_array_equal(expected[1], [2.0, 4.0])
-    for loader in (load_txt_spectrum, load_sed, read_spectrum_data):
-        actual = loader(str(path))
-        np.testing.assert_array_equal(actual[0], expected[0])
-        np.testing.assert_array_equal(actual[1], expected[1])
+    wavelength, flux = read_text_spectrum(path)
+    np.testing.assert_array_equal(wavelength, [1.0, 3.0])
+    np.testing.assert_array_equal(flux, [2.0, 4.0])
 
 
 def test_grids(rows):

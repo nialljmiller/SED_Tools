@@ -20,14 +20,6 @@ from ..grids.lookup import find_logg_column, find_metallicity_column, find_teff_
 from .collision import discover_extra_axes
 from .model import STELLAR_DIR_DEFAULT, _read_flux_cube_header
 
-# Lookup columns that are not variant axes in grids split into fluxcube_library/
-# by earlier SED_Tools versions; the cube file names there use every other column.
-_LEGACY_CORE_COLUMNS = {"file_name", "teff", "logg", "metallicity", "flux_unit",
-                        "wavelength_unit", "units_standardized", "source",
-                        "original_flux_unit", "original_wavelength_unit",
-                        "conversion_confidence"}
-
-
 @dataclass
 class VariantInfo:
     """Metadata for a single extra-axis variant of a spectral grid."""
@@ -62,9 +54,7 @@ def list_variants(model_dir: str | os.PathLike) -> List[VariantInfo]:
        extra axes (alpha, microturbulence, ...) vary into one subgrid per
        variant, ``model_dir/<path>/`` with its own ``flux_cube.bin`` and
        ``lookup_table.csv``. Variants are named by the axes that vary.
-    2. ``fluxcube_library/flux_cube__<label>.bin``, as earlier SED_Tools
-       versions wrote it.
-    3. ``model_dir/flux_cube.bin`` as one variant (``full_grid``): a uniform
+    2. ``model_dir/flux_cube.bin`` as one variant (``full_grid``): a uniform
        grid, whose extra axes, if any, have a single value; or a grid built
        with the 'mean' or 'filter' collision strategy, which is noted.
 
@@ -80,16 +70,11 @@ def list_variants(model_dir: str | os.PathLike) -> List[VariantInfo]:
     """
     model_dir = Path(model_dir)
     lookup_path = model_dir / "lookup_table.csv"
-    library_dir = model_dir / "fluxcube_library"
 
     df = _read_csv_as_text(lookup_path)
 
     if (model_dir / "variants_index.csv").exists():
         return _split_variants(model_dir)
-
-    legacy_cols = [c for c in df.columns if c not in _LEGACY_CORE_COLUMNS]
-    if library_dir.exists() and legacy_cols:
-        return _library_variants(df, legacy_cols, library_dir, model_dir)
 
     master_cube = model_dir / "flux_cube.bin"
     axes = discover_extra_axes(list(df.columns))
@@ -140,23 +125,6 @@ def _split_variants(model_dir: Path) -> List[VariantInfo]:
         rows = _read_csv_as_text(subgrid / "lookup_table.csv")
         # The spectra are the parent's; the subgrid holds links to them.
         variants.append(_variant_from_rows(rows, {a: entry[a] for a in varying}, cube_path, model_dir))
-    return variants
-
-
-def _library_variants(df: pd.DataFrame, extra_cols: List[str], library_dir: Path,
-                      model_dir: Path) -> List[VariantInfo]:
-    """One variant per cube in ``fluxcube_library/`` (see :func:`list_variants`)."""
-    variants: List[VariantInfo] = []
-    for key, rows in df.groupby(extra_cols, sort=True):
-        if not isinstance(key, tuple):
-            key = (key,)
-        axes = dict(zip(extra_cols, key))
-        label = "__".join(f"{k}_{v}" for k, v in axes.items())
-        cube_path = library_dir / f"flux_cube__{label}.bin"
-        if not cube_path.exists():
-            raise FileNotFoundError(f"No flux cube found in {library_dir} for variant '{label}'.\n"
-                                    f"Expected: flux_cube__{label}.bin")
-        variants.append(_variant_from_rows(rows.reset_index(drop=True), axes, cube_path, model_dir))
     return variants
 
 

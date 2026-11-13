@@ -122,11 +122,6 @@ def _load_header(filepath: str) -> Tuple[SpectrumMeta, str]:
     return meta, "".join(header_lines)
 
 
-def read_spectrum_data(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
-    """Read wavelength and flux columns from a spectrum file."""
-    return read_text_spectrum(filepath)
-
-
 # ---- Unit detection from header ----
 
 def detect_units_from_header(header_text: str) -> Dict[str, Optional[str]]:
@@ -271,7 +266,7 @@ def detect_units_single_file(filepath: str) -> Optional[UnitInfo]:
     if meta.units_standardized:
         return None
     
-    wl, flux = read_spectrum_data(filepath)
+    wl, flux = read_text_spectrum(filepath)
     wl, flux = wl[wl > 0], flux[wl > 0]
     
     if wl.size < 2:
