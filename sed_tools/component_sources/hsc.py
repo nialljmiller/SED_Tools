@@ -31,10 +31,11 @@ import io
 import zipfile
 from pathlib import Path
 
-from ..filters.compose import FILTER, TEAM, InstrumentManifest, add_component
+from ..filters.manifest import FILTER, TEAM, InstrumentManifest
+from ..filters.compose import add_component
 from ..filters.curve_metadata import PHOTON, write_filter_file
 from ._common import SimpleSource, SiteAtmosphere, Table, build_simple, register_variant
-from ._original import CONNECT_TIMEOUT, download  # noqa: F401  CONNECT_TIMEOUT stays importable here
+from ._original import download
 
 PAGE = "https://subarutelescope.org/Instruments/HSC/sensitivity.html"
 SUBARU = "https://subarutelescope.org/Instruments/HSC/txt"

@@ -37,7 +37,7 @@ import numpy as np
 
 from ..filters.compose import FILTER, OPTICS, QE, InstrumentManifest, add_component
 from ..filters.curve_metadata import PHOTON
-from ._original import CONNECT_TIMEOUT, _each_published, download, product, safe_member  # noqa: F401  CONNECT_TIMEOUT stays importable here
+from ._original import _each_published, download, product, safe_member
 
 FACILITY = "JWST"
 REFDATA_VERSION = "2026.7"

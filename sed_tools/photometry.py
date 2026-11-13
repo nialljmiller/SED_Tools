@@ -15,8 +15,7 @@ import numpy as np
 
 from .filters.curve_metadata import ENERGY, PHOTON, normalize_detector_type, read_filter_header
 
-# These were flux_cube_tool's; their warnings keep its logger name.
-logger = logging.getLogger("sed_tools.flux_cube_tool")
+logger = logging.getLogger(__name__)
 
 
 FILTER_EXTENSIONS = {".dat", ".txt", ".csv"}
@@ -85,7 +84,7 @@ def infer_unit_from_values(values: np.ndarray) -> str:
     The guess is inherently ambiguous where units overlap (e.g. a K-band curve
     tabulated in nm, 1950-2400, reads as a UV curve in A), so files should
     declare ``WavelengthUnit`` (on a filter curve's column row, see
-    :mod:`sed_tools.filter_metadata`) and callers may pass an explicit unit.
+    :mod:`sed_tools.filters.curve_metadata`) and callers may pass an explicit unit.
     """
     if values.size == 0:
         return "angstrom"
@@ -211,7 +210,7 @@ def _standardize_file_wavelengths(
         logger.warning(
             "%s declares no wavelength unit; assuming %s from its values. "
             "Declare WavelengthUnit (filter curves: on the column row, via "
-            "sed_tools.filter_metadata.write_filter_header) or pass wavelength_unit= to be explicit.", path, unit_key)
+            "sed_tools.filters.curve_metadata.write_filter_header) or pass wavelength_unit= to be explicit.", path, unit_key)
     metadata["wavelength_unit_inferred"] = unit_key
     metadata["wavelength_unit_resolved"] = "angstrom"
     return wavelength, order

@@ -1,5 +1,5 @@
 """The spectral-grid flows of ``sed-tools``: download, rebuild, combine, import and coverage, and the
-ML, densifier and MESA forwarders. The cli package re-exports them."""
+ML, densifier and MESA forwarders. The cli package's menu and main() call them."""
 
 import glob
 import logging
@@ -12,7 +12,8 @@ from requests import RequestException
 
 from ..api import SED
 from ..cube.model import STELLAR_DIR_DEFAULT
-from ..grids.clean import FLUX_GUESS_WHY, FLUX_UNITS, clean_model_dir, undeclared_flux_unit
+from ..grids.units import FLUX_GUESS_WHY, FLUX_UNITS, undeclared_flux_unit
+from ..grids.clean import clean_model_dir
 from ..grids.lookup import regenerate_lookup_table
 from ..grids.pipeline import (_build_combined_grid, _build_data_products, _build_flux_cube, _directory_state,
                               _download_count, _import_sources, build_h5_bundle_from_txt, download_from_first_source,
@@ -73,7 +74,7 @@ def run_rebuild_flow(
 ) -> None:
     """Clean each chosen local grid and rebuild its lookup table, HDF5 bundle and flux cube.
 
-    ``flux_unit`` (a ``spectra_cleaner.FLUX_UNITS`` name) is used for grids
+    ``flux_unit`` (a ``sed_tools.grids.units.FLUX_UNITS`` name) is used for grids
     whose spectra do not declare their flux unit; without it sed-tools asks.
     Every grid that can be rebuilt is; then RuntimeError lists each grid that
     could not be, and why.
@@ -302,14 +303,8 @@ def run_spectra_flow(
 
 
 def _spectra_sources(source: str) -> List[str]:
-    """Source names from --source: one name, a comma-separated list, 'both' or 'all'."""
-    if source.lower() == "all":
-        return ["njm", "svo", "msg", "mast"]
-    if source.lower() == "both":
-        return ["njm", "svo", "msg"]
-    if "," in source:
-        return [s.strip().lower() for s in source.split(",")]
-    return [source.lower()]
+    """Source names from --source: one name, or 'all'."""
+    return ["njm", "svo", "msg", "mast"] if source.lower() == "all" else [source.lower()]
 
 
 def _spectra_grabbers(src_list: List[str], base_dir: str, workers: int) -> Dict:

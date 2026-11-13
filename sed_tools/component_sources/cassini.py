@@ -182,7 +182,7 @@ def iss_wac(fetch: Fetcher) -> Instrument:
     return _camera("ISS_WAC", fetch)
 
 
-RECIPES = {"ISS_NAC": (FACILITY, iss_nac), "ISS_WAC": (FACILITY, iss_wac)}
+RECIPES = {"ISS_NAC": iss_nac, "ISS_WAC": iss_wac}
 
 
 def _curve(path: Path) -> Tuple[np.ndarray, np.ndarray]:
@@ -190,7 +190,7 @@ def _curve(path: Path) -> Tuple[np.ndarray, np.ndarray]:
     return a[:, 0], a[:, 1]
 
 
-def build(filter_root, *, instrument, session=None, **_ignored) -> Path:
+def build(filter_root, *, instrument, session=None) -> Path:
     """Write missing published curves, the components and the manifest, then record the checks."""
     spec = _camera(instrument, Fetcher(session))
     inst_dir = write_instrument(filter_root, spec)

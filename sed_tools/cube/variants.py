@@ -15,7 +15,7 @@ import numpy as np
 from ..grids.lookup import (find_file_column, find_logg_column, find_metallicity_column, find_teff_column,
                             write_lookup_csv)
 
-logger = logging.getLogger("sed_tools.precompute_flux_cube")
+logger = logging.getLogger(__name__)
 
 
 # --- Variants and their names ---

@@ -7,13 +7,11 @@ grids/pipeline.py and cube/check.py.
 
 from __future__ import annotations
 
-import csv  # noqa: F401  (kept: `from sed_tools.api import *` gives what 0.5.0 gave)
 import logging
-import math  # noqa: F401  (kept, as csv)
 import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union  # noqa: F401  (Sequence kept)
+from typing import Any, Dict, Iterator, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -123,25 +121,12 @@ class Spectrum:
     filename: Optional[str] = None
     source_catalog: Optional[str] = None
     
-    @property
-    def wl(self) -> np.ndarray:
-        """Alias for wavelength."""
-        return self.wavelength
-    
-    @property
-    def fl(self) -> np.ndarray:
-        """Alias for flux."""
-        return self.flux
-    
     def to_dict(self) -> Dict[str, Any]:
         return {name: getattr(self, name) for name in ('wavelength', 'flux', 'teff', 'logg', 'metallicity', 'filename')}
     
-    def save(self, path: Union[str, Path], format: str = 'txt') -> None:
+    def save(self, path: Union[str, Path]) -> None:
         """Save spectrum to file."""
-        path = Path(path)
-        if format != 'txt':
-            raise ValueError(f"Unsupported format: {format}")
-        with open(path, 'w') as f:
+        with open(Path(path), 'w') as f:
             for line in (f"teff = {self.teff}", f"logg = {self.logg}", f"metallicity = {self.metallicity}",
                          "wavelength_unit = angstrom", "flux_unit = erg/cm2/s/A", "units_standardized = True"):
                 f.write(f"# {line}\n")
@@ -484,7 +469,7 @@ class SED:
         model_root : str or Path, optional
             Base directory for spectral grids
         flux_unit : str, optional
-            The spectra's flux unit for cleaning (see spectra_cleaner.clean_model_dir);
+            The spectra's flux unit for cleaning (see grids.clean.clean_model_dir);
             required when their headers do not declare one, and never used
             in place of a declared unit.
 
@@ -518,10 +503,15 @@ class SED:
             If no source could supply the grid; the message gives each source's error.
             Also if the spectra do not declare their flux unit and flux_unit is not
             given; the message gives the best guess.
+        KeyError
+            If flux_unit is not a known name, before anything is downloaded.
         RuntimeError
             If a failed download left files behind (another source is then
             not tried), or cleaning left spectra unusable.
         """
+        if flux_unit is not None:
+            from ..grids.units import FLUX_UNITS
+            FLUX_UNITS[flux_unit]  # the conversion, looked up before anything is downloaded
         base_dir = Path(model_root) if model_root else cls._model_root
         base_dir.mkdir(parents=True, exist_ok=True)
 
@@ -749,7 +739,7 @@ class SED:
         build_h5 : build the HDF5 bundle.
         dry_run : only report how many files have parseable headers; do not copy.
         flux_unit : the spectra's flux unit for cleaning (see
-            spectra_cleaner.clean_model_dir); required when their headers do
+            grids.clean.clean_model_dir); required when their headers do
             not declare one, and never used in place of a declared unit.
 
         Returns a summary dict.  A spectrum that cleaning leaves unusable
@@ -771,7 +761,8 @@ class SED:
         if dry_run:
             return {**result, "n_missing": len(missing), "dest": str(dest), "dry_run": True}
 
-        from ..grids.clean import check_flux_unit, clean_model_dir
+        from ..grids.units import check_flux_unit
+        from ..grids.clean import clean_model_dir
 
         check_flux_unit(str(src_dir), [str(f) for f in files], flux_unit)
 
@@ -808,7 +799,11 @@ class SED:
 
         Every grid named in ``catalogs`` is combined, including an earlier
         combine output; only discovery of "all" grids leaves those out
-        (see :mod:`sed_tools.combine_stellar_atm`).
+        (see :mod:`sed_tools.cube.combine`). A combination whose extra axes
+        (alpha, [alpha/Fe], C/O, ...) vary is split into one subgrid per
+        variant, as ``sed-tools rebuild`` splits one grid; it then has no
+        flux cube of its own, and the SED returned holds its spectral grid
+        only (load a variant with ``SED.local("<output>/<variant>")``).
 
         Parameters
         ----------
@@ -838,7 +833,9 @@ class SED:
 
         print(f"\nSuccessfully combined {len(selected_models)} spectral grids!")
         print(f"Output: {output_dir}")
-        return cls.local(output, model_root=base_dir)
+        if (Path(output_dir) / "flux_cube.bin").exists():
+            return cls.local(output, model_root=base_dir)
+        return cls(catalog=cls._load_catalog_from_dir(Path(output_dir), output, 'local'), model_root=base_dir)
     
     @classmethod
     def ml_completer(
@@ -895,8 +892,6 @@ class SED:
     def available_grids(self) -> List[str]:
         """List locally available spectral grids."""
         return self._core.available_grids()
-
-    available_models = available_grids
     
     def find_model(
         self,
@@ -950,13 +945,12 @@ class MLCompleter:
         save_name : str, optional
             Name for the saved model. Default: '{grid}_completer'
         """
-        from ..ml.completer import train_model
+        from ..ml.completer import Completer, SEDCompleter
 
-        save_name = save_name or f"{grid}_completer"
-        self._model = train_model(grid_dir=str(self.base_dir / grid),
-                                  save_path=str(self.base_dir / self.models_dir / save_name),
-                                  epochs=epochs, batch_size=batch_size)
-        
+        save_path = str(self.base_dir / self.models_dir / (save_name or f"{grid}_completer"))
+        SEDCompleter().train(library_path=str(self.base_dir / grid), output_path=save_path, epochs=int(epochs),
+                             batch_size=int(batch_size))
+        self._model = Completer(save_path)  # the model as saved, loaded back from disk
         return self
     
     def extend(
@@ -981,20 +975,19 @@ class MLCompleter:
         SpectralGrid
             Extended spectral grid
         """
-        from ..ml.completer import extend_catalog
+        from ..ml.common import DEFAULT_WL_MAX, DEFAULT_WL_MIN
 
         output = output or f"{catalog}_extended"
         # extend_catalog raises RuntimeError listing any spectrum it could not extend.
-        extend_catalog(model=self._model, catalog_dir=str(self.base_dir / catalog),
-                       output_dir=str(self.base_dir / output), wavelength_range=wavelength_range)
+        self._model.extend_catalog(input_dir=str(self.base_dir / catalog), output_dir=str(self.base_dir / output),
+                                   extension_range=wavelength_range or (DEFAULT_WL_MIN, DEFAULT_WL_MAX), verbose=False)
         return SED._load_catalog_from_dir(self.base_dir / output, output, 'ml')
     
     def load(self, model_name: str) -> 'MLCompleter':
         """Load a previously trained model."""
-        from ..ml.completer import load_model
-        
-        model_path = self.base_dir / self.models_dir / model_name
-        self._model = load_model(str(model_path))
+        from ..ml.completer import Completer
+
+        self._model = Completer(str(self.base_dir / self.models_dir / model_name))
         return self
 
 

@@ -5,14 +5,299 @@ Changelog
 Version 0.7.0 (unreleased)
 --------------------------
 
-- SED_Tools no longer checks arguments only to word a user's mistake. A
-  misused option, name or value now fails where Python or the library fails
-  (``KeyError``, ``ValueError``, ``TypeError``, ``FileNotFoundError``), and a
-  question is asked once rather than again after a bad answer. Valid use
-  behaves as before, and the checks of SED_Tools' own and upstream data stay.
-  ``Filters.compose`` with an unknown band, or with bands for which the
-  manifest declares none of the requested components, now asks NJM and the
-  builder before it fails (since 0.5.0 it had refused them first).
+0.7.0 removes what nothing needs any more: the 36 old import paths, the last
+0.4.1 aliases, the modules' own command lines, and parameters and functions
+that did nothing or that only the tests used. It adds checks that a served
+filter tree and a grid are consistent with what MESA reads (PR #66), drops the
+checks that only reworded a user's mistake (PR #67), reads MSG grids as MSG
+defines them, stops combine from scaling one grid's spectra to another's and
+from placing or overwriting spectra wrongly, and fixes four other defects.
+Valid use of the current API, and the files MESA reads, are unchanged except
+where a bullet below says otherwise.
+
+Removed: the old import paths
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The modules below have only forwarded to the code's new home since 0.5.0. They
+are gone, with ``sed_tools._old_path``. Import from the current path instead:
+
+=========================================  ============================================================
+Old path                                   Current path
+=========================================  ============================================================
+``sed_tools._flux``                        ``sed_tools.photometry`` (``FluxCube``: ``sed_tools.cube.fluxcube``)
+``sed_tools._lookup_io``                   ``sed_tools.grids.lookup``
+``sed_tools._resample``                    ``sed_tools.cube.build``
+``sed_tools.collision_config``             ``sed_tools.cube.collision``
+``sed_tools.combine_filters``              ``sed_tools.filters.combine``
+``sed_tools.combine_stellar_atm``          ``sed_tools.cube.combine``
+``sed_tools.component_sources._attach``    ``sed_tools.component_sources._common``
+``sed_tools.facility_sites``               ``sed_tools.filters.sites``
+``sed_tools.filter_catalogue``             ``sed_tools.filters.njm_catalogue``
+``sed_tools.filter_colors``                ``sed_tools.filters.display``
+``sed_tools.filter_components``            ``sed_tools.filters.compose`` (the folder model: ``sed_tools.filters.manifest``)
+``sed_tools.filter_library``               ``sed_tools.filters.library`` (the catalogue: ``sed_tools.filters.names``)
+``sed_tools.filter_metadata``              ``sed_tools.filters.curve_metadata``
+``sed_tools.filter_plot``                  ``sed_tools.filters.display``
+``sed_tools.filter_properties``            ``sed_tools.filters.properties``
+``sed_tools.flux_cube_tool``               ``sed_tools.cube.tool`` (photometry: ``sed_tools.photometry``)
+``sed_tools.grid_coverage``                ``sed_tools.grids.coverage``
+``sed_tools.grid_densifier``               ``sed_tools.cube.densify``
+``sed_tools.header_parser``                ``sed_tools.grids.header_parser``
+``sed_tools.mast_spectra_grabber``         ``sed_tools.grids.mast``
+``sed_tools.mesa_prepare``                 ``sed_tools.cube.mesa_export``
+``sed_tools.ml_optimized``                 ``sed_tools.ml.tuning``
+``sed_tools.ml_sed_completer``             ``sed_tools.ml.completer``
+``sed_tools.ml_sed_generator``             ``sed_tools.ml.generator``
+``sed_tools.ml_utils``                     ``sed_tools.ml.common``
+``sed_tools.models``                       ``sed_tools.cube.model``
+``sed_tools.msg_spectra_grabber``          ``sed_tools.grids.msg``
+``sed_tools.njm_filter_grabber``           ``sed_tools.filters.njm``
+``sed_tools.njm_spectra_grabber``          ``sed_tools.grids.njm``
+``sed_tools.parsing``                      ``sed_tools.ui_utils``
+``sed_tools.precompute_flux_cube``         ``sed_tools.cube.build`` (``sed_tools.precompute_flux_cube`` is still the function)
+``sed_tools.spectra_cleaner``              ``sed_tools.grids.clean`` (units: ``sed_tools.grids.units``)
+``sed_tools.spectrum_io``                  ``sed_tools.grids.spectrum_io``
+``sed_tools.svo_filter_grabber``           ``sed_tools.filters.svo``
+``sed_tools.svo_regen_spectra_lookup``     ``sed_tools.grids.lookup``
+``sed_tools.svo_spectra_grabber``          ``sed_tools.grids.svo``
+=========================================  ============================================================
+
+- ``python -m sed_tools.flux_cube_tool`` (and running ``sed_tools/flux_cube_tool.py``
+  as a script) is now ``python -m sed_tools.cube.tool``.
+- A name is importable only from the module that defines it or uses it. The
+  imports that modules kept only so that old code could reach a name through
+  them are gone, with the 0.4.1 and 0.5.0 ``from <module> import *`` extras
+  (``csv`` and ``math`` from ``sed_tools.api``, ``glob``, ``re`` and ``numpy``
+  from ``sed_tools.cli``, and the like). For example: the cli flows' helpers
+  are in ``sed_tools.cli.filters`` and ``sed_tools.cli.grids``, not
+  ``sed_tools.cli``; the photometry functions are in ``sed_tools.photometry``,
+  not ``sed_tools.cube.tool``; the folder model's names (``TEAM``,
+  ``archived_bands``, ...) are in ``sed_tools.filters.manifest``, not
+  ``sed_tools.filters.compose``; the unit tables and detectors are in
+  ``sed_tools.grids.units``, not ``sed_tools.grids.clean``; ``CONNECT_TIMEOUT``
+  is in ``sed_tools.component_sources._original``; ``NJMFilterGrabber`` is in
+  ``sed_tools.filters.njm``.
+- The loggers that were named after an old path (``sed_tools.spectra_cleaner``,
+  ``sed_tools.flux_cube_tool``, ...) are named after their own module
+  (``sed_tools.grids.clean``, ``sed_tools.photometry``, ...). Configuring the
+  ``sed_tools`` logger still covers them all.
+
+Removed: aliases, command lines, parameters and functions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The 0.4.1 aliases:
+
+  - ``SED.available_models`` and the core ``cube.model.SED.available_models``
+    (use ``available_grids``), ``sed_tools.find_atmospheres`` and
+    ``cube.model.SED.find_atmospheres`` (use ``find_grids``), ``Spectrum.wl``/``.fl`` and ``EvaluatedSED.wl``/``.fl``
+    (use ``.wavelength``/``.flux``);
+  - ``find_atm``'s ``Z_range``, ``z_range`` and ``log_g_range`` (use
+    ``metallicity_range`` and ``logg_range``);
+  - ``load_sed`` in ``cube.build`` and ``cube.combine``, and
+    ``read_spectrum_data`` (use ``sed_tools.grids.spectrum_io.read_text_spectrum``);
+    ``sed_tools.cli.load_txt_spectrum`` (use ``sed_tools.load_txt_spectrum``);
+  - ``Spectrum.save(format=)``;
+  - ``sed-tools grids --source both`` and comma-separated sources (name one
+    source, or ``all``).
+
+- The modules' own command lines. Use ``sed-tools`` instead:
+
+  - ``python -m sed_tools.njm_filter_grabber`` and
+    ``NJMFilterGrabber.download_all_filters``, and ``python -m
+    sed_tools.svo_filter_grabber`` (the interactive SVO browser,
+    ``svo.run_interactive``): ``sed-tools filters``;
+  - ``python -m sed_tools.combine_filters``: ``sed-tools filters-combine``;
+  - ``python -m`` on ``cube.build`` (``precompute_flux_cube``),
+    ``cube.combine`` (``combine_stellar_atm``, with ``--interactive``),
+    ``cube.densify`` (``grid_densifier``), ``grids.lookup``
+    (``svo_regen_spectra_lookup``) and ``grids.msg`` (``msg_spectra_grabber``,
+    with ``MSGSpectraGrabber.discover_and_run``): ``sed-tools rebuild``,
+    ``combine``, ``densify`` and ``grids --source msg``;
+  - ``python -m sed_tools.ml_sed_completer`` and ``ml_sed_generator``: the
+    ``sed-tools ml_completer`` and ``ml_generator`` menus.
+
+- ML training has one route per model: ``SED.ml_completer()`` and
+  ``SED.ml_generator()`` (``api.MLCompleter``, ``api.MLGenerator``), the
+  ``sed-tools ml_completer`` and ``ml_generator`` menus (``--auto`` for the
+  optuna search), or the engines' ``SEDCompleter.train`` and
+  ``SEDGenerator.train``. Removed: ``sed_tools.ml.train_completer``,
+  ``Completer.train``, ``sed_tools.ml.auto_train_generator``, and the 0.4.1
+  ``ml_sed_completer.train_model``, ``load_model`` and ``extend_catalog``
+  functions. ``AutoTrainer()`` takes no arguments. Models saved by earlier
+  versions load and give the same results.
+- ``sed-tools densify`` loses ``--method``, ``--ml-gap-threshold`` and
+  ``--no-lookup``, which were refused or had no effect.
+- Parameters that did nothing: ``NJMFilterGrabber(max_workers=)``,
+  ``FilterCatalogue.instrument_file(prefer_installed=)`` (the copy beside the
+  installed curves is read first, unless ``refresh=True``),
+  ``SEDModel(interpolation=)`` and the core ``SED(interpolation=)``, ``teff``
+  of ``resample_to_grid`` and of ``cube.combine.prepare_sed``,
+  ``SVOSpectraGrabber.expand_window``, ``ui_utils.ask_number(positive=)``,
+  ``lsst.build(tag=)``, ``hst.build(svo_client=)``, ``euclid.build(bands=)``
+  (all three NISP bands are built) and ``SkyCalcClient(interface=)`` (the
+  API is tried first, then the web form, as before).
+- Functions only the tests used: ``NJMFilterGrabber.find_facility``,
+  ``get_exclusive_facilities``, ``find_instrument`` and ``get_filter_info``;
+  ``build_all_products`` (``build_product`` builds each recipe);
+  ``AtmosphereGrid.select`` (``AtmosphereGrid.find``); ``instrument_properties``
+  (``curve_properties``); ``collision.write_default_config``;
+  ``lsst.validate`` and ``twomass.validate``; and
+  ``SkyCalcClient.transmission`` (a client passed to ``skycalc.build`` needs
+  ``fetch``). ``released_mesa_reads`` stays.
+- ``cube.combine.identify_reference_model`` and
+  ``compute_normalization_factors`` (public since 0.4.1, as
+  ``combine_stellar_atm``'s), with the scaling they served: combine scales no
+  spectrum (below).
+- Unused names: ``grids.lookup.scan_existing_files``,
+  ``filters.display.NORMALIZATIONS`` (``filter_plot.NORMALIZATIONS``),
+  ``catalog.BLOCKED``, ``swift.CALDB_PAGE``, ``team_atmospheres.VISTA_PAGE``
+  and ``twomass.TOTAL_TABLE``.
+- ``sed-tools mesa_prepare`` no longer reads the ``fluxcube_library/`` layout
+  of grids split by SED_Tools before 0.5.0; ``sed-tools rebuild`` writes the
+  current one (``variants_index.csv`` and one subgrid per variant).
+
+Changed behaviour
+~~~~~~~~~~~~~~~~~
+
+- **Misuse is not pre-checked (PR #67).** SED_Tools no longer checks
+  arguments only to word a user's mistake. A misused option, name or value
+  now fails where Python or the library fails (``KeyError``, ``ValueError``,
+  ``TypeError``, ``FileNotFoundError``), and a question is asked once rather
+  than again after a bad answer. Valid use behaves as before, and the checks
+  of SED_Tools' own and upstream data stay. ``Filters.compose`` with an
+  unknown band, or with bands for which the manifest declares none of the
+  requested components, now asks NJM and the builder before it fails.
+- **Unknown builder keywords raise ``TypeError``.** Every builder in
+  ``component_sources`` takes only its own parameters; before, thirteen of
+  them silently ignored any other keyword (``sed-tools filters-build-components
+  sdss --archive DIR`` ignored ``--archive``). A removed parameter therefore
+  raises ``TypeError`` too.
+- **combine scales no spectrum.** Each spectrum keeps the absolute flux in
+  its file, which the cleaner ties to its own sigma T^4. Before, combine
+  multiplied every spectrum of every grid but one by its ratio to the nearest
+  spectrum of a reference grid, however far away in (Teff, log g, [M/H]), so
+  a spectrum took another star's flux: an 800 K spectrum scaled to a 3500 K
+  one's came out 7 mag too bright. Over NJM's 84 combinations of two or three
+  grids, 156,460 spectra were scaled to another star, and 26 % of the
+  combined cubes' nodes held a flux off by more than 1 %. Every node a
+  spectrum fills now integrates to within 1 % of that spectrum, resampled as
+  the cube is built.
+- **combine fills a missing axis with every value.** A grid that does not
+  state log g or [M/H] (``bbody`` has neither, ``Husfeld`` no [M/H]) used to
+  be placed at log g 0 and [M/H] 0, as stars of that log g. It holds the same
+  spectrum at every value of that axis, so each of its spectra is now copied
+  to every value the other grids give the axis; an axis no grid states is 0
+  alone, as the cube builder reads it, so a lone grid is unchanged. Where
+  spectra meet at a node, the one placed by more of its grid's own values
+  wins (a blackbody never replaces a star placed by its own log g), and
+  between equals the grid named later, as before. A grid without a Teff
+  column is refused, as the cube builder refuses it.
+- **combine splits extra axes per variant.** Extra axes (``alpha``,
+  ``[alpha/Fe]``, ``C/O``, helium ``yhe``, ...) used to be dropped, so spectra
+  that differ only in them met on one node and the later overwrote the
+  earlier. A combination is now split as ``sed-tools rebuild`` splits one
+  grid: one subgrid per variant, each with its own lookup table and
+  ``flux_cube.bin``, listed in ``variants_index.csv``, and the combined
+  folder keeps the spectra and every variant's rows. A grid without an extra
+  axis is in every variant of it, as for log g. Values match as numbers
+  (``0`` and ``0.0`` agree); axes match by name, so ``alpha`` and
+  ``[alpha/Fe]`` are two axes. A split combination has no flux cube of its
+  own, and ``SED.combine`` then returns its spectral grid without a model. A
+  combination with no varying extra axis is written as before.
+- **A combined grid's lookup table lists what its cube holds:** one row per
+  node a spectrum fills, at the spectrum's own values and, for an axis its
+  grid does not state, the node's. A spectrum that fills no node (one
+  overwritten by a later grid) is neither listed nor copied.
+- Golden ``combine_models``: the golden pair (alpha 0 and alpha 0.4) is now
+  two variant subgrids. The alpha 0.4 cube is the one combine wrote with its
+  scaling removed (each node 0.24–0.47 % above the scaled one), and the
+  alpha 0 cube holds Kurucz2003all's own spectra, which were overwritten
+  before.
+- **ML lookup columns are found as everywhere else.**
+  ``Completer.extend_catalog`` (and ``MLCompleter.extend`` and the extend
+  menu) finds a lookup table's file, Teff, logg and [M/H] columns with
+  ``sed_tools.grids.lookup``'s ``find_*_column``, ignoring case. File columns
+  named ``sed_file`` or ``spectrum`` are no longer found; ``temp``,
+  ``temperature``, ``surface_gravity``, ``mh``, ``z`` and the like now are.
+  When a table has two candidates, the one ``find_*_column`` prefers is used
+  (``filename`` over ``file``, ``metallicity`` over ``meta``).
+- The ML menus share one "Start ...? [Y/n]" question: the generator's now
+  starts on any answer beginning with y, and prints "Cancelled" otherwise.
+- The original-source modules' ``RECIPES`` map each instrument to its
+  recipe, without the facility.
+- KPNO/Mosaic's k1044 band is ``Us`` (``Us.dat``), NOIRLab's name for it, not
+  ``U``.
+
+Fixed
+~~~~~
+
+- **MSG grids are read as MSG defines them.** Before, no MSG spectrum had
+  parameters: the reader looked for the vgrid's axes from ``axes[0]``, and MSG
+  numbers them from 1. 24 of the 25 grids extracted nothing, and SPHINX wrote
+  fluxes π too low at the bins' left edges. Now:
+
+  - Teff, log g and [M/H] are decoded from the vgrid as MSG writes it
+    (revisions 1–3, ``v_lin_seq`` or ``mask``, 1-based and in Fortran order),
+    and each axis's role comes from its label (``Teff``, ``log(g)``,
+    ``[Fe/H]``, ``Z/Zo``, ...). The value-range guess and the C3K override
+    (``AXIS_ROLE_OVERRIDES``) are gone.
+  - Spectra come from MSG's wavelength ranges (``lin``, ``log``, ``tab`` and
+    ``comp``) at the bins' centres, with the flux from the limb-darkening
+    law's flux basis.
+  - Every other axis (``[alpha/Fe]``, ``C/O``, ``log(xi)``) is written to the
+    headers and the lookup table, so the cube builder splits such a grid into
+    variants instead of averaging them.
+  - A grid fails, naming each spectrum, when its spectra lack a finite Teff,
+    log g or (where the grid has that axis) [M/H], or a spectrum has
+    wavelengths that are not finite and positive, fluxes that are not
+    finite, or no positive flux. Zero fluxes are kept
+    (MSG stores fluxes below float32's range as 0). Negative fluxes are kept
+    as MSG gives them while their integral is below 0.1 % of the integral of
+    the spectrum's absolute flux, and the spectrum's header then gives that
+    fraction (``negative_flux_fraction``); otherwise the grid fails. Six of
+    Coelho14-SED's spectra hold one negative bin each, at most 3.5e-21 of
+    their flux.
+  - Spectra extracted by an earlier version are not rewritten: delete the
+    grid's folder to extract it again.
+
+- OSTAR2002 and BSTAR2006 (the CLARET limb-darkening grids) are extracted
+  exactly as MSG defines them. Their flux, as MSG stores it, is 2–8 % below
+  SVO's copies of the same TLUSTY models in the optical, and up to 5 times
+  below in the far ultraviolet.
+- MSG and SVO downloads write ``lookup_table.csv`` rows in file-name order,
+  as cleaning does; before, the order of the finished downloads, so the same
+  download could write a different file.
+- ``SED.fetch(flux_unit=...)`` looks the unit up before anything is
+  downloaded: an unknown unit raises ``KeyError`` with nothing downloaded and
+  no folder made.
+- Builders download each URL once per build: VISTA reused a download across
+  builds in one process, and DECam fetched the DES table six times per build.
+- ``sed-tools rebuild``, ``SpectralGrid.write()`` and ``SED.import_grid()``
+  no longer write the HDF5 bundle over an MSG grid's downloaded ``<grid>.h5``:
+  a file there that is not a bundle is left alone and the bundle is
+  ``<grid>_bundle.h5``, as downloads already named it.
+- ``SpectralGrid.parameters`` names a spectrum without a file name as
+  ``write()`` saves it, so the ``lookup_table.csv`` that ``write()`` saves
+  lists files that exist.
+- The MESA index file is named after its folder, where MESA opens it:
+  ``combine_filter_sets(output, ..., instrument=...)`` with an absolute
+  ``output`` wrote it under ``instrument``, and ``write_filter_index`` now
+  takes the folder's name when given none. An SVO download's index leaves
+  out ``archived_bands``.
+- A curve written from an SVO record labels only what the record states. An
+  SVO filter-only curve (``<band>_filter``, ``<band>_fil``) whose components
+  string names more than the filter, such as ``LSST/LSST.g_filter`` listed as
+  "Filter + Instrument + Atmosphere", gets no ``Components`` label. Before,
+  it got the total band's label. The LSST and SVO-published builders record a
+  ``DetectorType`` that SVO does not give as ``assumed``. Before, they
+  recorded it as ``svo``.
+- An NJM download with a wavelength range no longer first asks NJM for a
+  server-side cut, which it never made; the spectra are trimmed after
+  download, as before.
+
+Checks and guards
+~~~~~~~~~~~~~~~~~
+
 - ``sed-tools coverage --filters ...`` (and ``SED.coverage(filters=...)``)
   lists the bands a grid's wavelengths do not sample
   (``sed_tools.photometry.band_sampling``), and exits 1 if there are any. A
@@ -25,34 +310,6 @@ Version 0.7.0 (unreleased)
   Photometry and band averages are unchanged.
 - Building a flux cube prints how many spectra had wavelengths off the
   cube's axis and so were interpolated onto it.
-- ``sed-tools rebuild``, ``SpectralGrid.write()`` and ``SED.import_grid()``
-  no longer write the HDF5 bundle over an MSG grid's downloaded ``<grid>.h5``:
-  a file there that is not a bundle is left alone and the bundle is
-  ``<grid>_bundle.h5``, as downloads already named it.
-- ``SpectralGrid.parameters`` names a spectrum without a file name as
-  ``write()`` saves it, so the ``lookup_table.csv`` that ``write()`` saves
-  lists files that exist.
-- Installing sed-tools no longer pulls in astroquery and lxml (nor html5lib,
-  keyring and pyvo); nothing imports them.
-- An NJM download with a wavelength range no longer first asks NJM for a
-  server-side cut, which it never made; the spectra are trimmed after
-  download, as before.
-- The sdist no longer includes ``tests/``, which could not run from it.
-- The Las Cumbres builders' manifest note maps each filter code as
-  ``U=bssl-ux-022.txt (band U)``.
-- ``scripts/audit_pipeline.py`` runs every check on every grid (the
-  ``grams_*`` and ``bbody`` grids were exempt by name) and uses the package's
-  Planck function and flux cube layout.
-- ``build(..., raw=...)`` for PANIC, INGRID, NSFCam and IO:O reads the saved
-  research inventory from ``round3/ground-1`` and ``round3/ground-2``, the
-  folders' new names.
-- A curve written from an SVO record labels only what the record states. An
-  SVO filter-only curve (``<band>_filter``, ``<band>_fil``) whose components
-  string names more than the filter, such as ``LSST/LSST.g_filter`` listed as
-  "Filter + Instrument + Atmosphere", gets no ``Components`` label. Before,
-  it got the total band's label. The LSST and SVO-published builders record a
-  ``DetectorType`` that SVO does not give as ``assumed``. Before, they
-  recorded it as ``svo``.
 - ``python -m sed_tools.filters.label_check FILTERS_DIR [--against OLD_DIR]``
   checks the label rules every served filter tree must keep, and exits 1 on
   any problem:
@@ -65,7 +322,12 @@ Version 0.7.0 (unreleased)
   - curves with the same samples (after peak normalisation, to float32
     precision) carry the same ``DetectorType`` across the whole tree. On NJM
     it finds 31 groups (68 curves) served with both tags, e.g. SDSS g as
-    photon in ``SLOAN/SDSS`` and as energy in ``Misc/APASS``.
+    photon in ``SLOAN/SDSS`` and as energy in ``Misc/APASS``;
+  - curves with the same samples say the same about what they include: where
+    the strongest ``ComponentsSource`` among them gives one ``Components``, a
+    curve with a weaker source gives it too, so APASS's copy of SDSS g cannot
+    be ``filter (assumed)`` while SDSS's is ``filter+instrument+atmosphere
+    (svo)``. When the strongest sources disagree, nothing is reported.
 
   With ``--against``, it also checks that a changed ``DetectorType`` rests on
   stronger evidence than the old one, or on ``user``. A rebuild then cannot
@@ -89,17 +351,38 @@ Version 0.7.0 (unreleased)
 - A ``manifest.json`` that names another folder (the set was renamed or
   copied, e.g. ``SLOAN/SDSS`` to ``SLOAN/SDSS_E``) stops, with the fix, instead
   of describing the folder as the set it came from.
-- The MESA index file is named after its folder, where MESA opens it:
-  ``combine_filter_sets(output, ..., instrument=...)`` with an absolute
-  ``output`` wrote it under ``instrument``, and ``write_filter_index`` now
-  takes the folder's name when given none. An SVO download's index leaves
-  out ``archived_bands``.
 - ``sed_tools.filters.manifest.set_problems`` and ``check_sets`` say where a set
   folder's records disagree: no index named after the folder, an index and
   curves that differ, a manifest naming another set or declaring bands the
   index does not list, and, for a set whose source instruments are known
-  (NJM's claims), a curve of another set's instrument. NJM runs it on every
-  refresh.
+  (NJM's claims), a curve of another set's instrument, or a copy of any other
+  source's record (its ``Sources`` cite SVO, or it has none) unless the set is
+  named after that source (``copied_from_source``): NJM's ingests had filed
+  SVO's NOT/NOT filter list in NOT/ALFOSC. A publisher's curve may name an
+  unclaimed source in its ``FilterID`` as a cross-reference. NJM runs it on
+  every refresh; on NJM's filters of 13 Nov 2026 it finds nothing in 809 sets.
+- The bundled instrument catalogue (``sed_tools/instrument_catalogue.json``)
+  is regenerated from NJM's index of 13 Nov 2026: 809 instruments in 221
+  facilities, with the 16 folders NJM's misfiled curves moved to, KPNO/Mosaic's
+  ``Us``, and NJM's removals (CFHT/WFC, BOK/90prime's copies of BOK/BASS's
+  curves, Lick ``6570_70``, and the WIYN/Hydra and IRTF/NSFCam curves of other
+  filters). 691 instruments now name their SVO equivalents (336 before), so
+  they can be filled from SVO under NJM's band names while NJM is down.
+
+Packaging and scripts
+~~~~~~~~~~~~~~~~~~~~~
+
+- Installing sed-tools no longer pulls in astroquery and lxml (nor html5lib,
+  keyring and pyvo); nothing imports them.
+- The sdist no longer includes ``tests/``, which could not run from it.
+- The Las Cumbres builders' manifest note maps each filter code as
+  ``U=bssl-ux-022.txt (band U)``.
+- ``scripts/audit_pipeline.py`` runs every check on every grid (the
+  ``grams_*`` and ``bbody`` grids were exempt by name) and uses the package's
+  Planck function and flux cube layout.
+- ``build(..., raw=...)`` for PANIC, INGRID, NSFCam and IO:O reads the saved
+  research inventory from ``round3/ground-1`` and ``round3/ground-2``, the
+  folders' new names.
 
 Version 0.6.0 (November 2026)
 -----------------------------

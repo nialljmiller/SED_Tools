@@ -15,18 +15,15 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Uni
 import numpy as np
 
 from .curve_metadata import (ENERGY, PHOTON, SOURCES_SEPARATOR, detector_type_before_conversion,
-                              normalize_detector_type, read_filter_header, write_filter_file)
+                             normalize_detector_type, read_filter_header, write_filter_file)
 from .detector_edit import unconverted_transmission
-from .manifest import (  # noqa: F401 - every manifest name stays importable from here (filter_components)
-    ATMOSPHERE, ATMOSPHERE_KINDS, AUXILIARY_DIRS, COMPONENTS_DIR, COMPOSABLE_ROLES, DERIVED, FILTER,
-    FILTER_SIBLING_SUFFIXES, INSTRUMENT, MANIFEST_NAME, MANIFEST_SCHEMA, OPTICS, PRODUCTS_DIR, PUBLISHED, QE,
-    ROLES, SHARED, TEAM, _RECIPES, _SVO_TOKENS, _VARIANT_NAME, AtmosphereGrid, AtmosphereSpec, ComponentError,
-    InstrumentManifest, PathLike, _require_inside, archived_bands, index_listing, index_names, is_auxiliary_path,
-    math_isclose, parse_components, recipe_name, write_filter_index,
+from .manifest import (
+    ATMOSPHERE, COMPOSABLE_ROLES, FILTER, INSTRUMENT, MANIFEST_NAME, OPTICS, PUBLISHED, QE, SHARED, _VARIANT_NAME,
+    AtmosphereGrid, AtmosphereSpec, ComponentError, InstrumentManifest, PathLike, parse_components, recipe_name,
+    write_filter_index,
 )
-from .sites import instrument_sites, is_ground_based, own_site, platform  # noqa: F401
 
-logger = logging.getLogger("sed_tools.filter_components")
+logger = logging.getLogger(__name__)
 
 
 class ComponentCoverageError(ComponentError):
@@ -423,66 +420,6 @@ def build_product(
                 previous.rename(out_dir)
             raise
     return out_dir
-
-
-def build_all_products(
-    instrument_dir: PathLike,
-    *,
-    conditions: Sequence[Mapping[str, object]] = (),
-    atmosphere_root: Optional[PathLike] = None,
-) -> List[Path]:
-    """Build every with/without variant the instrument's own components allow.
-
-    That is each buildable recipe (``filter``, ``filter+optics``, ...,
-    ``filter+optics+qe``) and, for each observing condition in
-    ``conditions`` (``{"airmass": 1.2, "pwv": 2.5}``), the same recipes plus
-    the instrument's own atmosphere, and the published curve plus that
-    atmosphere when the published curve lacks one.
-
-    A recipe with optics or QE that only some bands have is not built; a
-    warning names it and the :func:`build_product` call that composes it.
-    """
-    instrument_dir = Path(instrument_dir)
-    manifest = InstrumentManifest.load(instrument_dir)
-    _warn_partial_recipes(instrument_dir, manifest)
-    recipes = [r for r in manifest.buildable() if not (r == FILTER and manifest.published.get("components") == FILTER)]
-    built: List[Path] = [build_product(instrument_dir, r) for r in recipes]
-    published_has_atm = all(
-        ATMOSPHERE in parse_components(manifest.published_bands.get(b, "")) for b in manifest.bands
-    ) if manifest.published_bands else True
-    published_recipes = set(manifest.published_bands.values())
-    # The published curve + atmosphere is only a distinct variant when the
-    # published curve is not itself one of the buildable recipes.
-    add_published = (
-        not published_has_atm
-        and len(manifest.published_bands) == len(manifest.bands)
-        and not (len(published_recipes) == 1 and published_recipes <= set(manifest.buildable()))
-    )
-    for cond in conditions:
-        for recipe in manifest.buildable() + ([PUBLISHED] if add_published else []):
-            built.append(build_product(instrument_dir, recipe, atmosphere=cond, atmosphere_root=atmosphere_root))
-    return built
-
-
-def _warn_partial_recipes(instrument_dir: Path, manifest: InstrumentManifest) -> None:
-    """Warn about recipes with optics or QE that only some primary bands have (SLOAN/SDSS's primed filters).
-
-    build_all_products builds a recipe only for every primary band, so without this such a product silently is not made.
-    """
-    bands = manifest.primary_bands()
-    recipes_by_bands: Dict[Tuple[str, ...], List[str]] = {}
-    for roles in _RECIPES[1:]:
-        covered = tuple(b for b in bands if manifest.cover(b, roles))
-        if covered and len(covered) < len(bands):
-            recipes_by_bands.setdefault(covered, []).append(recipe_name(roles))
-    for covered, recipes in recipes_by_bands.items():
-        missing = [b for b in bands if b not in covered]
-        logger.warning(
-            "%s/%s: %s not built, because only %d of %d bands have the components (none for %s). "
-            "Build for those bands with build_product(%r, %r, bands=%r)",
-            manifest.facility, manifest.instrument, ", ".join(recipes), len(covered), len(bands),
-            ", ".join(missing), str(instrument_dir), recipes[-1], list(covered),
-        )
 
 
 def add_component(

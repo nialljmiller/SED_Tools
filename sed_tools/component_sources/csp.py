@@ -20,7 +20,6 @@ from typing import Dict, Tuple
 
 import numpy as np
 
-from ..filters.compose import InstrumentManifest  # noqa: F401  importable from here, as before
 from ..filters.curve_metadata import PHOTON
 from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, safe_member, support
 
@@ -205,6 +204,6 @@ def csp2(fetch: Fetcher) -> Instrument:
     return Instrument("LCO", "CSP2", bands, note, ground_based=True, outside_range="error")
 
 
-RECIPES = {"CSP": ("LCO", csp1), "CSP2": ("LCO", csp2)}
+RECIPES = {"CSP": csp1, "CSP2": csp2}
 
 build = make_builder(RECIPES)

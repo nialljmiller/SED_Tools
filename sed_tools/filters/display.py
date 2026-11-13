@@ -44,7 +44,6 @@ INFRARED_RAINBOW = (100.0, -25.0)
 ULTRAVIOLET_RAINBOW = (195.0, 290.0)
 
 Curve = Tuple[Sequence[float], Sequence[float]]
-NORMALIZATIONS = (None, False, True, "peak", "area")
 
 
 @lru_cache(maxsize=1)
@@ -179,7 +178,7 @@ def instrument_colors(curve_paths: Sequence[Union[str, Path]]) -> Dict[str, Dict
 
 
 def _normalized(lam: np.ndarray, t: np.ndarray, normalize) -> np.ndarray:
-    """``t`` scaled as :func:`plot_curves`'s ``normalize`` says (one of :data:`NORMALIZATIONS`)."""
+    """``t`` scaled as :func:`plot_curves`'s ``normalize`` says."""
     if normalize in (True, "peak"):
         peak = t.max()
         return t / peak if peak > 0 else t
@@ -203,7 +202,7 @@ def plot_curves(
 ):
     """Plot ``{key: (wavelength Å, transmission)}`` and return the matplotlib Axes.
 
-    ``colors`` defaults to :func:`~sed_tools.filter_colors.display_colors` of the
+    ``colors`` defaults to :func:`~sed_tools.filters.display.display_colors` of the
     curves given.  ``normalize`` is ``None`` (as tabulated), ``"peak"`` (or
     ``True``: maximum 1) or ``"area"`` (∫T dλ = 1, per Å).  ``vega`` is
     ``(wavelength Å, f_λ)``; it is drawn scaled to the tallest curve over the

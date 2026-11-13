@@ -146,7 +146,7 @@ OPTICS_KEY = "dr280"  # the only DR280 optics: ADDem and production share it
 
 #: Nill's decision for both instruments (2026-10-27).  ``user`` is outside
 #: the SVO precedence order, so an SVO resolution never replaces it, and
-#: composed products keep it (filter_components._band_detector_type).
+#: composed products keep it (filters.compose._band_detector_type).
 DETECTOR_TYPE, DETECTOR_SOURCE = ENERGY, "user"
 DETECTOR_NOTE = (
     "user: the Argus team states that the Argus sensors are energy counting (N. Miller, 2026-10-27). "
@@ -343,11 +343,11 @@ def system_header(band: str) -> Dict[str, str]:
             "Sources": " | ".join(SYSTEM_INPUTS[key].source for key in (band, OPTICS, QE))}
 
 
-def build_system(filter_root: Union[str, Path], raw: Union[str, Path, None] = None, **_ignored) -> Path:
+def build_system(filter_root: Union[str, Path], raw: Union[str, Path, None] = None) -> Path:
     """Add the components of the legacy Argus/System curves and label the curves' column row.
 
     Only line 1 of each published curve changes (:func:`system_header`);
-    its samples are kept byte for byte.  It reads local files only: ``session`` and ``archive_dir`` are ignored.
+    its samples are kept byte for byte.  It reads local files only, so it takes no ``session`` or ``archive_dir``.
     """
     filter_root = Path(filter_root)
     instrument_dir = filter_root / FACILITY / "System"
@@ -386,6 +386,6 @@ def build(filter_root: Union[str, Path], raw: Union[str, Path, None] = None, *, 
           **options) -> Path:
     """Build ``Argus/<instrument>`` (``DR280`` or ``System``); see the module docstring.
 
-    ``options`` (``session``, ``archive_dir``) go to :func:`build_dr280`; :func:`build_system` ignores them.
+    ``options`` (``session``, ``archive_dir``) go to :func:`build_dr280`; :func:`build_system` takes none.
     """
     return {"DR280": build_dr280, "System": build_system}[instrument](filter_root, raw, **options)

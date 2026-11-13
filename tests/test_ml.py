@@ -1,6 +1,5 @@
 """ML: the completer and generator, what their training and inference compute, their menus, extend_catalog,
-list_models, train_model and load_model, and their failures; the torch-free sed_tools.ml API; MPS and the
-optuna auto-trainer.
+list_models, and their failures; the torch-free sed_tools.ml API; MPS and the optuna auto-trainer.
 
 The known-answer rows pin what training and inference compute on tiny seeded inputs on the CPU, recorded
 before the ml modules were split up: a refactor that changes the numerics, the seeds or the order of random
@@ -19,8 +18,8 @@ import logging
 import numpy as np
 import pytest
 
-from sed_tools import ml, ml_sed_completer as mc, ml_sed_generator as mg
-from sed_tools.ml import Completer, model_info
+from sed_tools import ml
+from sed_tools.ml import Completer, completer as mc, generator as mg, model_info
 
 from support import (KURUCZ, answer, cpu_torch, fixed_completer, fixed_generator, scenarios, tiny_library,
                      write_flux_cube)
@@ -49,7 +48,7 @@ def kurucz(t):
     """The 12-spectrum golden Kurucz grid (3 Teff x 2 logg x 2 [M/H]) with its flux cube."""
     import shutil
 
-    from sed_tools.precompute_flux_cube import precompute_flux_cube
+    from sed_tools.cube.build import precompute_flux_cube
 
     library = t.tmp / "Kurucz2003all"
     shutil.copytree(KURUCZ, library)
@@ -189,9 +188,9 @@ def training_drops_a_last_batch_of_one_spectrum(t, engine):
 
 def auto_train_best(t, lib, out):
     seeded_optuna(t)
-    from sed_tools.ml_optimized import AutoTrainer
+    from sed_tools.ml.tuning import AutoTrainer
 
-    AutoTrainer(lib).train_best(lib, out, n_trials=1, epochs=1)
+    AutoTrainer().train_best(lib, out, n_trials=1, epochs=1)
 
 
 def train_raises_before_saving_when_every_batch_is_nan(t, network, train):
@@ -224,7 +223,7 @@ def extend_catalog_raises_when_a_column_is_missing(t, missing):
     df = pd.read_csv(catalog / "lookup_table.csv").drop(columns=[missing])
     df.to_csv(catalog / "lookup_table.csv", index=False)
     completer = stubbed_completer()
-    with pytest.raises(ValueError, match=r"has no column for (file|teff|logg|meta) \(one of"):
+    with pytest.raises(ValueError, match=r"has no column for (file|teff|logg|meta)\. Columns read"):
         completer.extend_catalog(str(catalog), str(t.tmp / "out"))
     assert completer._completer.calls == []
 
@@ -254,6 +253,7 @@ ALL_NAN = {
     "auto_trainer_stops_on_a_trial_with_no_usable_epoch": (mg.SEDGeneratorNetwork, auto_train_best)}
 BAD_ANSWERS = {
     "completer_workflow_rejects_bad_answers_cancelled": (mc, ["1", "1", "", "", "", "n"], "Cancelled"),
+    "generator_workflow_rejects_bad_answers_cancelled": (mg, ["1", "1", "", "", "", "n"], "Cancelled"),
     "completer_workflow_rejects_bad_answers_invalid_choice": (mc, ["9"], "Invalid choice"),
     "generator_workflow_rejects_zero_and_negative_menu_numbers_0": (mg, ["3", "0"], "Invalid selection"),
     "generator_workflow_rejects_zero_and_negative_menu_numbers_minus_1": (mg, ["3", "-1"], "Invalid selection")}
@@ -370,7 +370,7 @@ def extend_catalog_extends_each_spectrum_with_its_own_parameters(t):
     # first spectrum became the header and every other one was extended as
     # Teff 5000, logg 4.5, [M/H] 0; on cleanup/base it raised instead.
     import pandas as pd
-    from sed_tools._lookup_io import write_lookup_csv
+    from sed_tools.grids.lookup import write_lookup_csv
 
     catalog = t.tmp / "catalog"
     catalog.mkdir()
@@ -397,16 +397,17 @@ def extend_catalog_extends_each_spectrum_with_its_own_parameters(t):
 
 
 @row
-def auto_train_generator_saves_a_model_sedgenerator_and_the_api_load(t):
+def auto_trainer_saves_a_model_sedgenerator_and_the_api_load(t):
     # It used to save a ResidualMLP's weights as model_best.pt and overwrite
     # config.json with keys of its own, so nothing could load the model.
     cpu_torch(t)
     seeded_optuna(t)
     from sed_tools import api
+    from sed_tools.ml.tuning import AutoTrainer
 
     kurucz_library = kurucz(t)
     output = t.tmp / "base" / "models" / "auto"
-    generator = ml.auto_train_generator(str(kurucz_library), str(output), n_trials=2, epochs=2)
+    generator, _ = AutoTrainer().train_best(str(kurucz_library), str(output), n_trials=2, epochs=2)
 
     assert isinstance(generator, mg.SEDGenerator)
     assert sorted(p.name for p in output.iterdir()) == [
@@ -619,7 +620,7 @@ def generator_workflow_warns_about_an_unreadable_lookup_table(t):
 
 
 # ======================================================================
-# Training data, train_model and load_model: what they refuse and warn about
+# Training data: what training refuses and warns about
 # ======================================================================
 @row
 def completer_prepare_training_data_warns_how_many_spectra_it_dropped(t):
@@ -666,24 +667,6 @@ def generator_train_rejects_a_grid_with_no_flux_above_the_floor(t):
         mg.SEDGenerator().train(grid(t, [4000.0, 5000.0], 1e-30), str(t.tmp / "model"), epochs=1,
                                 batch_size=2, max_samples=2, hidden_layers=[8])
     assert not (t.tmp / "model").exists()
-
-
-@row
-def train_model_forwards_keywords_and_rejects_unknown_ones(t):
-    calls = []
-    t.mp.setattr(mc.SEDCompleter, "train", lambda self, **kw: calls.append(kw))
-    t.mp.setattr(mc, "Completer", lambda path: ("Completer", path))
-
-    handle = mc.train_model("grid", str(t.tmp / "m"), epochs=2, verbose=False, dropout=0.1)
-
-    assert handle == ("Completer", str(t.tmp / "m"))
-    assert calls[0]["verbose"] is False and calls[0]["dropout"] == 0.1
-
-
-@row
-def train_model_rejects_keywords_train_does_not_take(t):
-    with pytest.raises(TypeError, match="val_split"):
-        mc.train_model("grid", str(t.tmp / "m"), val_split=0.2)
 
 
 # ======================================================================
@@ -760,10 +743,10 @@ def extend_catalog_keeps_every_sample_of_the_kurucz_grid(t):
     library = kurucz(t)
     np.random.seed(0)
     torch.manual_seed(0)
-    model = mc.train_model(str(library), str(t.tmp / "model"), epochs=1, batch_size=3, hidden_layers=[8])
+    mc.SEDCompleter().train(str(library), str(t.tmp / "model"), epochs=1, batch_size=3, hidden_layers=[8])
 
     out = t.tmp / "extended"
-    summary = mc.extend_catalog(model, str(library), str(out))
+    summary = Completer(str(t.tmp / "model")).extend_catalog(str(library), str(out), verbose=False)
 
     assert summary["extended"] == 12 and summary["total"] == 12
     spectra = sorted(library.glob("*.txt"))
@@ -840,7 +823,7 @@ def completer_list_models_leaves_out_generators_so_choosing_cannot_raise(t):
 @row
 def generator_number_prompts_take_the_numbers_typed(t):
     answer(t.mp, "")
-    assert mg._ask_number("Epochs [200]: ", 200, whole=True, positive=True) == 200
+    assert mg._ask_number("Epochs [200]: ", 200, whole=True) == 200
     answer(t.mp, "-0.5")
     assert mg._ask_number("[M/H]: ") == -0.5
     answer(t.mp, "5000, 5500")
@@ -862,10 +845,10 @@ def generator_generate_menu_takes_the_parameters_typed(t):
 
 @row
 def window_coverage_warns_below_the_80_percent_training_required(t):
-    from sed_tools.ml_sed_completer import _warn_window_coverage
+    from sed_tools.ml.completer import _warn_window_coverage
 
     window = np.arange(10.0)
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.ml_sed_completer"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.ml.completer"):
         _warn_window_coverage(window, np.array([0.0, 7.0]))  # 8 of 10 points: as training required
         assert not t.caplog.records
         _warn_window_coverage(window, np.array([0.0, 6.0]))
@@ -879,7 +862,7 @@ def complete_sed_warns_when_the_input_misses_most_of_the_window(t):
     window = completer.wavelength_grid[300:700]
     narrow = np.logspace(np.log10(3000.0), np.log10(20000.0), 300)
     covered = np.mean((window >= narrow[0]) & (window <= narrow[-1]))
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.ml_sed_completer"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.ml.completer"):
         completer.complete_sed(narrow, mc.planck_function(narrow, 5800.0), 5800.0, 4.4, 0.1,
                                extension_range=(500.0, 60000.0))
     assert f"covers {100 * covered:.0f}% of the network's input window" in t.caplog.text
@@ -887,7 +870,7 @@ def complete_sed_warns_when_the_input_misses_most_of_the_window(t):
 
     t.caplog.clear()
     wide = np.logspace(np.log10(500.0), np.log10(20000.0), 300)
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.ml_sed_completer"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.ml.completer"):
         completer.complete_sed(wide, mc.planck_function(wide, 5800.0), 5800.0, 4.4, 0.1,
                                extension_range=(300.0, 60000.0))
     assert "input window" not in t.caplog.text

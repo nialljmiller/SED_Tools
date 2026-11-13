@@ -182,7 +182,7 @@ class Filters:
         or higher precedence (``original`` > ``inferred`` > ``svo`` >
         ``svo-curve-match`` > ``assumed``); a weaker resolution is reported
         (``kept``, ``resolved_type``, ``resolved_source``, ``note``) and not
-        written. See :mod:`sed_tools.filter_metadata`.
+        written. See :mod:`sed_tools.filters.curve_metadata`.
 
         Parameters
         ----------
@@ -200,7 +200,7 @@ class Filters:
         Each file is reported as it is tagged.  Files that cannot be tagged are
         left unchanged and listed in a RuntimeError once the others are done;
         an unreachable SVO raises
-        :class:`~sed_tools.filter_metadata.SVOUnreachableError` at once.
+        :class:`~sed_tools.filters.curve_metadata.SVOUnreachableError` at once.
         """
         from ..filters.curve_metadata import (SVOMetadataClient, SVOUnreachableError, iter_filter_files,
                                       tag_filter_file, tag_filter_tree)
@@ -361,7 +361,7 @@ class Filters:
         """Build ``products/<recipe>/`` for a local instrument directory.
 
         ``instrument`` is a path or ``"Facility/Instrument"`` under the filter
-        root.  Raises :class:`sed_tools.filter_components.ComponentError` with
+        root.  Raises :class:`sed_tools.filters.manifest.ComponentError` with
         an explanation when the request cannot be met (component not
         published for this instrument, double counting, space-based
         instrument with an atmosphere, ...).
@@ -386,7 +386,7 @@ class Filters:
         on_conflict: str = "rename",
     ) -> Path:
         """Combine existing filter sets into one MESA-compatible set
-        (:func:`sed_tools.combine_filters.combine_filter_sets`)."""
+        (:func:`sed_tools.filters.combine.combine_filter_sets`)."""
         from ..filters.combine import combine_filter_sets
 
         return combine_filter_sets(output, inputs, filter_root=filter_root or cls._filter_root, facility=facility,
@@ -417,13 +417,13 @@ class Filters:
 
         ``{"bands": {band: {"WavelengthPivot": ..., "FWHM": ..., "ZeroPointVega_Jy": ...,
         "ABminusVega": ..., "DetectorType": ..., "DisplayColor": ...}}, "definitions": {...}}``,
-        computed by :mod:`sed_tools.filter_properties` (units under ``definitions``).
+        computed by :mod:`sed_tools.filters.properties` (units under ``definitions``).
 
         The copy saved beside installed curves is used first, since it describes
         those curves; otherwise NJM's current file, cached under
         ``<filter root>/../cache/njm/``.  ``refresh=True`` asks NJM again;
         ``offline=True`` uses installed and cached copies only.  Raises
-        :class:`sed_tools.filter_catalogue.CatalogueError` when neither has it.
+        :class:`sed_tools.filters.njm_catalogue.CatalogueError` when neither has it.
         """
         return cls._catalogue(filter_root, offline=offline).properties(facility, instrument, refresh=refresh)
 
@@ -596,7 +596,7 @@ class Filters:
         References NJM holds no BibTeX for appear in the ``.bib`` output as ``%``
         comments with what is known; nothing is made up.  The text lists any
         target whose ``info.json`` could not be read; the ``.bib`` file cannot,
-        so then :class:`~sed_tools.filter_catalogue.CatalogueError` is raised
+        so then :class:`~sed_tools.filters.njm_catalogue.CatalogueError` is raised
         (:meth:`citations` returns what was found).
         """
         result = cls.citations(*targets, filter_root=filter_root, refresh=refresh, offline=offline)
@@ -620,7 +620,7 @@ class Filters:
         filter_root: Optional[Union[str, Path]] = None,
         fetch: bool = True,
     ):
-        """Plot filter curves in their :mod:`sed_tools.filter_colors` colours; returns the Axes.
+        """Plot filter curves in their :mod:`sed_tools.filters.display` colours; returns the Axes.
 
         Targets: ``"Facility/Instrument"``, ``"Facility/Instrument/Band"``, a
         tuple of those parts, an instrument directory or ``.dat`` file, or a

@@ -88,7 +88,7 @@ def curves(instrument):
 
 @case
 def filter_headers(work, out):
-    from sed_tools.filter_metadata import read_filter_header, released_mesa_reads
+    from sed_tools.filters.curve_metadata import read_filter_header, released_mesa_reads
 
     rows = {str(p.relative_to(FILTERS)): {"header": read_filter_header(p), "released_mesa_reads": released_mesa_reads(p)}
             for p in sorted(FILTERS.rglob("*.dat"))}
@@ -97,17 +97,22 @@ def filter_headers(work, out):
 
 @case
 def filter_properties(work, out):
-    from sed_tools.filter_properties import instrument_properties, load_sun, load_vega
+    from sed_tools.filters.curve_metadata import read_filter_header
+    from sed_tools.filters.properties import curve_properties, load_filter_curve, load_sun, load_vega
 
     vega = load_vega(INPUTS / "reference/vega_flam.csv")
     sun = load_sun(INPUTS / "reference/sun_flam.csv")
     for instrument in INSTRUMENTS:
-        write_json(out / f"{instrument.parent.name}_{instrument.name}.json", instrument_properties(instrument, vega, sun))
+        bands = {path.stem: {**curve_properties(path, vega, sun),
+                             "DetectorType": load_filter_curve(str(path)).detector_type,
+                             "DetectorTypeSource": read_filter_header(path).get("DetectorTypeSource", "assumed")}
+                 for path in curves(instrument)}
+        write_json(out / f"{instrument.parent.name}_{instrument.name}.json", bands)
 
 
 @case
 def filter_colors(work, out):
-    from sed_tools.filter_colors import instrument_colors
+    from sed_tools.filters.display import instrument_colors
 
     for instrument in INSTRUMENTS:
         write_json(out / f"{instrument.parent.name}_{instrument.name}.json", instrument_colors(curves(instrument)))
@@ -115,7 +120,7 @@ def filter_colors(work, out):
 
 @case
 def compose_lsst_with_atmosphere(work, out):
-    from sed_tools.filter_components import build_product
+    from sed_tools.filters.compose import build_product
 
     root = copy_tree(FILTERS, work / "filters")
     atmospheres = copy_tree(INPUTS / "atmospheres", work / "atmospheres")
@@ -126,7 +131,7 @@ def compose_lsst_with_atmosphere(work, out):
 
 @case
 def compose_ztf_qe_variants(work, out):
-    from sed_tools.filter_components import build_product
+    from sed_tools.filters.compose import build_product
 
     root = copy_tree(FILTERS, work / "filters")
     for variant in ("single_layer", "multi_layer"):
@@ -136,7 +141,7 @@ def compose_ztf_qe_variants(work, out):
 
 @case
 def combine_filter_sets(work, out):
-    from sed_tools.combine_filters import combine_filter_sets as combine
+    from sed_tools.filters.combine import combine_filter_sets as combine
 
     root = copy_tree(FILTERS, work / "filters")
     combined = combine(work / "combined" / "JohnsonTwoMass", [root / "Generic/Johnson", root / "2MASS/2MASS"],
@@ -148,7 +153,7 @@ def combine_filter_sets(work, out):
 
 @case
 def clean_model_dir(work, out):
-    from sed_tools.spectra_cleaner import clean_model_dir as clean
+    from sed_tools.grids.clean import clean_model_dir as clean
 
     model = copy_tree(MODELS / "Kurucz2003all", work / "Kurucz2003all")
     random.seed(0)
@@ -159,7 +164,7 @@ def clean_model_dir(work, out):
 
 @case
 def precompute_flux_cube(work, out):
-    from sed_tools.precompute_flux_cube import precompute_flux_cube as precompute
+    from sed_tools.cube.build import precompute_flux_cube as precompute
 
     model = copy_tree(MODELS / "Kurucz2003all", work / "Kurucz2003all")
     precompute(str(model), str(out / "flux_cube.bin"))
@@ -168,8 +173,8 @@ def precompute_flux_cube(work, out):
 @case
 def mesa_export(work, out):
     """The MESA-ready folder (spectra, lookup table, flux cube) for each grid variant."""
-    from sed_tools.mesa_prepare import export_variant, list_variants
-    from sed_tools.precompute_flux_cube import precompute_flux_cube as precompute
+    from sed_tools.cube.mesa_export import export_variant, list_variants
+    from sed_tools.cube.build import precompute_flux_cube as precompute
 
     model = copy_tree(MODELS / "Kurucz2003all", work / "Kurucz2003all")
     precompute(str(model), str(model / "flux_cube.bin"))
@@ -180,7 +185,7 @@ def mesa_export(work, out):
 
 @case
 def regenerate_lookup_table(work, out):
-    from sed_tools.svo_regen_spectra_lookup import regenerate_lookup_table as regenerate
+    from sed_tools.grids.lookup import regenerate_lookup_table as regenerate
 
     model = copy_tree(MODELS / "Kurucz2003all", work / "Kurucz2003all")
     files = sorted(str(p) for p in model.glob("*.txt"))
@@ -191,8 +196,8 @@ def regenerate_lookup_table(work, out):
 
 @case
 def interpolation_and_photometry(work, out):
-    from sed_tools.models import SEDModel
-    from sed_tools.precompute_flux_cube import precompute_flux_cube as precompute
+    from sed_tools.cube.model import SEDModel
+    from sed_tools.cube.build import precompute_flux_cube as precompute
 
     model = copy_tree(MODELS / "Kurucz2003all", work / "Kurucz2003all")
     precompute(str(model), str(model / "flux_cube.bin"))
@@ -201,7 +206,7 @@ def interpolation_and_photometry(work, out):
     for teff, logg, meta in GRID_POINTS:
         evaluated = sed(teff, logg, meta)
         key = f"{teff}_{logg}_{meta}"
-        np.save(out / f"sed_{key}.npy", np.vstack([evaluated.wl, evaluated.fl]))
+        np.save(out / f"sed_{key}.npy", np.vstack([evaluated.wavelength, evaluated.flux]))
         bands = [str(p) for i in INSTRUMENTS for p in curves(i)]
         ab = evaluated.photometry(*bands, system="AB")
         vega = evaluated.photometry(*bands, system="Vega", vega_spectrum=INPUTS / "reference/vega_flam.csv")
@@ -211,12 +216,13 @@ def interpolation_and_photometry(work, out):
 
 @case
 def flux_cube_tool_band_averages(work, out):
-    from sed_tools import flux_cube_tool as fct
-    from sed_tools.precompute_flux_cube import precompute_flux_cube as precompute
+    from sed_tools import photometry as fct
+    from sed_tools.cube.build import precompute_flux_cube as precompute
+    from sed_tools.cube.fluxcube import FluxCube
 
     model = copy_tree(MODELS / "Kurucz2003all", work / "Kurucz2003all")
     precompute(str(model), str(model / "flux_cube.bin"))
-    cube = fct.FluxCube.from_file(str(model / "flux_cube.bin"))
+    cube = FluxCube.from_file(str(model / "flux_cube.bin"))
     results = {}
     for teff, logg, meta in GRID_POINTS:
         wavelength, flux = cube.interpolate_spectrum(teff, logg, meta)
@@ -233,7 +239,7 @@ def flux_cube_tool_band_averages(work, out):
 @case
 def grid_filter_and_write(work, out):
     from sed_tools.api import SED
-    from sed_tools.precompute_flux_cube import precompute_flux_cube as precompute
+    from sed_tools.cube.build import precompute_flux_cube as precompute
 
     models = work / "models"
     model = copy_tree(MODELS / "Kurucz2003all", models / "Kurucz2003all")
@@ -246,8 +252,8 @@ def grid_filter_and_write(work, out):
 
 @case
 def densify_grid(work, out):
-    from sed_tools.grid_densifier import densify_grid as densify
-    from sed_tools.precompute_flux_cube import precompute_flux_cube as precompute
+    from sed_tools.cube.densify import densify_grid as densify
+    from sed_tools.cube.build import precompute_flux_cube as precompute
 
     model = copy_tree(MODELS / "Kurucz2003all", work / "Kurucz2003all")
     precompute(str(model), str(model / "flux_cube.bin"))

@@ -18,20 +18,19 @@ import tarfile
 from dataclasses import dataclass
 
 from ._common import SimpleSource, Table, build_simple
-from ._original import CONNECT_TIMEOUT, download  # noqa: F401  CONNECT_TIMEOUT stays importable here
+from ._original import download
 
 BUNDLE = "https://www.eso.org/sci/facilities/paranal/decommissioned/vircam/inst/Filters_QE_Atm_curves.tar.gz"
-_CACHE = {}
 
 
 @dataclass
 class TarMember(Table):
+    """One member of a tar.gz; build_simple downloads the archive once per build for all its members."""
+
     member: str = ""
 
     def read(self, session):
-        if self.url not in _CACHE:
-            _CACHE[self.url] = download(session, self.url)
-        with tarfile.open(fileobj=io.BytesIO(_CACHE[self.url]), mode="r:gz") as tf:
+        with tarfile.open(fileobj=io.BytesIO(download(session, self.url)), mode="r:gz") as tf:
             return self.parse(tf.extractfile(f"Filters_QE_Atm_curves/{self.member}").read())
 
 

@@ -15,12 +15,11 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple, Union
 
-import numpy as np  # noqa: F401  (kept: `from sed_tools.filters.manifest import *` gives np, as before)
 
 from .curve_metadata import ENERGY, detector_type_before_conversion, normalize_detector_type, read_filter_header
 from .sites import instrument_sites, is_ground_based, own_site, platform
 
-logger = logging.getLogger("sed_tools.filter_components")
+logger = logging.getLogger(__name__)
 
 PathLike = Union[str, os.PathLike]
 
@@ -236,8 +235,10 @@ def set_problems(directory: PathLike, claims: Optional[Mapping[str, Iterable[str
     it, lists exactly the curves there less ``archived_bands``; ``manifest.json``, if any, names this
     folder and declares no band the index does not list.  With ``claims`` ({"Facility/Instrument":
     the source instruments the set is made from}, as NJM's ``svo_instruments.json``), a set they
-    describe holds no curve of a source instrument another set is made from and it is not: one
-    release in another's folder.
+    describe holds no curve of a source instrument another set is made from and it is not, and no copy
+    of any other source's record (:func:`copied_from_source`) unless it is named after that source:
+    one release, survey or catalogue in another's folder.  A publisher's curve may name an unclaimed
+    source in its ``FilterID`` as a cross-reference.
     """
     directory = Path(directory)
     curves = sorted(p.name for p in directory.glob("*.dat") if p.is_file())
@@ -273,12 +274,26 @@ def set_problems(directory: PathLike, claims: Optional[Mapping[str, Iterable[str
     mine = (claims or {}).get(f"{directory.parent.name}/{directory.name}")
     if mine is not None:  # a set no claim describes (a user's own) is not judged
         for name in curves:
-            filter_id = read_filter_header(directory / name).get("FilterID")
+            header = read_filter_header(directory / name)
+            filter_id = header.get("FilterID")
             source = curve_source(filter_id)
+            if (source in mine or "/" not in source
+                    or describes_other_folder(directory, *source.split("/", 1)) is None):
+                continue  # its own source, no source, or the set named after the source
             owners = sorted(other for other, made_of in claims.items() if source in made_of)
-            if source not in mine and owners:
+            if owners:
                 found.append(f"{directory / name} is {filter_id}, a curve of {', '.join(owners)}, not of this set")
+            elif copied_from_source(header):
+                found.append(f"{directory / name} is {filter_id}, a copy of {source}'s record, which no claim "
+                             "puts in this set: it belongs in a set of its own")
     return found
+
+
+def copied_from_source(header: Mapping[str, str]) -> bool:
+    """Whether a curve is a copy of its ``FilterID``'s record: its ``Sources`` cite SVO, or it has none
+    (SED_Tools' SVO grabbers wrote none).  A publisher's curve cites its publisher."""
+    sources = header.get("Sources") or ""
+    return not sources or bool(re.search(r"cab\.inta-csic|SVO Filter Profile Service", sources))
 
 
 def check_sets(filter_root: PathLike, claims: Optional[Mapping[str, Iterable[str]]] = None) -> Dict[str, List[str]]:
@@ -506,7 +521,7 @@ class InstrumentManifest:
         """Every atmosphere site of the instrument's own location, default first.
 
         That is ``default_site``, then ``atmosphere_sites``, then the team
-        sites registered for this instrument in :mod:`facility_sites`.
+        sites registered for this instrument in :mod:`sed_tools.filters.sites`.
         """
         names = [self.default_site, *self.atmosphere_sites,
                  *instrument_sites(self.facility, self.instrument)]
@@ -726,20 +741,6 @@ class AtmosphereGrid:
         _require_inside(rel, f"atmosphere {self.site}")
         return rel
 
-    def select(self, spec: AtmosphereSpec) -> str:
-        """Require an exact grid point, or explain which conditions exist."""
-        filename = self.find(spec)
-        if filename is not None:
-            return filename
-        airmasses = sorted({float(e["airmass"]) for e in self.entries})
-        pwvs = sorted({float(e["pwv"]) for e in self.entries if e.get("pwv") is not None})
-        asked = "unstated airmass" if spec.airmass is None else f"airmass={spec.airmass:g}"
-        raise ComponentError(
-            f"No {self.site} atmosphere at {asked}"
-            + (f", pwv={spec.pwv:g} mm" if spec.pwv is not None else "")
-            + f". Grid: airmass {airmasses}" + (f", pwv {pwvs} mm" if pwvs else "")
-            + (" (and one of unstated airmass: airmass=None)" if self.unstated else "")
-        )
 
 
 def _present(root: Path, files: Mapping[str, str], kind: str) -> Dict[str, str]:

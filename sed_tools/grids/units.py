@@ -1,6 +1,6 @@
 """Spectrum units for the cleaner: unit tables, detection from headers and data, the flux-unit decision and conversion.
 
-The cleaner (clean.py) applies these to a whole grid; spectra_cleaner is its old import path.
+The cleaner (clean.py) applies these to a whole grid.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ from .._constants import C
 from .header_parser import parse_header as _parse_header_dict
 from .spectrum_io import read_text_spectrum
 
-logger = logging.getLogger("sed_tools.spectra_cleaner")
+logger = logging.getLogger(__name__)
 
 
 SPEED_OF_LIGHT_ANGSTROM = C * 1e8  # c in Å/s — from _constants
@@ -120,11 +120,6 @@ def _load_header(filepath: str) -> Tuple[SpectrumMeta, str]:
             header_lines.append(line)
 
     return meta, "".join(header_lines)
-
-
-def read_spectrum_data(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
-    """Read wavelength and flux columns from a spectrum file."""
-    return read_text_spectrum(filepath)
 
 
 # ---- Unit detection from header ----
@@ -271,7 +266,7 @@ def detect_units_single_file(filepath: str) -> Optional[UnitInfo]:
     if meta.units_standardized:
         return None
     
-    wl, flux = read_spectrum_data(filepath)
+    wl, flux = read_text_spectrum(filepath)
     wl, flux = wl[wl > 0], flux[wl > 0]
     
     if wl.size < 2:

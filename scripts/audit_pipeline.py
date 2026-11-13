@@ -550,7 +550,7 @@ def format_report(results):
         ok = True
 
         if not r["all_standardized"]:
-            lines.append("  *** UNITS NOT STANDARDIZED — run spectra_cleaner first")
+            lines.append("  *** UNITS NOT STANDARDIZED — run the cleaner (sed_tools.grids.clean) first")
             ok = False
         else:
             lines.append("  Units flag  : OK (units_standardized = True)")

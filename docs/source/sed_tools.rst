@@ -2,9 +2,6 @@ sed\_tools package
 ==================
 
 The code is in the subpackages below, one page section per module.
-The old module paths (``sed_tools.filter_library``, ``sed_tools.spectra_cleaner``,
-``sed_tools.precompute_flux_cube`` and the rest) still import: each forwards to the
-module that now holds its code, so they are not listed separately.
 
 Public Python API
 -----------------

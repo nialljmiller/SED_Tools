@@ -1,4 +1,4 @@
-"""Hyperparameter search for the SED generator (``sed-tools ml_generator --auto``); old path sed_tools.ml_optimized.
+"""Hyperparameter search for the SED generator (``sed-tools ml_generator --auto``).
 
 Each optuna trial trains a SEDGenerator network briefly; the shape, dropout and learning rate with the lowest validation
 loss are then trained in full by SEDGenerator.train. Needs optuna: ``pip install 'sed-tools[ml-tune]'``.
@@ -23,10 +23,8 @@ def _hidden_layers(params):
 
 class AutoTrainer:
     """Tune SEDGenerator's hyperparameters with optuna, then train it with the best."""
-    def __init__(self, library_path: str, task: str = "generator"):
+    def __init__(self):
         from .common import get_device
-        self.library_path = library_path
-        self.task = task
         self.device = get_device()
         print(f"Using device: {self.device}")
 

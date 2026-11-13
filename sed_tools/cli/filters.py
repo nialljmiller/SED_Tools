@@ -1,5 +1,5 @@
 """The filter-set flows of ``sed-tools``: the browser, the availability and catalogue reports,
-interactive composition and combining sets. The cli package re-exports them."""
+interactive composition and combining sets. The cli package's menu and main() call them."""
 
 import re
 import sys
@@ -11,14 +11,13 @@ from requests import RequestException
 
 from ..api import Filters, _listing_failures
 from ..cube.model import FILTER_DIR_DEFAULT
-from ..filters.compose import ATMOSPHERE, INSTRUMENT  # noqa: F401  (kept: 0.5.0's `import *` gave them)
-from ..filters.compose import ComponentError, archived_bands, index_listing, parse_components
+from ..filters.manifest import ComponentError, archived_bands, index_listing, parse_components
 from ..filters.curve_metadata import normalize_detector_type, other_detector_type, read_filter_header
 from ..filters.detector_edit import FORMULAS, curve_files
 from ..filters.njm_catalogue import CatalogueError
 from ..terminal_plots import terminal_width
-from ..ui_utils import (NO_DEFAULT as _NO_DEFAULT, ask_number as _ask_number, ask_option, ask_yes, cut,
-                        prompt_choice, wrap)
+from ..ui_utils import (NO_DEFAULT as _NO_DEFAULT, ask_number as _ask_number, ask_option, ask_yes, cut, prompt_choice,
+                        wrap)
 
 
 def _print_field(name: str, text) -> None:

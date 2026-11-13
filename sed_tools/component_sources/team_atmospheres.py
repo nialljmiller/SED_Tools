@@ -9,7 +9,7 @@ SED_Tools computes itself (ESO SkyCalc, :mod:`.skycalc`) are ``derived``.
 
 Site names follow ``<location>_<team>``, like the existing ``ctio_des`` and
 ``maunakea_hsc``.  Which instruments may use each site is registered in
-:data:`sed_tools.facility_sites._INSTRUMENT_SITES`; an atmosphere is never
+:data:`sed_tools.filters.sites._INSTRUMENT_SITES`; an atmosphere is never
 offered to an instrument at another location.
 
 Entries are stored as published (only wavelengths converted to Angstrom)
@@ -24,22 +24,19 @@ URL, retrieval time and SHA-256)::
 
 from __future__ import annotations
 
-import datetime  # noqa: F401 - `from ... import *` has given it since 0.5.0
 import gzip
-import hashlib  # noqa: F401 - `from ... import *` has given it since 0.5.0
 import io
-import json  # noqa: F401 - `from ... import *` has given it since 0.5.0
 import logging
 import re
 import tarfile
 from pathlib import Path
-from typing import Dict, Iterable, Optional, Sequence, Tuple, Union  # noqa: F401 - Tuple, as above
+from typing import Dict, Iterable, Optional, Sequence, Union
 
 import numpy as np
 
-from ..filters.compose import TEAM
+from ..filters.manifest import TEAM
 from ._common import DerivedCurve, SiteAtmosphere, write_site
-from ._original import CONNECT_TIMEOUT, CachingSession, Curve, download  # noqa: F401  CONNECT_TIMEOUT stays importable here
+from ._original import CachingSession, Curve, download
 
 logger = logging.getLogger(__name__)
 
@@ -125,7 +122,6 @@ HALEAKALA_PS1 = SiteAtmosphere(
 # ---------------------------------------------- VISTA/VIRCAM (ESO ETC curves)
 VIRCAM_BUNDLE = "https://www.eso.org/sci/facilities/paranal/decommissioned/vircam/inst/Filters_QE_Atm_curves.tar.gz"
 VIRCAM_PAGE = "https://www.eso.org/sci/facilities/paranal/decommissioned/vircam/inst.html"
-VISTA_PAGE = "https://www.eso.org/public/teles-instr/paranal-observatory/surveytelescopes/vista/"
 
 
 def vircam_atmosphere(raw: bytes, member: str, header: str) -> Curve:

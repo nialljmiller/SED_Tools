@@ -1,10 +1,8 @@
-#!/usr/bin/env python3
 """The NJM filter client: lists and downloads curves, catalogue files, components and atmospheres from the mirror."""
 
 import json
 import logging
 import os
-import re
 import time
 from dataclasses import dataclass, field
 from time import monotonic
@@ -19,7 +17,7 @@ from .curve_metadata import SOURCE_ASSUMED, SVOMetadataClient, migrate_filter_fi
 from ..njm_mirror import (BASE_URL, NJM_CONNECT_TIMEOUT, NJM_PAUSE, USER_AGENT, _STATE, _body, _status, _write_atomic,
                          cache_root, pause, paused, plain_reason, skip_ssl_verification)
 
-logger = logging.getLogger("sed_tools.njm_filter_grabber")
+logger = logging.getLogger(__name__)
 
 # Answers that mean "ask again later", not "no such file": NJM's Apache answers a burst of
 # requests from one address with 403 until the block lifts, within about a minute.
@@ -67,9 +65,8 @@ class SetDownload:
 class NJMFilterGrabber:
     """Grabber for filter profiles from NJM mirror server."""
 
-    def __init__(self, base_dir: str = "../data/filters/", max_workers: int = 5):
+    def __init__(self, base_dir: str = "../data/filters/"):
         self.base_dir = base_dir
-        self.max_workers = max_workers
         os.makedirs(base_dir, exist_ok=True)
 
         self.base_url = BASE_URL
@@ -188,53 +185,6 @@ class NJMFilterGrabber:
         target.parent.mkdir(parents=True, exist_ok=True)
         _write_atomic(target, text)
         migrate_filter_file(target)
-
-    @staticmethod
-    def _normalize_name(name: str) -> str:
-        """Lowercase and strip separators for fuzzy name comparison."""
-        return re.sub(r'[-_\s]', '', name).lower()
-
-    def find_facility(self, svo_key: str) -> Optional[str]:
-        """Return the NJM directory name that best matches an SVO facility key.
-
-        An exact match first, then a normalized prefix match ('Bepi-Colom' at SVO is 'Bepi_Colombo' at NJM).
-        """
-        facilities = self.discover_facilities()
-        if svo_key in facilities:
-            return svo_key
-        svo_norm = self._normalize_name(svo_key)
-        for name in facilities:
-            njm_norm = self._normalize_name(name)
-            if njm_norm.startswith(svo_norm) or svo_norm.startswith(njm_norm):
-                return name
-        return None
-
-    def get_exclusive_facilities(self, svo_keys: List[str]) -> List[str]:
-        """Return NJM facility names that have no matching SVO facility (matched as :meth:`find_facility` does)."""
-        svo_norms = {self._normalize_name(k) for k in svo_keys}
-        exclusive = []
-        for fac in self.discover_facilities():
-            fac_norm = self._normalize_name(fac)
-            matched = any(
-                fac_norm.startswith(s) or s.startswith(fac_norm)
-                for s in svo_norms
-            )
-            if not matched:
-                exclusive.append(fac)
-        return exclusive
-
-    def find_instrument(self, njm_facility: str, svo_instrument: str) -> Optional[str]:
-        """Return the NJM instrument name that best matches an SVO instrument key."""
-        instruments = self.discover_instruments(njm_facility)
-        if svo_instrument in instruments:
-            return svo_instrument
-        # Exact (normalised) matches only: a prefix match would hand back a
-        # different instrument, e.g. GAIA0 (DR1) -> the mirror's GAIA set.
-        svo_norm = self._normalize_name(svo_instrument)
-        for name in instruments:
-            if self._normalize_name(name) == svo_norm:
-                return name
-        return None
 
     def _index(self, unreadable: str = "listing the filters directory instead") -> Optional[Dict]:
         """NJM's ``index.json``, read once per process (again after an hour); None, warned once, when unreadable."""
@@ -498,46 +448,7 @@ class NJMFilterGrabber:
         (output_dir / output_dir.name).write_text(response.text, encoding="utf-8")
         return index_names(response.text)
 
-    def download_all_filters(self, facility: Optional[str] = None) -> int:
-        """Download every instrument's filters (of ``facility`` only, if given); returns how many were downloaded.
-
-        Every instrument is attempted; then RuntimeError lists those whose download was incomplete.
-        """
-        if not self._available:
-            print("[njm] Mirror not available")
-            return 0
-
-        total_downloaded = 0
-
-        facilities = [facility] if facility else self.discover_facilities()
-
-        if not facilities:
-            print("[njm] No facilities found")
-            return 0
-
-        print(f"[njm] Downloading filters from {len(facilities)} facilities...")
-
-        failed = []
-        for fac in facilities:
-            print(f"\n[njm] Facility: {fac}")
-            try:
-                instruments = self.discover_instruments(fac)
-            except requests.RequestException as exc:
-                failed.append(f"{fac}: {exc}")
-                continue
-
-            for inst in instruments:
-                try:
-                    total_downloaded += self.download_filters(fac, inst)
-                except (requests.RequestException, RuntimeError) as exc:
-                    failed.append(f"{fac}/{inst}: {exc}")
-
-        print(f"\n[njm] Total filters downloaded: {total_downloaded}")
-        if failed:
-            raise RuntimeError(f"{len(failed)} NJM downloads are incomplete:\n" + "\n".join(failed))
-        return total_downloaded
-
-    # ---- Catalogue files (see sed_tools.filter_catalogue)
+    # ---- Catalogue files (see sed_tools.filters.njm_catalogue)
     CATALOGUE_FILES = ("properties.json", "info.json")
 
     def download_catalogue_files(self, facility: str, instrument: str) -> List[str]:
@@ -575,7 +486,7 @@ class NJMFilterGrabber:
             raise ValueError(f"not an NJM {name}")
         return content
 
-    # ---- Separable components (see sed_tools.filter_components)
+    # ---- Separable components (see sed_tools.filters.compose)
     def fetch_manifest(self, facility: str, instrument: str) -> Optional[Dict]:
         """Return the remote ``manifest.json`` for an instrument, or ``None`` when NJM serves none.
 
@@ -683,20 +594,6 @@ class NJMFilterGrabber:
             return []
         return [s for s in self._parse_directory_listing(f"{self.base_url}/atmospheres/") if "." not in s]
 
-    def get_filter_info(self, facility: str, instrument: str) -> Dict[str, any]:
-        """Get information about available filters for an instrument."""
-        if not self._available:
-            return {}
-
-        filters = self.discover_filters(facility, instrument)
-
-        return {
-            "facility": facility,
-            "instrument": instrument,
-            "filter_count": len(filters),
-            "filters": filters,
-            "url": f"{self.filters_url}/{facility}/{instrument}/",
-        }
 
 
 def _update_atmosphere_manifest(site_dir: Path, served: str) -> None:
@@ -757,46 +654,3 @@ def drop_unlisted_bands(directory, listed):
     logger.warning("%s: NJM's index of the set does not list %s; %s", path, ", ".join(sorted({*stale, *kept})),
                    f"{', '.join(kept)} kept in the folder under archived_bands" if kept else "no longer expected")
 
-
-def main():
-    """Standalone CLI for testing."""
-    import argparse
-
-    parser = argparse.ArgumentParser(description="Download filters from NJM mirror")
-    parser.add_argument("--facility", help="Specific facility to download")
-    parser.add_argument("--instrument", help="Specific instrument to download (requires --facility)")
-    parser.add_argument("--list", action="store_true", help="List available facilities/instruments")
-    parser.add_argument("--output", default="../data/filters/", help="Output directory")
-
-    args = parser.parse_args()
-
-    grabber = NJMFilterGrabber(base_dir=args.output)
-
-    if not grabber.is_available():
-        print("NJM mirror is not available")
-        return 1
-
-    if args.list:
-        print("\nAvailable facilities:")
-        facilities = grabber.discover_facilities()
-        for fac in facilities:
-            print(f"\n  {fac}:")
-            instruments = grabber.discover_instruments(fac)
-            for inst in instruments:
-                filters = grabber.discover_filters(fac, inst)
-                print(f"    - {inst} ({len(filters)} filters)")
-        return 0
-
-    if args.instrument:
-        grabber.download_filters(args.facility, args.instrument)
-    elif args.facility:
-        grabber.download_all_filters(facility=args.facility)
-    else:
-        grabber.download_all_filters()
-
-    return 0
-
-
-if __name__ == "__main__":
-    import sys
-    sys.exit(main())

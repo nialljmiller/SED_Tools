@@ -1,7 +1,4 @@
-"""lookup_table.csv: finding its columns, writing it, and rebuilding it from spectrum headers.
-
-The old import paths sed_tools._lookup_io and sed_tools.svo_regen_spectra_lookup forward here.
-"""
+"""lookup_table.csv: finding its columns, writing it, and rebuilding it from spectrum headers."""
 
 import csv
 import logging
@@ -11,18 +8,18 @@ from typing import Dict, Iterable, List, Optional, Union
 
 from .header_parser import parse_header
 
-logger = logging.getLogger("sed_tools._lookup_io")
+logger = logging.getLogger(__name__)
 
 
 # The column names find_*_column try, most preferred first
 _TEFF_CANDIDATES  = ["teff", "t_eff", "t eff", "temperature", "temp"]
 _LOGG_CANDIDATES  = ["logg", "log_g", "log(g)", "log g", "surface_gravity", "gravity"]
 _META_CANDIDATES  = ["metallicity", "meta", "feh", "[fe/h]", "[m/h]", "m/h", "m_h", "mh",
-                     "z", "zh", "zmet", "z/z0", "z/zsun"]
+                     "z", "zh", "zmet", "z/z0", "z/zo", "z/zsun"]
 _FILE_CANDIDATES  = ["file_name", "filename", "file"]
 
-# The column finders and the writer have string annotations, so their signatures read as
-# sed_tools._lookup_io's always have; regenerate_lookup_table's stay evaluated (no future import).
+# The column finders and the writer have string annotations, so their signatures read as they always have;
+# regenerate_lookup_table's stay evaluated (no future import).
 
 
 def find_column(keys: "Iterable[str]", candidates: "List[str]") -> "Optional[str]":
@@ -81,16 +78,6 @@ def write_lookup_csv(
 
     logger.debug("Wrote lookup table: %s (%d rows)", path, n)
     return n
-
-
-def scan_existing_files(base_dir):
-    """Map each folder name under base_dir to the paths of the .txt spectra in it."""
-    existing_files = {}
-    for root, _, files in os.walk(base_dir):
-        for file in files:
-            if file.endswith(".txt"):
-                existing_files.setdefault(os.path.basename(root), []).append(os.path.join(root, file))
-    return existing_files
 
 
 # parse_header gives these as NaN when a spectrum's header does not state them
@@ -158,20 +145,3 @@ def regenerate_lookup_table(
         writer = csv.DictWriter(csv_file, fieldnames=header)
         writer.writerows(metadata_rows)
     print(f"Lookup table regenerated: {lookup_table_path}")
-
-
-def main():
-    """Rewrite lookup_table.csv in every grid folder under STELLAR_DIR_DEFAULT."""
-    import argparse
-    from ..cube.model import STELLAR_DIR_DEFAULT
-    base_dir = str(STELLAR_DIR_DEFAULT)
-    argparse.ArgumentParser(description="Rewrite lookup_table.csv in every spectral grid folder from the headers "
-                                        f"of its spectra. The grid folders are those under {base_dir}.").parse_args()
-    os.makedirs(base_dir, exist_ok=True)
-    for model, files in scan_existing_files(base_dir).items():
-        print(f"Processing spectral grid: {model}")
-        regenerate_lookup_table(model, files, os.path.dirname(files[0]))  # a split grid's subgrids too
-
-
-if __name__ == "__main__":
-    main()

@@ -15,7 +15,7 @@ import requests
 import urllib3
 
 # Outage warnings are logged under the filter client's name.
-logger = logging.getLogger("sed_tools.njm_filter_grabber")
+logger = logging.getLogger(__name__)
 
 BASE_URL = "https://data.nialljmiller.com/sed_tools"
 USER_AGENT = "SED_Tools/1.0 (NJM Mirror)"
@@ -27,7 +27,7 @@ NJM_PAUSE = 300
 NJM_NOT_LISTED = "NJM unavailable"
 
 
-def cache_root(filter_root: "Union[str, Path]") -> "Path":  # quoted: filter_catalogue re-exports it, signature as text
+def cache_root(filter_root: "Union[str, Path]") -> "Path":  # quoted: filters.njm_catalogue re-exports it, signature as text
     """Where NJM catalogue files are cached for a filter root (beside ``atmospheres/``)."""
     return Path(filter_root).parent / "cache" / "njm"
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 import os
 import shutil
-import warnings  # noqa: F401  (kept: `from sed_tools.config import *` gives what 0.5.0 gave)
 from copy import deepcopy
 from importlib.resources import files
 from pathlib import Path

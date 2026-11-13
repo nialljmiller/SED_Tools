@@ -17,7 +17,7 @@ from ._http import DISCOVERY_TIMEOUT, discovery_failure, mount_discovery, retryi
 from .header_parser import parse_header
 from .lookup import write_lookup_csv
 
-logger = logging.getLogger("sed_tools.svo_spectra_grabber")
+logger = logging.getLogger(__name__)
 
 
 class SVOSpectraGrabber:
@@ -55,7 +55,6 @@ class SVOSpectraGrabber:
         self.head_timeout    = 10          # seconds per HEAD
         self.dl_timeout      = 90          # seconds per spectrum download
         self.bruteforce_budget = 350
-        self.expand_window   = 12          # unused since 0.5.1: expansion starts beside each hit
         self.expand_max_gap  = 20
         self.progress_every  = 50          # print progress every N completions
 
@@ -350,7 +349,8 @@ class SVOSpectraGrabber:
     def _write_lookup(self, out_dir, rows):
         path = os.path.join(out_dir, "lookup_table.csv")
         keys = sorted({key for row in rows for key in row} - {"file_name"})
-        write_lookup_csv(rows, path, columns=["file_name"] + keys)
+        # In file-name order, as the cleaner writes its tables: the downloads finish in any order
+        write_lookup_csv(sorted(rows, key=lambda row: row["file_name"]), path, columns=["file_name"] + keys)
         print(f"    Lookup table saved: {path}")
 
 

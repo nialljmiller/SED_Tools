@@ -22,17 +22,17 @@ import pytest
 import requests
 
 import sed_tools.config as config
-from sed_tools import cli, njm_filter_grabber
-from sed_tools import mast_spectra_grabber as mast, msg_spectra_grabber as msg, njm_spectra_grabber as njm
-from sed_tools import svo_spectra_grabber as svo
+from sed_tools import cli
 from sed_tools._constants import SIGMA, planck_flam
 from sed_tools.api import SED, _bundle_shortfall, _flux_cube_shortfall
-from sed_tools.models import _read_flux_cube_header
-from sed_tools.precompute_flux_cube import spectra_not_in_cube
-from sed_tools.spectra_cleaner import (FLUX_UNITS, clean_model_dir, clean_spectrum_file, detect_units_from_header,
-                                       rebuild_lookup_table, validate_converted_spectrum)
-from sed_tools.spectrum_io import read_text_spectrum
-from sed_tools.svo_regen_spectra_lookup import regenerate_lookup_table
+from sed_tools.cube.build import spectra_not_in_cube
+from sed_tools.cube.model import _read_flux_cube_header
+from sed_tools.filters import njm as filters_njm
+from sed_tools.grids import mast, msg, njm, pipeline, svo
+from sed_tools.grids.clean import clean_model_dir, clean_spectrum_file, rebuild_lookup_table
+from sed_tools.grids.lookup import regenerate_lookup_table
+from sed_tools.grids.spectrum_io import read_text_spectrum
+from sed_tools.grids.units import FLUX_UNITS, detect_units_from_header, validate_converted_spectrum
 
 from support import (GRID, KURUCZ, NJM, Resp, Session, answer, copy_without_times, njm_grids, run_cli, scenarios,
                      write_flux_cube)
@@ -71,7 +71,7 @@ def _is_standardized(path):
 @row
 def terminal_coverage_reports_missing_representative_spectra(t):
     """A representative spectrum missing from disk used to be dropped silently."""
-    from sed_tools.grid_coverage import grid_coverage
+    from sed_tools.grids.coverage import grid_coverage
 
     (t.tmp / "cool.txt").write_text("# teff = 4000\n# logg = 3.0\n1000 1.0\n2000 2.0\n")
     (t.tmp / "lookup_table.csv").write_text(
@@ -87,10 +87,10 @@ def terminal_coverage_reports_missing_representative_spectra(t):
 @row
 def recovery_warns_about_unreadable_h5(t):
     """An unreadable .h5 used to be skipped with a DEBUG message only."""
-    from sed_tools.spectra_cleaner import recover_wavelengths_from_hdf5
+    from sed_tools.grids.clean import recover_wavelengths_from_hdf5
 
     (t.tmp / "broken.h5").write_bytes(b"not an hdf5 file")
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.grids.hdf5_wavelengths"):
         assert recover_wavelengths_from_hdf5(str(t.tmp), "g1", 10) is None
     assert "broken.h5" in t.caplog.text
 
@@ -119,7 +119,7 @@ def clean_model_dir_records_unreadable_file_and_finishes_the_rest(t):
     _spectrum(t.tmp / "a.txt")
     (t.tmp / "b.txt").mkdir()  # matches *.txt but cannot be read as a file
     _spectrum(t.tmp / "c.txt")
-    t.mp.setattr("sed_tools.spectra_cleaner.random.sample", lambda files, n: [str(t.tmp / "a.txt")])
+    t.mp.setattr("sed_tools.grids.units.random.sample", lambda files, n: [str(t.tmp / "a.txt")])
     with pytest.raises(RuntimeError, match=r"IsADirectoryError.*\(1\): b\.txt"):
         clean_model_dir(str(t.tmp), rebuild_lookup=False, sample_fraction=0.4)
     assert _is_standardized(t.tmp / "a.txt") and _is_standardized(t.tmp / "c.txt")
@@ -147,7 +147,7 @@ def clean_model_dir_stops_at_once_when_a_rewrite_fails(t):
         calls.append(filepath)
         raise OSError(28, "No space left on device")
 
-    t.mp.setattr("sed_tools.spectra_cleaner.write_standardized_spectrum", disk_full)
+    t.mp.setattr("sed_tools.grids.clean.write_standardized_spectrum", disk_full)
     with pytest.raises(RuntimeError, match=r"a\.txt.*only its new header"):
         clean_model_dir(str(t.tmp), sample_fraction=1.0)
     assert len(calls) == 1
@@ -161,8 +161,8 @@ def clean_model_dir_warns_when_units_come_from_each_file(t):
         _spectrum(t.tmp / f"raw_{i}.txt")
     done = t.tmp / "done.txt"
     done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
-    t.mp.setattr("sed_tools.spectra_cleaner.random.sample", lambda files, n: [str(done)])
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
+    t.mp.setattr("sed_tools.grids.units.random.sample", lambda files, n: [str(done)])
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.grids.clean"):
         summary = clean_model_dir(str(t.tmp), sample_fraction=0.1)
     assert len(summary["converted"]) == 9
     assert "9 spectra were converted using units detected file by file" in t.caplog.text
@@ -173,7 +173,7 @@ def clean_model_dir_counts_renormed_spectra_as_converted_and_warns(t):
     wl, grid = np.geomspace(100.0, 1e6, 2000), t.tmp / "grid"
     for name, teff, scale in (("a.txt", 5000.0, 100.0), ("b.txt", 6000.0, 120.0), ("c.txt", 7000.0, 1.0)):
         _write(grid / name, _header(teff), wl, scale * planck_flam(wl, teff))
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.grids.clean"):
         summary = clean_model_dir(str(grid), try_h5_recovery=False, sample_fraction=1.0)
     assert summary["converted"] == ["a.txt", "b.txt", "c.txt"]
     assert summary["error"] == []
@@ -190,7 +190,7 @@ def clean_model_dir_counts_renormed_spectra_as_converted_and_warns(t):
 @row
 def coverage_says_why_the_normality_test_was_skipped(t):
     """It said "scipy required" whenever the test was skipped, with scipy installed."""
-    from sed_tools.grid_coverage import coverage_summary, print_coverage
+    from sed_tools.grids.coverage import coverage_summary, print_coverage
 
     def grid(directory, teffs):
         directory.mkdir()
@@ -244,7 +244,7 @@ RECOVERED = {
 
 
 def _recovered(t, build, group, n, expected):
-    from sed_tools.spectra_cleaner import recover_wavelengths_from_hdf5
+    from sed_tools.grids.clean import recover_wavelengths_from_hdf5
 
     with h5py.File(t.tmp / "msg.h5", "w") as f:
         build(f)
@@ -305,7 +305,7 @@ def _terminal(t, *replies):
 
 @row
 def clean_model_dir_stops_on_an_undeclared_flux_unit_naming_the_best_guess(t):
-    from sed_tools.spectra_cleaner import undeclared_flux_unit
+    from sed_tools.grids.units import undeclared_flux_unit
 
     grid = _grid(t.tmp / "Cool")
     before = _contents(grid)
@@ -358,7 +358,7 @@ def files_cleaned_one_by_one_without_a_declared_flux_unit_are_listed(t):
     grid = _grid(t.tmp / "Cool")
     done = grid / "done.txt"
     done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
-    t.mp.setattr("sed_tools.spectra_cleaner.random.sample", lambda files, n: [str(done)])
+    t.mp.setattr("sed_tools.grids.units.random.sample", lambda files, n: [str(done)])
     with pytest.raises(RuntimeError, match=r"(?s)3 of 4 spectra .*Flux unit of this spectrum is not declared; "
                                            r"best guess: 'fnu_jy'.* \(3\): s0.txt, s1.txt, s2.txt"):
         clean_model_dir(str(grid), sample_fraction=0.1)
@@ -371,7 +371,7 @@ def cli_stops_on_no(t):
     grid = _grid(t.tmp / "Cool")
     prompts = _terminal(t, "n")
     with pytest.raises(ValueError, match="No flux unit chosen for Cool; it was not cleaned"):
-        cli._ask_flux_unit("Cool", sorted(str(p) for p in grid.glob("*.txt")))
+        cli.grids._ask_flux_unit("Cool", sorted(str(p) for p in grid.glob("*.txt")))
     assert len(prompts) == 1
 
 
@@ -379,7 +379,7 @@ def cli_stops_on_no(t):
 def cli_does_not_ask_when_the_flux_unit_is_declared(t):
     grid = _grid(t.tmp / "Declared", "erg/cm2/s/A")
     prompts = _terminal(t)
-    assert cli._ask_flux_unit("Declared", sorted(str(p) for p in grid.glob("*.txt"))) is None
+    assert cli.grids._ask_flux_unit("Declared", sorted(str(p) for p in grid.glob("*.txt"))) is None
     assert prompts == []
 
 
@@ -427,6 +427,7 @@ UNKNOWN_UNIT = {
     "an_unknown_flux_unit_leaves_the_source_folder_untouched_on_import": "copy",
     "an_unknown_flux_unit_leaves_the_source_folder_untouched_on_import_with_move": "move",
     "an_unknown_flux_unit_leaves_every_spectrum_untouched_when_cleaning_one_by_one": "clean",
+    "an_unknown_flux_unit_downloads_nothing_on_fetch": "fetch",
 }
 
 
@@ -435,10 +436,13 @@ def _unknown_unit(t, how):
     (src / "declared.txt").write_text("# teff = 3500\n# flux_unit = erg/s/cm2/A\n3000 1.0\n4000 2.0\n")
     done = src / "done.txt"
     done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
-    t.mp.setattr("sed_tools.spectra_cleaner.random.sample", lambda files, n: [str(done)])  # no grid-wide units
+    t.mp.setattr("sed_tools.grids.units.random.sample", lambda files, n: [str(done)])  # no grid-wide units
     before = _contents(src)
+    t.mp.setattr("sed_tools.api.SED._download_from_first_source", lambda *a: pytest.fail("downloaded"))
     with pytest.raises(KeyError, match="Jy"):
-        if how == "clean":
+        if how == "fetch":
+            SED.fetch("Grid", source="svo", model_root=t.tmp / "models", flux_unit="Jy")
+        elif how == "clean":
             clean_model_dir(str(src), flux_unit="Jy")
         else:
             SED.import_grid(src, model_root=t.tmp / "models", move=how == "move", build_cube=False, build_h5=False,
@@ -520,7 +524,7 @@ def a_grid_declaring_w_m2_nm_in_some_spectra_names_that_unit_as_its_guess(t):
 def a_declared_flux_unit_is_used_and_a_different_flux_unit_is_reported_unused(t):
     declared = _grid(t.tmp / "Declared", "erg/cm2/s/A", **FLAM_GRID)
     reference = _grid(t.tmp / "Reference", "erg/cm2/s/A", **FLAM_GRID)
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.grids.units"):
         summary = clean_model_dir(str(declared), sample_fraction=1.0, flux_unit="fnu")
     clean_model_dir(str(reference), sample_fraction=1.0)
     assert summary["catalog_units"]["flux"] == "flam"  # the header's unit, not fnu
@@ -532,7 +536,7 @@ def a_declared_flux_unit_is_used_and_a_different_flux_unit_is_reported_unused(t)
 @row
 def flux_unit_is_used_for_spectra_that_declare_none(t):
     grid = _grid(t.tmp / "Undeclared", **FLAM_GRID)
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.grids.units"):
         summary = clean_model_dir(str(grid), sample_fraction=1.0, flux_unit="flam")
     assert summary["catalog_units"]["flux"] == "flam" and "is not used" not in t.caplog.text
 
@@ -546,7 +550,7 @@ TYPED = {
 def _typed(t, answers, unit):
     grid = _grid(t.tmp / "Cool")
     prompts = _terminal(t, *answers)
-    assert cli._ask_flux_unit("Cool", sorted(str(p) for p in grid.glob("*.txt"))) == unit
+    assert cli.grids._ask_flux_unit("Cool", sorted(str(p) for p in grid.glob("*.txt"))) == unit
     assert prompts == ["Flux unit of Cool (type its name, e.g. fnu_jy), or n to leave it uncleaned: "] * len(answers)
     out = t.capsys.readouterr().out
     assert "flam        erg/s/cm²/Å (F_λ)" in out and "fnu_jy      Jansky (F_ν)" in out
@@ -689,7 +693,7 @@ def _outage(t, answers):
 def a_silent_spectra_outage_costs_one_connect_timeout(t):
     grabber, calls = _outage(t, {("GET", INDEX, True): requests.ConnectTimeout("t")})
     assert not grabber.is_available()
-    assert calls == [("GET", INDEX, True, (njm_filter_grabber.NJM_CONNECT_TIMEOUT, 10))]
+    assert calls == [("GET", INDEX, True, (filters_njm.NJM_CONNECT_TIMEOUT, 10))]
 
 
 @row
@@ -800,9 +804,9 @@ def an_unreadable_cube_is_out_of_date(t):
 @row
 def the_rebuild_hint_names_base_only_when_the_grid_is_elsewhere(t):
     t.mp.setattr("sed_tools.grids.pipeline.STELLAR_DIR_DEFAULT", t.tmp / "default")
-    assert cli._rebuild_command(GRID, str(t.tmp / "default" / GRID)) == f"sed-tools rebuild --grids {GRID}"
+    assert pipeline._rebuild_command(GRID, str(t.tmp / "default" / GRID)) == f"sed-tools rebuild --grids {GRID}"
     elsewhere = t.tmp / "my grids"
-    assert (cli._rebuild_command(GRID, str(elsewhere / GRID))
+    assert (pipeline._rebuild_command(GRID, str(elsewhere / GRID))
             == f"sed-tools rebuild --grids {GRID} --base '{elsewhere}'")
 
 
@@ -849,7 +853,7 @@ def svo_cannot_select_so_the_whole_grid_is_downloaded_then_cut(t):
                        _header(teff, units="# units_standardized = True\n"), (1000, 2000), ("1.0", "2.0"), "{} {}\n")
             return 3
 
-    t.mp.setattr("sed_tools.svo_spectra_grabber.SVOSpectraGrabber", SVO)
+    t.mp.setattr("sed_tools.grids.svo.SVOSpectraGrabber", SVO)
     with t.caplog.at_level(logging.WARNING, logger="sed_tools.api"):
         sed = SED.fetch("Grid", source="svo", model_root=t.tmp, teff_min=5500, teff_max=6500)
     assert [r.getMessage() for r in t.caplog.records] == [
@@ -962,7 +966,7 @@ def njm_unreachable_warns_with_every_attempt_and_named_grid_requests_raise(t):
     with t.caplog.at_level(logging.WARNING):
         grabber, session = _grabber(t, "njm", {INDEX: down, NJM: down, INDEX.replace("https", "http"): down})
     assert not grabber.is_available()
-    [message] = warnings_from(t.caplog, "njm_spectra_grabber")
+    [message] = warnings_from(t.caplog, "grids.njm")
     # No answer means the mirror is down: one attempt, not three (a silent outage cost 26 s).
     assert "unreachable" in message and message.count("connection refused") == 1 and len(session.calls) == 1
     assert grabber.discover_models() == []
@@ -980,7 +984,7 @@ def njm_dropping_certificate_checks_is_warned(t):
     with t.caplog.at_level(logging.WARNING):
         grabber, session = _grabber(t, "njm", {INDEX: index})
     assert grabber.is_available() and session.verify is False
-    assert any("certificate expired" in m for m in warnings_from(t.caplog, "njm_spectra_grabber"))
+    assert any("certificate expired" in m for m in warnings_from(t.caplog, "grids.njm"))
 
 
 @row
@@ -1050,7 +1054,7 @@ def svo_metadata_warns_once_before_probing_and_raises_when_a_probe_fails(t):
                                      svo_spectrum_url(7): requests.ConnectionError("probe refused")})
     with t.caplog.at_level(logging.WARNING), pytest.raises(RuntimeError, match="FID 7 of Grid: probe refused"):
         grabber.get_model_metadata("Grid")
-    messages = warnings_from(t.caplog, "svo_spectra_grabber")
+    messages = warnings_from(t.caplog, "grids.svo")
     [message] = messages  # one warning for the fallback, naming both reasons
     assert "HTTP 503" in message and "index down" in message and "probing" in message
     assert not (t.tmp / FID_CACHE).exists()
@@ -1101,7 +1105,7 @@ def svo_metadata_is_cached_and_a_corrupt_cache_is_warned_about(t):
     cache.write_text("[1, 2")
     with t.caplog.at_level(logging.WARNING):
         assert grabber.get_model_metadata("Grid") == [{"fid": 1}, {"fid": 2}]
-    assert any("unreadable FID cache" in m for m in warnings_from(t.caplog, "svo_spectra_grabber"))
+    assert any("unreadable FID cache" in m for m in warnings_from(t.caplog, "grids.svo"))
 
 
 @row
@@ -1135,27 +1139,80 @@ def svo_complete_download_writes_lookup_table(t):
     assert lookup[0] == "#file_name,logg,metallicity,teff" and len(lookup) == 3
 
 
+@row
+def svo_and_msg_lookup_rows_are_in_file_name_order(t):
+    # The rows came in the order the threaded downloads finished, so the same download wrote different files.
+    rows = [{"file_name": f"Grid_fid{fid}.txt", "teff": fid} for fid in (2, 10, 1)]
+    for source in ("svo", "msg"):
+        grabber, _ = _grabber(t, source)
+        grabber._write_lookup(str(t.tmp), rows)
+        names = [line.split(",")[0] for line in (t.tmp / "lookup_table.csv").read_text().splitlines()[1:]]
+        assert names == ["Grid_fid1.txt", "Grid_fid10.txt", "Grid_fid2.txt"]
+
+
+# A 2 x 3 x 2 x 2 grid laid out as MSG writes it (src/vgrid/vgrid_io_sm.fypp), C/O first as in sg-SPHINX. Its
+# spectra specints[1..3] sit at the 1-based, Fortran-order (first axis fastest) linear vertices 2, 9 and 23: the last
+# is below the grid's 24 vertices, as C3K's and Coelho14's last vertices are below theirs.
+MSG_AXES = (("C/O", [0.5, 0.9]), ("Teff", [3000.0, 3500.0, 4000.0]), ("[Fe/H]", [-1.0, 0.0]), ("log(g)", [4.0, 5.0]))
+MSG_VERTICES = [2, 9, 23]
+#: Each spectrum's parameters, worked by hand: Teff, log g and [Fe/H] as teff, logg and meta, C/O under its label
+MSG_PARAMETERS = [{"teff": 3000.0, "logg": 4.0, "meta": -1.0, "C/O": 0.9},
+                  {"teff": 3500.0, "logg": 4.0, "meta": 0.0, "C/O": 0.5},
+                  {"teff": 4000.0, "logg": 5.0, "meta": 0.0, "C/O": 0.5}]
+
+
+def _msg_vgrid(f, revision=3):
+    """MSG_AXES and MSG_VERTICES as a vgrid group of *revision*: 1 names the axes 'axes(r)' and 2 'axes[r]', both
+    with a 'mask' over the vertices; 3 names them 'axes[r]' and lists the vertices in 'v_lin_seq'. Revision 1 labels
+    the metallicity 'Z/Zo', as the revision-1 grids (OSTAR2002, BSTAR2006) do."""
+    vgrid = f.create_group("vgrid")
+    vgrid.attrs.update({"TYPE": np.bytes_("vgrid_t"), "REVISION": revision, "rank": len(MSG_AXES)})
+    for r, (label, x) in enumerate(MSG_AXES, 1):
+        axis = vgrid.create_group(f"axes({r})" if revision == 1 else f"axes[{r}]")
+        axis.attrs["label"] = np.bytes_("Z/Zo" if revision == 1 and label == "[Fe/H]" else label)
+        axis["x"] = x
+    if revision == 3:
+        vgrid["v_lin_seq"] = MSG_VERTICES
+    else:
+        vgrid["mask"] = np.isin(np.arange(1, 25), MSG_VERTICES).astype(np.int32)
+
+
+def _msg_range(group, kind, **values):
+    """A wavelength range group of MSG's *kind* (lin_range_t, ...): attributes, or for tab_range_t the dataset x;
+    comp_range_t takes sub-ranges=[(kind, values), ...]."""
+    group.attrs.update({"TYPE": np.bytes_(kind), "REVISION": 1})
+    if kind == "tab_range_t":
+        group["x"] = values["x"]
+    elif kind == "comp_range_t":
+        group.attrs["n_ranges"] = len(values["sub_ranges"])
+        for j, (sub_kind, sub_values) in enumerate(values["sub_ranges"], 1):
+            _msg_range(group.create_group(f"ranges[{j}]"), sub_kind, **sub_values)
+    else:
+        group.attrs.update(values)
+
+
+def _msg_spectrum(f, number, c, law="CONST", kind="lin_range_t", range_values=None):
+    """specsource/specints[number] as MSG writes a limb_specint_t: coefficients c (one row per bin), the wavelength
+    range (by default 50 bins from 3000 A in steps of 120 A) and the limb-darkening law."""
+    spectrum = f.create_group(f"specsource/specints[{number}]")
+    spectrum.attrs["TYPE"] = np.bytes_("limb_specint_t")
+    spectrum["c"] = np.asarray(c, dtype=float).reshape(len(c), -1)
+    _msg_range(spectrum.create_group("range"), kind, **(range_values or {"x_0": 3000.0, "dx": 120.0, "n": 51}))
+    spectrum.create_group("limb").attrs["law"] = np.bytes_(law)
+
+
 def _msg_grid(t):
-    """A grabber whose sg-Test.h5 holds three spectra: one good, one with no flux dataset, one with an undecodable
-    wavelength segment."""
+    """A grabber whose sg-Test.h5 holds three spectra: one good, one without its coefficients 'c', one with a 'c' of
+    one row fewer than its bins."""
     grabber, _ = _grabber(t, "msg")
     grabber.model_urls["sg-Test"] = MSG_FILE
-    wave = np.linspace(3000.0, 9000.0, 50)
     (t.tmp / "sg-Test").mkdir()
     with h5py.File(t.tmp / "sg-Test" / "sg-Test.h5", "w") as f:
-        for i, values in enumerate(([5000.0, 6000.0], [-1.0, 0.0], [4.0, 4.5])):
-            f[f"vgrid/axes[{i}]/x"] = values
-        f["vgrid/v_lin_seq"] = [1, 2, 3]
-        good = f.create_group("specsource/specints[1]")
-        good["flux"] = np.ones(50)
-        good["range/x"] = wave
-        no_flux = f.create_group("specsource/specints[2]")
-        no_flux["a"] = np.ones(50)
-        no_flux["b"] = np.ones(50)
-        gapped = f.create_group("specsource/specints[3]")
-        gapped["flux"] = np.ones(60)
-        gapped["range/ranges[1]/x"] = wave[:30]
-        gapped.create_group("range/ranges[2]").attrs["label"] = "no numbers here"
+        _msg_vgrid(f)
+        _msg_spectrum(f, 1, np.ones(50))
+        _msg_spectrum(f, 2, np.ones(50))
+        del f["specsource/specints[2]/c"]
+        _msg_spectrum(f, 3, np.ones(49))
     return grabber, t.tmp / "sg-Test"
 
 
@@ -1193,8 +1250,8 @@ def msg_failed_extractions_raise_after_the_rest(t):
         grabber.download_model_spectra("sg-Test", spectra)
     message = str(err.value)
     assert "2 of 3 spectra" in message
-    assert "sg-Test_fid2.txt: No suitable flux dataset" in message
-    assert "sg-Test_fid3.txt: Unable to recover wavelength grid" in message  # was written truncated to 30 points
+    assert "sg-Test_fid2.txt: specsource/specints[2]: " in message and "'c' doesn't exist" in message
+    assert "sg-Test_fid3.txt: specsource/specints[3]: c has shape (49, 1), not (50, 1)" in message
     wl, _ = read_text_spectrum(model_dir / "sg-Test_fid1.txt")
     assert wl.size == 50
     assert not (model_dir / "lookup_table.csv").exists()
@@ -1204,19 +1261,128 @@ def msg_failed_extractions_raise_after_the_rest(t):
 def msg_cut_exclusions_are_not_failures(t):
     grabber, model_dir = _msg_grid(t)
     spectra = grabber.get_model_metadata("sg-Test")[:1]
-    assert grabber.download_model_spectra("sg-Test", spectra, teff_range=(5500, 7000)) == 0
-    assert grabber.download_model_spectra("sg-Test", spectra, teff_range=(4500, 5500)) == 1
+    assert grabber.download_model_spectra("sg-Test", spectra, teff_range=(3200, 4000)) == 0
+    assert grabber.download_model_spectra("sg-Test", spectra, teff_range=(2500, 3200)) == 1
     assert (model_dir / "lookup_table.csv").exists()
 
 
-@row
-def msg_axis_role_beyond_the_grid_raises(t):
+def _msg_vgrid_read(t, revision, departure, error):
     grabber, _ = _grabber(t, "msg")
-    grabber.model_axes["sg-C3K-test"] = {
-        "axes": [np.array([5000.0, 6000.0]), np.array([-1.0, 0.0]), np.array([4.0, 4.5])],
-        "shape": (2, 2, 2), "vlin": np.array([0]), "roles": {"teff": 0, "meta": 1, "logg": 3}}
-    with pytest.raises(RuntimeError, match="logg is mapped to axis 3, but the grid has 3 axes"):
-        grabber._params_from_index("sg-C3K-test", 0)
+    grabber.model_urls["sg-Test"] = MSG_FILE
+    (t.tmp / "sg-Test").mkdir()
+    with h5py.File(t.tmp / "sg-Test" / "sg-Test.h5", "w") as f:
+        _msg_vgrid(f, revision)
+        for n in (1, 2, 3):
+            _msg_spectrum(f, n, np.ones(50))
+        if departure:
+            departure(f)
+    if error:
+        with pytest.raises(RuntimeError, match=error):
+            grabber.get_model_metadata("sg-Test")
+        return
+    spectra = grabber.get_model_metadata("sg-Test")
+    assert [s["params"] for s in spectra] == MSG_PARAMETERS
+    for _ in range(2):  # the second run finds the spectra on disk: their lookup rows keep their parameters
+        assert grabber.download_model_spectra("sg-Test", spectra) == 3
+        assert (t.tmp / "sg-Test" / "lookup_table.csv").read_text().splitlines() == ["file_name,teff,logg,meta,C/O"] + [
+            f"sg-Test_fid{n}.txt," + ",".join(map(str, p.values())) for n, p in enumerate(MSG_PARAMETERS, 1)]
+    assert "# meta = -1.0\n# C/O = 0.9\n" in (t.tmp / "sg-Test" / "sg-Test_fid1.txt").read_text()
+
+
+def _msg_axes_from_0(f):
+    for r in range(1, 5):
+        f.move(f"vgrid/axes[{r}]", f"vgrid/axes[{r - 1}]")
+
+
+def _msg_replace(path, data):
+    def departure(f):
+        del f[path]
+        f[path] = data
+    return departure
+
+
+#: name: (MSG vgrid revision, how the file departs from MSG's layout or None, the error that stops its download or
+#: None). Until 13 Nov 2026 the reader looked for axes from axes[0], so it read none from any MSG file, and every MSG
+#: spectrum had NaN Teff, logg and [M/H]; it also took v_lin_seq as 0-based unless its maximum was the grid size, and
+#: tried C order before Fortran order. Grids whose spectra lack parameters now fail before anything is extracted.
+MSG_VGRIDS = {
+    "msg_revision_3_reads_axes_from_1_and_v_lin_seq_in_fortran_order": (3, None, None),
+    "msg_revision_2_reads_axes_from_1_and_the_mask": (2, None, None),
+    "msg_revision_1_reads_parenthesised_axes_and_the_mask": (1, None, None),
+    "msg_axes_numbered_from_0_fail": (3, _msg_axes_from_0, r"no vgrid group laid out as MSG writes it \(.*axes\[4\]"),
+    "msg_v_lin_seq_from_0_fails": (3, _msg_replace("vgrid/v_lin_seq", [0, 8, 22]), "index -1 is out of bounds"),
+    "msg_unknown_vgrid_revision_fails": (3, lambda f: f["vgrid"].attrs.__setitem__("REVISION", 4), "revision 4"),
+    "msg_grid_without_a_teff_axis_fails": (
+        3, lambda f: f["vgrid/axes[2]"].attrs.__setitem__("label", "T"),
+        r"none of the axes of .*\('C/O', 'T', '\[Fe/H\]', 'log\(g\)'\) reads as teff"),
+    "msg_spectra_unmatched_by_the_vgrid_fail": (
+        3, lambda f: f.__delitem__("specsource/specints[3]"), "places 3 spectra but it holds 2"),
+    "msg_spectra_without_a_finite_value_fail": (
+        3, _msg_replace("vgrid/axes[4]/x", [4.0, np.nan]), "1 of 3 spectra have no finite logg"),
+}
+
+
+def _msg_spectrum_written(t, c, law, wavelength_range, expected):
+    grabber, _ = _grabber(t, "msg")
+    grabber.model_urls["sg-Test"] = MSG_FILE
+    (t.tmp / "sg-Test").mkdir()
+    kind, range_values = wavelength_range
+    with h5py.File(t.tmp / "sg-Test" / "sg-Test.h5", "w") as f:
+        _msg_vgrid(f)
+        for n in (1, 2, 3):
+            _msg_spectrum(f, n, c, law, kind, range_values)
+    spectra = grabber.get_model_metadata("sg-Test")[:1]
+    if isinstance(expected, str):
+        with pytest.raises(RuntimeError, match=re.escape(f"sg-Test_fid1.txt: specsource/specints[1]: {expected}")):
+            grabber.download_model_spectra("sg-Test", spectra)
+        assert not (t.tmp / "sg-Test" / "sg-Test_fid1.txt").exists()
+        return
+    assert grabber.download_model_spectra("sg-Test", spectra) == 1
+    written = t.tmp / "sg-Test" / "sg-Test_fid1.txt"
+    wavelength, flux = read_text_spectrum(written)
+    np.testing.assert_allclose(wavelength, expected[0])
+    np.testing.assert_allclose(flux, expected[1], rtol=1e-8)
+    noted = [line for line in written.read_text().splitlines() if line.startswith("# negative_flux_fraction")]
+    assert noted == list(expected[2:])  # only a spectrum with negative fluxes says how much they are
+
+
+CLARET_ROW = [1.0, 0.1, 0.2, 0.3, 0.4]
+LIN = ("lin_range_t", {"x_0": 3000.0, "dx": 1000.0, "n": 4})
+#: name: (c, limb-darkening law, (range type, its values), the bin-centre wavelengths and fluxes written and any
+#: negative_flux_fraction header line, or the reason the spectrum fails). MSG's range points are bin edges and c holds one row per bin
+#: (limb_specint_construct_sm.fypp); the flux is 2 pi times c dotted with the law's flux basis (eval_flux_basis,
+#: limb_basis_sm.fypp). Until 13 Nov 2026 no lin_range_t, log_range_t or comp_range_t was read, nor a tab_range_t
+#: from 0 A, so 24 of the 25 grids extracted nothing, and SPHINX wrote the intensity c as flux: pi times too low.
+MSG_SPECTRA = {
+    "msg_lin_range_bins_are_written_at_their_centres": (
+        [[2.0]] * 3, "CONST", LIN, ([3500.0, 4500.0, 5500.0], [2 * np.pi] * 3)),
+    "msg_log_range_is_read": (
+        [[1.0], [3.0]], "CONST", ("log_range_t", {"logx_0": np.log(1000.0), "dlogx": np.log(10.0), "n": 3}),
+        ([5500.0, 55000.0], [np.pi, 3 * np.pi])),
+    "msg_tab_range_is_read_from_0_angstrom_with_zero_flux_kept": (
+        [[0.0], [1.0]], "CONST", ("tab_range_t", {"x": [0.0, 2.0, 6.0]}), ([1.0, 4.0], [0.0, np.pi])),
+    "msg_comp_range_joins_its_sub_ranges": (
+        [[1.0]] * 3, "CONST", ("comp_range_t", {"sub_ranges": [("lin_range_t", {"x_0": 1000.0, "dx": 1000.0, "n": 2}),
+                                                               ("tab_range_t", {"x": [3000.0, 5000.0]})]}),
+        ([1500.0, 2500.0, 4000.0], [np.pi] * 3)),
+    "msg_claret_flux_uses_msgs_flux_basis": (
+        [CLARET_ROW] * 3, "CLARET", LIN,
+        ([3500.0, 4500.0, 5500.0], [2 * np.pi * (1 / 2 - 0.1 / 10 - 0.2 / 6 - 3 * 0.3 / 14 - 0.4 / 4)] * 3)),
+    "msg_c_without_a_row_per_bin_fails": ([[1.0]] * 2, "CONST", LIN, "c has shape (2, 1), not (3, 1)"),
+    "msg_unknown_range_type_fails": ([[1.0]] * 3, "CONST", ("spline_range_t", {}), "wavelength range type 'spline_range_t'"),
+    "msg_unknown_limb_law_fails": ([[1.0]] * 3, "POWER", LIN, "limb-darkening law 'POWER'"),
+    "msg_non_finite_flux_fails": ([[1.0], [np.nan], [1.0]], "CONST", LIN, "1 of 3 fluxes are not finite"),
+    # Negative fluxes are kept as MSG gives them while their integral is below 0.1 % of the absolute flux's
+    "msg_negative_flux_below_a_tenth_of_a_percent_is_kept_and_noted": (
+        [[1.0], [-1e-4], [1.0]], "CONST", LIN,
+        ([3500.0, 4500.0, 5500.0], [np.pi, -1e-4 * np.pi, np.pi], "# negative_flux_fraction = 9.999e-05")),
+    "msg_negative_flux_of_a_tenth_of_a_percent_or_more_fails": (
+        [[1.0], [-2e-3], [1.0]], "CONST", LIN, "its negative fluxes are 0.002 of its absolute flux (limit 0.001)"),
+    "msg_spectrum_without_a_positive_flux_fails": ([[0.0]] * 3, "CONST", LIN, "no flux is positive"),
+    "msg_non_positive_wavelength_fails": (
+        [[1.0]] * 3, "CONST", ("lin_range_t", {"x_0": -2000.0, "dx": 1000.0, "n": 4}),
+        "2 of 3 wavelengths are not finite and positive"),
+}
 
 
 BOSZ_SCRIPT = f"{mast.SCRIPTS_DIR}/hlsp_bosz_bosz2024_sim_r1000_m%2B0.00_v1_bulkdl.sh"
@@ -1312,7 +1478,7 @@ def svo_cache_that_cannot_be_read_or_written_is_warned_about(t):
     (t.tmp / FID_CACHE).mkdir()  # a directory where the cache file goes
     with t.caplog.at_level(logging.WARNING):
         assert grabber.get_model_metadata("Grid") == [{"fid": 3}]
-    messages = warnings_from(t.caplog, "svo_spectra_grabber")
+    messages = warnings_from(t.caplog, "grids.svo")
     assert any("unreadable FID cache" in m for m in messages)
     assert any("could not cache the FID list" in m for m in messages)
 
@@ -1333,24 +1499,6 @@ def mast_failed_first_spectrum_does_not_stop_the_rest(t):
 
 
 @row
-def msg_discover_and_run_finishes_other_grids_then_raises(t):
-    index = f'<a href="{MSG_FILE}">a</a><a href="http://user.astro.wisc.edu/msg/grids/sg-Other.h5">b</a>'
-    grabber, _ = _grabber(t, "msg", {MSG_INDEX: index})
-    done = []
-
-    def metadata(name):
-        if name == "sg-Test":
-            raise RuntimeError("download failed")
-        return [{"fid": 1}]
-
-    t.mp.setattr(grabber, "get_model_metadata", metadata)
-    t.mp.setattr(grabber, "download_model_spectra", lambda name, meta: done.append(name) or 1)
-    with pytest.raises(RuntimeError, match="1 of 2 grid\\(s\\) failed:\n  sg-Test: download failed"):
-        grabber.discover_and_run()
-    assert done == ["sg-Other"]
-
-
-@row
 def mast_download_accepts_generic_axis_kwargs(t):
     url = ("https://archive.stsci.edu/hlsps/bosz/bosz2024/m+0.00/r1000/"
            "bosz2024_mp_t05750_g+4.5_m+0.00_a+0.00_c+0.00_v2_r1000_resam.txt.gz")
@@ -1359,9 +1507,9 @@ def mast_download_accepts_generic_axis_kwargs(t):
         assert download_url == url
         return "1000 1.0\n2000 1.0\n3000 1.0\n4000 1.0\n"
 
-    t.mp.setattr("sed_tools.mast_spectra_grabber._gather_urls_from_scripts", lambda reskey, metals, session: [url])
-    t.mp.setattr("sed_tools.mast_spectra_grabber._try_wave_urls", lambda reskey, session: (None, None))
-    t.mp.setattr("sed_tools.mast_spectra_grabber._download_text_gz", fake_download_text_gz)
+    t.mp.setattr("sed_tools.grids.mast._gather_urls_from_scripts", lambda reskey, metals, session: [url])
+    t.mp.setattr("sed_tools.grids.mast._try_wave_urls", lambda reskey, session: (None, None))
+    t.mp.setattr("sed_tools.grids.mast._download_text_gz", fake_download_text_gz)
     n = mast.MASTSpectraGrabber(base_dir=str(t.tmp)).download_model_spectra(
         "BOSZ-2024-r1000", {"reskey": "r1000", "metals": ["m+0.00"]},
         teff_range=(5700, 5800), logg_range=(4.0, 5.0), meta_range=(-0.1, 0.1), wl_range=(1500, 3500))
@@ -1421,7 +1569,7 @@ def _warns(t, source, routes, call, result, words, alone):
     grabber, _ = _grabber(t, source, routes)
     with t.caplog.at_level(logging.WARNING):
         assert call(grabber) == result
-    messages = warnings_from(t.caplog, f"{source}_spectra_grabber")
+    messages = warnings_from(t.caplog, f"grids.{source}")
     if alone:
         [message] = messages
         assert all(word in message for word in words)
@@ -1479,20 +1627,12 @@ def bolometric_renorm_rescales_a_spectrum_100x_too_large(t):
 
 
 @row
-def text_spectrum_compatibility_aliases(t):
-    from sed_tools.cli import load_txt_spectrum
-    from sed_tools.precompute_flux_cube import load_sed
-    from sed_tools.spectra_cleaner import read_spectrum_data
-
+def text_spectrum_reader_keeps_the_finite_pairs(t):
     path = t.tmp / "sample.txt"
     path.write_text("# header\n1, 2\ninvalid\n3 4 extra\ninf 5\n")
-    expected = read_text_spectrum(path)
-    np.testing.assert_array_equal(expected[0], [1.0, 3.0])
-    np.testing.assert_array_equal(expected[1], [2.0, 4.0])
-    for loader in (load_txt_spectrum, load_sed, read_spectrum_data):
-        actual = loader(str(path))
-        np.testing.assert_array_equal(actual[0], expected[0])
-        np.testing.assert_array_equal(actual[1], expected[1])
+    wavelength, flux = read_text_spectrum(path)
+    np.testing.assert_array_equal(wavelength, [1.0, 3.0])
+    np.testing.assert_array_equal(flux, [2.0, 4.0])
 
 
 def test_grids(rows):
@@ -1504,5 +1644,7 @@ def test_grids(rows):
     rows(HEADERS, _header_unit)
     rows(ZERO_BOUNDS, _query_bound)
     rows(WARNED, _warns)
+    rows(MSG_VGRIDS, _msg_vgrid_read)
+    rows(MSG_SPECTRA, _msg_spectrum_written)
     rows(REFUSED, _refused)
     rows(UNKNOWN_UNIT, _unknown_unit)

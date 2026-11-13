@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """SVO's Filter Profile Service: browse its facilities and instruments, and download their curves."""
 
 from __future__ import annotations
@@ -6,8 +5,6 @@ from __future__ import annotations
 import html
 import os
 import re
-import sys
-import textwrap
 import threading
 import urllib.parse
 from dataclasses import dataclass
@@ -19,11 +16,9 @@ import requests
 from bs4 import BeautifulSoup
 
 from .manifest import ComponentError, InstrumentManifest, archived_bands, curve_source, write_filter_index
-from .curve_metadata import (ENERGY, SOURCE_ASSUMED, SOURCE_SVO, SVO_ALTERNATIVES, SVOMetadataClient,
-                             SVOUnreachableError, read_filter_header, svo_components_header, svo_detector, svo_fps_url,
-                             svo_get, write_filter_file)
-from ..ui_utils import prompt_choice
-from ..ui_utils import parse_multi_selection
+from .curve_metadata import (ENERGY, SOURCE_ASSUMED, SVO_ALTERNATIVES, SVOMetadataClient, SVOUnreachableError,
+                             read_filter_header, svo_components_header, svo_detector, svo_fps_url, svo_get,
+                             write_filter_file)
 
 SVO_READ_TIMEOUT = 300  # give a connected SVO a generous time to respond
 #: Seconds SVO is left alone, by every browser in the process, after it did not answer.
@@ -367,7 +362,7 @@ def _would_collide(instrument_name: str, instrument_key: str, other_keys: Sequen
     return any(norm(k).startswith(name) for k in other_keys)
 
 
-# -------------------- CLI helpers --------------------
+# -------------------- Band names and folder names --------------------
 def _band_from_filter_id(filter_id: str) -> str:
     if "." in filter_id:
         return filter_id.rsplit(".", 1)[-1]
@@ -383,135 +378,3 @@ def _clean_path(value: str) -> str:
 def _clean_filename(value: str) -> str:
     return _clean_path(value).replace(" ", "_")
 
-
-def run_interactive(base_dir: str = DEFAULT_BASE_DIR) -> None:
-    browser = SVOFilterBrowser(base_dir=base_dir)
-
-    facilities = browser.list_facilities()
-    if not facilities:
-        print("No facilities discovered.")
-        return
-
-    while True:
-        bulk_spec = input(
-            "Bulk telescope mode: enter facility IDs (e.g. 1,3-5) to download ALL instruments, "
-            "or press Enter for single-facility mode: "
-        ).strip()
-        if bulk_spec:
-            try:
-                facility_indexes = parse_multi_selection(bulk_spec, len(facilities))
-            except ValueError as exc:
-                print(f"Invalid selection: {exc}")
-                continue
-            if not facility_indexes:
-                print("No facilities selected.")
-                continue
-
-            selected = [facilities[i] for i in facility_indexes]
-            print(f"Selected {len(selected)} facilities for bulk download.")
-            confirm = input("Download ALL instruments for selected facilities? [Y/n] ").strip().lower()
-            if confirm and not confirm.startswith("y"):
-                continue
-            _download_facilities(browser, selected)
-            again = input("Bulk download another set of facilities? [y/N] ").strip().lower()
-            if again.startswith("y"):
-                continue
-            return
-
-        fac_idx = prompt_choice(facilities, "Facilities")
-
-        if fac_idx is None:
-            print("Exiting.")
-            return
-        facility = facilities[fac_idx]
-
-        instruments = browser.list_instruments(facility.key)
-        if not instruments:
-            print(f"No instruments found for {facility.label}.")
-            continue
-        if not _browse_instruments(browser, facility, instruments):
-            return
-
-
-def _download_facilities(browser: SVOFilterBrowser, facilities: Sequence[Facility]) -> None:
-    """Download every instrument of ``facilities``, then raise RuntimeError listing any that failed."""
-    failed = []
-    for facility in facilities:
-        instruments = browser.list_instruments(facility.key)
-        if not instruments:
-            print(f"No instruments found for {facility.label}.")
-            continue
-        print(f"\nFacility: {facility.label} ({len(instruments)} instruments)")
-        for instrument in instruments:
-            filters = browser.list_filters(facility.key, instrument.key)
-            if not filters:
-                print(f"  [skip] {instrument.label}: no filters found")
-                continue
-            print(f"  Downloading {len(filters)} filters for {instrument.label}")
-            try:
-                browser.download_filters(filters)
-            except SVOUnreachableError:
-                raise
-            except (RuntimeError, ComponentError) as exc:  # some filters of this instrument could not be saved
-                failed.append(f"{facility.label}/{instrument.label}: {exc}")
-    if failed:
-        raise RuntimeError("Bulk download incomplete:\n" + "\n".join(failed))
-
-
-def _browse_instruments(browser: SVOFilterBrowser, facility: Facility, instruments: Sequence[Instrument]) -> bool:
-    """Offer one facility's instruments for download; False when the user chooses to exit."""
-    while True:
-        inst_idx = prompt_choice(instruments, f"Instruments for {facility.label}", allow_back=True)
-        if inst_idx is None:
-            print("Exiting.")
-            return False
-        if inst_idx == -1:
-            return True
-        instrument = instruments[inst_idx]
-
-        filters = browser.list_filters(facility.key, instrument.key)
-        if not filters:
-            print(f"No filters found for {instrument.label}.")
-            continue
-
-        print(
-            textwrap.dedent(
-                f"""
-                \nSelected:
-                  Facility : {facility.label} ({facility.key})
-                  Instrument: {instrument.label} ({instrument.key})
-                  Filters  : {len(filters)} available
-                """
-            ).strip()
-        )
-
-        confirm = input("Download all filters for this instrument? [Y/n] ").strip().lower()
-        if confirm and not confirm.startswith("y"):
-            continue
-
-        browser.download_filters(filters)
-
-        again = input("Download another instrument from this facility? [y/N] ").strip().lower()
-        if not again.startswith("y"):
-            return True
-
-
-def main(argv: Optional[Sequence[str]] = None) -> int:
-    import argparse
-    parser = argparse.ArgumentParser(
-        description="Interactively browse the SVO Filter Profile Service, choose a facility and instrument, then "
-                    "download all filters for that instrument into <base_dir>/<Facility>/<Instrument>/<Band>.dat.")
-    parser.add_argument("base_dir", nargs="*", default=[DEFAULT_BASE_DIR],
-                        help=f"If base_dir is not provided, the default is {DEFAULT_BASE_DIR}. "
-                             "Further arguments are ignored, as in 0.4.1.")
-    base_dir = parser.parse_args(list(argv or sys.argv[1:])).base_dir[0]
-    try:
-        run_interactive(base_dir)
-        return 0
-    except (RuntimeError, ComponentError) as exc:
-        print(exc)
-        return 1
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())

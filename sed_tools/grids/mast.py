@@ -23,7 +23,7 @@ import requests
 
 from .lookup import write_lookup_csv
 
-logger = logging.getLogger("sed_tools.mast_spectra_grabber")
+logger = logging.getLogger(__name__)
 
 # ----------------- constants -----------------
 DATA_BASE   = "https://archive.stsci.edu/hlsps/bosz/bosz2024"
@@ -260,7 +260,7 @@ def _write_spectrum_txt(out_path: str, wl: np.ndarray, fx: np.ndarray, ct: Optio
             f.write(f"# {k} = {v}\n")
         # No flux unit is declared, on purpose. BOSZ 2024 gives the Eddington flux H_λ in
         # erg/s/cm²/Å, and the surface flux is F_λ = 4πH_λ (Mészáros et al. 2024, eq. 2).
-        # spectra_cleaner has no unit for H_λ, and declaring F_λ would make it 4π too low,
+        # The cleaner (grids/clean.py) has no unit for H_λ, and declaring F_λ would make it 4π too low,
         # so cleaning stops and asks for the unit instead.
         f.write("# columns = wavelength_A flux continuum\n")
         if ct is None:

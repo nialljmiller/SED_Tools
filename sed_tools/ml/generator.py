@@ -1,7 +1,7 @@
 """SEDGenerator, the engine that makes a whole SED from (Teff, logg, [M/H]) alone, with no input spectrum.
 
 A model folder: model.pt, config.json (model_type 'sed_generator', scalers, grid, parameter ranges) and two plots.
-Old import path sed_tools.ml_sed_generator, also run as python -m. The completer engine is ml/completer.py.
+The completer engine is ml/completer.py.
 """
 
 import json
@@ -13,14 +13,13 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 
 from ..cube.fileio import load as load_cube
-from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, DEFAULT_WL_POINTS, Engine, Network, action_menu, data_loaders, fit,
-                     log_grid, model_configs, normalised_params, param_scaler, predict, print_libraries, resample,
-                     sample_spectra, training_libraries, write_spectrum)
-from .common import mlp  # noqa: F401  (kept: `from sed_tools.ml.generator import *` gives mlp, as before)
+from .common import (Engine, Network, action_menu, confirmed, data_loaders, fit, log_grid, model_configs,
+                     normalised_params, param_scaler, predict, print_libraries, resample, sample_spectra,
+                     training_libraries, write_spectrum)
 from ..ui_utils import (ask_number as _ask_number, ask_numbers as _ask_numbers, banner as _banner,
-                       menu_choice as _menu_choice, refused_without, section as _section)
+                        menu_choice as _menu_choice, section as _section)
 
-logger = logging.getLogger("sed_tools.ml_sed_generator")
+logger = logging.getLogger(__name__)
 
 
 class SEDGeneratorNetwork(Network):
@@ -593,13 +592,13 @@ def _train_menu(base_dir: str, models_dir: str) -> None:
         return
     print(f"\nTraining on: {selected['name']}")
 
-    epochs = _ask_number("  Epochs [200]: ", 200, whole=True, positive=True)
-    batch_size = _ask_number("  Batch size [64]: ", 64, whole=True, positive=True)
+    epochs = _ask_number("  Epochs [200]: ", 200, whole=True)
+    batch_size = _ask_number("  Batch size [64]: ", 64, whole=True)
     default_name = f"sed_generator_{selected['name']}"
     model_name = input(f"  Model name [{default_name}]: ").strip() or default_name
     output_path = os.path.join(models_dir, model_name)
     print(f"\nModel will be saved to: {output_path}/")
-    if input("Start training? [Y/n]: ").strip().lower() not in ('', 'y', 'yes'):
+    if not confirmed("Start training? [Y/n]: "):
         return
 
     _banner("TRAINING...")
@@ -615,7 +614,7 @@ def _generate_menu(models_dir: str) -> None:
     gen = SEDGenerator(selected['path'])
 
     print("\nEnter stellar parameters:")
-    teff = _ask_number("  Teff (K): ", positive=True)
+    teff = _ask_number("  Teff (K): ")
     logg = _ask_number("  logg: ")
     meta = _ask_number("  [M/H]: ")
     print()
@@ -669,43 +668,3 @@ def _list_menu(models_dir: str) -> None:
             print(f"    [M/H]: {r.get('meta', [0,0])[0]:.2f} - {r.get('meta', [0,0])[1]:.2f}")
         if arch:
             print(f"    Architecture: 3 → {arch.get('hidden_layers', [])} → {arch.get('output_dim', '?')}")
-
-
-# python -m sed_tools.ml_sed_generator
-
-def main():
-    """CLI entry point."""
-    import argparse
-    parser = argparse.ArgumentParser(description="ML SED Generator")
-    subparsers = parser.add_subparsers(dest='command', required=True)
-
-    train_p = subparsers.add_parser('train', help='Train generator')
-    train_p.add_argument('--library', required=True)
-    train_p.add_argument('--output', required=True)
-    train_p.add_argument('--epochs', type=int, default=200)
-    train_p.add_argument('--batch-size', type=int, default=64)
-
-    gen_p = subparsers.add_parser('generate', help='Generate SED')
-    gen_p.add_argument('--model', required=True)
-    gen_p.add_argument('--teff', type=float, required=True)
-    gen_p.add_argument('--logg', type=float, required=True)
-    gen_p.add_argument('--meta', type=float, required=True)
-    gen_p.add_argument('--output', required=True)
-
-    list_p = subparsers.add_parser('list', help='List generators')
-    list_p.add_argument('--models-dir', default='models')
-
-    args = parser.parse_args()
-    if args.command == 'train':
-        SEDGenerator().train(args.library, args.output, epochs=args.epochs, batch_size=args.batch_size)
-    elif args.command == 'generate':
-        wl, flux = SEDGenerator(args.model).generate(args.teff, args.logg, args.meta)
-        write_spectrum(args.output, wl, flux, note=f"Teff={args.teff} logg={args.logg} [M/H]={args.meta}")
-        print(f"Saved: {args.output}")
-    elif args.command == 'list':
-        for g in SEDGenerator.list_models(args.models_dir):
-            print(f"{g['name']}: {g['path']}")
-
-
-if __name__ == '__main__':
-    main()

@@ -24,23 +24,21 @@ import numpy as np
 import pytest
 import requests
 
-from sed_tools import filter_library
 from sed_tools.api import Filters
 from sed_tools.component_sources import (argus, cassini, catalog, cfht, csp, decam, eris, gmos, hsc, hst,
-                                         legacy_surveys, lsst, observatories as obs, sdss, skycalc, space,
-                                         standards, surveys, swift, team_atmospheres as team, twomass, vista, ztf)
+                                         legacy_surveys, lsst, observatories as obs, sdss, skycalc, space, standards,
+                                         surveys, swift, team_atmospheres as team, twomass, vista, ztf)
 from sed_tools.component_sources._common import (DerivedCurve, SimpleSource, Table, build_simple, ensure_published,
                                                  write_site)
 from sed_tools.component_sources._original import Fetcher, clean_curve, make_band, to_angstrom
-from sed_tools.filter_components import (DERIVED, FILTER, OPTICS, QE, SHARED, TEAM, AtmosphereGrid,
-                                         ComponentCoverageError, ComponentError, InstrumentManifest, add_component,
-                                         build_all_products, build_product, compose_band, read_curve)
-from sed_tools.filter_library import FilterLibrary
-from sed_tools.filter_metadata import (ENERGY, PHOTON, SVOFilterRecord, read_filter_header, released_mesa_reads,
-                                       write_filter_file)
-from sed_tools.filters import svo
-from sed_tools.filters.curve_metadata import SVOMetadataClient, _param_text, svo_fps_url
-from sed_tools.grids import mast, msg, svo as svo_grid
+from sed_tools.filters import library as filters_library, svo
+from sed_tools.filters.compose import ComponentCoverageError, add_component, build_product, compose_band, read_curve
+from sed_tools.filters.curve_metadata import (ENERGY, PHOTON, SVOFilterRecord, SVOMetadataClient, _param_text,
+                                              read_filter_header, released_mesa_reads, svo_fps_url, write_filter_file)
+from sed_tools.filters.library import FilterLibrary
+from sed_tools.filters.manifest import (DERIVED, FILTER, OPTICS, QE, SHARED, TEAM, AtmosphereGrid, ComponentError,
+                                        InstrumentManifest)
+from sed_tools.grids import mast, svo as svo_grid
 
 from support import TESTS, WL, Resp, Session, answer, derived, gauss, published_set, scenarios, team_site
 
@@ -246,8 +244,8 @@ BUILDS = named([
           phrase="I is the vendor test report I.xls"),
     Build(obs, "MegaCam", "Magellan", "g i r u z", "filter+optics+qe+atmosphere", "filter optics qe",
           (102, 1000.0, 29990.0, 5000.0, 0.540648), phrase="atmosphere at 1.2 airmasses"),
-    Build(obs, "Mosaic", "KPNO", "B I R U V i_SDSS r_SDSS", "filter", "filter", (33, 3600.0, 6000.0, 4418.0, 0.6937),
-          phrase="U=k1044 Us solid U (k1044bp.txt); B=k1002"),
+    Build(obs, "Mosaic", "KPNO", "B I R Us V i_SDSS r_SDSS", "filter", "filter", (33, 3600.0, 6000.0, 4418.0, 0.6937),
+          phrase="Us=k1044 Us solid U (k1044bp.txt); B=k1002"),
     Build(obs, "MOSFIRE", "Keck", "H H1 H2 J J2 J3 K Ks Y", "filter", "filter",
           (33, 13575.0, 19075.0, 17050.0, 0.993073), phrase="J2, J3, H1 and H2 are the intermediate bands"),
     Build(obs, "NIRC2", "Keck", "H J K Kp Ks Lp Ms", "filter", "filter", (34, 13968.46, 19140.01, 15198.75, 0.8981323),
@@ -829,7 +827,7 @@ def param_text(t):
 def probe_finds_a_contiguous_grid(t, present):
     grabber = svo_grid.SVOSpectraGrabber(base_dir=str(t.tmp))
     t.mp.setattr(grabber, "_head_exists", lambda model, fid: fid in present)
-    grabber.expand_window, grabber.expand_max_gap = 12, 20
+    grabber.expand_max_gap = 20
     assert grabber._bounded_probe("Kurucz") == present
 
 
@@ -847,17 +845,6 @@ def mast_lists_every_bosz_resolution_and_accepts_each(t):
     assert "Discovering spectral grids from MAST" in t.capsys.readouterr().out
     answer(t.mp, *[""] * len(names))
     assert [grabber.get_model_metadata(n)["reskey"] for n in names] == [n.rsplit("-", 1)[1] for n in names]
-
-
-@row
-def msg_takes_the_most_complete_order_when_neither_is_plausible(t):
-    grabber = msg.MSGSpectraGrabber(base_dir=str(t.tmp), max_workers=1)
-    grabber.model_axes["sg-Cool"] = {
-        "axes": [np.array([100.0, 200.0]), np.array([4.0, 4.5]), np.array([-1.0, np.nan])], "shape": (2, 2, 2),
-        "vlin": np.array([1]), "roles": {"teff": 0, "logg": 1, "meta": 2}}
-    teff, logg, metal = grabber._params_from_index("sg-Cool", 0)
-    # ... and loses to the order with more finite values
-    np.testing.assert_array_equal([teff, logg, metal], (200.0, 4.0, -1.0))
 
 
 # ======================================================================
@@ -977,10 +964,10 @@ def gmos_qe_epochs_are_variants_without_default(t):
 
 
 @row
-def sdss_camera_response_left_out_of_build_all_products_is_named(t):
+def sdss_camera_response_is_built_for_the_bands_that_have_it(t):
     # The primed filters are bands of their own (6c8739a), so filter+optics+qe
-    # covers u ... z only and build_all_products builds no product for it (0.4.1
-    # built one). It must say so and give the call that builds it.
+    # covers u ... z only: not the whole set (0.4.1 built it for every band), but
+    # build_product builds it for those bands.
     inst = t.tmp / "SLOAN" / "SDSS"
     for band in sdss.BANDS:
         published_set(inst, band, WL, gauss(5000, 300) * 0.4, "filter+instrument+atmosphere")
@@ -992,15 +979,8 @@ def sdss_camera_response_left_out_of_build_all_products_is_named(t):
                                    ("resbig", gauss(5000, 300) * 0.4), ("resnoa", gauss(5000, 300) * 0.5),
                                    ("xatm", np.full(WL.size, 0.85)))], name=b.upper(), fmt="E") for b in sdss.BANDS])
     sdss.build(t.tmp, session=Session(files))
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.filter_components"):
-        built = build_all_products(inst)
-    assert built == []
-    assert not (inst / "products").exists()
+    assert "filter+optics+qe" not in InstrumentManifest.load(inst).buildable()
     bands = sorted(sdss.BANDS)
-    assert ("SLOAN/SDSS: filter+optics+qe not built, because only 5 of 6 bands have the components "
-            "(none for gprime_filter)") in t.caplog.text
-    assert f"build_product({str(inst)!r}, 'filter+optics+qe', bands={bands!r})" in t.caplog.text
-
     product = build_product(inst, "filter+optics+qe", bands=bands)
     assert product.name == "filter+optics+qe"
     assert (product / product.name).read_text().split() == [f"{b}.dat" for b in bands]
@@ -1068,7 +1048,7 @@ def no_wait(t):
 @row
 def skycalc_form_echo_is_checked_after_a_fallback(t):
     no_wait(t)
-    client = skycalc.SkyCalcClient(session=SkyCalc({"SKYMODEL.TARGET.AIRMASS": "1.50"}), interface="auto", pause=0)
+    client = skycalc.SkyCalcClient(session=SkyCalc({"SKYMODEL.TARGET.AIRMASS": "1.50"}), pause=0)
     with pytest.raises(RuntimeError, match="echoed SKYMODEL.TARGET.AIRMASS"):
         client.fetch("paranal", 1.0, 2.5, 1000.0, 1100.0, 2000)
 
@@ -1077,7 +1057,7 @@ def skycalc_form_echo_is_checked_after_a_fallback(t):
 def skycalc_failure_after_a_fallback_names_both_errors(t):
     no_wait(t)
     session = SkyCalc(form_html="<p>Service unavailable</p>")
-    client = skycalc.SkyCalcClient(session=session, interface="auto", pause=0, retries=3)
+    client = skycalc.SkyCalcClient(session=session, pause=0, retries=3)
     with pytest.raises(RuntimeError) as err:
         client.fetch("paranal", 1.0, 2.5, 1000.0, 1100.0, 2000)
     message = str(err.value)
@@ -1087,7 +1067,7 @@ def skycalc_failure_after_a_fallback_names_both_errors(t):
     # An output that is not FITS reruns SkyCalc: one download per attempt (retried at one layer only)
     session = SkyCalc(api_up=True, api_output=b"<html>busy</html>")
     with pytest.raises(RuntimeError, match=r"failed after 3 attempts: SkyCalc output \S+ was not a FITS file"):
-        skycalc.SkyCalcClient(session=session, interface="api", pause=0, retries=3).fetch(
+        skycalc.SkyCalcClient(session=session, pause=0, retries=3).fetch(
             "paranal", 1.0, 2.5, 1000.0, 1100.0, 2000)
     assert session.api_gets == 3
 
@@ -1096,7 +1076,7 @@ def skycalc_failure_after_a_fallback_names_both_errors(t):
 def skycalc_api_temporary_directory_left_behind_is_warned(t):
     no_wait(t)
     session = SkyCalc(api_up=True, rmtmp_error=requests.exceptions.ReadTimeout("rmtmp timed out"))
-    client = skycalc.SkyCalcClient(session=session, interface="api", pause=0)
+    client = skycalc.SkyCalcClient(session=session, pause=0)
     with t.caplog.at_level(logging.WARNING, logger=skycalc.__name__):
         result = client.fetch("paranal", 1.0, 2.5, 1000.0, 1100.0, 2000)
     assert result.interface == "api" and result.version == "2.0.9"
@@ -1112,7 +1092,7 @@ def skycalc_version_change_leaves_no_unregistered_point(t):
                    model_version="2.0.8").save(site)
     write_filter_file(site / "am1.00_pwv2.5.dat", [1000.0, 30000.0], [0.9, 0.9], detector_type=ENERGY,
                       source="component", wavelength_unit="Angstrom")
-    client = skycalc.SkyCalcClient(session=SkyCalc(), interface="form", pause=0)
+    client = skycalc.SkyCalcClient(session=SkyCalc(), pause=0)
     with pytest.raises(RuntimeError, match=r"version changed .*'2.0.8', '2.0.9'"):
         skycalc.build(t.tmp / "filters", sites=["paranal"], airmasses=[1.0, 2.0], pwvs=[2.5],
                       fetch_resolution=2000, store_resolution=500, chunks=2, client=client)
@@ -1332,10 +1312,10 @@ def euclid_build_writes_components_and_compares(t):
     published(inst, "Y", wave * 10.0, total * 0.6, "filter+optics+qe", source=None)
     published(inst, "Blue", wave * 10.0, total, components="filter+instrument", source=None)
     (inst / "NISP").write_text("Blue.dat\nY.dat\n")  # as NJM serves the set
-    euclid.build(t.tmp, bands=["Y"], session=Session({euclid.URL.format(band="Y"): text}))
+    euclid.build(t.tmp, session=Session({euclid.URL.format(band=b): text for b in euclid.BANDS}))
     m = InstrumentManifest.load(inst)
     assert {r: m.components[r] for r in (FILTER, OPTICS, QE)} == {
-        r: {"Y": f"components/{r}/Y.dat"} for r in (FILTER, OPTICS, QE)}
+        r: {b: f"components/{r}/{b}.dat" for b in euclid.BANDS} for r in (FILTER, OPTICS, QE)}
     assert "Release mismatch" in m.notes and "Blue" in m.notes
     assert all(released_mesa_reads(inst / rel) for rel in (m.components[r]["Y"] for r in (FILTER, OPTICS, QE)))
 
@@ -1353,18 +1333,26 @@ def euclid_build_writes_missing_published_curves(t):
     # NJM keeps SVO's copy beside the set, outside its bands and index file.
     archived = {"Y_svo": {"detector_type": "photon", "detector_type_source": "svo", "published": "filter+optics+qe"}}
     InstrumentManifest("Euclid", "NISP", bands=[], archived_bands=archived).save(inst)
-    euclid.build(t.tmp, bands=["Y", "Blue"], session=Session({euclid.URL.format(band="Y"): text}))
+    euclid.build(t.tmp, session=Session({euclid.URL.format(band=b): text for b in euclid.BANDS}))
     header = read_filter_header(inst / "Y.dat")
     assert header["FilterID"] == "Euclid/NISP.Y" and header["DetectorType"] == "photon"
     assert header["DetectorTypeSource"] == "original" and header["Components"] == "filter+optics+qe"
     assert released_mesa_reads(inst / "Y.dat")
-    assert (inst / "NISP").read_text() == "Y.dat\n"
+    assert (inst / "NISP").read_text() == "Y.dat\nJ.dat\nH.dat\n"
     m = InstrumentManifest.load(inst)
-    assert m.bands == ["Y"] and "reproduces" in m.notes and "Y_svo are SVO's copies" in m.notes
+    assert m.bands == ["H", "J", "Y"] and "reproduces" in m.notes and "Y_svo are SVO's copies" in m.notes
     assert m.archived_bands == archived  # the archive copy never goes back into bands
     assert "negative samples set to 0: Y 1" in m.notes
-    with pytest.raises(ValueError, match="photometric band"):  # grisms have no ESA factors
-        euclid.build(t.tmp, bands=["Blue"], session=Session({}))
+
+
+@row
+def euclid_build_takes_no_bands(t):
+    # bands= was removed: it raises, rather than being ignored and every band built.
+    from sed_tools.component_sources import euclid
+
+    with pytest.raises(TypeError, match="bands"):
+        euclid.build(t.tmp, bands=["Y"], session=Session({}))
+    assert not (t.tmp / "Euclid").exists()
 
 
 def roman_qe(values):
@@ -1691,7 +1679,7 @@ def cassini_band_names_map_to_filter_pairs(t):
 # ======================================================================
 def cassini_recipes_describe_each_camera(t, camera):
     files, _nm, _pairs = cassini_files(camera)
-    spec = cassini.RECIPES[camera][1](Fetcher(Session(files)))
+    spec = cassini.RECIPES[camera](Fetcher(Session(files)))
     assert (spec.facility, spec.instrument, spec.ground_based) == ("Cassini", camera, False)
     assert spec.outside_range == "error"
     assert [b.name for b in spec.bands] == cassini.BANDS[camera]
@@ -1720,8 +1708,10 @@ def decam_instrument_response_is_the_des_band_over_its_atmosphere(t):
                                "filter+instrument+atmosphere")
 
     svo_client = SVOClient(des)
-    inst = decam.build(t.tmp / "filters", session=Session(saved()), svo_client=svo_client,
+    session = Session(saved())
+    inst = decam.build(t.tmp / "filters", session=session, svo_client=svo_client,
                        atmosphere_root=t.tmp / "atmospheres")
+    assert session.calls == [decam.DES_STD]  # one download for the five bands and the atmosphere
     assert sorted(svo_client.asked) == sorted(decam.SPEC.svo_ids.values())
     manifest = InstrumentManifest.load(inst)
     assert manifest.default_site == "ctio_des" and manifest.outside_range == "error"
@@ -1743,11 +1733,13 @@ def decam_instrument_response_is_the_des_band_over_its_atmosphere(t):
 
 @row
 def vista_components_come_from_the_eso_bundle(t):
-    t.mp.setattr(vista, "_CACHE", {})
     session = Session(saved())
     flat = SVOClient(lambda fid: record(fid, np.linspace(8000.0, 25000.0, 50), np.full(50, 0.5), "filter+instrument"))
     inst = vista.build(t.tmp / "filters", session=session, svo_client=flat, atmosphere_root=t.tmp / "atmospheres")
     assert session.calls == [vista.BUNDLE]  # one download for every member
+    again = Session(saved())
+    vista.build(t.tmp / "filters", session=again, svo_client=flat, atmosphere_root=t.tmp / "atmospheres")
+    assert again.calls == [vista.BUNDLE]  # a second build downloads afresh, not the first build's copy
     manifest = InstrumentManifest.load(inst)
     assert manifest.default_site == "paranal" and manifest.outside_range == "edge"
     assert not (t.tmp / "atmospheres").exists()  # the SkyCalc site is not a team file
@@ -1820,45 +1812,6 @@ def hst_tables_need_a_listed_table(t):
 
 
 @row
-def lsst_validate_compares_with_rubins_curves(t):
-    session = Session(lsst_files("v1.9.2", scale=0.5))
-    lsst.build(t.tmp / "filters", instrument="LSSTv19", session=session)
-    result = lsst.validate(t.tmp / "filters" / "LSST" / "LSSTv19", session=session)
-    assert sorted(result) == sorted(lsst.BANDS)
-    for values in result.values():  # Rubin's hardware and total curves are these products
-        assert values == {k: pytest.approx(0.0, abs=1e-6) for k in
-                          ("hardware_dmag", "hardware_maxdiff", "total_dmag", "total_maxdiff")}
-    assert lsst._url("hardware_r", "v1.9.2") in session.calls
-
-
-@row
-def twomass_validate_compares_with_the_supplement_totals(t):
-    inst = t.tmp / "2MASS" / "2MASS"
-    for band, lo in (("J", 10600), ("H", 15000), ("Ks", 19500)):
-        wl = np.linspace(lo, lo + 4000, 30)
-        published(inst, band, wl, np.ones_like(wl), "filter+instrument+atmosphere", detector=ENERGY)
-    files = twomass_files()
-    twomass.build(t.tmp, session=Session(files))
-    um = np.round(np.linspace(1.0, 2.5, 151), 3)
-    for band, n in twomass.TOTAL_TABLE.items():  # J and H as composed, Ks at half
-        mine = compose_band(inst, band, (FILTER, OPTICS, QE))
-        total = np.interp(um * 1e4, mine.wavelength, mine.transmission, left=0, right=0) * (0.5 if band == "Ks" else 1)
-        files[twomass.TABLE.format(n=n)] = ipac_page(f"2MASS {band} TOTAL", um, total)
-    result = twomass.validate(inst, session=Session(files))
-    assert result["J"]["dmag"] == pytest.approx(0.0, abs=1e-3) and result["H"]["maxdiff"] < 1e-4
-    assert result["Ks"]["dmag"] == pytest.approx(-2.5 * np.log10(2.0), abs=1e-3)
-
-
-@row
-def skycalc_transmission_is_the_fetched_curve(t):
-    client = skycalc.SkyCalcClient(session=SkyCalc(), interface="form", pause=0)
-    wl, tr = client.transmission("paranal", 1.5, 2.5, 1000.0, 1100.0, 2000)
-    np.testing.assert_allclose(wl, np.geomspace(1000.0, 1100.0, 200))
-    np.testing.assert_allclose(tr, 0.8 ** 1.5)
-    assert client.session.posts[-1]["SKYMODEL.TARGET.AIRMASS"] == "1.50"
-
-
-@row
 def write_site_refuses_a_bad_curve_before_writing(t):
     bad = team_site(entries=[(1.2, None, DerivedCurve("u", derived([0.5, 1.2, 0.9]), "x"))])
     with pytest.raises(ValueError, match="not a transmission"):
@@ -1878,7 +1831,7 @@ def ps1_build_registers_its_team_site(t):
                                                 detector_type="photon", components="filter+optics+qe+atmosphere",
                                                 sources="x")], "n", ground_based=True,
         sites=[team.HALEAKALA_PS1], default_site="haleakala_ps1"))
-    t.mp.setitem(surveys.RECIPES, "PS1", ("PAN-STARRS", surveys.ps1))
+    t.mp.setitem(surveys.RECIPES, "PS1", surveys.ps1)
     build = surveys.make_builder(surveys.RECIPES)
     inst = build(t.tmp / "filters", instrument="PS1", session=session)
     assert InstrumentManifest.load(inst).default_site == "haleakala_ps1"
@@ -1956,18 +1909,18 @@ def form_fields_follow_skycalc_spelling(t):
 
 @row
 def form_client_checks_the_echo(t):
-    client = skycalc.SkyCalcClient(session=SkyCalc(), interface="form", pause=0)
+    client = skycalc.SkyCalcClient(session=SkyCalc(), pause=0)
     result = client.fetch("paranal", 1.5, 2.5, 1000.0, 1100.0, 2000)
     assert result.interface == "form" and result.version == "2.0.9"
     assert result.url == skycalc.FORM_HOST + "/observing/etc/tmp/abc/skytable.fits"
-    bad = skycalc.SkyCalcClient(session=SkyCalc({"SKYMODEL.PWV": "3.5"}), interface="form", pause=0)
+    bad = skycalc.SkyCalcClient(session=SkyCalc({"SKYMODEL.PWV": "3.5"}), pause=0)
     with pytest.raises(RuntimeError, match="echoed SKYMODEL.PWV"):
         bad.fetch("paranal", 1.5, 2.5, 1000.0, 1100.0, 2000)
 
 
 @row
 def skycalc_grid_is_labelled_derived_and_archived(t):
-    client = skycalc.SkyCalcClient(session=SkyCalc(), interface="form", pause=0)
+    client = skycalc.SkyCalcClient(session=SkyCalc(), pause=0)
     root = skycalc.build(t.tmp / "filters", sites=["lasilla"], airmasses=[1.0], pwvs=[2.5],
                          fetch_resolution=2000, store_resolution=500, chunks=2, client=client,
                          archive_dir=t.tmp / "evidence")
@@ -1986,7 +1939,7 @@ def skycalc_grid_is_labelled_derived_and_archived(t):
 
 @row
 def skycalc_resume_leaves_a_complete_grid_untouched(t):
-    client = skycalc.SkyCalcClient(session=SkyCalc(), interface="form", pause=0)
+    client = skycalc.SkyCalcClient(session=SkyCalc(), pause=0)
     kw = dict(sites=["paranal"], airmasses=[1.0], pwvs=[2.5], chunks=2, client=client)
     root = skycalc.build(t.tmp / "filters", fetch_resolution=2000, store_resolution=500, **kw)
     before = (root / "paranal" / "manifest.json").read_bytes()
@@ -2054,7 +2007,7 @@ def ensure_components_runs_own_builder_and_skips_heavy(t):
     calls = []
     t.mp.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam"), catalog.BuilderRef("fake"))
     t.mp.setitem(catalog.BUILDERS_FOR, ("Fac", "Big"), catalog.BuilderRef("fake", heavy=True))
-    t.mp.setattr(filter_library.NJMFilterGrabber, "_check_availability", lambda self: False)
+    t.mp.setattr(filters_library.NJMFilterGrabber, "_check_availability", lambda self: False)
 
     def build(root, **kw):
         calls.append(("fake", root))
@@ -2063,7 +2016,7 @@ def ensure_components_runs_own_builder_and_skips_heavy(t):
         add_component(inst, FILTER, [4000.0, 5000.0], [1.0, 1.0], band="g", manifest=manifest)
         manifest.save(inst)
 
-    t.mp.setattr(filter_library, "get_builder", lambda name: build)
+    t.mp.setattr(filters_library, "get_builder", lambda name: build)
     for name in ("Cam", "Big", "None"):
         d = t.tmp / "Fac" / name
         d.mkdir(parents=True)
@@ -2076,7 +2029,7 @@ def ensure_components_runs_own_builder_and_skips_heavy(t):
 
 
 def svo_instruments_that_share_a_name_get_their_own_directory(t, name, key, others, expected):
-    from sed_tools.svo_filter_grabber import _would_collide
+    from sed_tools.filters.svo import _would_collide
 
     assert _would_collide(name, key, others) is expected
 
@@ -2089,18 +2042,6 @@ SHARED_NAMES = {f"svo_instruments_that_share_a_name_get_their_own_directory_{cas
     ("ACS_WFC", "ACS_WFC", ["ACS_HRC"], False),
     ("Cousins", "Cousins_old", ["Bessell"], False),          # differs but nothing to clash with
 ]}
-
-
-@row
-def njm_instrument_match_is_exact(t):
-    from sed_tools.njm_filter_grabber import NJMFilterGrabber
-
-    t.mp.setattr(NJMFilterGrabber, "_check_availability", lambda self: True)
-    njm = NJMFilterGrabber(base_dir="/tmp/unused")
-    t.mp.setattr(njm, "discover_instruments", lambda fac: ["GAIA", "ACS_WFC"])
-    assert njm.find_instrument("GAIA", "GAIA0") is None        # was: prefix-matched to GAIA
-    assert njm.find_instrument("GAIA", "gaia") == "GAIA"
-    assert njm.find_instrument("HST", "ACS-WFC") == "ACS_WFC"
 
 
 @row
@@ -2155,7 +2096,7 @@ def ogle_files():
 
 @row
 def published_rebuilds_from_original_sources_when_njm_is_down(t):
-    t.mp.setattr(filter_library.NJMFilterGrabber, "_check_availability", lambda self: False)
+    t.mp.setattr(filters_library.NJMFilterGrabber, "_check_availability", lambda self: False)
     session = Session(ogle_files())
     t.mp.setattr(requests, "Session", lambda: session)
     library = FilterLibrary(t.tmp)

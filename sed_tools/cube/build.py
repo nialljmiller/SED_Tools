@@ -3,13 +3,11 @@ resampling every cube builder uses. When the table's extra columns (alpha, vturb
 applies the [on_collision] strategy of cube/collision.py. spectra_not_in_cube checks a written cube.
 """
 
-import argparse
 import csv
 import logging
 import math
 import os
 import struct
-import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -17,19 +15,16 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 
 from .._constants import available_memory_bytes as _available_ram_bytes
-from ..grids.lookup import (  # noqa: F401  (write_lookup_csv: importable here, as always)
+from ..grids.lookup import (
     find_file_column, find_logg_column, find_metallicity_column, find_teff_column,
-    write_lookup_csv,
 )
 from .collision import copy_global_config_to_model, discover_extra_axes, load_config
 from .fileio import flux_offset, write_header
-# _extra_key_to_filename, _subdir_name and _value_to_safe_str: importable here, as always.
-from .variants import (_build_filtered_cube, _build_mean_cube, _extra_key_to_filename,  # noqa: F401
-                       _group_by_extra_axes, _parameter_arrays, _print_summary, _split_into_subgrids, _subdir_name,
-                       _value_to_safe_str, _warn_averaged_rows)
+from .variants import (_build_filtered_cube, _build_mean_cube, _group_by_extra_axes, _parameter_arrays, _print_summary,
+                       _split_into_subgrids, _warn_averaged_rows)
 from ..grids.spectrum_io import read_text_spectrum
 
-logger = logging.getLogger("sed_tools.precompute_flux_cube")
+logger = logging.getLogger(__name__)
 
 # Up to this many extra-axis variants are split without asking; above it the user is asked first.
 SPLIT_THRESHOLD = 25
@@ -37,18 +32,13 @@ SPLIT_THRESHOLD = 25
 
 # --- Spectra and the lookup table ---
 
-def load_sed(filepath: str) -> Tuple[np.ndarray, np.ndarray]:
-    return read_text_spectrum(filepath)
-
-
 _FLUX_FLOOR = 1e-300
 
 
-# Quoted annotations keep the signature help() has always shown for sed_tools._resample.resample_to_grid.
+# Quoted annotations keep the signature help() has always shown for resample_to_grid.
 def resample_to_grid(
     wl_src:  "np.ndarray",
     fl_src:  "np.ndarray",
-    teff:    "float",
     wl_tgt:  "np.ndarray",
 ) -> "np.ndarray":
     """
@@ -66,11 +56,6 @@ def resample_to_grid(
         Source wavelengths in Angstroms, must be strictly increasing.
     fl_src : array
         Source flux in erg/cm²/s/Å, same length as wl_src.
-    teff : float
-        Effective temperature of the star in Kelvin.  Not currently used by
-        this function's extrapolation (out-of-coverage flux is zero-filled
-        regardless of teff); retained in the signature for interface
-        stability with callers.
     wl_tgt : array
         Target wavelength grid in Angstroms.
 
@@ -173,7 +158,7 @@ def compute_common_wavelengths(model_dir: str, file_names: List[str], n_sample: 
     subset = [file_names[i] for i in range(0, n, step)][:n_sample]
     wl = []
     for fname in subset:
-        w, _ = load_sed(os.path.join(model_dir, fname))
+        w, _ = read_text_spectrum(os.path.join(model_dir, fname))
         if w.size:
             wl.append(w)
     if not wl:
@@ -366,7 +351,7 @@ def _accumulate_spectra(
 
     for i, fname in enumerate(file_names):
         fpath = os.path.join(model_dir, fname)
-        wl, fl = load_sed(fpath)
+        wl, fl = read_text_spectrum(fpath)
         if wl.size == 0:
             empty.append(fpath)
             continue
@@ -374,7 +359,7 @@ def _accumulate_spectra(
         on = np.searchsorted(wavelengths, wl).clip(max=len(wavelengths) - 1)  # both increasing
         off_axis += not np.array_equal(wavelengths[on], wl)
         i_t, i_l, i_m = t2i[teff_vals[i]], l2i[logg_vals[i]], m2i[meta_vals[i]]
-        flux_cube[i_t, i_l, i_m, :] += resample_to_grid(wl, fl, teff_vals[i], wavelengths)
+        flux_cube[i_t, i_l, i_m, :] += resample_to_grid(wl, fl, wavelengths)
         count_cube[i_t, i_l, i_m] += 1
 
         elapsed = time.time() - t0
@@ -470,47 +455,3 @@ def precompute_flux_cube(
         _build_filtered_cube(cfg, groups, extra_cols, lookup, output_file, write_cube)
 
     _print_summary(output_file, teff_vals, logg_vals, meta_vals)
-
-
-def _main():
-    parser = argparse.ArgumentParser(description="Precompute flux cube for stellar spectral grids")
-    parser.add_argument("--model_dir", type=str, required=False)
-    parser.add_argument("--output",    type=str, default=None)
-    parser.add_argument("--root_dir",  type=str, default=None,
-                        help="SED_Tools root directory (for sed_tools.defaults)")
-    args = parser.parse_args()
-
-    if not args.model_dir:
-        print("No --model_dir provided. Discovering local model directories…")
-        root = "data/stellar_models"
-        found = set()
-        for base in [root, "./" + root, "../" + root]:
-            if not os.path.isdir(base):
-                continue
-            for name in sorted(os.listdir(base)):
-                p = os.path.join(base, name)
-                if not os.path.isdir(p):
-                    continue
-                has_lookup = os.path.isfile(os.path.join(p, "lookup_table.csv"))
-                has_txt    = any(fn.lower().endswith(".txt") for fn in os.listdir(p))
-                if has_lookup or has_txt:
-                    found.add(os.path.normpath(p))  # one entry for data/... and ./data/...
-        cands = sorted(found)
-        if not cands:
-            sys.exit("No model directories found.")
-        for i, p in enumerate(cands, 1):
-            print(f"{i}. {p}")
-        sel = input("Select a model directory by number: ").strip()
-        if not sel.isdigit() or not (1 <= int(sel) <= len(cands)):
-            sys.exit("Invalid selection.")
-        args.model_dir = cands[int(sel) - 1]
-
-    if not args.output:
-        args.output = os.path.join(args.model_dir, "flux_cube.bin")
-        args.output = input(f"Output file [{args.output}]: ").strip() or args.output
-
-    precompute_flux_cube(args.model_dir, args.output, root_dir=args.root_dir)
-
-
-if __name__ == "__main__":
-    _main()

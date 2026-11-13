@@ -1,6 +1,6 @@
 """Public API, top level and the 0.4.1/0.5.x legacy surface: query, fetch and local, the local grids, the
-filters, tagging and the ML wrappers fail loudly; the 0.4.1 names and old module paths still work; the
-config file and data directory. One test walks the tables below; each row runs isolated (support.Rows).
+filters, tagging and the ML wrappers fail loudly; the 0.4.1 names that remain still work; the config file and
+data directory. One test walks the tables below; each row runs isolated (support.Rows).
 """
 
 import importlib
@@ -13,10 +13,8 @@ import shutil
 import struct
 import subprocess
 import sys
-import types
 from pathlib import Path
 from types import SimpleNamespace
-from unittest import mock
 
 import numpy as np
 import pytest
@@ -24,21 +22,16 @@ import requests
 
 import sed_tools
 import sed_tools.config as config
-import sed_tools.cube.tool as tool
-import sed_tools.filter_library as old_library
-import sed_tools.filters.library as library
-import sed_tools.flux_cube_tool as old_tool
 from sed_tools import api, ml
-from sed_tools._flux import AB_ZERO_FLUX
 from sed_tools.api import SED, Filters, MLGenerator, SpectralGrid, SpectralGridInfo, Spectrum
-from sed_tools.collision_config import CollisionConfig
-from sed_tools.ml_sed_completer import SEDCompleter, SEDCompleterNetwork
-from sed_tools.ml_sed_generator import SEDGenerator
-from sed_tools.models import SED as GridFinder
-from sed_tools.njm_filter_grabber import _STATE, NJMFilterGrabber
+from sed_tools.cube.collision import CollisionConfig
+from sed_tools.cube.model import SED as GridFinder
+from sed_tools.ml.completer import SEDCompleter, SEDCompleterNetwork
+from sed_tools.ml.generator import SEDGenerator
+from sed_tools.photometry import AB_ZERO_FLUX
 
-from support import (CLEAN, GRABBERS, GRID, KURUCZ, NJM, STALE, Session, answer, atmosphere_site, cpu_torch,
-                     fake_grabber, filters_api, njm_grids, njm_index, scenarios, tiny_library, write_flux_cube)
+from support import (CLEAN, GRABBERS, GRID, KURUCZ, STALE, answer, atmosphere_site, cpu_torch, fake_grabber,
+                     filters_api, njm_grids, scenarios, tiny_library, write_flux_cube)
 
 SCENARIOS, row = scenarios()
 
@@ -94,7 +87,7 @@ def fetch_falls_back_to_the_next_source_with_a_warning(t):
     _sources(t, njm=fake_grabber(["Grid"], metadata=RuntimeError("NJM mirror has no files for Grid")),
              svo=fake_grabber(["Grid"], metadata=[{"fid": 1}], download_error=RuntimeError("SVO timed out")),
              msg=fake_grabber(["Grid"], metadata={"m": 1}, downloaded=1))
-    t.mp.setattr("sed_tools.spectra_cleaner.clean_model_dir", lambda *a, **k: dict(CLEAN))
+    t.mp.setattr("sed_tools.grids.clean.clean_model_dir", lambda *a, **k: dict(CLEAN))
     with _api_warnings(t):
         sed = SED.fetch("Grid", model_root=t.tmp)
     assert sed.grid.source == "msg"
@@ -196,7 +189,7 @@ def import_dry_run_counts_spectra_lacking_a_parameter(t):
 
 @row
 def filter_query_warns_about_discovery_errors(t):
-    from sed_tools.filter_library import FilterLibrary
+    from sed_tools.filters.library import FilterLibrary
 
     filters = filters_api(t)
     report = {"entries": [{"key": "HST", "label": "HST", "sources": ["original"]}],
@@ -210,7 +203,7 @@ def filter_query_warns_about_discovery_errors(t):
 
 @row
 def bibtex_citations_raise_when_a_target_failed(t):
-    from sed_tools.filter_catalogue import CatalogueError
+    from sed_tools.filters.njm_catalogue import CatalogueError
 
     filters = filters_api(t)
     result = {"instruments": [], "references": [], "acknowledgements": [], "errors": ["A/B: not cached"]}
@@ -222,7 +215,7 @@ def bibtex_citations_raise_when_a_target_failed(t):
 
 @row
 def plot_warns_when_njm_cannot_resolve_an_instrument_name(t):
-    from sed_tools.filter_catalogue import CatalogueError
+    from sed_tools.filters.njm_catalogue import CatalogueError
 
     filters = filters_api(t)
     fetched = t.tmp / "fetched" / "Fac" / "Cam"
@@ -254,7 +247,7 @@ def _precompute_writes(t, *names):
         for name in names:
             (Path(model_dir) / name).write_text("built")
 
-    t.mp.setattr(importlib.import_module("sed_tools.precompute_flux_cube"), "precompute_flux_cube", fake)
+    t.mp.setattr(importlib.import_module("sed_tools.cube.build"), "precompute_flux_cube", fake)
 
 
 @row
@@ -286,7 +279,7 @@ def ml_generator_writes_outputs_beside_the_loaded_model(t):
         def generate_with_outputs(self, **kwargs):
             calls.append(kwargs["output_dir"])
 
-    t.mp.setattr("sed_tools.ml_sed_generator.SEDGenerator", Generator)
+    t.mp.setattr("sed_tools.ml.generator.SEDGenerator", Generator)
     (t.tmp / "models" / "gen").mkdir(parents=True)
     MLGenerator(base_dir=t.tmp).load("gen").generate_with_outputs(5800, 4.4, 0.0)
     assert calls == [str(t.tmp / "models" / "gen" / "SED")]
@@ -299,7 +292,7 @@ def tagged(path):
 
 def _tag_with(t, bands, tag):
     """Filter files for ``bands`` in the row's folder, tagged by ``tag``; returns Filters."""
-    import sed_tools.filter_metadata as fm
+    import sed_tools.filters.curve_metadata as fm
 
     for band in bands:
         (t.tmp / f"{band}.dat").write_text("Wavelength,Transmission\n1,1\n")
@@ -324,7 +317,7 @@ def tagging_one_facility_finishes_every_file_then_lists_failures(t):
 
 @row
 def tagging_stops_at_once_when_svo_is_unreachable(t):
-    import sed_tools.filter_metadata as fm
+    import sed_tools.filters.curve_metadata as fm
 
     calls = []
 
@@ -342,9 +335,8 @@ def tagging_stops_at_once_when_svo_is_unreachable(t):
 # Public API (0.4.1 names, most of them) that nothing else calls: Spectrum, SpectralGrid, SpectralGridInfo
 # ----------------------------------------------------------------------
 @row
-def spectrum_aliases_and_dict(t):
+def spectrum_to_dict(t):
     s = _spectrum(5000.0, 4.5, 0.0, "5000.0.txt")
-    assert s.wl is s.wavelength and s.fl is s.flux
     assert s.to_dict() == {"wavelength": s.wavelength, "flux": s.flux, "teff": 5000.0, "logg": 4.5,
                            "metallicity": 0.0, "filename": "5000.0.txt"}
 
@@ -381,8 +373,8 @@ def query_fetch_and_local_reach_the_njm_and_svo_grids(t):
     local = api.local(GRID, filter_root=t.tmp / "filters")
     node = next(s for s in local.grid if (s.logg, s.metallicity) == (4.5, 0.0))
     at_node = local(6000.0, 4.5, 0.0)
-    assert len(local.grid) == 4 and np.array_equal(at_node.wavelength, node.wl)
-    assert np.allclose(at_node.flux, node.fl, rtol=1e-9, atol=0)
+    assert len(local.grid) == 4 and np.array_equal(at_node.wavelength, node.wavelength)
+    assert np.allclose(at_node.flux, node.flux, rtol=1e-9, atol=0)
 
 
 def _installed(t):
@@ -486,16 +478,15 @@ def ml_generator_trains_lists_and_loads_a_model(t):
 
 
 @row
-def the_041_completer_api_trains_loads_and_describes_a_model(t):
+def the_041_completer_api_loads_and_describes_a_model(t):
     _tiny_training(t)
     lib, first, second = t.tmp / "lib", t.tmp / "models" / "a", t.tmp / "models" / "b"
-    trained = ml.train_completer(str(lib), str(first), epochs=1, batch_size=3, hidden_layers=[8], verbose=False)
-    assert isinstance(trained, SEDCompleter) and trained.config["architecture"]["hidden_layers"] == [8]
-    assert ml.load_completer(str(first)).model is not None
-    completer = ml.Completer()
-    assert repr(completer) == "<Completer(untrained)>"
-    assert completer.train(str(lib), str(second), epochs=1, batch_size=3, hidden_layers=[8]) is completer
-    assert repr(completer) == f"<Completer(trained @ {second})>"
+    for path in (first, second):
+        SEDCompleter().train(str(lib), str(path), epochs=1, batch_size=3, hidden_layers=[8], verbose=False)
+    loaded = ml.load_completer(str(first))
+    assert isinstance(loaded, SEDCompleter) and loaded.config["architecture"]["hidden_layers"] == [8]
+    assert repr(ml.Completer()) == "<Completer(untrained)>"
+    assert repr(ml.Completer(str(second))) == f"<Completer(trained @ {second})>"
     assert ml.Completer().load(str(first)).model_path == str(first)
     assert sorted(m["name"] for m in ml.Completer.available_models(str(t.tmp / "models"))) == ["a", "b"]
 
@@ -508,37 +499,8 @@ def the_completer_network_moves_to_a_device(t):
 
 
 # ----------------------------------------------------------------------
-# The NJM filter grabber's 0.4.1 helpers, and smaller pieces
+# Smaller pieces
 # ----------------------------------------------------------------------
-def _filter_mirror(t):
-    t.mp.setattr(NJMFilterGrabber, "_check_availability", lambda self: True)
-    grabber = NJMFilterGrabber(base_dir=str(t.tmp / "filters"))
-    grabber.session = Session({"index.json": njm_index({"Bepi_Colombo": {"SIMBIO": {}}, "Generic": {"Johnson": {}},
-                                                        "NJMOnly": {}}),
-                               "filters/Generic/Johnson/Johnson": "B.dat\nV.dat\n"}, base=NJM)
-    return grabber
-
-
-@row
-def find_facility_matches_svo_names_to_njm_ones(t):
-    mirror = _filter_mirror(t)
-    assert mirror.find_facility("Generic") == "Generic"
-    assert mirror.find_facility("Bepi-Colom") == "Bepi_Colombo"  # SVO's shortened name
-    assert mirror.find_facility("Missing") is None
-    assert mirror.get_exclusive_facilities(["Bepi-Colom", "generic"]) == ["NJMOnly"]
-
-
-@row
-def get_filter_info_describes_an_njm_instrument(t):
-    mirror = _filter_mirror(t)
-    assert mirror.get_filter_info("Generic", "Johnson") == {
-        "facility": "Generic", "instrument": "Johnson", "filter_count": 2, "filters": ["B.dat", "V.dat"],
-        "url": f"{NJM}/filters/Generic/Johnson/"}
-    _STATE.reset()  # a new process, which finds NJM down
-    t.mp.setattr(NJMFilterGrabber, "_check_availability", lambda self: False)
-    assert NJMFilterGrabber(base_dir=mirror.base_dir).get_filter_info("Generic", "Johnson") == {}
-
-
 @row
 def ui_settings_come_from_the_config_file(t):
     assert config.get_ui_config() == {"terminal_plots": "auto", "terminal_color": "auto"}  # the shipped defaults
@@ -562,16 +524,6 @@ def collision_config_repr(t):
 
 
 @row
-def an_old_module_path_lists_the_moved_modules_names(t):
-    import sed_tools.filter_library as old
-    import sed_tools.njm_filter_grabber as old_njm
-
-    assert {"FilterLibrary", "get_builder"} <= set(dir(old))
-    assert {"threading", "urllib3", "NJMFilterGrabber"} <= set(dir(old_njm))  # restored names too
-    assert dir(old_njm) == sorted(dir(old_njm))
-
-
-@row
 def atmospheres_lists_the_installed_sites(t):
     atmosphere_site(t.tmp, "lsst_std", STALE, ["am1.20.dat"])
     assert Filters.atmospheres(t.tmp / "filters", include_remote=False) == {"lsst_std": {
@@ -579,57 +531,9 @@ def atmospheres_lists_the_installed_sites(t):
         "kind": None, "model": None, "model_version": None, "citation": None}}
 
 
-# ----------------------------------------------------------------------
-# Old module paths (sed_tools.filter_library and the rest) forward to the moved modules, also for test tools
-# ----------------------------------------------------------------------
-def _sentinel():
-    return "patched"
-
-
-@row
-def monkeypatch_through_an_old_path_is_undone_on_the_moved_module(t):
-    original = library.get_builder
-    with pytest.MonkeyPatch.context() as m:
-        m.setattr(old_library, "get_builder", _sentinel)
-        assert library.get_builder is _sentinel
-        m.setattr(old_library, "get_builder", len)  # nested
-        assert library.get_builder is len
-    assert library.get_builder is original
-
-
-@row
-def monkeypatch_of_a_new_name_through_an_old_path_is_removed_again(t):
-    with pytest.MonkeyPatch.context() as m:
-        m.setattr(old_library, "not_there_before", 1, raising=False)
-        assert library.not_there_before == 1
-    assert not hasattr(library, "not_there_before")
-
-
-@row
-def mock_patch_through_an_old_path_is_undone_on_the_moved_module(t):
-    original = library.get_builder
-    with mock.patch.object(old_library, "get_builder", _sentinel):
-        assert library.get_builder is _sentinel
-    assert library.get_builder is original
-    with mock.patch("sed_tools.filter_library.get_builder", _sentinel):
-        assert library.get_builder is _sentinel
-    assert library.get_builder is original
-
-
-@row
-def reloading_an_old_path_leaves_the_moved_module_as_it_was(t):
-    importlib.reload(old_tool)
-    assert old_tool.__name__ == "sed_tools.flux_cube_tool"
-    assert type(tool) is types.ModuleType
-    assert tool.__name__ == tool.__spec__.name == "sed_tools.cube.tool"
-    assert tool.__package__ == "sed_tools.cube"
-    t.mp.setattr(tool.Path, "rglob", lambda self, pattern: iter(()))  # search no folders
-    old_tool.discover_flux_cube_files([])  # its `from .model import` needs the moved module's own package
-
-
 @row
 def every_module_star_imports_and_keeps_its_recorded_names(t):
-    # Older code runs `from sed_tools.svo_filter_grabber import *`: it fails outright once a module's __all__
+    # Older code runs `from sed_tools.filters.svo import *`: it fails outright once a module's __all__
     # names something gone, and a dropped name breaks whoever used it. tests/star_imports.py records the
     # surface in tests/fixtures/star_imports.json (its docstring gives the one command); names may be added.
     # A module whose optional dependency is not installed is skipped. Run apart, so that importing every
@@ -648,7 +552,7 @@ def every_module_star_imports_and_keeps_its_recorded_names(t):
 
 
 # ----------------------------------------------------------------------
-# Programmatic use as 0.4.1 documented it: grid names, find_atm/find_atmospheres, interpolation, photometry
+# Programmatic use as 0.4.1 documented it: grid names, find_atm, interpolation, photometry
 # ----------------------------------------------------------------------
 DEMO_WL = np.array([4000.0, 5000.0])
 
@@ -659,10 +563,10 @@ def _cube(t, name, teff, logg, flux=1.0):
 
 
 def _evaluated(t, flux, **roots):
-    """A flat cube found with find_atmospheres, loaded with model(), and evaluated at 1500 K, log g 1.5, -0.5."""
+    """A flat cube found with find_grids, loaded with model(), and evaluated at 1500 K, log g 1.5, -0.5."""
     _cube(t, "demo", [1000.0, 2000.0], [1.0, 2.0], flux)
     sed = GridFinder(model_root=t.tmp, **roots)
-    atm = sed.find_atmospheres(teff_range=(1000.0, 2000.0), logg_range=(1.0, 2.0), metallicity_range=(-1.0, 0.0))
+    atm = sed.find_grids(teff_range=(1000.0, 2000.0), logg_range=(1.0, 2.0), metallicity_range=(-1.0, 0.0))
     return sed.model(atm[0])(teff=1500.0, logg=1.5, metallicity=-0.5)
 
 
@@ -676,12 +580,11 @@ def _gaia_photometry(t):
 
 @row
 def spectral_grid_names_preserve_api_compatibility(t):
-    from sed_tools import Catalog, CatalogInfo, SpectralGrid, SpectralGridInfo, find_atmospheres, find_grids
+    from sed_tools import Catalog, CatalogInfo, SpectralGrid, SpectralGridInfo
     from sed_tools.api import SED
 
     assert SpectralGrid is Catalog
     assert SpectralGridInfo is CatalogInfo
-    assert find_grids is find_atmospheres
     grid = SpectralGrid(name="example", source="local")
     sed = SED(catalog=grid)
     assert sed.grid is sed.cat is grid
@@ -693,7 +596,7 @@ def spectral_grid_discovery_names(t):
 
     _cube(t, "demo", [4000.0, 6000.0], [3.0, 5.0])
     sed = SED(model_root=t.tmp)
-    assert sed.available_grids() == sed.available_models() == ["demo"]
+    assert sed.available_grids() == ["demo"]
     matches = find_grids(teff_range=(4500.0, 5500.0), model_root=t.tmp)
     assert [match.name for match in matches] == ["demo"]
 
@@ -702,15 +605,15 @@ def spectral_grid_discovery_names(t):
 def find_atm_alias(t):
     _cube(t, "demo", [4000.0, 6000.0], [3.0, 5.0])
     matches = sed_tools.find_atm(teff_range=(4500.0, 5500.0), logg_range=(3.5, 4.5),
-                                 Z_range=(-0.5, 0.0), model_root=t.tmp)  # within the cube's [M/H] range [-1, 0]
+                                 metallicity_range=(-0.5, 0.0), model_root=t.tmp)  # within the cube's [M/H] [-1, 0]
     assert len(matches) >= 1
 
 
 @row
-def find_atmospheres_returns_model_match(t):
+def find_grids_returns_model_match(t):
     _cube(t, "m1", [4000.0, 6000.0], [3.0, 5.0])
-    matches = GridFinder(model_root=t.tmp).find_atmospheres(teff_range=(4500.0, 5500.0), logg_range=(3.5, 4.5),
-                                                          metallicity_range=(-0.5, 0.0))
+    matches = GridFinder(model_root=t.tmp).find_grids(teff_range=(4500.0, 5500.0), logg_range=(3.5, 4.5),
+                                                    metallicity_range=(-0.5, 0.0))
     assert len(matches) >= 1
     m = matches[0]
     assert hasattr(m, "name")
@@ -721,10 +624,10 @@ def find_atmospheres_returns_model_match(t):
 
 
 @row
-def find_atmospheres_no_match(t):
+def find_grids_no_match(t):
     _cube(t, "m1", [4000.0, 5000.0], [3.0, 4.0])
-    matches = GridFinder(model_root=t.tmp).find_atmospheres(teff_range=(50000.0, 60000.0), logg_range=(3.5, 4.5),
-                                                          metallicity_range=(-0.5, 0.0))
+    matches = GridFinder(model_root=t.tmp).find_grids(teff_range=(50000.0, 60000.0), logg_range=(3.5, 4.5),
+                                                    metallicity_range=(-0.5, 0.0))
     assert matches == []
 
 
@@ -758,10 +661,8 @@ def photometry_magnitude_formula(t):
 
 
 @row
-def evaluated_sed_property_aliases(t):
+def evaluated_sed_properties(t):
     result = _evaluated(t, 1.0)
-    assert np.array_equal(result.wl, result.wavelength)
-    assert np.array_equal(result.fl, result.flux)
     assert math.isclose(result.teff, 1500.0)
     assert math.isclose(result.logg, 1.5)
     assert math.isclose(result.metallicity, -0.5)

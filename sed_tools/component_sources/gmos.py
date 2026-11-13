@@ -98,7 +98,7 @@ NOTES = {
 }
 
 
-def build(filter_root, *, instrument, session=None, **_ignored) -> Path:
+def build(filter_root, *, instrument, session=None) -> Path:
     if session is None:
         import requests
 

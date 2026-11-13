@@ -26,7 +26,7 @@ from ..njm_mirror import _body, _status, _write_atomic, cache_root
 from .curve_metadata import normalize_detector_type, read_filter_header
 from .manifest import index_names
 
-logger = logging.getLogger("sed_tools.filter_catalogue")
+logger = logging.getLogger(__name__)
 
 INDEX_MAX_AGE = 24 * 3600  # seconds between checks of index.json
 MAX_CONCURRENT = 6  # NJM blocks bursts from one address
@@ -57,15 +57,15 @@ class FilterCatalogue:
     """Cached, read-only access to NJM's ``index.json``, ``properties.json`` and ``info.json``.
 
     ``index.json`` lists every facility, instrument and band.  ``properties.json``
-    holds the values computed from each curve by :mod:`sed_tools.filter_properties`
-    and :mod:`sed_tools.filter_colors` (pivot and other wavelengths, widths, zero
+    holds the values computed from each curve by :mod:`sed_tools.filters.properties`
+    and :mod:`sed_tools.filters.display` (pivot and other wavelengths, widths, zero
     points, AB−Vega, DisplayColor, ...).  ``info.json`` holds descriptions, the
     references to cite (with BibTeX where a service supplied it), the providers'
     requested acknowledgements, the licence and what SVO recorded about each band.
     Per-instrument files are fetched only for the instruments a search still
     needs, at most six at a time (NJM blocks bursts).
 
-    ``mirror`` is an :class:`~sed_tools.njm_filter_grabber.NJMFilterGrabber`, or a
+    ``mirror`` is an :class:`~sed_tools.filters.njm.NJMFilterGrabber`, or a
     callable returning one, so that nothing touches the network until it must.
     ``offline=True`` reads installed and cached copies only.
     """
@@ -256,19 +256,17 @@ class FilterCatalogue:
         path = directory / f"{kind}.json" if directory is not None else None
         return path if path is not None and path.is_file() else None
 
-    def instrument_file(self, facility: str, instrument: str, kind: str, *,
-                        prefer_installed: bool = True, refresh: bool = False) -> dict:
+    def instrument_file(self, facility: str, instrument: str, kind: str, *, refresh: bool = False) -> dict:
         """``properties.json`` (``kind="properties"``) or ``info.json`` (``"info"``) for an instrument.
 
         The copy saved beside installed curves describes exactly those curves and is
-        used first, unless ``refresh`` or ``prefer_installed=False``; otherwise NJM's
-        current file, cached.  Bands NJM keeps beside the set but does not serve as
-        part of it (superseded copies such as ``BP_svo``) are moved from ``bands``
-        to ``archived_bands`` (see :meth:`_split_archived`).  The records of
-        curves installed under other band names are listed under the installed
-        names (see :meth:`_named_as_installed`).
+        used first, unless ``refresh``; otherwise NJM's current file, cached.  Bands
+        NJM keeps beside the set but does not serve as part of it (superseded copies
+        such as ``BP_svo``) are moved from ``bands`` to ``archived_bands`` (see
+        :meth:`_split_archived`).  The records of curves installed under other band
+        names are listed under the installed names (see :meth:`_named_as_installed`).
         """
-        data = self._instrument_file(facility, instrument, kind, prefer_installed=prefer_installed, refresh=refresh)
+        data = self._instrument_file(facility, instrument, kind, refresh=refresh)
         data = self._named_as_installed(facility, instrument, kind, data, refresh=refresh)
         return self._split_archived(facility, instrument, data)
 
@@ -296,8 +294,7 @@ class FilterCatalogue:
         if not by_id:
             return data
         try:
-            info = data if kind == INFO else self._instrument_file(facility, instrument, INFO,
-                                                                   prefer_installed=True, refresh=refresh)
+            info = data if kind == INFO else self._instrument_file(facility, instrument, INFO, refresh=refresh)
         except (CatalogueError, OSError, ValueError):
             return data  # without info.json the curves cannot be matched; properties.json is still as served
         renamed = {}
@@ -309,10 +306,9 @@ class FilterCatalogue:
             return data
         return dict(data, bands={renamed.get(band, band): record for band, record in bands.items()})
 
-    def _instrument_file(self, facility: str, instrument: str, kind: str, *,
-                         prefer_installed: bool, refresh: bool) -> dict:
+    def _instrument_file(self, facility: str, instrument: str, kind: str, *, refresh: bool) -> dict:
         """The file as installed, cached or served (see :meth:`instrument_file`)."""
-        installed = self._installed(facility, instrument, kind) if prefer_installed and not refresh else None
+        installed = None if refresh else self._installed(facility, instrument, kind)
         if installed is not None:
             try:
                 data = self._json_object(installed.read_text(encoding="utf-8"))

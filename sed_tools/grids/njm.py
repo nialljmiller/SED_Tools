@@ -17,11 +17,10 @@ import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
-from ..filters.njm import NJMFilterGrabber  # noqa: F401 - importable from here since 0.5.0
 from ..njm_mirror import BASE_URL, NJM_CONNECT_TIMEOUT, USER_AGENT, pause, paused, plain_reason, skip_ssl_verification
 from .lookup import find_file_column, find_logg_column, find_metallicity_column, find_teff_column
 
-logger = logging.getLogger("sed_tools.njm_spectra_grabber")
+logger = logging.getLogger(__name__)
 
 #: Connect and read timeouts of the availability check: a mirror that is down fails fast.
 _TIMEOUT = (NJM_CONNECT_TIMEOUT, 10)

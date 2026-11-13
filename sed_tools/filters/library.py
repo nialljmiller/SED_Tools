@@ -23,20 +23,19 @@ from ..component_sources.catalog import (
     BUILDERS_FOR, builder_for, component_availability, match_name, name_key, registered_name,
 )
 from .compose import atmosphere_file, build_product, find_atmosphere, resolve_atmosphere
-from .manifest import (  # noqa: F401 - recipe_name stays importable here (filter_library)
-    FILTER, OPTICS, QE, PUBLISHED, AtmosphereGrid, AtmosphereSpec, ComponentError,
-    InstrumentManifest, index_listing, parse_components, recipe_name,
+from .manifest import (
+    FILTER, OPTICS, QE, PUBLISHED, AtmosphereGrid, AtmosphereSpec, ComponentError, InstrumentManifest, index_listing,
+    parse_components,
 )
 from .curve_metadata import SVOUnreachableError, migrate_filter_tree, svo_components_header
 from .njm import NJMFilterGrabber, curve_file
 from ..njm_mirror import NJM_NOT_LISTED, _status, cache_root
-from .names import (  # noqa: F401 - FETCH_ORDER, INSTRUMENT_CATALOGUE and instrument_catalogue stay importable here
-    FETCH_ORDER, INSTRUMENT_CATALOGUE, _adopt_claimed_svo, _drop_svo_duplicates, _instrument_metadata, _merge,
-    _picker_entries, instrument_catalogue, load_instrument_catalogue,
+from .names import (
+    _adopt_claimed_svo, _drop_svo_duplicates, _instrument_metadata, _merge, _picker_entries, load_instrument_catalogue,
 )
 from .svo import FilterRow, SVOFilterBrowser, _clean_filename, _clean_path, svo_unavailable
 
-logger = logging.getLogger("sed_tools.filter_library")
+logger = logging.getLogger(__name__)
 
 #: Seconds between checks of an installed atmosphere site's manifest against NJM's.
 ATMOSPHERE_CHECK_AGE = 24 * 3600

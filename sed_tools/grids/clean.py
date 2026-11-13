@@ -10,26 +10,21 @@ from __future__ import annotations
 import glob
 import logging
 import os
-import random  # noqa: F401 - tests patch spectra_cleaner.random.sample, which units.py uses
 import time
 from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 
-from .._constants import C, SIGMA, planck_flam  # noqa: F401 - C is importable from here since 0.5.0
+from .._constants import SIGMA, planck_flam
 from .lookup import write_lookup_csv
 
-# The rest of the cleaner's surface stays importable from here, the old path sed_tools.spectra_cleaner
-from .hdf5_wavelengths import WAVE_KEYS, is_index_grid, recover_wavelengths_from_hdf5  # noqa: F401
-from .spectrum_io import read_text_spectrum  # noqa: F401
-from .units import (FLUX_GUESS_WHY, FLUX_UNITS, SPEED_OF_LIGHT_ANGSTROM, WAVELENGTH_FACTORS,  # noqa: F401
-                    SpectrumMeta, UnitInfo, _load_header, _with_flux_unit, check_flux_unit,
-                    convert_to_standard_units, detect_catalog_units, detect_flux_unit_from_range,
-                    detect_units_from_header, detect_units_single_file, detect_wavelength_unit_from_range,
-                    read_spectrum_data, undeclared_flux_unit, validate_converted_spectrum)
+from .hdf5_wavelengths import is_index_grid, recover_wavelengths_from_hdf5
+from .spectrum_io import read_text_spectrum
+from .units import (FLUX_UNITS, SpectrumMeta, UnitInfo, _load_header, _with_flux_unit, convert_to_standard_units,
+                    detect_catalog_units, detect_units_single_file, validate_converted_spectrum)
 
-logger = logging.getLogger("sed_tools.spectra_cleaner")
+logger = logging.getLogger(__name__)
 
 
 # ---- Constants ----
@@ -133,7 +128,7 @@ def _clean_spectrum(
     meta, _ = _load_header(filepath)
     if meta.units_standardized:
         return 'skipped_already', 'already standardized', None
-    wl, flux = read_spectrum_data(filepath)  # finite pairs only
+    wl, flux = read_text_spectrum(filepath)  # finite pairs only
     if wl.size == 0:
         return 'skipped_invalid', 'empty data', None
     wl, flux = wl[wl > 0], flux[wl > 0]

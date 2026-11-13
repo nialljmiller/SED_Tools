@@ -25,7 +25,7 @@ import numpy as np
 
 from ..filters.compose import InstrumentManifest
 from ._common import SimpleSource, SiteAtmosphere, Table, build_simple
-from ._original import CONNECT_TIMEOUT, download  # noqa: F401  CONNECT_TIMEOUT stays importable here
+from ._original import download
 
 DES_STD = "https://noirlab.edu/science/sites/default/files/media/archives/documents/scidoc1884.txt"
 BANDS = ("g", "r", "i", "z", "Y")

@@ -1,5 +1,5 @@
 """CLI and ``python -m`` entry points: exit statuses and messages, the menus, pickers and prompts, the CLI
-without its optional packages, and every old module path's main().
+without its optional packages, and the flux cube tool's main().
 
 One test walks the tables below; each row runs isolated (support.Rows) and no row uses the network. Rows
 from ``python -m`` runs (MAINS, HELP) start in their own folder; menu and picker rows (MENUS) see an
@@ -25,14 +25,12 @@ import requests
 
 from sed_tools import cli
 from sed_tools.api import SED, Filters
-from sed_tools.filter_components import ComponentError
-from sed_tools.njm_filter_grabber import NJMFilterGrabber
+from sed_tools.filters.compose import ComponentError
 
-from support import (CLEAN, CURVE, GRABBERS, KURUCZ, NJM, Session, answer, cpu_torch, fake_grabber, filters_api,
-                     fixed_completer, fixed_generator, narrow_terminal, njm_index, run_cli, run_module, scenarios,
-                     wide_lines, write_flux_cube, write_lookup)
+from support import (CLEAN, GRABBERS, KURUCZ, answer, fake_grabber, filters_api, narrow_terminal, run_cli,
+                     run_module, scenarios, wide_lines, write_flux_cube, write_lookup)
 
-# runpy warns that an old path imported earlier in the session is in sys.modules; python -m starts afresh.
+# runpy warns that a module imported earlier in the session is in sys.modules; python -m starts afresh.
 pytestmark = pytest.mark.filterwarnings("ignore:.*found in sys.modules after import of package:RuntimeWarning")
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -69,7 +67,7 @@ def availability(**extra):
 
 def summary_inputs(mp, info=None, catalogue=None):
     """Stub what the picker's summary reads (FilterLibrary.available, NJM's catalogue entry); return the calls."""
-    from sed_tools.filter_library import FilterLibrary
+    from sed_tools.filters.library import FilterLibrary
 
     calls = []
     mp.setattr(FilterLibrary, "available",
@@ -90,7 +88,7 @@ GAIA_INSTRUMENTS = [
 
 
 def _picker_library(t, facilities, instruments):
-    from sed_tools.filter_library import FilterLibrary
+    from sed_tools.filters.library import FilterLibrary
 
     t.mp.setattr(FilterLibrary, "facilities", lambda self: {"entries": facilities, "errors": []})
     t.mp.setattr(FilterLibrary, "instruments", lambda self, facility: {"entries": instruments, "errors": []})
@@ -102,7 +100,7 @@ def _picker_library(t, facilities, instruments):
 
 def gaia(t):
     """The filter pickers over GAIA and its instruments, NJM up; returns the sets fetched."""
-    from sed_tools.filter_library import FilterLibrary
+    from sed_tools.filters.library import FilterLibrary
 
     t.mp.setattr(FilterLibrary, "mirror", SimpleNamespace(is_available=lambda: True))
     return _picker_library(t, [{"key": "GAIA", "label": "GAIA", "fetch_key": "GAIA", "sources": ["njm", "svo"],
@@ -241,11 +239,11 @@ def spectra_flow_raises_when_no_grid_is_discovered(t):
 def axis_cut_prompt_takes_ranges_and_never_reads_a_typo_as_no_cut(t):
     grabber = SimpleNamespace(get_grid_info=lambda name, model_url=None: None)
     answer(t.mp, "3500,8000", "", "", "")
-    cuts = cli.prompt_njm_axis_cuts("Grid", grabber)
+    cuts = cli.grids.prompt_njm_axis_cuts("Grid", grabber)
     assert cuts == {"teff_range": (3500.0, 8000.0), "logg_range": None, "meta_range": None, "wl_range": None}
     answer(t.mp, "3500 to 8000")
     with pytest.raises(ValueError):  # not None, which would download the whole grid
-        cli.prompt_njm_axis_cuts("Grid", grabber)
+        cli.grids.prompt_njm_axis_cuts("Grid", grabber)
 
 
 def _rebuild(t):
@@ -288,8 +286,10 @@ def rebuild_asks_which_grids(t):
 
 @row
 def rebuild_never_writes_its_bundle_over_a_downloaded_grid_file(t):
+    from sed_tools.grids.pipeline import build_h5_bundle_from_txt
+
     _rebuild(t)
-    t.mp.setattr(cli.grids, "build_h5_bundle_from_txt", cli.build_h5_bundle_from_txt)  # the real bundle
+    t.mp.setattr(cli.grids, "build_h5_bundle_from_txt", build_h5_bundle_from_txt)  # the real bundle
     msg = t.tmp / "sg-Test"
     msg.mkdir()
     (msg / "s.txt").write_text("1000 1\n")
@@ -313,7 +313,7 @@ def rebuild_and_combine_raise_when_there_are_no_local_grids(t):
 
 def _filter_browser(t, listing_errors=None):
     """Facilities A and B with instruments Cam1 and Cam2; fetching B/Cam2 fails. Returns the sets fetched."""
-    from sed_tools.filter_library import FilterLibrary
+    from sed_tools.filters.library import FilterLibrary
 
     filters_api(t)
     t.mp.setattr(FilterLibrary, "facilities", lambda self: {
@@ -344,7 +344,7 @@ def _filter_browser(t, listing_errors=None):
 def filter_batch_downloads_the_rest_then_lists_failures(t):
     fetched = _filter_browser(t, {"A": ["SVO A: timed out"]})
     t.mp.setattr("sys.stdin", Stdin(True))  # a terminal: the count is confirmed
-    answer(t.mp, "1,2", "y")
+    answer(t.mp, "1,2,", "y")  # an empty item (the trailing comma) is skipped
     assert cli.run_filters_flow() == 1
     out = t.capsys.readouterr().out
     assert fetched == ["A/Cam1", "A/Cam2", "B/Cam1"]
@@ -391,7 +391,7 @@ def offer_composition_folds_in_the_site_and_airmass_typed(t):
     t.mp.setattr(filters, "compose",
                  classmethod(lambda cls, *a, **k: built.append(k["atmosphere"]) or t.tmp / "product"))
     answer(t.mp, "y", "1", "1", "1.2", "")  # site 1 of the numbered atmosphere choice
-    cli._offer_composition(t.tmp / "Fac" / "Cam")
+    cli.filters._offer_composition(t.tmp / "Fac" / "Cam")
     assert built == [{"site": "paranal", "airmass": 1.2, "pwv": None}]
 
 
@@ -399,7 +399,7 @@ def _densify_calls(t):
     """densify_grid's calls, each checked to bind to its real signature; nothing is densified."""
     import inspect
 
-    module = importlib.import_module("sed_tools.grid_densifier")
+    module = importlib.import_module("sed_tools.cube.densify")
     signature = inspect.signature(module.densify_grid)
     calls = []
 
@@ -415,19 +415,17 @@ def _densify_calls(t):
 def densify_passes_only_what_densify_grid_accepts(t):
     calls = _densify_calls(t)
     base = ["densify", "--flux-cube", "in.bin", "--output", "out.bin", "--teff-spacing", "250"]
-    assert run_cli(t.mp, *base, "--no-lookup") == 0
-    assert run_cli(t.mp, *base, "--method", "ml", "--ml-model", "gen") == 0
-    assert run_cli(t.mp, *base, "--method", "blackbody") == 0
+    assert run_cli(t.mp, *base) == 0
+    assert run_cli(t.mp, *base, "--ml-model", "gen") == 0
     assert calls == [
         {"src": "in.bin", "dst": "out.bin", "teff_spacing": 250.0, "ml_model": None},
         {"src": "in.bin", "dst": "out.bin", "teff_spacing": 250.0, "ml_model": "gen"},
-        {"src": "in.bin", "dst": "out.bin", "teff_spacing": 250.0, "ml_model": None},
     ]
 
 
 @row
 def cleaning_report_reads_the_summary_clean_model_dir_returns(t):
-    cli._print_cleaning_report(dict(CLEAN, total=4, converted=["a", "b"], recovered=["c"], skipped_already=["d"],
+    cli.grids._print_cleaning_report(dict(CLEAN, total=4, converted=["a", "b"], recovered=["c"], skipped_already=["d"],
                                     catalog_units={"wavelength": "angstrom", "flux": "flam"},
                                     detection_stats={"status": "consensus"}))
     out = t.capsys.readouterr().out
@@ -465,7 +463,7 @@ def composition_says_when_the_atmosphere_list_failed(t):
     _paranal(t, lambda cls, *a, **k: _raise(RuntimeError("NJM mirror unreachable")))
     answer(t.mp, "y", "1", "", "y")
     with pytest.raises(RuntimeError, match="could not list the atmosphere grids for paranal: NJM mirror unreachable"):
-        cli._offer_composition(t.tmp / "Fac" / "Cam")
+        cli.filters._offer_composition(t.tmp / "Fac" / "Cam")
 
 
 @row
@@ -477,57 +475,16 @@ def sed_tools_mesa_prepare_exit_status_is_1_on_failure(t):
 
 
 # ----------------------------------------------------------------------
-# Usage errors: exit 2 in plain words, under the subcommand's usage, before any work is done
-# ----------------------------------------------------------------------
-_DENSIFY = ["densify", "--flux-cube", "in.bin", "--output", "out.bin"]
-
-#: name: (argv, what stderr says).
-USAGE = {
-    "densify_refuses_options_it_cannot_honour_interp": (
-        [*_DENSIFY, "--method", "interp"], "--method interp is not implemented"),
-    "densify_refuses_options_it_cannot_honour_ml_without_a_model": (
-        [*_DENSIFY, "--method", "ml"], "--method ml needs --ml-model"),
-    "densify_refuses_options_it_cannot_honour_blackbody_with_a_model": (
-        [*_DENSIFY, "--method", "blackbody", "--ml-model", "gen"], "--method blackbody does not use --ml-model"),
-    "densify_refuses_options_it_cannot_honour_gap_threshold": (
-        [*_DENSIFY, "--ml-gap-threshold", "2000"], "--ml-gap-threshold is not implemented"),
-}
-
-
-def _usage_error(t, argv, message):
-    narrow_terminal(t)
-    densified = _densify_calls(t)
-    with pytest.raises(SystemExit) as stop:
-        run_cli(t.mp, *argv)
-    err = t.capsys.readouterr().err
-    assert stop.value.code == 2 and message in err and "_bound" not in err
-    assert err.startswith(f"usage: sed-tools {argv[0]}") and densified == []
-
-
-# ----------------------------------------------------------------------
-# python -m <old path>: --help, a bad argument and a short run of every module with a main()
+# python -m <module>: --help, a bad argument and a short run of every module with a main()
 # ----------------------------------------------------------------------
 def _in_its_folder(t):
-    """As ``python -m`` from a shell in the row's folder, whose stellar_models/ is the default grid folder."""
+    """As ``python -m`` from a shell in the row's folder."""
     t.mp.chdir(t.tmp)
-    # svo_regen_spectra_lookup without argument parsing rewrote every lookup table under it, even for --help
-    t.mp.setattr("sed_tools.cube.model.STELLAR_DIR_DEFAULT", t.tmp / "stellar_models")
 
 
-#: Each old path with a main(), and its help's description.
+#: Each module with a main(), and its help's description.
 HELP = {
-    "combine_filters": "Combine filter sets into one MESA-compatible instrument",
-    "combine_stellar_atm": "Combine stellar spectral grids",
-    "flux_cube_tool": "Inspect and interpolate a flux cube",
-    "grid_densifier": "Densify a flux_cube.bin Teff grid using SEDGenerator.",
-    "ml_sed_completer": "ML-powered SED Completer (PyTorch)",
-    "ml_sed_generator": "ML SED Generator",
-    "msg_spectra_grabber": "Extract MSG stellar spectra to ASCII with correct params",
-    "njm_filter_grabber": "Download filters from NJM mirror",
-    "precompute_flux_cube": "Precompute flux cube for stellar spectral grids",
-    "svo_filter_grabber": "Interactively browse the SVO Filter Profile Service",
-    "svo_regen_spectra_lookup":
-        "Rewrite lookup_table.csv in every spectral grid folder from the headers of its spectra",
+    "cube.tool": "Inspect and interpolate a flux cube",
 }
 
 
@@ -556,184 +513,11 @@ def _johnson(t, band, curve):
 
 
 @main_row
-def combine_filters_writes_the_combined_set(t):
-    _johnson(t, "B", "4000,0\n4400,1\n4800,0\n")
-    assert run_module(t.mp, "combine_filters", "Optical", "Generic/Johnson", "--base", str(t.tmp)) == 0
-    out = t.tmp / "Combined" / "Optical"
-    assert (out / "Optical").read_text().split() == ["B.dat"]
-    assert t.capsys.readouterr().out == f"[filters] Combined filter set written to {out}\n"
-
-
-@main_row
 def filters_combine_command_writes_the_combined_set(t):
     _johnson(t, "V", "5000,0\n5500,1\n6000,0\n")
     assert run_cli(t.mp, "filters-combine", "Mine/Set", "Generic/Johnson", "--base", str(t.tmp)) == 0
     assert (t.tmp / "Mine" / "Set" / "Set").read_text().split() == ["V.dat"]
     assert t.capsys.readouterr().out == f"[filters] Combined filter set written to {t.tmp / 'Mine' / 'Set'}\n"
-
-
-@main_row
-def svo_filter_grabber_ignores_arguments_after_the_folder_as_in_041(t):
-    from sed_tools.filters import svo
-
-    seen = []
-    t.mp.setattr(svo, "run_interactive", seen.append)
-    assert svo.main([str(t.tmp), "extra"]) == 0
-    assert seen == [str(t.tmp)]
-
-
-@main_row
-def combine_stellar_atm_combines_the_grids_chosen(t):
-    assert run_module(t.mp, "combine_stellar_atm", "--data_dir", str(t.tmp)) == 0
-    assert f"No spectral grids found in {t.tmp}" in t.capsys.readouterr().out
-    shutil.copytree(KURUCZ, t.tmp / KURUCZ.name)
-    answer(t.mp, "q")
-    assert run_module(t.mp, "combine_stellar_atm", "--data_dir", str(t.tmp)) == 0
-    assert "No spectral grids selected." in t.capsys.readouterr().out
-    assert not (t.tmp / "combined_models").exists()
-    answer(t.mp, "1")
-    assert run_module(t.mp, "combine_stellar_atm", "--data_dir", str(t.tmp), "--output", "omni") == 0
-    assert (t.tmp / "omni" / "flux_cube.bin").is_file() and (t.tmp / "omni" / "lookup_table.csv").is_file()
-    assert t.capsys.readouterr().out.endswith(f"Done! Output: {t.tmp / 'omni'}\n")
-
-
-@main_row
-def precompute_flux_cube_builds_the_cube_it_is_given(t):
-    grid = shutil.copytree(KURUCZ, t.tmp / "grid")
-    assert run_module(t.mp, "precompute_flux_cube", "--model_dir", str(grid), "--output", "cube.bin") == 0
-    assert (t.tmp / "cube.bin").stat().st_size > 16
-
-
-@main_row
-def precompute_flux_cube_asks_for_the_grid_and_the_output(t):
-    assert run_module(t.mp, "precompute_flux_cube") == "No model directories found."
-    shutil.copytree(KURUCZ, t.tmp / "data" / "stellar_models" / KURUCZ.name)
-    (t.tmp / "data" / "stellar_models" / "notes.txt").write_text("not a grid\n")
-    answer(t.mp, "0")
-    assert run_module(t.mp, "precompute_flux_cube") == "Invalid selection."
-    # Listed once (it was listed as ./data/stellar_models/<grid> and as data/stellar_models/<grid>)
-    menu = [line for line in t.capsys.readouterr().out.splitlines() if line[:1].isdigit()]
-    assert menu == [f"1. data/stellar_models/{KURUCZ.name}"]
-    answer(t.mp, "1", "")  # the first grid listed, and the default output beside it
-    assert run_module(t.mp, "precompute_flux_cube") == 0
-    assert "No --model_dir provided. Discovering local model directories" in t.capsys.readouterr().out
-    assert len(list(t.tmp.glob("**/flux_cube.bin"))) == 1
-
-
-@main_row
-def svo_regen_spectra_lookup_rewrites_every_grids_lookup_table(t):
-    stellar = t.tmp / "stellar_models"  # the default grid folder
-    for name in ("A", "B"):
-        (stellar / name).mkdir(parents=True)
-        (stellar / name / "s.txt").write_text("# teff = 5000\n# logg = 4.5\n# metallicity = 0.0\n4000 1\n5000 2\n")
-    (stellar / "A" / "A_alpha_0p40").mkdir()  # a split grid's subgrid, which crashed it until 0.6.0
-    (stellar / "A" / "A_alpha_0p40" / "s.txt").symlink_to("../s.txt")
-    assert run_module(t.mp, "svo_regen_spectra_lookup") == 0
-    for folder in ("A", "B", "A/A_alpha_0p40"):
-        assert (stellar / folder / "lookup_table.csv").read_text().splitlines()[1] == "s.txt,4.5,0.0,5000.0"
-    assert t.capsys.readouterr().out.count("Processing spectral grid:") == 3
-
-
-@main_row
-def msg_spectra_grabber_runs_the_grids_it_is_given(t):
-    from sed_tools.grids.msg import MSGSpectraGrabber
-
-    runs = []
-    t.mp.setattr(MSGSpectraGrabber, "discover_and_run", lambda self, selected_models=None:
-                 runs.append((self.base_dir, self.max_workers, selected_models)))
-    assert run_module(t.mp, "msg_spectra_grabber", "--output", str(t.tmp), "--workers", "2",
-                      "--models", "A", "B") == 0
-    assert runs == [(str(t.tmp), 2, ["A", "B"])]
-
-
-@main_row
-def grid_densifier_passes_its_arguments_on(t):
-    calls = []
-    t.mp.setattr("sed_tools.cube.densify.densify_grid", lambda **kwargs: calls.append(kwargs))
-    assert run_module(t.mp, "grid_densifier", "--flux-cube", "in.bin", "--output", "out.bin",
-                      "--teff-spacing", "250") == 0
-    assert calls == [{"src": "in.bin", "dst": "out.bin", "teff_spacing": 250.0, "ml_model": None}]
-
-
-def _njm_served(t):
-    """NJM serves one facility with one camera of one band; downloads are recorded instead of made."""
-    files = {"index.json": njm_index({"Fac": {"Cam": {"filters": ["g"]}}}), "filters/Fac/Cam/Cam": "g.dat\n",
-             "filters/Fac/Cam/g.dat": CURVE}
-    t.mp.setattr(NJMFilterGrabber, "_check_availability", lambda self: True)
-    t.mp.setattr("sed_tools.filters.njm.requests.Session", lambda: Session(files, base=NJM))
-    calls = []
-    t.mp.setattr(NJMFilterGrabber, "download_filters", lambda self, *a: calls.append(("set", *a)))
-    t.mp.setattr(NJMFilterGrabber, "download_all_filters", lambda self, **k: calls.append(("all", k)))
-    return calls
-
-
-@main_row
-def njm_filter_grabber_lists_and_downloads(t):
-    calls, out = _njm_served(t), str(t.tmp / "filters")
-    assert run_module(t.mp, "njm_filter_grabber", "--list", "--output", out) == 0
-    assert "Fac:\n    - Cam (1 filters)" in t.capsys.readouterr().out.split("Available facilities:")[1]
-    for argv in (["--facility", "Fac", "--instrument", "Cam"], ["--facility", "Fac"], []):
-        assert run_module(t.mp, "njm_filter_grabber", *argv, "--output", out) == 0
-    assert calls == [("set", "Fac", "Cam"), ("all", {"facility": "Fac"}), ("all", {})]
-
-
-@main_row
-def njm_filter_grabber_exits_1_when_njm_is_down(t):
-    t.mp.setattr(NJMFilterGrabber, "_check_availability", lambda self: False)
-    assert run_module(t.mp, "njm_filter_grabber", "--list", "--output", str(t.tmp)) == 1
-    assert t.capsys.readouterr().out.endswith("NJM mirror is not available\n")
-
-
-@main_row
-def ml_train_commands_pass_their_options_on(t):
-    from sed_tools.ml.completer import SEDCompleter
-    from sed_tools.ml.generator import SEDGenerator
-
-    calls = []
-    t.mp.setattr(SEDCompleter, "train", lambda self, **kwargs: calls.append(kwargs))
-    t.mp.setattr(SEDGenerator, "train", lambda self, *args, **kwargs: calls.append((args, kwargs)))
-    assert run_module(t.mp, "ml_sed_completer", "train", "--library", "lib", "--output", "out", "--epochs", "3",
-                      "--batch-size", "4", "--lr", "0.01", "--max-samples", "9", "--patience", "2") == 0
-    assert run_module(t.mp, "ml_sed_generator", "train", "--library", "lib", "--output", "out",
-                      "--epochs", "5") == 0
-    assert calls == [{"library_path": "lib", "output_path": "out", "epochs": 3, "batch_size": 4,
-                      "learning_rate": 0.01, "max_samples": 9, "patience": 2},
-                     (("lib", "out"), {"epochs": 5, "batch_size": 64})]
-
-
-@main_row
-def ml_sed_completer_lists_and_completes_with_a_saved_model(t):
-    torch, models = cpu_torch(t), t.tmp / "models"
-    assert run_module(t.mp, "ml_sed_completer", "list", "--models-dir", str(models)) == 0
-    assert t.capsys.readouterr().out == f"No models found in {models}/\n"
-    fixed_completer(torch).save(models / "tiny", hidden_layers=[16, 8])
-    t.capsys.readouterr()
-    assert run_module(t.mp, "ml_sed_completer", "list", "--models-dir", str(models)) == 0
-    out = t.capsys.readouterr().out
-    assert "  tiny\n" in out and "Architecture: 400 -> [16, 8] -> 1000" in out
-    wl = np.logspace(np.log10(3000.0), np.log10(9000.0), 50)
-    np.savetxt(t.tmp / "in.txt", np.column_stack([wl, 1e-10 * (wl / 5000.0) ** -2]))
-    assert run_module(t.mp, "ml_sed_completer", "complete", "--model", str(models / "tiny"), "--input", "in.txt",
-                      "--output", "out.txt", "--teff", "5500", "--logg", "4.5", "--meta", "0", "--wl-min", "1000",
-                      "--wl-max", "20000") == 0
-    extended = np.loadtxt(t.tmp / "out.txt")
-    assert extended[0, 0] <= 1000.0 * 1.01 and extended[-1, 0] >= 20000.0 * 0.99
-    assert "Saved completed SED to: out.txt" in t.capsys.readouterr().out
-
-
-@main_row
-def ml_sed_generator_lists_and_generates_with_a_saved_model(t):
-    torch, models = cpu_torch(t), t.tmp / "models"
-    fixed_generator(torch).save(models / "gen", hidden_layers=[16, 8])
-    t.capsys.readouterr()
-    assert run_module(t.mp, "ml_sed_generator", "list", "--models-dir", str(models)) == 0
-    assert t.capsys.readouterr().out == f"gen: {models / 'gen'}\n"
-    assert run_module(t.mp, "ml_sed_generator", "generate", "--model", str(models / "gen"), "--teff", "5500",
-                      "--logg", "4.5", "--meta", "0", "--output", "sed.txt") == 0
-    lines = (t.tmp / "sed.txt").read_text().splitlines()
-    assert lines[0] == "# wavelength_A flux_erg/s/cm2/A" and "Teff=5500.0 logg=4.5 [M/H]=0.0" in lines[1]
-    assert np.loadtxt(t.tmp / "sed.txt").shape == (1000, 2)
-    assert t.capsys.readouterr().out.endswith("Saved: sed.txt\n")
 
 
 @main_row
@@ -892,7 +676,7 @@ AVAILABILITY = {
 
 def _availability_lists(t, fields, says, unsaid):
     narrow_terminal(t)
-    cli.print_filter_availability(availability(**fields))
+    cli.filters.print_filter_availability(availability(**fields))
     out = " ".join(t.capsys.readouterr().out.split())
     assert says in out
     assert unsaid not in out
@@ -910,7 +694,7 @@ AIRMASS = {
 def _airmass_defaults(t, grid, typed, airmass, pwv):
     narrow_terminal(t)
     prompts = answer(t.mp, *typed)
-    assert cli._ask_conditions("site", grid) == (airmass, pwv)
+    assert cli.filters._ask_conditions("site", grid) == (airmass, pwv)
     shown = "unstated" if not grid["airmass"] else f"{grid['airmass'][0]:g}"
     assert prompts[0] == f"Airmass [{shown}]: "
 
@@ -920,19 +704,19 @@ def composition_takes_a_typed_recipe(t):
     composed = _composed(t)
     t.mp.setattr(Filters, "available", classmethod(lambda cls, *a, **k: availability()))
     answer(t.mp, "y", "published,optics")
-    cli._offer_composition(t.tmp / "Fac" / "Cam")
+    cli.filters._offer_composition(t.tmp / "Fac" / "Cam")
     assert composed[0][1]["components"] == ["published", "optics"] and "detector_type" not in composed[0][1]
 
 
 @menu_row
 def composable_bands_compose_in_memory(t):
-    import sed_tools.filter_components as fc
+    import sed_tools.filters.compose as fc
 
     manifest = SimpleNamespace(primary_bands=lambda: ["J", "Z"])
     t.mp.setattr(fc.InstrumentManifest, "load", classmethod(lambda cls, d: manifest))
     t.mp.setattr(fc, "compose_band", lambda directory, band, components, **kwargs:
                  _raise(ComponentError("covers 9000-56000 A")) if band == "Z" else None)
-    working, failed = cli._composable_bands(t.tmp / "Paranal" / "VISTA",
+    working, failed = cli.filters._composable_bands(t.tmp / "Paranal" / "VISTA",
                                             {"components": ["filter"], "atmosphere": None, "variants": None})
     assert working == ["J"] and failed == {"Z": "covers 9000-56000 A"}
 
@@ -954,7 +738,7 @@ def pressing_enter_at_the_atmosphere_choice_folds_in_none(t):
     t.mp.setattr(Filters, "available", classmethod(lambda cls, *a, **k: availability(
         atmosphere=True, atmosphere_site="lsst_std", atmosphere_sites=["lsst_std"])))
     prompts = answer(t.mp, "y", "1", "")
-    cli._offer_composition(t.tmp / "LSST" / "LSST")
+    cli.filters._offer_composition(t.tmp / "LSST" / "LSST")
     assert [p for p in prompts if p.startswith("Atmosphere")] == ["Atmosphere [0, none]: "]
     assert composed[0][1]["atmosphere"] is None and listings == [True]  # one listing; installed sites are checked daily
     out = t.capsys.readouterr().out
@@ -975,14 +759,14 @@ LICENCE = {"redistribution": "attribution",
 @menu_row
 def the_description_block_names_in_full_and_cuts_descriptions_at_the_edge(t):
     t.mp.setenv("COLUMNS", "40")
-    cli._print_instrument_descriptions("Cameras", [
+    cli.filters._print_instrument_descriptions("Cameras", [
         {"key": "PointGrey_Grasshopper2_14S5C", "description": "Point Grey Grasshopper2 14S5C colour camera"},
         {"key": "SQM", "description": ""}])
     assert t.capsys.readouterr().out.splitlines() == [
         "", "Cameras: 2 instruments",
         "  PointGrey_Grasshopper2_14S5C  Point G…",
         "  SQM                           no desc…"]
-    cli._print_instrument_descriptions("Solo", [{"key": "A" * 40, "description": "text"}])
+    cli.filters._print_instrument_descriptions("Solo", [{"key": "A" * 40, "description": "text"}])
     assert t.capsys.readouterr().out.splitlines() == ["", "Solo: 1 instrument", "  " + "A" * 40]
 
 
@@ -1034,7 +818,7 @@ def the_summary_fits_80_columns_in_about_a_dozen_lines(t):
                         atmosphere_sites=["paranal", "lasilla"], published="filter+instrument+atmosphere")
     entry = {"info": {"licence": LICENCE, "references": ["a"], "description": "Long. Text."},
              "properties": None, "errors": []}
-    lines = cli._pick_summary("Fac/Cam", {"description": "word " * 30}, info, entry, "SVO")
+    lines = cli.filters._pick_summary("Fac/Cam", {"description": "word " * 30}, info, entry, "SVO")
     assert all(len(line) <= 80 for line in lines) and len(lines) <= 13
     flat = "\n".join(lines)
     assert "Fac/Cam  (60 bands)" in flat and "… (" in flat and "more)" in flat
@@ -1048,14 +832,15 @@ def the_summary_says_where_a_download_comes_from(t):
     up = SimpleNamespace(mirror=SimpleNamespace(is_available=lambda: True), root=Path("/data/filters"))
     down = SimpleNamespace(mirror=SimpleNamespace(is_available=lambda: False))
     entry = {"sources": ["svo", "local", "njm", "original"]}
-    assert cli._download_origin(up, entry, None) == "NJM, then the original source, then SVO"
-    assert cli._download_origin(down, entry, None) == "the original source, then SVO; NJM is unreachable"
-    assert cli._download_origin(up, {"sources": ["local"]}, None) == "only the installed copy, which is incomplete"
-    assert cli._download_origin(up, entry, up.root / "GAIA" / "DR2") == "installed in /data/filters/GAIA/DR2"
+    assert cli.filters._download_origin(up, entry, None) == "NJM, then the original source, then SVO"
+    assert cli.filters._download_origin(down, entry, None) == "the original source, then SVO; NJM is unreachable"
+    assert (cli.filters._download_origin(up, {"sources": ["local"]}, None)
+            == "only the installed copy, which is incomplete")
+    assert cli.filters._download_origin(up, entry, up.root / "GAIA" / "DR2") == "installed in /data/filters/GAIA/DR2"
     up.root = Path("/a/data/directory/long/enough/that/its/path/does/not/fit/beside/the/name/filters")
-    origin = cli._download_origin(up, entry, up.root / "GAIA" / "DR2")
+    origin = cli.filters._download_origin(up, entry, up.root / "GAIA" / "DR2")
     assert origin == "installed in the filter directory, as GAIA/DR2"
-    lines = cli._pick_summary("GAIA/DR2", {}, availability(), {"info": None, "properties": None, "errors": []},
+    lines = cli.filters._pick_summary("GAIA/DR2", {}, availability(), {"info": None, "properties": None, "errors": []},
                               origin)
     assert "  From       : installed in the filter directory, as GAIA/DR2" in lines
     assert all(len(line) <= 80 for line in lines)
@@ -1087,7 +872,7 @@ def menu_3_shows_filters_info_for_a_picked_instrument(t):
 def _lsst(t, parts):
     """Facility LSST with instrument LSST, whose parts are ``parts`` and whose curves download to
     <tmp>/LSST/LSST; returns the compose calls."""
-    from sed_tools.filter_library import FilterLibrary
+    from sed_tools.filters.library import FilterLibrary
 
     _no_banner(t)
     for listing in ("facilities", "instruments"):
@@ -1132,7 +917,7 @@ def band_descriptions_wrap_to_the_terminal(t):
     props = {"G": {"WavelengthPivot": 6217.6, "FWHM": 4548.2, "DetectorType": "photon"}}
     info = {"bands": {"G": {"MagSys": "Vega", "Description": "GAIA Gbp filter, DR2 Maíz Apellániz & Weiler "
                                                             "revision (faint, G>10.87)"}}}
-    cli.print_catalogue_entry("GAIA/GAIA", {"info": info, "properties": {"bands": props}, "errors": []})
+    cli.filters.print_catalogue_entry("GAIA/GAIA", {"info": info, "properties": {"bands": props}, "errors": []})
     lines = t.capsys.readouterr().out.splitlines()
     assert all(len(line) <= 80 for line in lines) and len(lines) > 2
 
@@ -1179,7 +964,7 @@ def _combine_refuses(t, argv, message):
 @menu_row
 def combine_prompt_has_a_space_and_refuses_an_input_name(t):
     built = _combine(t)
-    t.mp.setattr("sed_tools.combine_stellar_atm.select_models_interactive",
+    t.mp.setattr("sed_tools.cube.combine.select_models_interactive",
                  lambda dirs: [d for d in dirs if d[0] in ("Kurucz", "Phoenix")])
     answer(t.mp, "Kurucz")
     with pytest.raises(ValueError, match="The output grid Kurucz is also one of the grids to combine"):
@@ -1202,34 +987,37 @@ def coverage_prints_each_failure_once(t):
 def njm_cuts_are_asked_in_a_terminal(t):
     t.mp.setattr("sys.stdin", Stdin(True))
     t.mp.setattr(cli.grids, "prompt_njm_axis_cuts", lambda name, g, model_url=None: {"teff_range": (1.0, 2.0)})
-    assert cli._download_cuts("G", "njm", None, {"model_url": "u"}, {}) == {"teff_range": (1.0, 2.0)}
+    assert cli.grids._download_cuts("G", "njm", None, {"model_url": "u"}, {}) == {"teff_range": (1.0, 2.0)}
 
 
 @menu_row
 def auto_training_takes_trials_and_epochs(t):
-    import sed_tools.ml
-
     calls = []
+
+    class AutoTrainer:
+        def train_best(self, **kwargs):
+            calls.append(kwargs)
+
     t.mp.setattr(importlib.util, "find_spec", lambda name, *a: object())
-    t.mp.setattr(sed_tools.ml, "auto_train_generator", lambda **kwargs: calls.append(kwargs))
+    t.mp.setitem(sys.modules, "sed_tools.ml.tuning", SimpleNamespace(AutoTrainer=AutoTrainer))  # optuna-free
     assert run_cli(t.mp, "ml_generator", "--auto", "--library", "lib", "--output", "out",
                    "--trials", "2", "--epochs", "1") == 0
     assert run_cli(t.mp, "ml_generator", "--auto", "--library", "lib", "--output", "out") == 0
-    assert calls == [{"library": "lib", "output": "out", "n_trials": 2, "epochs": 1},
-                     {"library": "lib", "output": "out"}]
+    assert calls == [{"library_path": "lib", "output_path": "out", "n_trials": 2, "epochs": 1},
+                     {"library_path": "lib", "output_path": "out"}]
 
 
 @menu_row
 def the_picker_finds_an_instrument_installed_under_an_older_spelling(t):
     # 0.4.1 wrote Gemini/GMOS-N; NJM's name is GMOS_N. The picker must see the installed copy, not offer a second one.
-    from sed_tools.filter_library import FilterLibrary
+    from sed_tools.filters.library import FilterLibrary
 
     installed = t.tmp / "Gemini" / "GMOS-N"
     installed.mkdir(parents=True)
     (installed / "g.dat").write_text("Wavelength,Transmission\n4000,0.1\n5000,0.5\n6000,0.1\n")
     (installed / "GMOS-N").write_text("g.dat\n")
     library = FilterLibrary(t.tmp)
-    facility, instrument, directory = cli._picked_names(library, {"key": "Gemini"}, {"key": "GMOS_N"})
+    facility, instrument, directory = cli.filters._picked_names(library, {"key": "Gemini"}, {"key": "GMOS_N"})
     assert (facility, instrument) == ("Gemini", "GMOS_N")
     assert directory is None or directory.resolve() == installed.resolve()
     assert library.installed_directory("Gemini", "GMOS_N").resolve() == installed.resolve()
@@ -1237,7 +1025,7 @@ def the_picker_finds_an_instrument_installed_under_an_older_spelling(t):
 
 @menu_row
 def filters_info_says_when_the_catalogue_is_the_cached_copy(t):
-    cli.print_catalogue_entry("Fac/Cam", {"info": {"description": "d"}, "properties": None, "errors": [],
+    cli.filters.print_catalogue_entry("Fac/Cam", {"info": {"description": "d"}, "properties": None, "errors": [],
                                           "origin": {"source": "cache", "checked": 0.0 + 1761600000,
                                                      "njm_unreachable": True}})
     out = " ".join(t.capsys.readouterr().out.split())  # the field wraps to the terminal
@@ -1436,11 +1224,11 @@ def picker_shows_the_longest_label_in_full(t):
 @menu_row
 def number_prompts_take_a_number_a_default_or_a_word(t):
     answer(t.mp, "1.5")
-    assert cli._ask_number("Airmass: ") == 1.5
+    assert cli.filters._ask_number("Airmass: ") == 1.5
     answer(t.mp, "")
-    assert cli._ask_number("PWV: ", default=None) is None
+    assert cli.filters._ask_number("PWV: ", default=None) is None
     answer(t.mp, "UNSTATED")
-    assert cli._ask_number("Airmass: ", words=("unstated",)) == "unstated"
+    assert cli.filters._ask_number("Airmass: ", words=("unstated",)) == "unstated"
 
 
 @menu_row
@@ -1457,7 +1245,7 @@ def composition_offers_the_bands_that_work(t):
     answer(t.mp, "y")
     request = {"components": ["filter"], "variants": None, "detector_type": None, "allow_heavy": False,
                "atmosphere": {"site": "paranal", "airmass": 1.0, "pwv": 1.0}}
-    cli._compose_the_bands_that_work(t.tmp / "Paranal" / "VISTA", request, ComponentError("no"))
+    cli.filters._compose_the_bands_that_work(t.tmp / "Paranal" / "VISTA", request, ComponentError("no"))
     assert calls == [["J", "H"]]
     assert "Z: covers 9000-56000 A" in t.capsys.readouterr().out
 
@@ -1471,7 +1259,7 @@ def the_pickers_show_names_only(t):
     assert "   1. GAIA" in out and "Gaia mission" not in out  # no facility descriptions are invented
     pickers = out.split("\nGAIA: 5 instruments\n")[0] + out.split("Instruments for GAIA")[1]
     assert not any(text in pickers for text in ("[njm", "[svo", "Tags show", "Evans et al."))
-    assert cli._picker_labels(GAIA_INSTRUMENTS + [{"key": "Other"}]) == [
+    assert cli.filters._picker_labels(GAIA_INSTRUMENTS + [{"key": "Other"}]) == [
         "DR2", "DR2r", "GAIA", "GAIA0", "Gaia2m", "Other"]
 
 
@@ -1506,7 +1294,7 @@ def the_instrument_picker_shows_full_names_in_columns(t):
 def picker_cuts_long_labels_with_an_ellipsis(t):
     t.mp.setenv("COLUMNS", "40")
     answer(t.mp, "q")
-    cli.prompt_choice(["x" * 50], "Things")
+    cli.filters.prompt_choice(["x" * 50], "Things")
     assert "x" * 23 + "…" in t.capsys.readouterr().out
 
 
@@ -1523,9 +1311,10 @@ def downloading_several_facilities_asks_first_with_the_count(t):
 
 @menu_row
 def every_number_question_is_the_same_one(t):
-    from sed_tools import ml_sed_completer, ml_sed_generator, ui_utils
+    from sed_tools import ui_utils
+    from sed_tools.ml import completer, generator
 
-    assert cli._ask_number is ml_sed_generator._ask_number is ml_sed_completer._ask_number is ui_utils.ask_number
+    assert cli.filters._ask_number is generator._ask_number is completer._ask_number is ui_utils.ask_number
 
 
 def _narrow(t, scenario):
@@ -1536,7 +1325,6 @@ def _narrow(t, scenario):
 def test_cli(rows):
     rows(SCENARIOS)
     rows(FILTERS_INFO, _filters_info)
-    rows(USAGE, _usage_error)
     rows({f"{module}_help_prints_the_usage_and_exits_0": module for module in HELP}, _help)
     rows({f"{module}_a_bad_argument_prints_the_usage_and_exits_2": module for module in HELP}, _bad_argument)
     rows(MAINS, _in_its_folder_run)

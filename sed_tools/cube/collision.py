@@ -46,13 +46,13 @@ _BOOKKEEPING_AXES: Set[str] = {
     "url", "wave_grid", "columns", "res", "atmos",
     # teff, logg, meta variants used by various grabbers
     "t_eff", "log_g", "mh", "m_h", "feh",
-    # spectra_cleaner bookkeeping
-    "renormed",
+    # grids/clean.py bookkeeping, and grids/msg.py's for a spectrum with negative fluxes
+    "renormed", "negative_flux_fraction",
     # common provenance / model-type labels
     "atmosphere", "model", "model_type", "grid", "library",
     # MAST BOSZ specific
     "vturb", "cm", "am",
-    # Provenance of a combined grid (combine_stellar_atm.save_combined_data) and of
+    # Provenance of a combined grid (cube/combine.py save_combined_data) and of
     # an ML-extended one (Completer.extend_catalog): they differ row to row, but
     # are not physical axes, so such a grid is one cube, not one per row.
     "source_model", "original_file", "extended_by_ml", "wl_min", "wl_max",
@@ -227,41 +227,6 @@ def copy_global_config_to_model(root_dir: Path, model_dir: Path) -> None:
     if src.exists():
         dst = Path(model_dir) / _DEFAULTS_FILENAME
         dst.write_bytes(src.read_bytes())
-
-
-def write_default_config(root_dir: Path, overwrite: bool = False) -> Path:
-    """Write a commented sed_tools.defaults to root_dir, unless one exists and overwrite is False; returns its path."""
-    path = Path(root_dir) / _DEFAULTS_FILENAME
-    if path.exists() and not overwrite:
-        return path
-
-    path.write_text("""\
-# sed_tools.defaults
-# Global on-collision configuration for precompute_flux_cube.
-# Per-model overrides go in <model_dir>/mesa_config.toml (same schema).
-#
-# strategy options:
-#   split     — (default) split each extra physical axis into a separate
-#               MESA-ready subgrid directory.  Physically safe: no averaging.
-#               Subdirs are named {Model}_{axis}_{value}/.
-#               A variants_index.csv is written in the parent directory.
-#   all-warn  — alias for split (backward compatible).
-#   all       — alias for split (backward compatible).
-#   mean      — collapse extra axes by averaging into a single cube.
-#               Physically unsafe — produces a synthetic mean atmosphere.
-#   filter    — filter to one specific extra-axis slice, then build.
-#               Requires [on_collision.filter] section below.
-
-[on_collision]
-strategy = "split"
-
-# Uncomment and fill in when strategy = "filter":
-# [on_collision.filter]
-# alpha = "min"          # min | max | exact value e.g. "0.4"
-# f_sed = "2.0"
-# composition = "h-rich" # string: case-insensitive
-""")
-    return path
 
 
 def discover_extra_axes(lookup_columns: List[str]) -> List[str]:
