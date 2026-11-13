@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-11-13T15:24:28.721925",
+  "generated": "2026-11-13T15:45:51.124927",
   "statistics": {
     "total_models": 8,
     "complete_models": 7,
@@ -15306,8 +15306,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1764902,
-            "size_human": "1.68 MB",
+            "size_bytes": 1769659,
+            "size_human": "1.69 MB",
             "description": "IRTF NSFCam 1-5 micron camera: broad, MKO-NIR and narrow-band filters",
             "svo_instruments": [
               "IRTF/NSFCam"
@@ -17184,8 +17184,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 541815,
-            "size_human": "529.12 KB",
+            "size_bytes": 541827,
+            "size_human": "529.13 KB",
             "description": "KPNO Mosaic imager filters: Harris, SDSS, BATC medium bands and more",
             "svo_instruments": [
               "KPNO/MOSAIC",
