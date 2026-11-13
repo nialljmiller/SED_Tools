@@ -355,8 +355,19 @@ Checks and guards
   folder's records disagree: no index named after the folder, an index and
   curves that differ, a manifest naming another set or declaring bands the
   index does not list, and, for a set whose source instruments are known
-  (NJM's claims), a curve of another set's instrument. NJM runs it on every
-  refresh.
+  (NJM's claims), a curve of another set's instrument, or a copy of any other
+  source's record (its ``Sources`` cite SVO, or it has none) unless the set is
+  named after that source (``copied_from_source``): NJM's ingests had filed
+  SVO's NOT/NOT filter list in NOT/ALFOSC. A publisher's curve may name an
+  unclaimed source in its ``FilterID`` as a cross-reference. NJM runs it on
+  every refresh; on NJM's filters of 13 Nov 2026 it finds nothing in 809 sets.
+- The bundled instrument catalogue (``sed_tools/instrument_catalogue.json``)
+  is regenerated from NJM's index of 13 Nov 2026: 809 instruments in 221
+  facilities, with the 16 folders NJM's misfiled curves moved to, KPNO/Mosaic's
+  ``Us``, and NJM's removals (CFHT/WFC, BOK/90prime's copies of BOK/BASS's
+  curves, Lick ``6570_70``, and the WIYN/Hydra and IRTF/NSFCam curves of other
+  filters). 691 instruments now name their SVO equivalents (336 before), so
+  they can be filled from SVO under NJM's band names while NJM is down.
 
 Packaging and scripts
 ~~~~~~~~~~~~~~~~~~~~~
