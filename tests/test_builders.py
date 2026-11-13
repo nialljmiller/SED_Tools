@@ -34,7 +34,7 @@ from sed_tools.component_sources._common import (DerivedCurve, SimpleSource, Tab
 from sed_tools.component_sources._original import Fetcher, clean_curve, make_band, to_angstrom
 from sed_tools.filter_components import (DERIVED, FILTER, OPTICS, QE, SHARED, TEAM, AtmosphereGrid,
                                          ComponentCoverageError, ComponentError, InstrumentManifest, add_component,
-                                         build_all_products, build_product, compose_band, read_curve)
+                                         build_product, compose_band, read_curve)
 from sed_tools.filter_library import FilterLibrary
 from sed_tools.filter_metadata import (ENERGY, PHOTON, SVOFilterRecord, read_filter_header, released_mesa_reads,
                                        write_filter_file)
@@ -977,10 +977,10 @@ def gmos_qe_epochs_are_variants_without_default(t):
 
 
 @row
-def sdss_camera_response_left_out_of_build_all_products_is_named(t):
+def sdss_camera_response_is_built_for_the_bands_that_have_it(t):
     # The primed filters are bands of their own (6c8739a), so filter+optics+qe
-    # covers u ... z only and build_all_products builds no product for it (0.4.1
-    # built one). It must say so and give the call that builds it.
+    # covers u ... z only: not the whole set (0.4.1 built it for every band), but
+    # build_product builds it for those bands.
     inst = t.tmp / "SLOAN" / "SDSS"
     for band in sdss.BANDS:
         published_set(inst, band, WL, gauss(5000, 300) * 0.4, "filter+instrument+atmosphere")
@@ -992,15 +992,8 @@ def sdss_camera_response_left_out_of_build_all_products_is_named(t):
                                    ("resbig", gauss(5000, 300) * 0.4), ("resnoa", gauss(5000, 300) * 0.5),
                                    ("xatm", np.full(WL.size, 0.85)))], name=b.upper(), fmt="E") for b in sdss.BANDS])
     sdss.build(t.tmp, session=Session(files))
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.filter_components"):
-        built = build_all_products(inst)
-    assert built == []
-    assert not (inst / "products").exists()
+    assert "filter+optics+qe" not in InstrumentManifest.load(inst).buildable()
     bands = sorted(sdss.BANDS)
-    assert ("SLOAN/SDSS: filter+optics+qe not built, because only 5 of 6 bands have the components "
-            "(none for gprime_filter)") in t.caplog.text
-    assert f"build_product({str(inst)!r}, 'filter+optics+qe', bands={bands!r})" in t.caplog.text
-
     product = build_product(inst, "filter+optics+qe", bands=bands)
     assert product.name == "filter+optics+qe"
     assert (product / product.name).read_text().split() == [f"{b}.dat" for b in bands]
@@ -2089,18 +2082,6 @@ SHARED_NAMES = {f"svo_instruments_that_share_a_name_get_their_own_directory_{cas
     ("ACS_WFC", "ACS_WFC", ["ACS_HRC"], False),
     ("Cousins", "Cousins_old", ["Bessell"], False),          # differs but nothing to clash with
 ]}
-
-
-@row
-def njm_instrument_match_is_exact(t):
-    from sed_tools.njm_filter_grabber import NJMFilterGrabber
-
-    t.mp.setattr(NJMFilterGrabber, "_check_availability", lambda self: True)
-    njm = NJMFilterGrabber(base_dir="/tmp/unused")
-    t.mp.setattr(njm, "discover_instruments", lambda fac: ["GAIA", "ACS_WFC"])
-    assert njm.find_instrument("GAIA", "GAIA0") is None        # was: prefix-matched to GAIA
-    assert njm.find_instrument("GAIA", "gaia") == "GAIA"
-    assert njm.find_instrument("HST", "ACS-WFC") == "ACS_WFC"
 
 
 @row

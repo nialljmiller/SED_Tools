@@ -97,12 +97,17 @@ def filter_headers(work, out):
 
 @case
 def filter_properties(work, out):
-    from sed_tools.filter_properties import instrument_properties, load_sun, load_vega
+    from sed_tools.filter_metadata import read_filter_header
+    from sed_tools.filter_properties import curve_properties, load_filter_curve, load_sun, load_vega
 
     vega = load_vega(INPUTS / "reference/vega_flam.csv")
     sun = load_sun(INPUTS / "reference/sun_flam.csv")
     for instrument in INSTRUMENTS:
-        write_json(out / f"{instrument.parent.name}_{instrument.name}.json", instrument_properties(instrument, vega, sun))
+        bands = {path.stem: {**curve_properties(path, vega, sun),
+                             "DetectorType": load_filter_curve(str(path)).detector_type,
+                             "DetectorTypeSource": read_filter_header(path).get("DetectorTypeSource", "assumed")}
+                 for path in curves(instrument)}
+        write_json(out / f"{instrument.parent.name}_{instrument.name}.json", bands)
 
 
 @case

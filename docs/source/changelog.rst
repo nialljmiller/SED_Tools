@@ -5,6 +5,23 @@ Changelog
 Version 0.7.0 (unreleased)
 --------------------------
 
+- ``sed_tools.filter_plot.NORMALIZATIONS`` is removed; nothing read it.
+  ``plot_curves`` takes the same ``normalize`` values as before.
+- Functions only the tests used are removed: ``NJMFilterGrabber.find_facility``,
+  ``get_exclusive_facilities``, ``find_instrument`` and ``get_filter_info``;
+  ``build_all_products`` (``build_product`` builds each recipe);
+  ``AtmosphereGrid.select`` (``AtmosphereGrid.find`` looks a condition up);
+  and ``instrument_properties`` (``curve_properties`` gives one curve's).
+  ``released_mesa_reads`` stays.
+- ``NJMFilterGrabber`` no longer takes ``max_workers``, which it never used,
+  and ``FilterCatalogue.instrument_file`` no longer takes ``prefer_installed``:
+  the copy saved beside installed curves is always read first, unless
+  ``refresh=True``.
+- The standalone command lines ``python -m sed_tools.njm_filter_grabber``,
+  ``python -m sed_tools.svo_filter_grabber`` (the interactive SVO browser:
+  ``run_interactive`` and ``main``) and ``python -m sed_tools.combine_filters``
+  are removed, with ``NJMFilterGrabber.download_all_filters``. ``sed-tools
+  filters`` downloads sets and ``sed-tools filters-combine`` combines them.
 - SED_Tools no longer checks arguments only to word a user's mistake. A
   misused option, name or value now fails where Python or the library fails
   (``KeyError``, ``ValueError``, ``TypeError``, ``FileNotFoundError``), and a

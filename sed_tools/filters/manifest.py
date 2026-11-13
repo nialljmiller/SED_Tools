@@ -726,20 +726,6 @@ class AtmosphereGrid:
         _require_inside(rel, f"atmosphere {self.site}")
         return rel
 
-    def select(self, spec: AtmosphereSpec) -> str:
-        """Require an exact grid point, or explain which conditions exist."""
-        filename = self.find(spec)
-        if filename is not None:
-            return filename
-        airmasses = sorted({float(e["airmass"]) for e in self.entries})
-        pwvs = sorted({float(e["pwv"]) for e in self.entries if e.get("pwv") is not None})
-        asked = "unstated airmass" if spec.airmass is None else f"airmass={spec.airmass:g}"
-        raise ComponentError(
-            f"No {self.site} atmosphere at {asked}"
-            + (f", pwv={spec.pwv:g} mm" if spec.pwv is not None else "")
-            + f". Grid: airmass {airmasses}" + (f", pwv {pwvs} mm" if pwvs else "")
-            + (" (and one of unstated airmass: airmass=None)" if self.unstated else "")
-        )
 
 
 def _present(root: Path, files: Mapping[str, str], kind: str) -> Dict[str, str]:

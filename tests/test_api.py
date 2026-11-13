@@ -35,10 +35,9 @@ from sed_tools.collision_config import CollisionConfig
 from sed_tools.ml_sed_completer import SEDCompleter, SEDCompleterNetwork
 from sed_tools.ml_sed_generator import SEDGenerator
 from sed_tools.models import SED as GridFinder
-from sed_tools.njm_filter_grabber import _STATE, NJMFilterGrabber
 
-from support import (CLEAN, GRABBERS, GRID, KURUCZ, NJM, STALE, Session, answer, atmosphere_site, cpu_torch,
-                     fake_grabber, filters_api, njm_grids, njm_index, scenarios, tiny_library, write_flux_cube)
+from support import (CLEAN, GRABBERS, GRID, KURUCZ, STALE, answer, atmosphere_site, cpu_torch, fake_grabber,
+                     filters_api, njm_grids, scenarios, tiny_library, write_flux_cube)
 
 SCENARIOS, row = scenarios()
 
@@ -508,37 +507,8 @@ def the_completer_network_moves_to_a_device(t):
 
 
 # ----------------------------------------------------------------------
-# The NJM filter grabber's 0.4.1 helpers, and smaller pieces
+# Smaller pieces
 # ----------------------------------------------------------------------
-def _filter_mirror(t):
-    t.mp.setattr(NJMFilterGrabber, "_check_availability", lambda self: True)
-    grabber = NJMFilterGrabber(base_dir=str(t.tmp / "filters"))
-    grabber.session = Session({"index.json": njm_index({"Bepi_Colombo": {"SIMBIO": {}}, "Generic": {"Johnson": {}},
-                                                        "NJMOnly": {}}),
-                               "filters/Generic/Johnson/Johnson": "B.dat\nV.dat\n"}, base=NJM)
-    return grabber
-
-
-@row
-def find_facility_matches_svo_names_to_njm_ones(t):
-    mirror = _filter_mirror(t)
-    assert mirror.find_facility("Generic") == "Generic"
-    assert mirror.find_facility("Bepi-Colom") == "Bepi_Colombo"  # SVO's shortened name
-    assert mirror.find_facility("Missing") is None
-    assert mirror.get_exclusive_facilities(["Bepi-Colom", "generic"]) == ["NJMOnly"]
-
-
-@row
-def get_filter_info_describes_an_njm_instrument(t):
-    mirror = _filter_mirror(t)
-    assert mirror.get_filter_info("Generic", "Johnson") == {
-        "facility": "Generic", "instrument": "Johnson", "filter_count": 2, "filters": ["B.dat", "V.dat"],
-        "url": f"{NJM}/filters/Generic/Johnson/"}
-    _STATE.reset()  # a new process, which finds NJM down
-    t.mp.setattr(NJMFilterGrabber, "_check_availability", lambda self: False)
-    assert NJMFilterGrabber(base_dir=mirror.base_dir).get_filter_info("Generic", "Johnson") == {}
-
-
 @row
 def ui_settings_come_from_the_config_file(t):
     assert config.get_ui_config() == {"terminal_plots": "auto", "terminal_color": "auto"}  # the shipped defaults

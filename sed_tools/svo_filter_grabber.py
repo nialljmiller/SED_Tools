@@ -8,12 +8,11 @@ __all__ = """
 BeautifulSoup DEFAULT_BASE_DIR Dict ENERGY Facility FilterRow Instrument InstrumentManifest Iterable
 List Mapping Optional Path SOURCE_ASSUMED SOURCE_SVO SVOFilterBrowser SVOMetadataClient
 SVOUnreachableError SVO_ALTERNATIVES SVO_PAUSE SVO_READ_TIMEOUT Sequence Tuple annotations dataclass
-html main monotonic os parse_multi_selection prompt_choice re requests run_interactive
+html monotonic os parse_multi_selection prompt_choice re requests
 svo_components_header svo_fps_url svo_get svo_unavailable sys textwrap threading urllib
 write_filter_file
 """.split()
 
-if __name__ == "__main__":
-    raise SystemExit(_module.main())
-else:
-    _old_path.forward(__name__, _module)
+_old_path.forward(
+    __name__, _module, parse_multi_selection="sed_tools.ui_utils:parse_multi_selection",
+    prompt_choice="sed_tools.ui_utils:prompt_choice", sys="sys", textwrap="textwrap")
