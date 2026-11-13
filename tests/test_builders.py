@@ -38,7 +38,7 @@ from sed_tools.filters.curve_metadata import (ENERGY, PHOTON, SVOFilterRecord, S
 from sed_tools.filters.library import FilterLibrary
 from sed_tools.filters.manifest import (DERIVED, FILTER, OPTICS, QE, SHARED, TEAM, AtmosphereGrid, ComponentError,
                                         InstrumentManifest)
-from sed_tools.grids import mast, msg, svo as svo_grid
+from sed_tools.grids import mast, svo as svo_grid
 
 from support import TESTS, WL, Resp, Session, answer, derived, gauss, published_set, scenarios, team_site
 
@@ -845,17 +845,6 @@ def mast_lists_every_bosz_resolution_and_accepts_each(t):
     assert "Discovering spectral grids from MAST" in t.capsys.readouterr().out
     answer(t.mp, *[""] * len(names))
     assert [grabber.get_model_metadata(n)["reskey"] for n in names] == [n.rsplit("-", 1)[1] for n in names]
-
-
-@row
-def msg_takes_the_most_complete_order_when_neither_is_plausible(t):
-    grabber = msg.MSGSpectraGrabber(base_dir=str(t.tmp), max_workers=1)
-    grabber.model_axes["sg-Cool"] = {
-        "axes": [np.array([100.0, 200.0]), np.array([4.0, 4.5]), np.array([-1.0, np.nan])], "shape": (2, 2, 2),
-        "vlin": np.array([1]), "roles": {"teff": 0, "logg": 1, "meta": 2}}
-    teff, logg, metal = grabber._params_from_index("sg-Cool", 0)
-    # ... and loses to the order with more finite values
-    np.testing.assert_array_equal([teff, logg, metal], (200.0, 4.0, -1.0))
 
 
 # ======================================================================

@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 _TEFF_CANDIDATES  = ["teff", "t_eff", "t eff", "temperature", "temp"]
 _LOGG_CANDIDATES  = ["logg", "log_g", "log(g)", "log g", "surface_gravity", "gravity"]
 _META_CANDIDATES  = ["metallicity", "meta", "feh", "[fe/h]", "[m/h]", "m/h", "m_h", "mh",
-                     "z", "zh", "zmet", "z/z0", "z/zsun"]
+                     "z", "zh", "zmet", "z/z0", "z/zo", "z/zsun"]
 _FILE_CANDIDATES  = ["file_name", "filename", "file"]
 
 # The column finders and the writer have string annotations, so their signatures read as they always have;

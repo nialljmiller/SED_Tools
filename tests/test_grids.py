@@ -1150,27 +1150,69 @@ def svo_and_msg_lookup_rows_are_in_file_name_order(t):
         assert names == ["Grid_fid1.txt", "Grid_fid10.txt", "Grid_fid2.txt"]
 
 
+# A 2 x 3 x 2 x 2 grid laid out as MSG writes it (src/vgrid/vgrid_io_sm.fypp), C/O first as in sg-SPHINX. Its
+# spectra specints[1..3] sit at the 1-based, Fortran-order (first axis fastest) linear vertices 2, 9 and 23: the last
+# is below the grid's 24 vertices, as C3K's and Coelho14's last vertices are below theirs.
+MSG_AXES = (("C/O", [0.5, 0.9]), ("Teff", [3000.0, 3500.0, 4000.0]), ("[Fe/H]", [-1.0, 0.0]), ("log(g)", [4.0, 5.0]))
+MSG_VERTICES = [2, 9, 23]
+#: Each spectrum's parameters, worked by hand: Teff, log g and [Fe/H] as teff, logg and meta, C/O under its label
+MSG_PARAMETERS = [{"teff": 3000.0, "logg": 4.0, "meta": -1.0, "C/O": 0.9},
+                  {"teff": 3500.0, "logg": 4.0, "meta": 0.0, "C/O": 0.5},
+                  {"teff": 4000.0, "logg": 5.0, "meta": 0.0, "C/O": 0.5}]
+
+
+def _msg_vgrid(f, revision=3):
+    """MSG_AXES and MSG_VERTICES as a vgrid group of *revision*: 1 names the axes 'axes(r)' and 2 'axes[r]', both
+    with a 'mask' over the vertices; 3 names them 'axes[r]' and lists the vertices in 'v_lin_seq'. Revision 1 labels
+    the metallicity 'Z/Zo', as the revision-1 grids (OSTAR2002, BSTAR2006) do."""
+    vgrid = f.create_group("vgrid")
+    vgrid.attrs.update({"TYPE": np.bytes_("vgrid_t"), "REVISION": revision, "rank": len(MSG_AXES)})
+    for r, (label, x) in enumerate(MSG_AXES, 1):
+        axis = vgrid.create_group(f"axes({r})" if revision == 1 else f"axes[{r}]")
+        axis.attrs["label"] = np.bytes_("Z/Zo" if revision == 1 and label == "[Fe/H]" else label)
+        axis["x"] = x
+    if revision == 3:
+        vgrid["v_lin_seq"] = MSG_VERTICES
+    else:
+        vgrid["mask"] = np.isin(np.arange(1, 25), MSG_VERTICES).astype(np.int32)
+
+
+def _msg_range(group, kind, **values):
+    """A wavelength range group of MSG's *kind* (lin_range_t, ...): attributes, or for tab_range_t the dataset x;
+    comp_range_t takes sub-ranges=[(kind, values), ...]."""
+    group.attrs.update({"TYPE": np.bytes_(kind), "REVISION": 1})
+    if kind == "tab_range_t":
+        group["x"] = values["x"]
+    elif kind == "comp_range_t":
+        group.attrs["n_ranges"] = len(values["sub_ranges"])
+        for j, (sub_kind, sub_values) in enumerate(values["sub_ranges"], 1):
+            _msg_range(group.create_group(f"ranges[{j}]"), sub_kind, **sub_values)
+    else:
+        group.attrs.update(values)
+
+
+def _msg_spectrum(f, number, c, law="CONST", kind="lin_range_t", range_values=None):
+    """specsource/specints[number] as MSG writes a limb_specint_t: coefficients c (one row per bin), the wavelength
+    range (by default 50 bins from 3000 A in steps of 120 A) and the limb-darkening law."""
+    spectrum = f.create_group(f"specsource/specints[{number}]")
+    spectrum.attrs["TYPE"] = np.bytes_("limb_specint_t")
+    spectrum["c"] = np.asarray(c, dtype=float).reshape(len(c), -1)
+    _msg_range(spectrum.create_group("range"), kind, **(range_values or {"x_0": 3000.0, "dx": 120.0, "n": 51}))
+    spectrum.create_group("limb").attrs["law"] = np.bytes_(law)
+
+
 def _msg_grid(t):
-    """A grabber whose sg-Test.h5 holds three spectra: one good, one with no flux dataset, one with an undecodable
-    wavelength segment."""
+    """A grabber whose sg-Test.h5 holds three spectra: one good, one without its coefficients 'c', one with a 'c' of
+    one row fewer than its bins."""
     grabber, _ = _grabber(t, "msg")
     grabber.model_urls["sg-Test"] = MSG_FILE
-    wave = np.linspace(3000.0, 9000.0, 50)
     (t.tmp / "sg-Test").mkdir()
     with h5py.File(t.tmp / "sg-Test" / "sg-Test.h5", "w") as f:
-        for i, values in enumerate(([5000.0, 6000.0], [-1.0, 0.0], [4.0, 4.5])):
-            f[f"vgrid/axes[{i}]/x"] = values
-        f["vgrid/v_lin_seq"] = [1, 2, 3]
-        good = f.create_group("specsource/specints[1]")
-        good["flux"] = np.ones(50)
-        good["range/x"] = wave
-        no_flux = f.create_group("specsource/specints[2]")
-        no_flux["a"] = np.ones(50)
-        no_flux["b"] = np.ones(50)
-        gapped = f.create_group("specsource/specints[3]")
-        gapped["flux"] = np.ones(60)
-        gapped["range/ranges[1]/x"] = wave[:30]
-        gapped.create_group("range/ranges[2]").attrs["label"] = "no numbers here"
+        _msg_vgrid(f)
+        _msg_spectrum(f, 1, np.ones(50))
+        _msg_spectrum(f, 2, np.ones(50))
+        del f["specsource/specints[2]/c"]
+        _msg_spectrum(f, 3, np.ones(49))
     return grabber, t.tmp / "sg-Test"
 
 
@@ -1208,8 +1250,8 @@ def msg_failed_extractions_raise_after_the_rest(t):
         grabber.download_model_spectra("sg-Test", spectra)
     message = str(err.value)
     assert "2 of 3 spectra" in message
-    assert "sg-Test_fid2.txt: No suitable flux dataset" in message
-    assert "sg-Test_fid3.txt: Unable to recover wavelength grid" in message  # was written truncated to 30 points
+    assert "sg-Test_fid2.txt: specsource/specints[2]: " in message and "'c' doesn't exist" in message
+    assert "sg-Test_fid3.txt: specsource/specints[3]: c has shape (49, 1), not (50, 1)" in message
     wl, _ = read_text_spectrum(model_dir / "sg-Test_fid1.txt")
     assert wl.size == 50
     assert not (model_dir / "lookup_table.csv").exists()
@@ -1219,37 +1261,120 @@ def msg_failed_extractions_raise_after_the_rest(t):
 def msg_cut_exclusions_are_not_failures(t):
     grabber, model_dir = _msg_grid(t)
     spectra = grabber.get_model_metadata("sg-Test")[:1]
-    assert grabber.download_model_spectra("sg-Test", spectra, teff_range=(5500, 7000)) == 0
-    assert grabber.download_model_spectra("sg-Test", spectra, teff_range=(4500, 5500)) == 1
+    assert grabber.download_model_spectra("sg-Test", spectra, teff_range=(3200, 4000)) == 0
+    assert grabber.download_model_spectra("sg-Test", spectra, teff_range=(2500, 3200)) == 1
     assert (model_dir / "lookup_table.csv").exists()
 
 
-@row
-def msg_axis_role_beyond_the_grid_raises(t):
+def _msg_vgrid_read(t, revision, departure, error):
     grabber, _ = _grabber(t, "msg")
-    grabber.model_axes["sg-Test"] = {
-        "axes": [np.array([5000.0, 6000.0]), np.array([-1.0, 0.0]), np.array([4.0, 4.5])],
-        "shape": (2, 2, 2), "vlin": np.array([0]), "roles": {"teff": 0, "meta": 1, "logg": 3}}
-    with pytest.raises(RuntimeError, match="logg is mapped to axis 3, but the grid has 3 axes"):
-        grabber._params_from_index("sg-Test", 0)
+    grabber.model_urls["sg-Test"] = MSG_FILE
+    (t.tmp / "sg-Test").mkdir()
+    with h5py.File(t.tmp / "sg-Test" / "sg-Test.h5", "w") as f:
+        _msg_vgrid(f, revision)
+        for n in (1, 2, 3):
+            _msg_spectrum(f, n, np.ones(50))
+        if departure:
+            departure(f)
+    if error:
+        with pytest.raises(RuntimeError, match=error):
+            grabber.get_model_metadata("sg-Test")
+        return
+    spectra = grabber.get_model_metadata("sg-Test")
+    assert [s["params"] for s in spectra] == MSG_PARAMETERS
+    for _ in range(2):  # the second run finds the spectra on disk: their lookup rows keep their parameters
+        assert grabber.download_model_spectra("sg-Test", spectra) == 3
+        assert (t.tmp / "sg-Test" / "lookup_table.csv").read_text().splitlines() == ["file_name,teff,logg,meta,C/O"] + [
+            f"sg-Test_fid{n}.txt," + ",".join(map(str, p.values())) for n, p in enumerate(MSG_PARAMETERS, 1)]
+    assert "# meta = -1.0\n# C/O = 0.9\n" in (t.tmp / "sg-Test" / "sg-Test_fid1.txt").read_text()
 
 
-@row
-def msg_axis_roles_come_from_the_axes_labels(t):
-    # As in C3K and every alpha-enhanced MSG grid: by their values alone, [alpha/Fe] was taken for log g (it lies in
-    # log g's range too), and a table keyed on one grid's name corrected C3K only. MSG labels every axis.
+def _msg_axes_from_0(f):
+    for r in range(1, 5):
+        f.move(f"vgrid/axes[{r}]", f"vgrid/axes[{r - 1}]")
+
+
+def _msg_replace(path, data):
+    def departure(f):
+        del f[path]
+        f[path] = data
+    return departure
+
+
+#: name: (MSG vgrid revision, how the file departs from MSG's layout or None, the error that stops its download or
+#: None). Until 13 Nov 2026 the reader looked for axes from axes[0], so it read none from any MSG file, and every MSG
+#: spectrum had NaN Teff, logg and [M/H]; it also took v_lin_seq as 0-based unless its maximum was the grid size, and
+#: tried C order before Fortran order. Grids whose spectra lack parameters now fail before anything is extracted.
+MSG_VGRIDS = {
+    "msg_revision_3_reads_axes_from_1_and_v_lin_seq_in_fortran_order": (3, None, None),
+    "msg_revision_2_reads_axes_from_1_and_the_mask": (2, None, None),
+    "msg_revision_1_reads_parenthesised_axes_and_the_mask": (1, None, None),
+    "msg_axes_numbered_from_0_fail": (3, _msg_axes_from_0, r"no vgrid group laid out as MSG writes it \(.*axes\[4\]"),
+    "msg_v_lin_seq_from_0_fails": (3, _msg_replace("vgrid/v_lin_seq", [0, 8, 22]), "index -1 is out of bounds"),
+    "msg_unknown_vgrid_revision_fails": (3, lambda f: f["vgrid"].attrs.__setitem__("REVISION", 4), "revision 4"),
+    "msg_grid_without_a_teff_axis_fails": (
+        3, lambda f: f["vgrid/axes[2]"].attrs.__setitem__("label", "T"),
+        r"none of the axes of .*\('C/O', 'T', '\[Fe/H\]', 'log\(g\)'\) reads as teff"),
+    "msg_spectra_unmatched_by_the_vgrid_fail": (
+        3, lambda f: f.__delitem__("specsource/specints[3]"), "places 3 spectra but it holds 2"),
+    "msg_spectra_without_a_finite_value_fail": (
+        3, _msg_replace("vgrid/axes[4]/x", [4.0, np.nan]), "1 of 3 spectra have no finite logg"),
+}
+
+
+def _msg_spectrum_written(t, c, law, wavelength_range, expected):
     grabber, _ = _grabber(t, "msg")
-    path = t.tmp / "axes.h5"
-    with h5py.File(path, "w") as f:
-        for i, (label, values) in enumerate((("Teff", [3000.0, 4000.0]), ("[Fe/H]", [-1.0, 0.0]),
-                                             ("[alpha/Fe]", [0.0, 0.4]), ("log(g)", [4.0, 4.5]))):
-            f[f"vgrid/axes[{i}]/x"] = values
-            f[f"vgrid/axes[{i}]"].attrs["label"] = np.bytes_(label)
-    with h5py.File(path, "r+") as f:
-        assert grabber._load_axes_and_vlin(f)["roles"] == {"teff": 0, "logg": 3, "meta": 1}
-        for i in range(4):
-            del f[f"vgrid/axes[{i}]"].attrs["label"]
-        assert grabber._load_axes_and_vlin(f)["roles"] == {"teff": 0, "meta": 1, "logg": 2}  # unlabelled: the guess
+    grabber.model_urls["sg-Test"] = MSG_FILE
+    (t.tmp / "sg-Test").mkdir()
+    kind, range_values = wavelength_range
+    with h5py.File(t.tmp / "sg-Test" / "sg-Test.h5", "w") as f:
+        _msg_vgrid(f)
+        for n in (1, 2, 3):
+            _msg_spectrum(f, n, c, law, kind, range_values)
+    spectra = grabber.get_model_metadata("sg-Test")[:1]
+    if isinstance(expected, str):
+        with pytest.raises(RuntimeError, match=re.escape(f"sg-Test_fid1.txt: specsource/specints[1]: {expected}")):
+            grabber.download_model_spectra("sg-Test", spectra)
+        assert not (t.tmp / "sg-Test" / "sg-Test_fid1.txt").exists()
+        return
+    assert grabber.download_model_spectra("sg-Test", spectra) == 1
+    wavelength, flux = read_text_spectrum(t.tmp / "sg-Test" / "sg-Test_fid1.txt")
+    np.testing.assert_allclose(wavelength, expected[0])
+    np.testing.assert_allclose(flux, expected[1], rtol=1e-8)
+
+
+CLARET_ROW = [1.0, 0.1, 0.2, 0.3, 0.4]
+LIN = ("lin_range_t", {"x_0": 3000.0, "dx": 1000.0, "n": 4})
+#: name: (c, limb-darkening law, (range type, its values), the bin-centre wavelengths and fluxes written, or the
+#: reason the spectrum fails). MSG's range points are bin edges and c holds one row per bin
+#: (limb_specint_construct_sm.fypp); the flux is 2 pi times c dotted with the law's flux basis (eval_flux_basis,
+#: limb_basis_sm.fypp). Until 13 Nov 2026 no lin_range_t, log_range_t or comp_range_t was read, nor a tab_range_t
+#: from 0 A, so 24 of the 25 grids extracted nothing, and SPHINX wrote the intensity c as flux: pi times too low.
+MSG_SPECTRA = {
+    "msg_lin_range_bins_are_written_at_their_centres": (
+        [[2.0]] * 3, "CONST", LIN, ([3500.0, 4500.0, 5500.0], [2 * np.pi] * 3)),
+    "msg_log_range_is_read": (
+        [[1.0], [3.0]], "CONST", ("log_range_t", {"logx_0": np.log(1000.0), "dlogx": np.log(10.0), "n": 3}),
+        ([5500.0, 55000.0], [np.pi, 3 * np.pi])),
+    "msg_tab_range_is_read_from_0_angstrom_with_zero_flux_kept": (
+        [[0.0], [1.0]], "CONST", ("tab_range_t", {"x": [0.0, 2.0, 6.0]}), ([1.0, 4.0], [0.0, np.pi])),
+    "msg_comp_range_joins_its_sub_ranges": (
+        [[1.0]] * 3, "CONST", ("comp_range_t", {"sub_ranges": [("lin_range_t", {"x_0": 1000.0, "dx": 1000.0, "n": 2}),
+                                                               ("tab_range_t", {"x": [3000.0, 5000.0]})]}),
+        ([1500.0, 2500.0, 4000.0], [np.pi] * 3)),
+    "msg_claret_flux_uses_msgs_flux_basis": (
+        [CLARET_ROW] * 3, "CLARET", LIN,
+        ([3500.0, 4500.0, 5500.0], [2 * np.pi * (1 / 2 - 0.1 / 10 - 0.2 / 6 - 3 * 0.3 / 14 - 0.4 / 4)] * 3)),
+    "msg_c_without_a_row_per_bin_fails": ([[1.0]] * 2, "CONST", LIN, "c has shape (2, 1), not (3, 1)"),
+    "msg_unknown_range_type_fails": ([[1.0]] * 3, "CONST", ("spline_range_t", {}), "wavelength range type 'spline_range_t'"),
+    "msg_unknown_limb_law_fails": ([[1.0]] * 3, "POWER", LIN, "limb-darkening law 'POWER'"),
+    "msg_negative_or_non_finite_flux_fails": (
+        [[-1.0], [np.nan], [1.0]], "CONST", LIN, "2 of 3 fluxes are not finite and non-negative"),
+    "msg_spectrum_without_a_positive_flux_fails": ([[0.0]] * 3, "CONST", LIN, "no flux is positive"),
+    "msg_non_positive_wavelength_fails": (
+        [[1.0]] * 3, "CONST", ("lin_range_t", {"x_0": -2000.0, "dx": 1000.0, "n": 4}),
+        "2 of 3 wavelengths are not finite and positive"),
+}
 
 
 BOSZ_SCRIPT = f"{mast.SCRIPTS_DIR}/hlsp_bosz_bosz2024_sim_r1000_m%2B0.00_v1_bulkdl.sh"
@@ -1511,5 +1636,7 @@ def test_grids(rows):
     rows(HEADERS, _header_unit)
     rows(ZERO_BOUNDS, _query_bound)
     rows(WARNED, _warns)
+    rows(MSG_VGRIDS, _msg_vgrid_read)
+    rows(MSG_SPECTRA, _msg_spectrum_written)
     rows(REFUSED, _refused)
     rows(UNKNOWN_UNIT, _unknown_unit)
