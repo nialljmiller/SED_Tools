@@ -388,3 +388,36 @@ def test_curve_search_finds_unlinked_ids_but_not_twins(tmp_path):
                          lambda *pair: True)
     held = [f for f, entry in bands.items() if any(e["same"] for e in entry["njm"].values())]
     assert len(held) == 2 and group_status(bands, {"Test/Cam": []})[0] == "partial"
+
+
+def test_claims_never_take_a_copy_as_evidence_that_it_belongs(tmp_path):
+    from filter_info.svo_instruments import claims
+    shapes = {"B": 4400, "074": 5000, "075": 5500, "R": 6500}
+    votables, groups = {}, {"NOT/ALFOSC": {"NOT/ALFOSC.B"}, "NOT/NOT": {"NOT/NOT.074", "NOT/NOT.075"},
+                            "Fac/Cam": {"Fac/Cam.R"}}
+
+    def samples(band):
+        return [(w, max(0.0, 1 - abs(w - shapes[band]) / 300)) for w in range(shapes[band] - 400, shapes[band] + 401, 20)]
+
+    for group, ids in groups.items():
+        for filter_id in ids:
+            path = tmp_path / f"{filter_id.replace('/', '_')}.xml"
+            path.write_text(_svo_votable(filter_id, "1", samples(filter_id.rsplit(".", 1)[1])))
+            votables[filter_id] = ("20261027000000", path)
+
+    def curve(folder, name, filter_id, sources=None):
+        folder.mkdir(parents=True, exist_ok=True)
+        extra = f";Sources={sources}" if sources else ""
+        (folder / f"{name}.dat").write_text(f"Wavelength,Transmission,FilterID={filter_id};DetectorType=photon{extra}\n"
+                                            + "".join(f"{w},{t}\n" for w, t in samples(filter_id.rsplit('.', 1)[1])))
+
+    filters = tmp_path / "filters"
+    alfosc, other = filters / "NOT" / "ALFOSC", filters / "Fac" / "Other"
+    curve(alfosc, "B", "NOT/ALFOSC.B")
+    curve(alfosc, "074", "NOT/NOT.074")   # the ingests' copies of SVO's NOT filter list
+    curve(alfosc, "075", "NOT/NOT.075")
+    curve(other, "R", "Fac/Cam.R")        # a folder of nothing but one source's copies is that source
+    assert claims(filters, groups, votables) == {"NOT/ALFOSC": ["NOT/ALFOSC"], "Fac/Other": ["Fac/Cam"]}
+    curve(alfosc, "V", "NOT/NOT.075", "https://www.not.iac.es/instruments/filters/")  # the publisher's own scans
+    curve(alfosc, "U", "NOT/NOT.074", "https://www.not.iac.es/instruments/filters/")
+    assert claims(filters, groups, votables)["NOT/ALFOSC"] == ["NOT/ALFOSC", "NOT/NOT"]

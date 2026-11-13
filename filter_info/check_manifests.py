@@ -3,9 +3,11 @@
 ``sed_tools.filters.manifest.set_problems`` is the rule SED_Tools checks installed sets by: the MESA
 index file ``<Facility>/<Instrument>/<Instrument>`` lists exactly the curves in the folder, less the
 manifest's ``archived_bands``; ``manifest.json`` names its own folder and declares no band the index
-does not list; and no curve's ``FilterID`` is of a source instrument another set claims in
-``filter_info/svo_instruments.json`` while this one does not (one release filed in another's folder,
-as GAIA/GAIA held GAIA/Gaia2m's Gbp_bright and Gbp_faint).
+does not list; and no set holds a curve of a source instrument another set is made from, or a copy of
+any source's record it is not made from (one release filed in another's folder, as GAIA/GAIA held
+GAIA/Gaia2m's Gbp_bright and Gbp_faint, and NOT/ALFOSC SVO's NOT/NOT filter list).  Which sets are made
+from which source instruments is worked out from the served curves on every run
+(``svo_instruments.claims``), not read from a file an ingest may have outdated.
 
 A manifest band missing from the index file matters most: SED_Tools 0.4.1 downloads the curves the
 index lists, then requires a curve for every band in ``manifest.json``, so it falls back to SVO,
@@ -23,6 +25,21 @@ from pathlib import Path
 from sed_tools.filters.manifest import set_problems
 
 CLAIMS = Path(__file__).with_name("svo_instruments.json")
+ROOT = Path(__file__).resolve().parent.parent
+
+
+def served_claims(filters_dir):
+    """Which SVO instruments each served set is made from, by ``svo_instruments.claims`` on the served
+    curves themselves, so a stale ``svo_instruments.json`` cannot hide a product filed in another's set.
+    Without the SVO archive (a checkout that is not NJM's) the committed file is used."""
+    if not CLAIMS.is_file():
+        return None
+    recorded = json.loads(CLAIMS.read_text(encoding="utf-8"))
+    lists, archive = ROOT / recorded.get("svo_list", "-"), ROOT / "source_evidence" / "svo-archive"
+    if not (lists.is_dir() and archive.is_dir()):
+        return recorded["instruments"]
+    from .svo_instruments import claims, newest_votables, read_svo_lists
+    return claims(Path(filters_dir), read_svo_lists(lists), newest_votables(archive))
 
 
 def problems(filters_dir, claims=None):
@@ -49,7 +66,7 @@ def main(argv):
     if not filters_dir.is_dir():
         print(f"check_manifests: {filters_dir} is not a directory", file=sys.stderr)
         return 2
-    claims = json.loads(CLAIMS.read_text(encoding="utf-8"))["instruments"] if CLAIMS.is_file() else None
+    claims = served_claims(filters_dir)
     found = list(problems(filters_dir, claims))
     for _, message in found:
         print(f"ERROR {message}", file=sys.stderr)

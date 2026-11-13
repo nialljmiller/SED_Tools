@@ -3,7 +3,10 @@
 
 An SVO instrument (a ``Facility/Instrument`` group of SVO's current filter list) is
 the same product as an NJM instrument when every one of its filter IDs is held in
-that NJM instrument with the same curve.  NJM may hold more bands than SVO.
+that NJM instrument with the same curve.  NJM may hold more bands than SVO.  Which
+NJM instrument *claims* it ("instruments") is decided by :func:`claims`, from
+evidence no ingest can create: a copy of an SVO record filed in a folder never
+counts as evidence that it belongs there.
 
 - **Candidate NJM band for an SVO ID:** the band's SVO match in info.json, the
   curve's ``FilterID`` header, ``filter_expansion/svo_aliases.json``, or the same
@@ -27,6 +30,7 @@ queries list every filter, including facilities it has no per-facility list for.
 """
 
 import argparse
+import functools
 import html
 import json
 import os
@@ -43,6 +47,7 @@ from .compose import _samples
 from .svo_archive import decode, parse_votable
 
 OVERLAP_SAME, PIVOT_SAME = 0.995, 0.002  # svo_aliases.json "identical" thresholds
+COPY_SOURCES = re.compile(r"cab\.inta-csic|SVO Filter Profile Service")
 
 
 def read_svo_lists(list_dir):
@@ -209,6 +214,86 @@ def group_status(bands, instruments):
     return status, held, held_ids
 
 
+def svo_copy(header):
+    """Whether a curve is a copy of an SVO record: its ``Sources`` cite SVO, or it has none (SED_Tools'
+    SVO grabbers wrote none).  A publisher's curve carries an SVO ``FilterID`` only as a cross-reference."""
+    sources = header.get("Sources") or ""
+    return not sources or bool(COPY_SOURCES.search(sources))
+
+
+def _key(name):
+    """A folder's identity as SED_Tools compares names: no case, no punctuation."""
+    return re.sub(r"[^a-z0-9/]", "", name.lower())
+
+
+@functools.lru_cache(maxsize=None)
+def _svo_curve(path):
+    svo = parse_votable(decode(Path(path).read_bytes()))
+    return (svo["samples"], normalize_detector_type(svo["params"].get("DetectorType")) or "energy") if svo else None
+
+
+def _held(filter_id, curves, votables):
+    """Whether one of ``curves`` ((path, header) pairs) is the same curve as SVO's newest ``filter_id``."""
+    capture = votables.get(filter_id)
+    svo = _svo_curve(str(capture[1])) if capture else None
+    if not svo or not svo[0]:
+        return False
+    for path, header in curves:
+        detector = normalize_detector_type(header.get("DetectorType")) or "energy"
+        for photon in (False, True):
+            a, b = prepared(_samples(path), detector, photon), prepared(svo[0], svo[1], photon)
+            if a is not None and b is not None:
+                overlap, pivot = compare(a, b)
+                if overlap >= OVERLAP_SAME and pivot <= PIVOT_SAME:
+                    return True
+    return False
+
+
+def claims(filters_dir, svo_groups, votables):
+    """``{NJM instrument: [SVO instruments it claims]}``: one rule for every folder.
+
+    A folder claims the SVO instrument named after it (names compared without case or punctuation).  A
+    folder with no curves of its own (only copies of SVO records) is also the SVO instrument it holds
+    most copies of, when that one has no folder of its own (ties: the first by name).  It claims any other
+    SVO instrument its curves or ``info.json`` name only if every ID of that instrument has the same curve
+    as one of its curves that is not a copy of that instrument.  So a copy an ingest filed in a folder
+    never shows that it belongs there; everything else belongs in its own folder.
+    """
+    id_group = {i: g for g, ids in svo_groups.items() for i in ids}
+    lower = {i.lower(): i for i in id_group}
+    folders = [d for d in sorted(filters_dir.glob("*/*")) if d.is_dir()]
+    keys = {_key(f"{d.parent.name}/{d.name}") for d in folders}
+    named = defaultdict(set)
+    for group in svo_groups:
+        named[_key(group)].add(group)
+    out = {}
+    for folder in folders:
+        key = _key(f"{folder.parent.name}/{folder.name}")
+        curves = []
+        for path in sorted(folder.glob("*.dat")):
+            header = read_filter_header(path)
+            fid = header.get("FilterID") or ""
+            curves.append((path, header, id_group.get(fid) or id_group.get(lower.get(fid.lower())), svo_copy(header)))
+        if not curves:
+            continue
+        linked = {group for _, _, group, _ in curves if group}
+        if (folder / "info.json").is_file():
+            for entry in (json.loads((folder / "info.json").read_text()).get("bands") or {}).values():
+                linked.add(id_group.get((entry.get("svo") or {}).get("filterID")))
+        copies = Counter(group for _, _, group, copy in curves if group and copy)
+        homeless = [g for g in copies if _key(g) not in keys - {key}]
+        own = [c for c in curves if not (c[2] and c[3])]
+        claimed = set(named[key])
+        if not claimed and not own and homeless:
+            claimed.add(sorted(homeless, key=lambda g: (-copies[g], g))[0])
+        for group in sorted(linked - claimed - {None}):
+            others = [(path, header) for path, header, g, copy in curves if not (copy and g == group)]
+            if others and all(_held(i, others, votables) for i in sorted(svo_groups[group])):
+                claimed.add(group)
+        out[f"{folder.parent.name}/{folder.name}"] = sorted(claimed)
+    return out
+
+
 def assess(root, list_dir):
     root = Path(root)
     filters_dir = root / "data" / "filters"
@@ -217,19 +302,19 @@ def assess(root, list_dir):
     votables = newest_votables(root / "source_evidence" / "svo-archive")
     found = candidates(filters_dir, aliases, allowed)
     instruments = {f"{d.parent.name}/{d.name}": [] for d in sorted(filters_dir.glob("*/*")) if any(d.glob("*.dat"))}
+    svo_list = read_svo_lists(list_dir)
     groups = {}
-    for group, members in sorted(read_svo_lists(list_dir).items()):
+    for group, members in sorted(svo_list.items()):
         bands = assess_group(filters_dir, members, votables, found, allowed)
         status, held, held_ids = group_status(bands, instruments)
         groups[group] = {"status": status, "njm": held, "held_ids": held_ids, "ids": len(bands)}
         if any(entry["njm"] for entry in bands.values()):
             groups[group]["bands"] = bands
-        for instrument in held:
-            instruments[instrument].append(group)
+    instruments.update(claims(filters_dir, svo_list, votables))
     return {
         "schema": 1,
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "method": __doc__.split("\n\n")[1].strip(),
+        "method": __doc__.split("\n\n")[1].strip() + " " + " ".join(claims.__doc__.split("\n\n")[1].split()),
         "svo_list": os.path.relpath(Path(list_dir).resolve(), root.resolve()),
         "counts": dict(Counter(group["status"] for group in groups.values())),
         "thresholds": {"overlap": OVERLAP_SAME, "pivot": PIVOT_SAME},
