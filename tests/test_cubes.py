@@ -485,41 +485,61 @@ def combine_raises_after_writing_when_a_copy_fails(t):
     assert (models / "combined" / "lookup_table.csv").exists()
 
 
+def _planck_grid(t, name, nodes, scale=1.0):
+    """A grid of pi*B_lambda spectra at the (Teff, log g, [M/H]) nodes, ``scale`` times their own flux in the files."""
+    folder = t.tmp / "models" / name
+    folder.mkdir(parents=True)
+    wl = np.geomspace(1000.0, 3.0e5, 2000)
+    rows = ["#file_name,teff,logg,metallicity"]
+    for i, (teff, logg, meta) in enumerate(nodes):
+        np.savetxt(folder / f"s{i}.txt", np.column_stack([wl, scale * _constants.planck_flam(wl, teff)]))
+        rows.append(f"s{i}.txt,{teff},{logg},{meta}")
+    (folder / "lookup_table.csv").write_text("\n".join(rows) + "\n")
+
+
+def _nodes_over_their_own_spectra(t, grids):
+    """Combine ``grids``; {(Teff, log g, [M/H]): the node's integral over its own spectrum's} for every node a spectrum
+    fills. The combine guard: its own spectrum is the last row of the combined lookup table at the node (later grids
+    overwrite earlier ones), read from the combined folder's copy and resampled onto the cube's wavelengths as the
+    cube is built; every ratio must be within 1 % of 1 (NJM's check 4 on every served grid)."""
+    from sed_tools.api import SED
+    from sed_tools.cube import fileio
+    from sed_tools.grids.spectrum_io import read_text_spectrum
+
+    np.random.seed(0)
+    SED.combine(grids, output="combined", model_root=t.tmp / "models", visualization=False)
+    folder = t.tmp / "models" / "combined"
+    teff, logg, meta, wl, flux = fileio.load(folder / "flux_cube.bin")
+    rows = [line.split(",") for line in (folder / "lookup_table.csv").read_text().splitlines()[1:]]
+    own = {(float(r[1]), float(r[2]), float(r[3])): r[0] for r in rows}
+    ratios = {}
+    for node, file_name in own.items():
+        it, il, im = (int(np.argmin(np.abs(axis - value))) for axis, value in zip((teff, logg, meta), node))
+        own_flux = resample_to_grid(*read_text_spectrum(folder / file_name), wl)
+        ratios[node] = np.trapezoid(flux[:, im, il, it], wl) / np.trapezoid(own_flux, wl)
+    return ratios
+
+
 @row
-def normalisation_warns_when_spectra_keep_native_scale(t):
-    from sed_tools.cube.combine import compute_normalization_factors, load_model_data
-
-    models = _golden_pair(t)
-    ref, target = (load_model_data(str(models / name)) for name in (GRID, ALPHA_04))
-    coarse = np.linspace(3000.0, 10000.0, 50)  # fewer than 100 points in any overlap
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.cube.combine"):
-        factors = compute_normalization_factors(target, ref, coarse)
-    np.testing.assert_array_equal(factors, np.ones(len(target["files"])))
-    assert f"{len(target['files'])} spectra of Kurucz2003all__alpha_04 keep their native flux scale" in t.caplog.text
+def combined_cube_nodes_hold_their_own_spectra(t):
+    # Combine used to scale every spectrum to the nearest spectrum of a reference grid, however far away: here the
+    # 3500 and 3600 K nodes held 0.00055 and 0.00048 of their own flux, scaled to the 800 K blackbody's.
+    _planck_grid(t, "cool", [(800.0, 4.5, 0.0), (900.0, 4.5, 0.0)])
+    _planck_grid(t, "warm", [(3500.0, 4.5, 0.0), (3600.0, 4.5, 0.0)])
+    ratios = _nodes_over_their_own_spectra(t, ["cool", "warm"])
+    assert len(ratios) == 4 and all(abs(r - 1) <= 0.01 for r in ratios.values()), ratios
 
 
 @row
-def combine_normalises_to_the_grid_the_others_lie_nearest(t):
-    # The reference used to be the first grid named Kurucz, else the first grid named.
-    from sed_tools.cube.combine import identify_reference_model
-
-    def grid(name, teffs, first_spectrum):
-        (t.tmp / name).mkdir()
-        (t.tmp / name / "s.txt").write_text(first_spectrum)
-        return {"files": np.array(["s.txt"] * len(teffs)), "teff": np.array(teffs), "logg": np.full(len(teffs), 4.0),
-                "meta": np.zeros(len(teffs)), "model_dir": str(t.tmp / name)}
-
-    wide, optical = "1000 1\n30000 1\n", "3000 1\n7000 1\n"  # 441 and 81 of the common grid's 441 points
-    common = np.linspace(3000.0, 25000.0, 441)
-    hot, broad = grid("hot", [9000.0, 9500.0], wide), grid("broad", [4000.0, 6000.0, 8000.0, 9000.0], optical)
-    assert identify_reference_model([hot, broad], common) == 0  # broad lies nearer, but is too short to compare
-    (t.tmp / "broad" / "s.txt").write_text(wide)
-    assert identify_reference_model([hot, broad], common) == 1
-    (t.tmp / "broad" / "s.txt").write_text(optical)
-    (t.tmp / "hot" / "s.txt").unlink()
-    assert identify_reference_model([hot, broad], common) == 1  # neither can be compared: the nearest of all
-    hot["teff"], broad["teff"] = np.full(2, np.nan), np.full(4, np.nan)
-    assert identify_reference_model([hot, broad], common) == 0  # no parameters to measure: the first
+def combine_keeps_each_grids_flux_at_shared_nodes(t):
+    # The later grid's spectra used to be scaled onto the earlier grid's at their shared nodes, to 0.971 of their own
+    # flux here: combine is not a calibration step, so the second grid's 3 % stays.
+    _planck_grid(t, "a", [(5000.0, 4.5, 0.0), (5500.0, 4.5, 0.0), (6000.0, 4.5, 0.0)])
+    _planck_grid(t, "b", [(5000.0, 4.5, 0.0), (5500.0, 4.5, 0.0)], scale=1.03)
+    ratios = _nodes_over_their_own_spectra(t, ["a", "b"])
+    assert len(ratios) == 3 and all(abs(r - 1) <= 0.01 for r in ratios.values()), ratios
+    lookup = (t.tmp / "models" / "combined" / "lookup_table.csv").read_text()
+    assert "b_000003.txt,5000.0,4.5,0.0,b,s0.txt" in lookup  # the shared nodes are b's, 3 % brighter than a's
 
 
 @row

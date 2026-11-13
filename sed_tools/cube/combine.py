@@ -4,10 +4,8 @@ back in: a grid whose lookup table has the ``source_model`` and ``original_file`
 :func:`save_combined_data` writes them), or whose folder is ``combined_models``. One named explicitly is combined.
 """
 
-import logging
 import os
 import shutil
-from collections import Counter
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -20,16 +18,12 @@ from ..ui_utils import banner
 from ..grids.lookup import find_logg_column, find_metallicity_column, find_teff_column
 from ..grids.spectrum_io import read_text_spectrum
 
-logger = logging.getLogger(__name__)
-
 # scipy is only in the [full] extra: the functions that need it import it, so `import sed_tools` works without it.
 
 
 # The lookup columns only save_combined_data writes, and the default output name.
 _COMBINED_COLUMNS = {"source_model", "original_file"}
 _DEFAULT_COMBINED_NAME = "combined_models"
-# The common-grid wavelengths a spectrum and its reference must share for one to be normalised to the other.
-_MIN_COMMON_POINTS = 100
 
 
 def find_stellar_models(base_dir=None):
@@ -205,138 +199,12 @@ def create_common_wavelength_grid(all_models_data, sample_size=20):
     return wavelength_grid
 
 
-def identify_reference_model(all_models_data, wavelength_grid):
-    """The grid the others are normalised to. compute_normalization_factors scales each spectrum to the reference
-    spectrum nearest it in (Teff, log g, [M/H]), so this is the grid the other grids' spectra lie nearest: the
-    smallest sum of those distances, each parameter scaled to the range of all the grids. Only grids whose first
-    spectrum spans _MIN_COMMON_POINTS of the common wavelength grid are chosen, when any does; ties go to the grid
-    named first."""
-    params = [np.column_stack([d[key] for key in ("teff", "logg", "meta")]).astype(float) for d in all_models_data]
-    params = [p[np.isfinite(p).all(axis=1)] for p in params]
-    every = np.vstack(params)
-    low, span = (every.min(axis=0), np.ptp(every, axis=0)) if len(every) else (0.0, np.ones(3))
-    span[span == 0] = 1.0
-    from scipy.spatial import KDTree
-
-    def distance(i):
-        tree = KDTree((params[i] - low) / span)
-        return sum(tree.query((p - low) / span)[0].sum() for j, p in enumerate(params) if j != i)
-
-    comparable = [i for i, d in enumerate(all_models_data) if _common_points(d, wavelength_grid) >= _MIN_COMMON_POINTS]
-    reference = min(comparable or range(len(all_models_data)), key=distance)
-    print(f"Reference spectral grid: {os.path.basename(all_models_data[reference]['model_dir'])}")
-    return reference
-
-
-def _common_points(model_data, wavelength_grid):
-    """How many wavelengths of the common grid the grid's first spectrum spans; 0 if it has none it can read."""
-    try:
-        wl, _ = prepare_sed(os.path.join(model_data["model_dir"], model_data["files"][0]))
-    except (IndexError, OSError, ValueError):
-        return 0  # build_combined_flux_cube lists the spectra it cannot read
-    return int(np.count_nonzero((wavelength_grid >= wl.min()) & (wavelength_grid <= wl.max())))
-
-
-def compute_normalization_factors(target_data, reference_data, wavelength_grid):
-    """Compute normalization factors to match target SEDs to reference spectral grid.
-
-    Each target spectrum is scaled to its nearest reference spectrum in
-    (Teff, log g, [M/H]) over their common wavelength range. Where no
-    comparison is possible the factor is 1 (native scale kept) and a warning
-    says how many spectra that affected. Raises ValueError listing every
-    target spectrum that cannot be read or has non-finite parameters.
-    """
-    target_name = os.path.basename(target_data["model_dir"])
-    ref_name = os.path.basename(reference_data["model_dir"])
-    print(f"  Normalizing to: {ref_name}")
-
-    if len(reference_data["files"]) == 0:
-        logger.warning("Reference grid %s has no spectra; %s keeps its native flux scale.",
-                       ref_name, target_name)
-        return np.ones(len(target_data["files"]))
-
-    ref_params = np.column_stack([reference_data[key] for key in ("teff", "logg", "meta")])
-    valid_mask = np.isfinite(ref_params).all(axis=1)
-    ref_params = ref_params[valid_mask]
-    ref_files = np.array(reference_data["files"])[valid_mask]
-
-    if len(ref_params) == 0:
-        # build_combined_flux_cube then stops, listing the reference grid's non-finite rows.
-        return np.ones(len(target_data["files"]))
-
-    ranges = ref_params.max(axis=0) - ref_params.min(axis=0)
-    ranges[ranges == 0] = 1.0
-
-    from scipy.spatial import KDTree
-
-    tree = KDTree((ref_params - ref_params.min(axis=0)) / ranges)
-    norm_factors = []
-    failures = []
-    kept_native = Counter()
-
-    for file, teff, logg, meta in zip(target_data["files"], target_data["teff"], target_data["logg"],
-                                      target_data["meta"]):
-        file_target = os.path.join(target_data["model_dir"], file)
-        if not all(np.isfinite([teff, logg, meta])):
-            failures.append(f"{file_target}: non-finite parameters "
-                            f"(teff={teff}, logg={logg}, meta={meta})")
-            continue
-
-        _, idx = tree.query((np.array([teff, logg, meta]) - ref_params.min(axis=0)) / ranges)
-        file_ref = os.path.join(reference_data["model_dir"], ref_files[idx])
-
-        try:
-            factor, reason = _normalization_factor(file_target, file_ref, wavelength_grid)
-        except (OSError, ValueError) as exc:  # unreadable target or reference spectrum
-            failures.append(str(exc))
-            continue
-        if reason:
-            kept_native[reason] += 1
-        elif not (0.01 < factor < 100):
-            print(f"  Warning: large normalization factor {factor:.3e} for {file} "
-                  f"(teff={teff:.0f}, logg={logg:.2f}, [M/H]={meta:.2f}) — check unit consistency")
-        norm_factors.append(factor)
-
-    if failures:
-        raise ValueError(
-            f"Cannot normalise {len(failures)} spectra of {target_name} to {ref_name}; "
-            "fix them or remove their rows from the lookup table:\n  " + "\n  ".join(failures)
-        )
-    for reason, count in kept_native.items():
-        logger.warning("%d spectra of %s keep their native flux scale (not normalised to %s): %s.",
-                       count, target_name, ref_name, reason)
-    return np.array(norm_factors)
-
-
-def _normalization_factor(file_target, file_ref, wavelength_grid):
-    """Reference over target integrated flux on their common range, as (factor, None), or (1.0, reason)."""
-    wl_tgt, flux_tgt = prepare_sed(file_target)
-    wl_ref, flux_ref = prepare_sed(file_ref)
-
-    wl_min = max(wl_tgt.min(), wl_ref.min(), wavelength_grid.min())
-    wl_max = min(wl_tgt.max(), wl_ref.max(), wavelength_grid.max())
-    mask = (wavelength_grid >= wl_min) & (wavelength_grid <= wl_max)
-    if mask.sum() < _MIN_COMMON_POINTS:
-        return 1.0, f"fewer than {_MIN_COMMON_POINTS} common wavelength points"
-
-    from scipy.interpolate import interp1d
-
-    wl_common = wavelength_grid[mask]
-    interp_tgt = interp1d(wl_tgt, flux_tgt, bounds_error=False, fill_value=0)
-    interp_ref = interp1d(wl_ref, flux_ref, bounds_error=False, fill_value=0)
-
-    F_tgt = np.trapezoid(interp_tgt(wl_common), wl_common)
-    F_ref = np.trapezoid(interp_ref(wl_common), wl_common)
-    if not F_tgt > 0:
-        return 1.0, "no positive target flux over the common range"
-    return F_ref / F_tgt, None
-
-
 def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid):
     """Build the combined flux cube from all spectral grids.
 
-    Raises ValueError, before anything is written, listing every spectrum that
-    cannot be read or has non-finite parameters.
+    Each spectrum keeps the absolute flux in its file (the cleaner ties it to the spectrum's own sigma T^4): no
+    spectrum is scaled to another grid's. Later grids overwrite earlier ones at shared nodes. Raises ValueError,
+    before anything is written, listing every spectrum that cannot be read or has non-finite parameters.
     """
     n_teff, n_logg, n_meta, n_lambda = len(teff_grid), len(logg_grid), len(meta_grid), len(wavelength_grid)
 
@@ -347,16 +215,6 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
     print(f"\nBuilding flux cube: {flux_cube.shape}")
     print(f"Memory: {flux_cube.nbytes / (1024**2):.1f} MB")
 
-    ref_idx = identify_reference_model(all_models_data, wavelength_grid)
-    ref_data = all_models_data[ref_idx]
-
-    norm_factors = {}
-    for model_idx, model_data in enumerate(all_models_data):
-        if model_idx == ref_idx:
-            norm_factors[model_idx] = np.ones(len(model_data["files"]))
-        else:
-            norm_factors[model_idx] = compute_normalization_factors(model_data, ref_data, wavelength_grid)
-
     # Fill the cube; later grids overwrite earlier ones at shared nodes
     failures = []
     for model_idx, model_data in enumerate(all_models_data):
@@ -364,8 +222,8 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
         print(f"\nProcessing {model_name}...")
 
         rows = zip(model_data["files"], model_data["teff"], model_data["logg"], model_data["meta"])
-        for i, (file, teff, logg, meta) in enumerate(tqdm(rows, total=len(model_data["files"]),
-                                                          desc=f"Spectral grid {model_idx + 1}")):
+        for file, teff, logg, meta in tqdm(rows, total=len(model_data["files"]),
+                                           desc=f"Spectral grid {model_idx + 1}"):
             filepath = os.path.join(model_data["model_dir"], file)
             if not all(np.isfinite([teff, logg, meta])):
                 failures.append(f"{filepath}: non-finite parameters "
@@ -376,7 +234,6 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
             except (OSError, ValueError) as exc:
                 failures.append(str(exc))
                 continue
-            fl *= norm_factors[model_idx][i]
 
             node = (_nearest_idx(teff_grid, teff), _nearest_idx(logg_grid, logg), _nearest_idx(meta_grid, meta))
             flux_cube[node] = resample_to_grid(wl, fl, wavelength_grid)
