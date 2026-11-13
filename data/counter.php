@@ -1,12 +1,20 @@
 <?php
 $file = __DIR__ . "/count.txt";
 
-if (!file_exists($file)) {
-    file_put_contents($file, "0");
+// One visit at a time: read and write the count under an exclusive lock,
+// so two simultaneous visits cannot both read the old number.
+$handle = fopen($file, "c+");
+if ($handle === false) {
+    exit;
 }
-
-$count = (int)file_get_contents($file);
+flock($handle, LOCK_EX);
+$count = (int)stream_get_contents($handle);
 $count++;
-file_put_contents($file, (string)$count);
+ftruncate($handle, 0);
+rewind($handle);
+fwrite($handle, (string)$count);
+fflush($handle);
+flock($handle, LOCK_UN);
+fclose($handle);
 
 echo str_pad($count, 6, "0", STR_PAD_LEFT);
