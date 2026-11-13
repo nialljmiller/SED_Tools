@@ -1116,14 +1116,14 @@ function photChooser(body, entries, instrument, grid, index) {
     if (instrument) {
         html += `<b>${names.length} grid${names.length === 1 ? '' : 's'}:</b> ${names.map(escapeHtml).join(', ')}.${stamp}<br>
             <label>Grid <select class="phot-pick"><option value="">choose a grid</option>` +
-            names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}${megabytes(entries[n])}</option>`).join('') +
+            names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('') +
             '</select></label>';
     } else {
         const list = `phot-list-${encodeURIComponent(grid).replace(/[^A-Za-z0-9]/g, '_')}`;
         html += `<b>${names.length} instrument${names.length === 1 ? '' : 's'}</b> computed.${stamp}<br>
             <label>Instrument <input class="phot-pick" list="${list}" size="28" placeholder="type to search, e.g. a facility"></label>
             <datalist id="${list}">` +
-            names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(megabytes(entries[n]).trim())}</option>`).join('') +
+            names.map(n => `<option value="${escapeHtml(n)}"></option>`).join('') +
             '</datalist>';
     }
     body.innerHTML = html + '</div><div class="phot-view"></div>';
