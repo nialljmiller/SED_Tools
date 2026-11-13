@@ -3463,6 +3463,29 @@ def label_check_finds_the_same_curve_served_with_two_detector_types(t):
 
 
 @row
+def label_check_makes_a_weaker_label_follow_the_same_curve(t):
+    from sed_tools.filters import label_check
+
+    wl, tr = [4000.0, 4500.0, 5000.0], [0.1, 1.0, 0.2]
+    for rel, components, source in (("SLOAN/SDSS/g.dat", "filter+instrument+atmosphere", SOURCE_SVO),
+                                    ("Misc/APASS/sdss_g.dat", FILTER, SOURCE_ASSUMED),       # rule 8
+                                    ("LCO/CSP2/B.dat", "filter+optics+qe", "original"),
+                                    ("LCO/e2v/B.dat", "filter+instrument", SOURCE_SVO),        # the same label
+                                    ("GCPD/JHKLMN/V.dat", "filter+instrument", SOURCE_SVO),
+                                    ("Generic/Johnson/V.dat", FILTER, SOURCE_SVO)):           # SVO against SVO
+        shift = 0.0 if "SDSS" in rel or "APASS" in rel else 1000.0 if "LCO" in rel else 2000.0
+        (t.tmp / rel).parent.mkdir(parents=True, exist_ok=True)
+        write_filter_file(t.tmp / rel, [w + shift for w in wl], tr, detector_type=PHOTON, source=SOURCE_SVO,
+                          extra={"Components": components, "ComponentsSource": source})
+    [(path, message)] = label_check.problems(t.tmp)
+    assert path.name == "sdss_g.dat" and message == ("labelled Components=filter (assumed), but the same curve "
+                                                     "SLOAN/SDSS/g.dat is filter+instrument+atmosphere (svo)"), message
+    write_filter_header(path, {**read_filter_header(path), "Components": "filter+instrument+atmosphere",
+                               "ComponentsSource": SOURCE_SVO_MATCH})
+    assert list(label_check.problems(t.tmp)) == []
+
+
+@row
 def keys_from_newer_writers_are_kept(t):
     path = t.tmp / "GAIA" / "GAIA" / "G.dat"
     path.parent.mkdir(parents=True)

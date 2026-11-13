@@ -20,6 +20,11 @@ violation and exits 1, or prints a one-line summary and exits 0.  Each rule hold
    served under two instruments cannot be read in two conventions.  Samples are the same when the
    wavelengths agree and the peak-normalised transmissions agree to :data:`SAME_SAMPLES` (float32
    precision, so a copy written at float32 is the same curve).
+8. Curves with the same samples say the same about what they include: where the strongest
+   ``ComponentsSource`` among them (:data:`DETECTOR_SOURCE_PRECEDENCE`) gives one ``Components``, a curve
+   with a weaker source gives it too (SVO's ``instrument`` read as optics+qe).  APASS's copy of SDSS's
+   g response cannot be ``filter (assumed)`` while SDSS's says ``filter+instrument+atmosphere (svo)``.
+   When the strongest sources disagree with each other, no rule can choose, and nothing is reported.
 """
 
 from __future__ import annotations
@@ -35,14 +40,15 @@ import numpy as np
 from .compose import read_curve
 from .curve_metadata import (DETECTOR_SOURCE_PRECEDENCE, SOURCE_ASSUMED, PathLike, normalize_detector_type,
                              normalize_sources, read_filter_header)
-from .manifest import FILTER, MANIFEST_NAME, ComponentError, filter_sibling_base, parse_components
+from .manifest import (FILTER, INSTRUMENT, MANIFEST_NAME, OPTICS, QE, ComponentError, filter_sibling_base,
+                       parse_components)
 
 #: Every ``DetectorTypeSource`` SED_Tools writes.
 DETECTOR_SOURCES = DETECTOR_SOURCE_PRECEDENCE + ("user", "composed", "component")
 #: A curve is a component when it follows it to SAME_CURVE of the component's peak on its own wavelengths and
 #: leaves out only wings below WING of that peak (copies are often trimmed there).
 SAME_CURVE, WING = 1e-4, 1e-2
-#: Rule 7's tolerance on wavelengths (relative) and on peak-normalised transmissions: float32 precision.
+#: Rules 7 and 8's tolerance on wavelengths (relative) and on peak-normalised transmissions: float32 precision.
 SAME_SAMPLES = 1e-6
 
 Problem = Tuple[Path, str]
@@ -57,7 +63,9 @@ def problems(filters_dir: PathLike, against: Optional[PathLike] = None) -> Itera
         yield from _component_problems(folder, headers)
         if against is not None:
             yield from _regressions(folder, headers, Path(against) / folder.parent.name / folder.name)
-    yield from _clashes(Path(filters_dir))
+    for group in _same_sample_groups(Path(filters_dir)):
+        yield from _clashes(Path(filters_dir), group)
+        yield from _followers(Path(filters_dir), group)
 
 
 def _folders(filters_dir: PathLike) -> List[Path]:
@@ -138,21 +146,22 @@ def _same_curve(curve, component) -> bool:
     return bool(np.max(np.abs(curve.transmission - on_curve)) <= SAME_CURVE * peak)
 
 
-def _clashes(filters_dir: Path) -> Iterator[Problem]:
-    """Rule 7: each group of labelled curves with the same samples (:func:`_same_samples`) and more than one
-    DetectorType."""
-    groups: Dict[int, List[List]] = defaultdict(list)  # by sample count: groups of (curve, path, type, source)
+def _same_sample_groups(filters_dir: Path) -> Iterator[List]:
+    """Each group of more than one labelled curve (a ``DetectorType`` or a ``Components``) with the same samples
+    (:func:`_same_samples`), as (curve, path, header)."""
+    groups: Dict[int, List[List]] = defaultdict(list)  # by sample count
     for folder in _folders(filters_dir):
         for path in sorted(folder.glob("*.dat")):
             header = read_filter_header(path)
-            detector = normalize_detector_type(header.get("DetectorType"))
+            if not (normalize_detector_type(header.get("DetectorType")) or _covered(header)):
+                continue  # unlabelled: nothing to compare
             try:
-                curve = read_curve(path) if detector else None
+                curve = read_curve(path)
             except ComponentError:
                 continue  # an unreadable curve is no one's copy
-            if curve is None or np.max(curve.transmission) <= 0:
-                continue  # unlabelled, or no peak to compare by
-            entry = (curve, path, detector, header.get("DetectorTypeSource") or "no source")
+            if np.max(curve.transmission) <= 0:
+                continue  # no peak to compare by
+            entry = (curve, path, header)
             same_length = groups[len(curve.wavelength)]
             group = next((g for g in same_length if _same_samples(g[0][0], curve)), None)
             if group is None:
@@ -160,10 +169,44 @@ def _clashes(filters_dir: Path) -> Iterator[Problem]:
             else:
                 group.append(entry)
     for same_length in groups.values():
-        for group in same_length:
-            if len({detector for _, _, detector, _ in group}) > 1:
-                yield group[0][1], "the same curve carries more than one DetectorType: " + ", ".join(
-                    f"{path.relative_to(filters_dir)} ({detector}, {source})" for _, path, detector, source in group)
+        yield from (group for group in same_length if len(group) > 1)
+
+
+def _clashes(filters_dir: Path, group: List) -> Iterator[Problem]:
+    """Rule 7: one curve with more than one DetectorType."""
+    tagged = [(path, normalize_detector_type(header.get("DetectorType")),
+               header.get("DetectorTypeSource") or "no source")
+              for _, path, header in group if normalize_detector_type(header.get("DetectorType"))]
+    if len({detector for _, detector, _ in tagged}) > 1:
+        yield tagged[0][0], "the same curve carries more than one DetectorType: " + ", ".join(
+            f"{path.relative_to(filters_dir)} ({detector}, {source})" for path, detector, source in tagged)
+
+
+def _covered(header) -> Optional[frozenset]:
+    """What a ``Components`` label says the curve includes, with SVO's ``instrument`` read as optics+qe."""
+    roles = set(_roles(header))
+    if INSTRUMENT in roles:
+        roles = (roles - {INSTRUMENT}) | {OPTICS, QE}
+    return frozenset(roles) or None
+
+
+def _followers(filters_dir: Path, group: List) -> Iterator[Problem]:
+    """Rule 8: a weaker label gives what the strongest labels of the same curve agree on."""
+    ranked = [(DETECTOR_SOURCE_PRECEDENCE.index(header["ComponentsSource"]), _covered(header), path, header)
+              for _, path, header in group
+              if header.get("ComponentsSource") in DETECTOR_SOURCE_PRECEDENCE and _covered(header)]
+    if not ranked:
+        return
+    best = min(rank for rank, *_ in ranked)
+    strongest = [entry for entry in ranked if entry[0] == best]
+    if len({covered for _, covered, *_ in strongest}) > 1:
+        return  # the strongest sources disagree: nothing to follow
+    _, label, donor, given = strongest[0]
+    for _, covered, path, header in ranked:
+        if covered != label:
+            yield path, (f"labelled Components={header['Components']} ({header['ComponentsSource']}), but the "
+                         f"same curve {donor.relative_to(filters_dir)} is {given['Components']} "
+                         f"({given['ComponentsSource']})")
 
 
 def _same_samples(a, b) -> bool:
