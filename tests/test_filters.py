@@ -2958,6 +2958,23 @@ def one_set_never_holds_another_release_of_its_instrument(t):
 
 
 @row
+def a_set_holds_no_copy_of_a_source_it_is_not_made_from(t):
+    # NJM's ingests filed SVO's NOT/NOT filter list in NOT/ALFOSC; a publisher's curve may name any record
+    def copy_of(filter_id):  # SED_Tools' SVO grabbers wrote no Sources
+        return curve_of(filter_id).replace(";Sources=https://example.invalid", "")
+
+    claims = {"NOT/ALFOSC": ["NOT/ALFOSC"], "NOT/NOT": ["NOT/NOT"]}
+    alfosc = put(t.tmp / "NOT" / "ALFOSC", {"B.dat": copy_of("NOT/ALFOSC.B"), "074.dat": copy_of("NOT/NOT.074"),
+                                             "U.dat": curve_of("Generic/Bessell.U"), "ALFOSC": "074.dat\nB.dat\nU.dat\n"})
+    assert set_problems(alfosc, claims) == [f"{alfosc}/074.dat is NOT/NOT.074, a curve of NOT/NOT, not of this set"]
+    del claims["NOT/NOT"]  # no set made from it yet: it still belongs in one of its own
+    assert set_problems(alfosc, claims) == [f"{alfosc}/074.dat is NOT/NOT.074, a copy of NOT/NOT's record, which no "
+                                            "claim puts in this set: it belongs in a set of its own"]
+    mosaic = put(t.tmp / "KPNO" / "Mosaic", {"OIII.dat": copy_of("KPNO/MOSAIC.OIII"), "Mosaic": "OIII.dat\n"})
+    assert set_problems(mosaic, {"KPNO/Mosaic": ["KPNO/Mosaic"]}) == []  # named after it, as SED_Tools compares names
+
+
+@row
 def svo_never_saves_two_instruments_curves_into_one_set(t):
     browser = svo_browser(t.tmp, {})
 
