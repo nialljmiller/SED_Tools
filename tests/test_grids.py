@@ -1338,15 +1338,18 @@ def _msg_spectrum_written(t, c, law, wavelength_range, expected):
         assert not (t.tmp / "sg-Test" / "sg-Test_fid1.txt").exists()
         return
     assert grabber.download_model_spectra("sg-Test", spectra) == 1
-    wavelength, flux = read_text_spectrum(t.tmp / "sg-Test" / "sg-Test_fid1.txt")
+    written = t.tmp / "sg-Test" / "sg-Test_fid1.txt"
+    wavelength, flux = read_text_spectrum(written)
     np.testing.assert_allclose(wavelength, expected[0])
     np.testing.assert_allclose(flux, expected[1], rtol=1e-8)
+    noted = [line for line in written.read_text().splitlines() if line.startswith("# negative_flux_fraction")]
+    assert noted == list(expected[2:])  # only a spectrum with negative fluxes says how much they are
 
 
 CLARET_ROW = [1.0, 0.1, 0.2, 0.3, 0.4]
 LIN = ("lin_range_t", {"x_0": 3000.0, "dx": 1000.0, "n": 4})
-#: name: (c, limb-darkening law, (range type, its values), the bin-centre wavelengths and fluxes written, or the
-#: reason the spectrum fails). MSG's range points are bin edges and c holds one row per bin
+#: name: (c, limb-darkening law, (range type, its values), the bin-centre wavelengths and fluxes written and any
+#: negative_flux_fraction header line, or the reason the spectrum fails). MSG's range points are bin edges and c holds one row per bin
 #: (limb_specint_construct_sm.fypp); the flux is 2 pi times c dotted with the law's flux basis (eval_flux_basis,
 #: limb_basis_sm.fypp). Until 13 Nov 2026 no lin_range_t, log_range_t or comp_range_t was read, nor a tab_range_t
 #: from 0 A, so 24 of the 25 grids extracted nothing, and SPHINX wrote the intensity c as flux: pi times too low.
@@ -1368,8 +1371,13 @@ MSG_SPECTRA = {
     "msg_c_without_a_row_per_bin_fails": ([[1.0]] * 2, "CONST", LIN, "c has shape (2, 1), not (3, 1)"),
     "msg_unknown_range_type_fails": ([[1.0]] * 3, "CONST", ("spline_range_t", {}), "wavelength range type 'spline_range_t'"),
     "msg_unknown_limb_law_fails": ([[1.0]] * 3, "POWER", LIN, "limb-darkening law 'POWER'"),
-    "msg_negative_or_non_finite_flux_fails": (
-        [[-1.0], [np.nan], [1.0]], "CONST", LIN, "2 of 3 fluxes are not finite and non-negative"),
+    "msg_non_finite_flux_fails": ([[1.0], [np.nan], [1.0]], "CONST", LIN, "1 of 3 fluxes are not finite"),
+    # Negative fluxes are kept as MSG gives them while their integral is below 0.1 % of the absolute flux's
+    "msg_negative_flux_below_a_tenth_of_a_percent_is_kept_and_noted": (
+        [[1.0], [-1e-4], [1.0]], "CONST", LIN,
+        ([3500.0, 4500.0, 5500.0], [np.pi, -1e-4 * np.pi, np.pi], "# negative_flux_fraction = 9.999e-05")),
+    "msg_negative_flux_of_a_tenth_of_a_percent_or_more_fails": (
+        [[1.0], [-2e-3], [1.0]], "CONST", LIN, "its negative fluxes are 0.002 of its absolute flux (limit 0.001)"),
     "msg_spectrum_without_a_positive_flux_fails": ([[0.0]] * 3, "CONST", LIN, "no flux is positive"),
     "msg_non_positive_wavelength_fails": (
         [[1.0]] * 3, "CONST", ("lin_range_t", {"x_0": -2000.0, "dx": 1000.0, "n": 4}),

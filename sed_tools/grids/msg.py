@@ -52,6 +52,15 @@ def _axis_label(axis_group):
 #   (limb/limb_basis_sm.fypp:266-305, eval_flux_basis).
 _FLUX_BASIS = {"CONST": (1 / 2,), "LINEAR": (1 / 2, -1 / 6), "SQRT": (1 / 2, -1 / 10, -1 / 6),
                "QUAD": (1 / 2, -1 / 6, -1 / 4), "CLARET": (1 / 2, -1 / 10, -1 / 6, -3 / 14, -1 / 4)}
+#: A spectrum may hold negative fluxes, kept as MSG gives them, only while their integrated size is below this
+#: fraction of the spectrum's integrated absolute flux. Some model spectra carry an isolated negative bin from
+#: their source's own data.
+_NEGATIVE_FLUX_LIMIT = 1e-3
+
+
+def _negative_fraction(wl, fx):
+    """The integrated size of a spectrum's negative fluxes over its integrated absolute flux, on its wavelengths."""
+    return float(np.trapezoid(np.abs(np.minimum(fx, 0.0)), wl) / np.trapezoid(np.abs(fx), wl))
 
 
 def _range_points(rg):
@@ -302,9 +311,12 @@ class MSGSpectraGrabber:
             return ("failed", fname, f"{gpath}: {e}")
         # Fluxes may be 0: MSG's cool models are exactly 0 in the far ultraviolet (BT-Settl, Goettingen-HiRes)
         checks = (("wavelengths are not finite and positive", np.isfinite(wl) & (wl > 0)),
-                  ("fluxes are not finite and non-negative", np.isfinite(fx) & (fx >= 0)))
+                  ("fluxes are not finite", np.isfinite(fx)))
         bad = [f"{np.count_nonzero(~ok)} of {ok.size} {what}" for what, ok in checks if not ok.all()]
         bad += [] if np.any(fx > 0) else ["no flux is positive"]
+        negative = _negative_fraction(wl, fx) if not bad and np.any(fx < 0) else None
+        if negative is not None and not negative < _NEGATIVE_FLUX_LIMIT:
+            bad.append(f"its negative fluxes are {negative:.3g} of its absolute flux (limit {_NEGATIVE_FLUX_LIMIT:g})")
         if bad:
             return ("failed", fname, f"{gpath}: " + "; ".join(bad))
 
@@ -320,6 +332,8 @@ class MSGSpectraGrabber:
             fh.write(f"# spec_group = {gpath}\n")
             for key, value in params.items():
                 fh.write(f"# {key} = {value}\n")
+            if negative is not None:
+                fh.write(f"# negative_flux_fraction = {negative:.3e}\n")
             fh.write("# wavelength_unit = Angstrom\n")
             fh.write("# flux_unit = erg/cm2/s/A\n")
             fh.write("# columns = wavelength_A flux\n")

@@ -46,8 +46,8 @@ _BOOKKEEPING_AXES: Set[str] = {
     "url", "wave_grid", "columns", "res", "atmos",
     # teff, logg, meta variants used by various grabbers
     "t_eff", "log_g", "mh", "m_h", "feh",
-    # grids/clean.py bookkeeping
-    "renormed",
+    # grids/clean.py bookkeeping, and grids/msg.py's for a spectrum with negative fluxes
+    "renormed", "negative_flux_fraction",
     # common provenance / model-type labels
     "atmosphere", "model", "model_type", "grid", "library",
     # MAST BOSZ specific
