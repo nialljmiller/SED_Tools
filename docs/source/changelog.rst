@@ -10,9 +10,10 @@ Version 0.7.0 (unreleased)
 that did nothing or that only the tests used. It adds checks that a served
 filter tree and a grid are consistent with what MESA reads (PR #66), drops the
 checks that only reworded a user's mistake (PR #67), reads MSG grids as MSG
-defines them, stops combine from scaling one grid's spectra to another's, and
-fixes four other defects. Valid use of the current API, and the files MESA
-reads, are unchanged except where a bullet below says otherwise.
+defines them, stops combine from scaling one grid's spectra to another's and
+from placing or overwriting spectra wrongly, and fixes four other defects.
+Valid use of the current API, and the files MESA reads, are unchanged except
+where a bullet below says otherwise.
 
 Removed: the old import paths
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -180,9 +181,38 @@ Changed behaviour
   grids, 156,460 spectra were scaled to another star, and 26 % of the
   combined cubes' nodes held a flux off by more than 1 %. Every node a
   spectrum fills now integrates to within 1 % of that spectrum, resampled as
-  the cube is built. Where grids share a node, the grid named later fills it,
-  as before. In golden ``combine_models`` each node's flux rises by
-  0.24–0.47 %.
+  the cube is built.
+- **combine fills a missing axis with every value.** A grid that does not
+  state log g or [M/H] (``bbody`` has neither, ``Husfeld`` no [M/H]) used to
+  be placed at log g 0 and [M/H] 0, as stars of that log g. It holds the same
+  spectrum at every value of that axis, so each of its spectra is now copied
+  to every value the other grids give the axis; an axis no grid states is 0
+  alone, as the cube builder reads it, so a lone grid is unchanged. Where
+  spectra meet at a node, the one placed by more of its grid's own values
+  wins (a blackbody never replaces a star placed by its own log g), and
+  between equals the grid named later, as before. A grid without a Teff
+  column is refused, as the cube builder refuses it.
+- **combine splits extra axes per variant.** Extra axes (``alpha``,
+  ``[alpha/Fe]``, ``C/O``, helium ``yhe``, ...) used to be dropped, so spectra
+  that differ only in them met on one node and the later overwrote the
+  earlier. A combination is now split as ``sed-tools rebuild`` splits one
+  grid: one subgrid per variant, each with its own lookup table and
+  ``flux_cube.bin``, listed in ``variants_index.csv``, and the combined
+  folder keeps the spectra and every variant's rows. A grid without an extra
+  axis is in every variant of it, as for log g. Values match as numbers
+  (``0`` and ``0.0`` agree); axes match by name, so ``alpha`` and
+  ``[alpha/Fe]`` are two axes. A split combination has no flux cube of its
+  own, and ``SED.combine`` then returns its spectral grid without a model. A
+  combination with no varying extra axis is written as before.
+- **A combined grid's lookup table lists what its cube holds:** one row per
+  node a spectrum fills, at the spectrum's own values and, for an axis its
+  grid does not state, the node's. A spectrum that fills no node (one
+  overwritten by a later grid) is neither listed nor copied.
+- Golden ``combine_models``: the golden pair (alpha 0 and alpha 0.4) is now
+  two variant subgrids. The alpha 0.4 cube is the one combine wrote with its
+  scaling removed (each node 0.24–0.47 % above the scaled one), and the
+  alpha 0 cube holds Kurucz2003all's own spectra, which were overwritten
+  before.
 - **ML lookup columns are found as everywhere else.**
   ``Completer.extend_catalog`` (and ``MLCompleter.extend`` and the extend
   menu) finds a lookup table's file, Teff, logg and [M/H] columns with
