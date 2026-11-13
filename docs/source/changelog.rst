@@ -9,9 +9,10 @@ Version 0.7.0 (unreleased)
 0.4.1 aliases, the modules' own command lines, and parameters and functions
 that did nothing or that only the tests used. It adds checks that a served
 filter tree and a grid are consistent with what MESA reads (PR #66), drops the
-checks that only reworded a user's mistake (PR #67), and fixes four defects.
-Valid use of the current API, and the files MESA reads, are unchanged except
-where a bullet below says otherwise.
+checks that only reworded a user's mistake (PR #67), reads MSG grids as MSG
+defines them, stops combine from scaling one grid's spectra to another's, and
+fixes four other defects. Valid use of the current API, and the files MESA
+reads, are unchanged except where a bullet below says otherwise.
 
 Removed: the old import paths
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -142,6 +143,10 @@ Removed: aliases, command lines, parameters and functions
   ``lsst.validate`` and ``twomass.validate``; and
   ``SkyCalcClient.transmission`` (a client passed to ``skycalc.build`` needs
   ``fetch``). ``released_mesa_reads`` stays.
+- ``cube.combine.identify_reference_model`` and
+  ``compute_normalization_factors`` (public since 0.4.1, as
+  ``combine_stellar_atm``'s), with the scaling they served: combine scales no
+  spectrum (below).
 - Unused names: ``grids.lookup.scan_existing_files``,
   ``filters.display.NORMALIZATIONS`` (``filter_plot.NORMALIZATIONS``),
   ``catalog.BLOCKED``, ``swift.CALDB_PAGE``, ``team_atmospheres.VISTA_PAGE``
@@ -166,16 +171,18 @@ Changed behaviour
   them silently ignored any other keyword (``sed-tools filters-build-components
   sdss --archive DIR`` ignored ``--archive``). A removed parameter therefore
   raises ``TypeError`` too.
-- **The combine reference is the nearest grid.** ``sed-tools combine``
-  scales each spectrum to the reference spectrum nearest it in (Teff, log g,
-  [M/H]). The reference grid is now the one the other grids' spectra lie
-  nearest (the smallest sum of distances, with each parameter scaled to the
-  range of all the grids), among grids whose spectra span 100 points of the
-  common wavelengths; ties go to the grid named first. Before, it was the
-  first grid whose name contains "kurucz" (in any case), else the first grid
-  named. The combinations in the tests and golden cases keep their reference and
-  their output; of NJM's 8 grids, 31 of the 84 combinations of two or three
-  get another reference, and so other scale factors.
+- **combine scales no spectrum.** Each spectrum keeps the absolute flux in
+  its file, which the cleaner ties to its own sigma T^4. Before, combine
+  multiplied every spectrum of every grid but one by its ratio to the nearest
+  spectrum of a reference grid, however far away in (Teff, log g, [M/H]), so
+  a spectrum took another star's flux: an 800 K spectrum scaled to a 3500 K
+  one's came out 7 mag too bright. Over NJM's 84 combinations of two or three
+  grids, 156,460 spectra were scaled to another star, and 26 % of the
+  combined cubes' nodes held a flux off by more than 1 %. Every node a
+  spectrum fills now integrates to within 1 % of that spectrum, resampled as
+  the cube is built. Where grids share a node, the grid named later fills it,
+  as before. In golden ``combine_models`` each node's flux rises by
+  0.24–0.47 %.
 - **ML lookup columns are found as everywhere else.**
   ``Completer.extend_catalog`` (and ``MLCompleter.extend`` and the extend
   menu) finds a lookup table's file, Teff, logg and [M/H] columns with
@@ -184,10 +191,6 @@ Changed behaviour
   ``temperature``, ``surface_gravity``, ``mh``, ``z`` and the like now are.
   When a table has two candidates, the one ``find_*_column`` prefers is used
   (``filename`` over ``file``, ``metallicity`` over ``meta``).
-- **MSG axis roles come from the axes' own labels** (``Teff``, ``log(g)``,
-  ``[Fe/H]``, ``[alpha/Fe]``, ...), matched as lookup columns are; the
-  value-range guess is used only for a file without labels. The C3K override
-  (``AXIS_ROLE_OVERRIDES``) is removed; C3K's labels give the same roles.
 - The ML menus share one "Start ...? [Y/n]" question: the generator's now
   starts on any answer beginning with y, and prints "Cancelled" otherwise.
 - The original-source modules' ``RECIPES`` map each instrument to its
@@ -198,6 +201,39 @@ Changed behaviour
 Fixed
 ~~~~~
 
+- **MSG grids are read as MSG defines them.** Before, no MSG spectrum had
+  parameters: the reader looked for the vgrid's axes from ``axes[0]``, and MSG
+  numbers them from 1. 24 of the 25 grids extracted nothing, and SPHINX wrote
+  fluxes π too low at the bins' left edges. Now:
+
+  - Teff, log g and [M/H] are decoded from the vgrid as MSG writes it
+    (revisions 1–3, ``v_lin_seq`` or ``mask``, 1-based and in Fortran order),
+    and each axis's role comes from its label (``Teff``, ``log(g)``,
+    ``[Fe/H]``, ``Z/Zo``, ...). The value-range guess and the C3K override
+    (``AXIS_ROLE_OVERRIDES``) are gone.
+  - Spectra come from MSG's wavelength ranges (``lin``, ``log``, ``tab`` and
+    ``comp``) at the bins' centres, with the flux from the limb-darkening
+    law's flux basis.
+  - Every other axis (``[alpha/Fe]``, ``C/O``, ``log(xi)``) is written to the
+    headers and the lookup table, so the cube builder splits such a grid into
+    variants instead of averaging them.
+  - A grid fails, naming each spectrum, when its spectra lack a finite Teff,
+    log g or (where the grid has that axis) [M/H], or a spectrum has
+    wavelengths that are not finite and positive, fluxes that are not
+    finite, or no positive flux. Zero fluxes are kept
+    (MSG stores fluxes below float32's range as 0). Negative fluxes are kept
+    as MSG gives them while their integral is below 0.1 % of the integral of
+    the spectrum's absolute flux, and the spectrum's header then gives that
+    fraction (``negative_flux_fraction``); otherwise the grid fails. Six of
+    Coelho14-SED's spectra hold one negative bin each, at most 3.5e-21 of
+    their flux.
+  - Spectra extracted by an earlier version are not rewritten: delete the
+    grid's folder to extract it again.
+
+- OSTAR2002 and BSTAR2006 (the CLARET limb-darkening grids) are extracted
+  exactly as MSG defines them. Their flux, as MSG stores it, is 2–8 % below
+  SVO's copies of the same TLUSTY models in the optical, and up to 5 times
+  below in the far ultraviolet.
 - MSG and SVO downloads write ``lookup_table.csv`` rows in file-name order,
   as cleaning does; before, the order of the finished downloads, so the same
   download could write a different file.
@@ -229,8 +265,8 @@ Fixed
   server-side cut, which it never made; the spectra are trimmed after
   download, as before.
 
-Checks and guards (PR #66)
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Checks and guards
+~~~~~~~~~~~~~~~~~
 
 - ``sed-tools coverage --filters ...`` (and ``SED.coverage(filters=...)``)
   lists the bands a grid's wavelengths do not sample
@@ -256,7 +292,12 @@ Checks and guards (PR #66)
   - curves with the same samples (after peak normalisation, to float32
     precision) carry the same ``DetectorType`` across the whole tree. On NJM
     it finds 31 groups (68 curves) served with both tags, e.g. SDSS g as
-    photon in ``SLOAN/SDSS`` and as energy in ``Misc/APASS``.
+    photon in ``SLOAN/SDSS`` and as energy in ``Misc/APASS``;
+  - curves with the same samples say the same about what they include: where
+    the strongest ``ComponentsSource`` among them gives one ``Components``, a
+    curve with a weaker source gives it too, so APASS's copy of SDSS g cannot
+    be ``filter (assumed)`` while SDSS's is ``filter+instrument+atmosphere
+    (svo)``. When the strongest sources disagree, nothing is reported.
 
   With ``--against``, it also checks that a changed ``DetectorType`` rests on
   stronger evidence than the old one, or on ``user``. A rebuild then cannot
