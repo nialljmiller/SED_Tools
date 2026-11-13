@@ -41,7 +41,7 @@ from pathlib import Path
 
 import numpy as np
 
-from sed_tools.filter_metadata import normalize_detector_type, read_filter_header
+from sed_tools.filters.curve_metadata import normalize_detector_type, read_filter_header
 
 from .compose import _samples
 from .svo_archive import decode, parse_votable

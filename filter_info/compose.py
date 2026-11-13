@@ -22,7 +22,7 @@ import os
 import re
 from pathlib import Path
 
-from sed_tools.filter_metadata import normalize_detector_type, read_filter_header
+from sed_tools.filters.curve_metadata import normalize_detector_type, read_filter_header
 
 from .references import canonical, link, load_references, reference_keys
 from .svo_archive import curve_digest

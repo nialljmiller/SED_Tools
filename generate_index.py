@@ -16,9 +16,9 @@ from filter_info.compose import SCHEMA as INFO_SCHEMA, InfoSources, write_info
 from filter_info.references import UNRESOLVED
 from grid_info.check_grids import manifest_matches
 from sed_tools import __version__ as SED_TOOLS_VERSION
-from sed_tools.filter_colors import instrument_colors
-from sed_tools.filter_properties import UNITS, curve_properties, extinction_law, load_sun, load_vega
-from sed_tools.filter_metadata import read_filter_header
+from sed_tools.filters.curve_metadata import read_filter_header
+from sed_tools.filters.display import instrument_colors
+from sed_tools.filters.properties import UNITS, curve_properties, extinction_law, load_sun, load_vega
 
 # Vega spectrum for the Vega-weighted filter properties: data/vega/vega_flam.csv, which is
 # CALSPEC alpha_lyr_mod_004 exactly as MESA colors ships it (data/vega/README.md), so the
