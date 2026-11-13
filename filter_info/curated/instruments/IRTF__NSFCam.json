@@ -146,22 +146,22 @@
     },
     "KS": {
       "Description": "NSFCam KS broad-band filter",
-      "svo_filterID": null
+      "svo_filterID": "IRTF/NSFCam.Ks_old"
     },
     "M": {
       "Description": "NSFCam M broad-band filter"
     },
     "LP": {
       "Description": "NSFCam LP broad-band filter",
-      "svo_filterID": null
+      "svo_filterID": "IRTF/NSFCam.Lp_old"
     },
     "J": {
       "Description": "NSFCam J broad-band filter",
-      "svo_filterID": null
+      "svo_filterID": "IRTF/NSFCam.J_old"
     },
     "KP": {
       "Description": "NSFCam KP broad-band filter",
-      "svo_filterID": null
+      "svo_filterID": "IRTF/NSFCam.Kp_old"
     },
     "L": {
       "Description": "NSFCam L broad-band filter"
