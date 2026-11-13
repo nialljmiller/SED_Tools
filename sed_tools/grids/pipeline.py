@@ -154,9 +154,9 @@ def _rebuild_command(name: str, model_dir: str) -> str:
 
 def _build_combined_grid(selected_models: List[Tuple[str, str]], output_dir: str, *,
                          visualization: bool = True) -> None:
-    """Merge the ``(name, path)`` grids onto common parameter and wavelength grids and save to ``output_dir``."""
-    from ..cube.combine import (build_combined_flux_cube, create_common_wavelength_grid, create_unified_grid,
-                                load_model_data, save_combined_data, visualize_parameter_space)
+    """Merge the ``(name, path)`` grids onto common parameter and wavelength grids and save to ``output_dir``
+    (:func:`~sed_tools.cube.combine.write_combined_grid`)."""
+    from ..cube.combine import load_model_data, write_combined_grid
 
     print("\nLoading spectral grid data...")
     all_models_data = []
@@ -164,18 +164,8 @@ def _build_combined_grid(selected_models: List[Tuple[str, str]], output_dir: str
         print(f"  Loading {name}...")
         all_models_data.append(load_model_data(path))
 
-    print("\nCreating unified parameter grids...")
-    teff_grid, logg_grid, meta_grid = create_unified_grid(all_models_data)
-    wavelength_grid = create_common_wavelength_grid(all_models_data)
-
     print("\nBuilding combined flux cube...")
-    flux_cube, source_map = build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid)
-    save_combined_data(output_dir, teff_grid, logg_grid, meta_grid, wavelength_grid, flux_cube, all_models_data)
-
-    if visualization:
-        visualize_parameter_space(
-            teff_grid, logg_grid, meta_grid, source_map, all_models_data, output_dir,
-            wavelength_grid=wavelength_grid, flux_cube=flux_cube)
+    write_combined_grid(all_models_data, output_dir, visualization=visualization)
 
 
 def _import_sources(src: Path) -> Tuple[List[Path], Path]:

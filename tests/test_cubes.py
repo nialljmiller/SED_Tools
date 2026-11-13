@@ -546,17 +546,22 @@ def combine_places_a_grid_without_log_g_at_every_log_g(t):
     lookup = (t.tmp / "models" / "combined" / "lookup_table.csv").read_text().splitlines()
     assert [line.split(",")[4] for line in lookup[1:]] == ["stars"] * 4 + ["bb"] * 2
     assert lookup[-2:] == ["bb_000005.txt,7000.0,4.0,0.0,bb,s1.txt", "bb_000005.txt,7000.0,4.5,0.0,bb,s1.txt"]
+    assert not (t.tmp / "models" / "combined" / "bb_000004.txt").exists()  # its 5000 K spectrum fills no node
 
 
 @row
 def combine_keeps_each_grids_flux_at_shared_nodes(t):
     # The later grid's spectra used to be scaled onto the earlier grid's at their shared nodes, to 0.971 of their own
-    # flux here: combine is not a calibration step, so the second grid's 3 % stays.
-    _planck_grid(t, "a", [(5000.0, 4.5, 0.0), (5500.0, 4.5, 0.0), (6000.0, 4.5, 0.0)])
+    # flux here: combine is not a calibration step, so the second grid's 3 % stays. a's extra column has one value,
+    # so it is no axis and does not make a's spectra outrank b's.
+    _planck_grid(t, "a", [(5000.0, 4.5, 0.0, 2), (5500.0, 4.5, 0.0, 2), (6000.0, 4.5, 0.0, 2)],
+                 columns=("teff", "logg", "metallicity", "vtur"))
     _planck_grid(t, "b", [(5000.0, 4.5, 0.0), (5500.0, 4.5, 0.0)], scale=1.03)
     assert [len(ratios) for ratios in _combined_cubes(t, ["a", "b"]).values()] == [3]
     lookup = (t.tmp / "models" / "combined" / "lookup_table.csv").read_text()
     assert "b_000003.txt,5000.0,4.5,0.0,b,s0.txt" in lookup  # the shared nodes are b's, 3 % brighter than a's
+    assert sorted(p.name for p in (t.tmp / "models" / "combined").glob("*.txt")) == [
+        "a_000002.txt", "b_000003.txt", "b_000004.txt"]  # a's two overwritten spectra are not copied
 
 
 @row
@@ -1018,13 +1023,35 @@ def non_interactive_combine_does_not_fold_in_the_previous_output(t):
 def mesa_prepare_takes_a_combined_grid_as_it_is(t):
     # source_model and original_file differ on every row of a combined grid's lookup; they say where each
     # spectrum came from and are not variants of the grid.
-    two_grids = _golden_pair(t)
-    _combine(two_grids, "omni")
+    _planck_grid(t, "a", [(5000.0, 4.5, 0.0), (5500.0, 4.5, 0.0)])
+    _planck_grid(t, "b", [(6000.0, 4.5, 0.0)])
+    _combined_cubes(t, ["a", "b"])
     t.capsys.readouterr()
-    mesa_export.run_interactive(base_dir=str(two_grids), model="omni")
+    mesa_export.run_interactive(base_dir=str(t.tmp / "models"), model="combined")
     out = t.capsys.readouterr().out
     assert "Note" not in out and "variants over" not in out
     assert "has one flux_cube.bin for all its spectra and no variants to choose between" in out
+
+
+@row
+def combine_keeps_every_variant_of_an_extra_axis(t):
+    # Extra axes used to be dropped: spectra that differ only in alpha met on one node, and the later overwrote the
+    # earlier. The combination is split as the cube builder splits one grid, and a grid without the axis is in
+    # every variant ("any value", as for log g).
+    _planck_grid(t, "alpha", [(5000.0, 4.5, 0.0, 0.0), (5000.0, 4.5, 0.0, 0.4)],
+                 columns=("teff", "logg", "metallicity", "alpha"))
+    _planck_grid(t, "plain", [(6000.0, 4.5, 0.0)])
+    cubes = _combined_cubes(t, ["alpha", "plain"])
+    assert sorted(cubes) == ["combined_alpha_0p00", "combined_alpha_0p40"]
+    assert all(sorted(ratios) == [(5000.0, 4.5, 0.0), (6000.0, 4.5, 0.0)] for ratios in cubes.values())
+    combined = t.tmp / "models" / "combined"
+    for variant, own in (("combined_alpha_0p00", "alpha_000000.txt,5000.0,4.5,0.0,0.0,alpha,s0.txt"),
+                         ("combined_alpha_0p40", "alpha_000001.txt,5000.0,4.5,0.0,0.4,alpha,s1.txt")):
+        assert (combined / variant / "lookup_table.csv").read_text().splitlines() == [
+            "#file_name,teff,logg,meta,alpha,source_model,original_file", own,
+            f"plain_000002.txt,6000.0,4.5,0.0,{own.split(',')[4]},plain,s0.txt"]
+    assert not (combined / "flux_cube.bin").exists()  # as the cube builder leaves a split grid's folder
+    assert [v.label for v in list_variants(combined)] == ["alpha_0.0", "alpha_0.4"]
 
 
 # ----------------------------------------------------------------------

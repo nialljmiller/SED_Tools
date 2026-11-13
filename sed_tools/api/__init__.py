@@ -799,7 +799,11 @@ class SED:
 
         Every grid named in ``catalogs`` is combined, including an earlier
         combine output; only discovery of "all" grids leaves those out
-        (see :mod:`sed_tools.cube.combine`).
+        (see :mod:`sed_tools.cube.combine`). A combination whose extra axes
+        (alpha, [alpha/Fe], C/O, ...) vary is split into one subgrid per
+        variant, as ``sed-tools rebuild`` splits one grid; it then has no
+        flux cube of its own, and the SED returned holds its spectral grid
+        only (load a variant with ``SED.local("<output>/<variant>")``).
 
         Parameters
         ----------
@@ -829,7 +833,9 @@ class SED:
 
         print(f"\nSuccessfully combined {len(selected_models)} spectral grids!")
         print(f"Output: {output_dir}")
-        return cls.local(output, model_root=base_dir)
+        if (Path(output_dir) / "flux_cube.bin").exists():
+            return cls.local(output, model_root=base_dir)
+        return cls(catalog=cls._load_catalog_from_dir(Path(output_dir), output, 'local'), model_root=base_dir)
     
     @classmethod
     def ml_completer(
