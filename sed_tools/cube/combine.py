@@ -20,7 +20,7 @@ from ..ui_utils import banner
 from ..grids.lookup import find_logg_column, find_metallicity_column, find_teff_column
 from ..grids.spectrum_io import read_text_spectrum
 
-logger = logging.getLogger("sed_tools.combine_stellar_atm")
+logger = logging.getLogger(__name__)
 
 # scipy is only in the [full] extra: the functions that need it import it, so `import sed_tools` works without it.
 

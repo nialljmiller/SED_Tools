@@ -15,8 +15,7 @@ import numpy as np
 
 from .filters.curve_metadata import ENERGY, PHOTON, normalize_detector_type, read_filter_header
 
-# These were flux_cube_tool's; their warnings keep its logger name.
-logger = logging.getLogger("sed_tools.flux_cube_tool")
+logger = logging.getLogger(__name__)
 
 
 FILTER_EXTENSIONS = {".dat", ".txt", ".csv"}

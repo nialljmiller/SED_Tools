@@ -22,7 +22,7 @@ DEFAULT_WL_POINTS = 1000
 _PARAMS = ('teff', 'logg', 'meta')
 
 # Both engines' training-data and library warnings log under the completer's logger name.
-_completer_log = logging.getLogger("sed_tools.ml_sed_completer")
+logger = logging.getLogger(__name__)
 
 
 def get_device():
@@ -180,7 +180,7 @@ def _warn_dropped(dropped: Counter, n_sampled: int, library_path: str) -> None:
     if not dropped:
         return
     reasons = ", ".join(f"{count} with {reason}" for reason, count in dropped.items())
-    _completer_log.warning("Training data from %s: dropped %d of %d sampled spectra (%s)",
+    logger.warning("Training data from %s: dropped %d of %d sampled spectra (%s)",
                            library_path, sum(dropped.values()), n_sampled, reasons)
 
 
@@ -346,7 +346,7 @@ def training_libraries(base_dir: str) -> List[Dict[str, Any]]:
             try:
                 n_seds = len(pd.read_csv(lookup))
             except (OSError, ValueError) as exc:
-                _completer_log.warning("Could not count the SEDs in %s: %s", lookup, exc)
+                logger.warning("Could not count the SEDs in %s: %s", lookup, exc)
         libraries.append({'name': name, 'path': path, 'n_seds': n_seds})
     return libraries
 

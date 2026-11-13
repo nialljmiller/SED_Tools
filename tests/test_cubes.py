@@ -289,7 +289,7 @@ def symlink_failure_warns_and_still_builds_the_subgrid_cube(t):
         raise OSError("symlinks not permitted")
 
     t.mp.setattr(pcf.os, "symlink", refuse)
-    with t.caplog.at_level(logging.WARNING, logger=pcf.__name__):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.cube.variants"):
         _build(model)
     messages = [r.getMessage() for r in t.caplog.records if r.levelno == logging.WARNING]
     assert any("Could not link 2 spectra" in m and "symlinks not permitted" in m for m in messages)
@@ -491,7 +491,7 @@ def normalisation_warns_when_spectra_keep_native_scale(t):
     models = _golden_pair(t)
     ref, target = (load_model_data(str(models / name)) for name in (GRID, ALPHA_04))
     coarse = np.linspace(3000.0, 10000.0, 50)  # fewer than 100 points in any overlap
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.combine_stellar_atm"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.cube.combine"):
         factors = compute_normalization_factors(target, ref, coarse)
     np.testing.assert_array_equal(factors, np.ones(len(target["files"])))
     assert f"{len(target['files'])} spectra of Kurucz2003all__alpha_04 keep their native flux scale" in t.caplog.text
@@ -750,7 +750,7 @@ def _goes_back(t, reply):
 def model_photometry_warns_once_about_filters_past_the_model(t):
     cube = affine_cube(t.tmp, wavelengths=(3000.0, 4000.0, 5000.0))
     sed = SEDModel(name="affine", flux_cube_path=cube.path)(4500.0, 2.5, -0.3)
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.flux_cube_tool"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.photometry"):
         sed.photometry(flat_filter("V"), flat_filter("B"), system="AB")
     [warning] = [r.getMessage() for r in t.caplog.records]
     assert warning.endswith("so these bands are biased low: V (47.5%), B (47.5%).")
@@ -758,7 +758,7 @@ def model_photometry_warns_once_about_filters_past_the_model(t):
 
 def _averaged_rows(model_dir, caplog, **override):
     """Build the grid's cube; the warnings that lookup rows were averaged onto one node."""
-    with caplog.at_level(logging.WARNING, logger="sed_tools.precompute_flux_cube"):
+    with caplog.at_level(logging.WARNING, logger="sed_tools.cube.variants"):
         _build(model_dir, override_dict=override or None)
     return [r.getMessage() for r in caplog.records if "lookup rows were averaged" in r.getMessage()]
 

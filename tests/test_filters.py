@@ -301,7 +301,7 @@ def combine_leaves_out_archived_and_unlisted_copies(t):
     bessell = put(t.tmp / "Generic" / "Bessell", {
         **{f"{band}.dat": "Wavelength,Transmission\n2,1\n" for band in ("B", "B_svo")}, "manifest.json": json.dumps(
             {"facility": "Generic", "instrument": "Bessell", "bands": ["B"], "archived_bands": ["B_svo"]})})
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.combine_filters"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.filters.combine"):
         out = Filters.combine("Combined/NISPB", nisp, bessell, filter_root=t.tmp)
     assert sorted(p.name for p in out.glob("*.dat")) == ["B.dat", "H.dat", "Y.dat"]
     assert (out / "NISPB").read_text().splitlines() == ["B.dat", "H.dat", "Y.dat"]
@@ -2475,7 +2475,7 @@ def _outage_announced_once(t, up):
     library = library_with(root, SimpleNamespace(is_available=lambda: up,
                                                  _download_set=lambda f, i: SetDownload(listed=[])),
                            svo_browser(root, {("Fac", "Cam"): ["g", "r"]}))
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.filter_library"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.filters.library"):
         assert library.published("Fac", "Cam") == root / "Fac" / "Cam"
     # Down: the NJM client said so once for the process.  Up but without the set: this fetch says so.
     assert ("NJM cannot provide Fac/Cam (it does not serve this instrument); trying SVO" in t.caplog.text) == up
@@ -2651,7 +2651,7 @@ def curves_requested(session):
 # NJM's availability and pause are shared by the whole process
 @row
 def a_silent_outage_is_checked_and_reported_once_per_process(t):
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.njm_filter_grabber"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.njm_mirror"):
         grabbers, session = grabbers_on_one_session(t, requests.ConnectTimeout("timed out"))
     assert [g.is_available() for g in grabbers] == [False, False, False]
     assert session.calls == [("HEAD", "https://data.nialljmiller.com/sed_tools", True)]  # one 5 s wait, not three
@@ -2665,7 +2665,7 @@ def a_silent_outage_is_checked_and_reported_once_per_process(t):
 def the_outage_is_checked_again_once_the_pause_expires(t):
     clock = [1000.0]
     t.mp.setattr("sed_tools.njm_mirror.monotonic", lambda: clock[0])
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.njm_filter_grabber"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.njm_mirror"):
         _, session = grabbers_on_one_session(t, requests.ConnectionError("refused"), n=1)
         clock[0] += filters_njm.NJM_PAUSE + 1
         again = NJMFilterGrabber(base_dir=str(t.tmp))
@@ -2688,7 +2688,7 @@ def a_reachable_mirror_is_checked_once_and_its_ssl_fallback_is_kept(t):
         return sessions[-1]
 
     t.mp.setattr(filters_njm.requests, "Session", new_session)
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.njm_filter_grabber"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.filters.njm"):
         first = NJMFilterGrabber(base_dir=str(t.tmp))
         second = NJMFilterGrabber(base_dir=str(t.tmp))
     assert first.is_available() and second.is_available()

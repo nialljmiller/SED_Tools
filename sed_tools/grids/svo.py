@@ -17,7 +17,7 @@ from ._http import DISCOVERY_TIMEOUT, discovery_failure, mount_discovery, retryi
 from .header_parser import parse_header
 from .lookup import write_lookup_csv
 
-logger = logging.getLogger("sed_tools.svo_spectra_grabber")
+logger = logging.getLogger(__name__)
 
 
 class SVOSpectraGrabber:

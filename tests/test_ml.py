@@ -848,7 +848,7 @@ def window_coverage_warns_below_the_80_percent_training_required(t):
     from sed_tools.ml.completer import _warn_window_coverage
 
     window = np.arange(10.0)
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.ml_sed_completer"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.ml.completer"):
         _warn_window_coverage(window, np.array([0.0, 7.0]))  # 8 of 10 points: as training required
         assert not t.caplog.records
         _warn_window_coverage(window, np.array([0.0, 6.0]))
@@ -862,7 +862,7 @@ def complete_sed_warns_when_the_input_misses_most_of_the_window(t):
     window = completer.wavelength_grid[300:700]
     narrow = np.logspace(np.log10(3000.0), np.log10(20000.0), 300)
     covered = np.mean((window >= narrow[0]) & (window <= narrow[-1]))
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.ml_sed_completer"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.ml.completer"):
         completer.complete_sed(narrow, mc.planck_function(narrow, 5800.0), 5800.0, 4.4, 0.1,
                                extension_range=(500.0, 60000.0))
     assert f"covers {100 * covered:.0f}% of the network's input window" in t.caplog.text
@@ -870,7 +870,7 @@ def complete_sed_warns_when_the_input_misses_most_of_the_window(t):
 
     t.caplog.clear()
     wide = np.logspace(np.log10(500.0), np.log10(20000.0), 300)
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.ml_sed_completer"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.ml.completer"):
         completer.complete_sed(wide, mc.planck_function(wide, 5800.0), 5800.0, 4.4, 0.1,
                                extension_range=(300.0, 60000.0))
     assert "input window" not in t.caplog.text

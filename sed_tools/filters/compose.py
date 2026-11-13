@@ -26,7 +26,7 @@ from .manifest import (  # noqa: F401 - every manifest name stays importable fro
 )
 from .sites import instrument_sites, is_ground_based, own_site, platform  # noqa: F401
 
-logger = logging.getLogger("sed_tools.filter_components")
+logger = logging.getLogger(__name__)
 
 
 class ComponentCoverageError(ComponentError):

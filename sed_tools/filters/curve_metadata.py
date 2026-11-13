@@ -78,7 +78,7 @@ from urllib.parse import unquote
 import numpy as np
 import requests
 
-logger = logging.getLogger("sed_tools.filter_metadata")
+logger = logging.getLogger(__name__)
 
 ENERGY = "energy"
 PHOTON = "photon"

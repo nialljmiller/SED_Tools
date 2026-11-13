@@ -17,7 +17,7 @@ from .curve_metadata import SOURCE_ASSUMED, SVOMetadataClient, migrate_filter_fi
 from ..njm_mirror import (BASE_URL, NJM_CONNECT_TIMEOUT, NJM_PAUSE, USER_AGENT, _STATE, _body, _status, _write_atomic,
                          cache_root, pause, paused, plain_reason, skip_ssl_verification)
 
-logger = logging.getLogger("sed_tools.njm_filter_grabber")
+logger = logging.getLogger(__name__)
 
 # Answers that mean "ask again later", not "no such file": NJM's Apache answers a burst of
 # requests from one address with 403 until the block lifts, within about a minute.

@@ -18,7 +18,7 @@ from ._http import DISCOVERY_TIMEOUT, discovery_failure, mount_discovery, retryi
 from .hdf5_wavelengths import _is_physical_wavelength_array as _is_physical_wavelength, _search_all_datasets
 from .lookup import find_logg_column, find_metallicity_column, find_teff_column, write_lookup_csv
 
-logger = logging.getLogger("sed_tools.msg_spectra_grabber")
+logger = logging.getLogger(__name__)
 
 _SEG_IDX = re.compile(r"\[(\d+)\]")
 

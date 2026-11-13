@@ -90,7 +90,7 @@ def recovery_warns_about_unreadable_h5(t):
     from sed_tools.grids.clean import recover_wavelengths_from_hdf5
 
     (t.tmp / "broken.h5").write_bytes(b"not an hdf5 file")
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.grids.hdf5_wavelengths"):
         assert recover_wavelengths_from_hdf5(str(t.tmp), "g1", 10) is None
     assert "broken.h5" in t.caplog.text
 
@@ -162,7 +162,7 @@ def clean_model_dir_warns_when_units_come_from_each_file(t):
     done = t.tmp / "done.txt"
     done.write_text("# units_standardized = True\n4000 1.0\n5000 2.0\n")
     t.mp.setattr("sed_tools.grids.clean.random.sample", lambda files, n: [str(done)])
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.grids.clean"):
         summary = clean_model_dir(str(t.tmp), sample_fraction=0.1)
     assert len(summary["converted"]) == 9
     assert "9 spectra were converted using units detected file by file" in t.caplog.text
@@ -173,7 +173,7 @@ def clean_model_dir_counts_renormed_spectra_as_converted_and_warns(t):
     wl, grid = np.geomspace(100.0, 1e6, 2000), t.tmp / "grid"
     for name, teff, scale in (("a.txt", 5000.0, 100.0), ("b.txt", 6000.0, 120.0), ("c.txt", 7000.0, 1.0)):
         _write(grid / name, _header(teff), wl, scale * planck_flam(wl, teff))
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.grids.clean"):
         summary = clean_model_dir(str(grid), try_h5_recovery=False, sample_fraction=1.0)
     assert summary["converted"] == ["a.txt", "b.txt", "c.txt"]
     assert summary["error"] == []
@@ -524,7 +524,7 @@ def a_grid_declaring_w_m2_nm_in_some_spectra_names_that_unit_as_its_guess(t):
 def a_declared_flux_unit_is_used_and_a_different_flux_unit_is_reported_unused(t):
     declared = _grid(t.tmp / "Declared", "erg/cm2/s/A", **FLAM_GRID)
     reference = _grid(t.tmp / "Reference", "erg/cm2/s/A", **FLAM_GRID)
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.grids.units"):
         summary = clean_model_dir(str(declared), sample_fraction=1.0, flux_unit="fnu")
     clean_model_dir(str(reference), sample_fraction=1.0)
     assert summary["catalog_units"]["flux"] == "flam"  # the header's unit, not fnu
@@ -536,7 +536,7 @@ def a_declared_flux_unit_is_used_and_a_different_flux_unit_is_reported_unused(t)
 @row
 def flux_unit_is_used_for_spectra_that_declare_none(t):
     grid = _grid(t.tmp / "Undeclared", **FLAM_GRID)
-    with t.caplog.at_level(logging.WARNING, logger="sed_tools.spectra_cleaner"):
+    with t.caplog.at_level(logging.WARNING, logger="sed_tools.grids.units"):
         summary = clean_model_dir(str(grid), sample_fraction=1.0, flux_unit="flam")
     assert summary["catalog_units"]["flux"] == "flam" and "is not used" not in t.caplog.text
 
@@ -966,7 +966,7 @@ def njm_unreachable_warns_with_every_attempt_and_named_grid_requests_raise(t):
     with t.caplog.at_level(logging.WARNING):
         grabber, session = _grabber(t, "njm", {INDEX: down, NJM: down, INDEX.replace("https", "http"): down})
     assert not grabber.is_available()
-    [message] = warnings_from(t.caplog, "njm_spectra_grabber")
+    [message] = warnings_from(t.caplog, "grids.njm")
     # No answer means the mirror is down: one attempt, not three (a silent outage cost 26 s).
     assert "unreachable" in message and message.count("connection refused") == 1 and len(session.calls) == 1
     assert grabber.discover_models() == []
@@ -984,7 +984,7 @@ def njm_dropping_certificate_checks_is_warned(t):
     with t.caplog.at_level(logging.WARNING):
         grabber, session = _grabber(t, "njm", {INDEX: index})
     assert grabber.is_available() and session.verify is False
-    assert any("certificate expired" in m for m in warnings_from(t.caplog, "njm_spectra_grabber"))
+    assert any("certificate expired" in m for m in warnings_from(t.caplog, "grids.njm"))
 
 
 @row
@@ -1054,7 +1054,7 @@ def svo_metadata_warns_once_before_probing_and_raises_when_a_probe_fails(t):
                                      svo_spectrum_url(7): requests.ConnectionError("probe refused")})
     with t.caplog.at_level(logging.WARNING), pytest.raises(RuntimeError, match="FID 7 of Grid: probe refused"):
         grabber.get_model_metadata("Grid")
-    messages = warnings_from(t.caplog, "svo_spectra_grabber")
+    messages = warnings_from(t.caplog, "grids.svo")
     [message] = messages  # one warning for the fallback, naming both reasons
     assert "HTTP 503" in message and "index down" in message and "probing" in message
     assert not (t.tmp / FID_CACHE).exists()
@@ -1105,7 +1105,7 @@ def svo_metadata_is_cached_and_a_corrupt_cache_is_warned_about(t):
     cache.write_text("[1, 2")
     with t.caplog.at_level(logging.WARNING):
         assert grabber.get_model_metadata("Grid") == [{"fid": 1}, {"fid": 2}]
-    assert any("unreadable FID cache" in m for m in warnings_from(t.caplog, "svo_spectra_grabber"))
+    assert any("unreadable FID cache" in m for m in warnings_from(t.caplog, "grids.svo"))
 
 
 @row
@@ -1345,7 +1345,7 @@ def svo_cache_that_cannot_be_read_or_written_is_warned_about(t):
     (t.tmp / FID_CACHE).mkdir()  # a directory where the cache file goes
     with t.caplog.at_level(logging.WARNING):
         assert grabber.get_model_metadata("Grid") == [{"fid": 3}]
-    messages = warnings_from(t.caplog, "svo_spectra_grabber")
+    messages = warnings_from(t.caplog, "grids.svo")
     assert any("unreadable FID cache" in m for m in messages)
     assert any("could not cache the FID list" in m for m in messages)
 
@@ -1436,7 +1436,7 @@ def _warns(t, source, routes, call, result, words, alone):
     grabber, _ = _grabber(t, source, routes)
     with t.caplog.at_level(logging.WARNING):
         assert call(grabber) == result
-    messages = warnings_from(t.caplog, f"{source}_spectra_grabber")
+    messages = warnings_from(t.caplog, f"grids.{source}")
     if alone:
         [message] = messages
         assert all(word in message for word in words)

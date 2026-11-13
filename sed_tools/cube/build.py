@@ -27,7 +27,7 @@ from .variants import (_build_filtered_cube, _build_mean_cube, _extra_key_to_fil
                        _value_to_safe_str, _warn_averaged_rows)
 from ..grids.spectrum_io import read_text_spectrum
 
-logger = logging.getLogger("sed_tools.precompute_flux_cube")
+logger = logging.getLogger(__name__)
 
 # Up to this many extra-axis variants are split without asking; above it the user is asked first.
 SPLIT_THRESHOLD = 25

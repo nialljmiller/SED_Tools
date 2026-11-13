@@ -29,7 +29,7 @@ from .units import (FLUX_GUESS_WHY, FLUX_UNITS, SPEED_OF_LIGHT_ANGSTROM, WAVELEN
                     detect_units_from_header, detect_units_single_file, detect_wavelength_unit_from_range,
                     undeclared_flux_unit, validate_converted_spectrum)
 
-logger = logging.getLogger("sed_tools.spectra_cleaner")
+logger = logging.getLogger(__name__)
 
 
 # ---- Constants ----

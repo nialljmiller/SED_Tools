@@ -23,7 +23,7 @@ import requests
 
 from .lookup import write_lookup_csv
 
-logger = logging.getLogger("sed_tools.mast_spectra_grabber")
+logger = logging.getLogger(__name__)
 
 # ----------------- constants -----------------
 DATA_BASE   = "https://archive.stsci.edu/hlsps/bosz/bosz2024"

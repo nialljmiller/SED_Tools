@@ -13,7 +13,7 @@ from ..cube.model import FILTER_DIR_DEFAULT
 
 PathLike = Union[str, os.PathLike[str]]
 
-logger = logging.getLogger("sed_tools.combine_filters")
+logger = logging.getLogger(__name__)
 
 
 def find_filter_sets(base_dir: Optional[PathLike] = None) -> List[Path]:

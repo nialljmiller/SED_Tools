@@ -30,7 +30,7 @@ from ..photometry import (  # noqa: F401
     filter_weight, get_metadata_float, infer_unit_from_values, integrate_flux, load_filter_curve, load_spectrum,
     load_two_column_file, normalize_metadata_key, parse_metadata_value, standardize_wavelength_array)
 
-logger = logging.getLogger("sed_tools.flux_cube_tool")
+logger = logging.getLogger(__name__)
 
 def prompt_scale_choice() -> bool:
     resp = input("\nScale flux for distance (apparent magnitudes)? [y/N]: ").strip().lower()

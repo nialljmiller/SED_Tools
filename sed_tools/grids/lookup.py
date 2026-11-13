@@ -8,7 +8,7 @@ from typing import Dict, Iterable, List, Optional, Union
 
 from .header_parser import parse_header
 
-logger = logging.getLogger("sed_tools._lookup_io")
+logger = logging.getLogger(__name__)
 
 
 # The column names find_*_column try, most preferred first

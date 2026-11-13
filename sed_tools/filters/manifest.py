@@ -20,7 +20,7 @@ import numpy as np  # noqa: F401  (kept: `from sed_tools.filters.manifest import
 from .curve_metadata import ENERGY, detector_type_before_conversion, normalize_detector_type, read_filter_header
 from .sites import instrument_sites, is_ground_based, own_site, platform
 
-logger = logging.getLogger("sed_tools.filter_components")
+logger = logging.getLogger(__name__)
 
 PathLike = Union[str, os.PathLike]
 

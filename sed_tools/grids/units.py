@@ -19,7 +19,7 @@ from .._constants import C
 from .header_parser import parse_header as _parse_header_dict
 from .spectrum_io import read_text_spectrum
 
-logger = logging.getLogger("sed_tools.spectra_cleaner")
+logger = logging.getLogger(__name__)
 
 
 SPEED_OF_LIGHT_ANGSTROM = C * 1e8  # c in Å/s — from _constants

@@ -23,7 +23,7 @@ from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, DEFAULT_WL_POINTS, Engine, 
                      print_libraries, resample, sample_spectra, training_libraries, write_spectrum)
 from .common import mlp  # noqa: F401  (kept: `from sed_tools.ml.completer import *` gives mlp, as before)
 
-logger = logging.getLogger("sed_tools.ml_sed_completer")
+logger = logging.getLogger(__name__)
 
 # Training uses only samples whose input window is at least this fraction valid.
 MIN_WINDOW_COVERAGE = 0.8

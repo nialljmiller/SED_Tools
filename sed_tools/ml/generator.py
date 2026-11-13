@@ -20,7 +20,7 @@ from .common import mlp  # noqa: F401  (kept: `from sed_tools.ml.generator impor
 from ..ui_utils import (ask_number as _ask_number, ask_numbers as _ask_numbers, banner as _banner,
                        menu_choice as _menu_choice, refused_without, section as _section)
 
-logger = logging.getLogger("sed_tools.ml_sed_generator")
+logger = logging.getLogger(__name__)
 
 
 class SEDGeneratorNetwork(Network):

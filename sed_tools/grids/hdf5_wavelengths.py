@@ -14,7 +14,7 @@ from typing import Optional
 import h5py
 import numpy as np
 
-logger = logging.getLogger("sed_tools.spectra_cleaner")
+logger = logging.getLogger(__name__)
 
 
 WAVE_KEYS = ('lambda', 'wavelength', 'wave', 'wl', 'wavelength_A', 'x')

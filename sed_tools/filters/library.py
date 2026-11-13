@@ -36,7 +36,7 @@ from .names import (  # noqa: F401 - FETCH_ORDER, INSTRUMENT_CATALOGUE and instr
 )
 from .svo import FilterRow, SVOFilterBrowser, _clean_filename, _clean_path, svo_unavailable
 
-logger = logging.getLogger("sed_tools.filter_library")
+logger = logging.getLogger(__name__)
 
 #: Seconds between checks of an installed atmosphere site's manifest against NJM's.
 ATMOSPHERE_CHECK_AGE = 24 * 3600

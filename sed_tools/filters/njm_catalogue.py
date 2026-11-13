@@ -26,7 +26,7 @@ from ..njm_mirror import _body, _status, _write_atomic, cache_root
 from .curve_metadata import normalize_detector_type, read_filter_header
 from .manifest import index_names
 
-logger = logging.getLogger("sed_tools.filter_catalogue")
+logger = logging.getLogger(__name__)
 
 INDEX_MAX_AGE = 24 * 3600  # seconds between checks of index.json
 MAX_CONCURRENT = 6  # NJM blocks bursts from one address
