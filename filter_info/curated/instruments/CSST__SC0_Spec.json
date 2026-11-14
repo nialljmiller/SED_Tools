@@ -1,0 +1,10 @@
+{
+  "short_description": "CSST Survey Camera spectroscopy: GU, GV, GI, grating only and grating+CCD",
+  "links": [
+    {
+      "url": "https://svo2.cab.inta-csic.es/theory/fps/index.php?mode=browse&gname=CSST&gname2=SC0-Spec",
+      "label": "SVO Filter Profile Service, CSST/SC0-Spec: source of the one-line description (SVO's instrument and band descriptions, captured 2026-10-28)",
+      "source": "SVO Filter Profile Service"
+    }
+  ]
+}

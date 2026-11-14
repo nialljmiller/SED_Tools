@@ -1,0 +1,10 @@
+{
+  "short_description": "Archeops 143, 217 and 353 GHz bands from the July 1999 Trapani test flight",
+  "links": [
+    {
+      "url": "https://svo2.cab.inta-csic.es/theory/fps/index.php?mode=browse&gname=ARCHEOPS&gname2=Trapani",
+      "label": "SVO Filter Profile Service, ARCHEOPS/Trapani: source of the one-line description (SVO's instrument, facility and band descriptions, captured 2026-10-28)",
+      "source": "SVO Filter Profile Service"
+    }
+  ]
+}

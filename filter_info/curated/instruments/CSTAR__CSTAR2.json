@@ -1,0 +1,10 @@
+{
+  "short_description": "CSTAR2 g filter, one of the four CSTAR Schmidt telescopes",
+  "links": [
+    {
+      "url": "https://svo2.cab.inta-csic.es/theory/fps/index.php?mode=browse&gname=CSTAR&gname2=CSTAR2",
+      "label": "SVO Filter Profile Service, CSTAR/CSTAR2: source of the one-line description (SVO's instrument, facility and band descriptions, captured 2026-10-28)",
+      "source": "SVO Filter Profile Service"
+    }
+  ]
+}

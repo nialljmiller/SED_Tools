@@ -1,0 +1,10 @@
+{
+  "short_description": "POLDER-2 passive optical imaging radiometer (CNES): 443 to 910 nm bands",
+  "links": [
+    {
+      "url": "https://svo2.cab.inta-csic.es/theory/fps/index.php?mode=browse&gname=ADEOS&gname2=POLDER-2",
+      "label": "SVO Filter Profile Service, ADEOS/POLDER-2: source of the one-line description (SVO's instrument and band descriptions, captured 2026-10-28)",
+      "source": "SVO Filter Profile Service"
+    }
+  ]
+}

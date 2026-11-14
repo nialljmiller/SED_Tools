@@ -1,0 +1,10 @@
+{
+  "short_description": "Tycho B and V filters: original, Mann & von Braun 2014 and Bessell 2000",
+  "links": [
+    {
+      "url": "https://svo2.cab.inta-csic.es/theory/fps/index.php?mode=browse&gname=TYCHO&gname2=TYCHO",
+      "label": "SVO Filter Profile Service, TYCHO/TYCHO: source of the one-line description (SVO's instrument and band descriptions, captured 2026-10-28)",
+      "source": "SVO Filter Profile Service"
+    }
+  ]
+}

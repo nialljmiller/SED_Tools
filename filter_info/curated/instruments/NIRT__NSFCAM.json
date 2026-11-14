@@ -1,0 +1,10 @@
+{
+  "short_description": "NSFCam 1-5 micron camera, NASA Infrared Telescope Facility: H2-2 and Kcont",
+  "links": [
+    {
+      "url": "https://svo2.cab.inta-csic.es/theory/fps/index.php?mode=browse&gname=NIRT&gname2=NSFCAM",
+      "label": "SVO Filter Profile Service, NIRT/NSFCAM: source of the one-line description (SVO's instrument, facility and band descriptions, captured 2026-10-28)",
+      "source": "SVO Filter Profile Service"
+    }
+  ]
+}

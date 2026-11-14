@@ -1,0 +1,10 @@
+{
+  "short_description": "Nordic Optical Telescope filters, by NOT filter number",
+  "links": [
+    {
+      "url": "https://svo2.cab.inta-csic.es/theory/fps/index.php?mode=browse&gname=NOT&gname2=NOT",
+      "label": "SVO Filter Profile Service, NOT/NOT: source of the one-line description (SVO's instrument, facility and band descriptions, captured 2026-10-28)",
+      "source": "SVO Filter Profile Service"
+    }
+  ]
+}

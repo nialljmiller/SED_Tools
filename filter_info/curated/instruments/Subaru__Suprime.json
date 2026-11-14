@@ -1,0 +1,10 @@
+{
+  "short_description": "Subaru Prime Focus Camera (Suprime-Cam) filters, mostly full transmission",
+  "links": [
+    {
+      "url": "https://svo2.cab.inta-csic.es/theory/fps/index.php?mode=browse&gname=Subaru&gname2=Suprime",
+      "label": "SVO Filter Profile Service, Subaru/Suprime: source of the one-line description (SVO's instrument and band descriptions, captured 2026-10-28)",
+      "source": "SVO Filter Profile Service"
+    }
+  ]
+}

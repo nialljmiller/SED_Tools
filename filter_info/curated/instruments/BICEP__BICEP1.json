@@ -1,0 +1,10 @@
+{
+  "short_description": "BICEP1 bolometric CMB polarimeter: 100 GHz spectral response",
+  "links": [
+    {
+      "url": "https://svo2.cab.inta-csic.es/theory/fps/index.php?mode=browse&gname=BICEP&gname2=BICEP1",
+      "label": "SVO Filter Profile Service, BICEP/BICEP1: source of the one-line description (SVO's instrument and band descriptions, captured 2026-10-28)",
+      "source": "SVO Filter Profile Service"
+    }
+  ]
+}

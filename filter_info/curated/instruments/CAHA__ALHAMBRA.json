@@ -1,0 +1,10 @@
+{
+  "short_description": "ALHAMBRA Survey filters, Calar Alto observatory, with quad 2-4 versions",
+  "links": [
+    {
+      "url": "https://svo2.cab.inta-csic.es/theory/fps/index.php?mode=browse&gname=CAHA&gname2=ALHAMBRA",
+      "label": "SVO Filter Profile Service, CAHA/ALHAMBRA: source of the one-line description (SVO's instrument, facility and band descriptions, captured 2026-10-28)",
+      "source": "SVO Filter Profile Service"
+    }
+  ]
+}

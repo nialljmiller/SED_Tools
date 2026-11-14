@@ -1,0 +1,10 @@
+{
+  "short_description": "NSFCam 1-5 micron camera filters, Mauna Kea Observatories",
+  "links": [
+    {
+      "url": "https://svo2.cab.inta-csic.es/theory/fps/index.php?mode=browse&gname=MKO&gname2=NSFCam",
+      "label": "SVO Filter Profile Service, MKO/NSFCam: source of the one-line description (SVO's instrument and facility descriptions, captured 2026-10-28)",
+      "source": "SVO Filter Profile Service"
+    }
+  ]
+}

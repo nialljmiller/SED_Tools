@@ -1,0 +1,10 @@
+{
+  "short_description": "Euclid NISP approximate Blue and Red filters",
+  "links": [
+    {
+      "url": "https://svo2.cab.inta-csic.es/theory/fps/index.php?mode=browse&gname=Euclid&gname2=NISP0",
+      "label": "SVO Filter Profile Service, Euclid/NISP0: source of the one-line description (SVO's facility and band descriptions, captured 2026-10-28)",
+      "source": "SVO Filter Profile Service"
+    }
+  ]
+}
