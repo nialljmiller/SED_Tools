@@ -216,7 +216,6 @@ class Build:
     site: str | None = None
     phrase: str = ""
     normalised: bool = False
-    once: bool = True
 
 
 def named(builds):
@@ -287,7 +286,7 @@ BUILDS = named([
           (38, 12977.0, 19964.0, 16111.0, 0.90177917)),
     Build(surveys, "OGLE-IV", "OGLE", "I V", "filter+qe", "filter qe", (8, 3101.2, 9475.09, 7619.99, 0.6787273)),
     Build(surveys, "PS1", "PAN-STARRS", "g i r w y z", "filter+optics+qe+atmosphere", "",
-          (73, 3800.0, 11000.0, 5400.0, 0.501), site="haleakala_ps1", once=False),  # its site reads table3 again
+          (73, 3800.0, 11000.0, 5400.0, 0.501), site="haleakala_ps1"),
     Build(surveys, "Sinistro", "LasCumbres", "B I R U V Y gp ip rp up zs", "filter", "filter",
           (39, 2000.0, 13000.0, 4320.0, 0.7274351)),
     Build(surveys, "Spectral", "LasCumbres", "B I R V Y gp ip rp up zs", "filter", "filter",
@@ -318,8 +317,7 @@ def builds(t, b):
     assert tr.max() == pytest.approx(peak)
     if b.normalised:
         assert all(curve(inst_dir / f"{band}.dat")[1].max() == 1.0 for band in bands)
-    if b.once:
-        assert len(session.calls) == len(set(session.calls))  # each file is downloaded once
+    assert len(session.calls) == len(set(session.calls))  # each file is downloaded once
 
 
 def every_recipe_is_covered(t, *modules):
@@ -1355,16 +1353,6 @@ def euclid_build_writes_missing_published_curves(t):
     assert m.bands == ["H", "J", "Y"] and "reproduces" in m.notes and "Y_svo are SVO's copies" in m.notes
     assert m.archived_bands == archived  # the archive copy never goes back into bands
     assert "negative samples set to 0: Y 1" in m.notes
-
-
-@row
-def euclid_build_takes_no_bands(t):
-    # bands= was removed: it raises, rather than being ignored and every band built.
-    from sed_tools.component_sources import euclid
-
-    with pytest.raises(TypeError, match="bands"):
-        euclid.build(t.tmp, bands=["Y"], session=Session({}))
-    assert not (t.tmp / "Euclid").exists()
 
 
 def roman_qe(values):

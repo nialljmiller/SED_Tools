@@ -58,12 +58,13 @@ FACTS = {
 }
 
 _IMPORT_ALL = """
-import sys
+import importlib, pkgutil, sys
 for name in {blocked!r}:
     sys.modules[name] = None  # importing it now raises ImportError
-import sed_tools, sed_tools.cli, sed_tools.ml, sed_tools.ml.generator, sed_tools.cube.densify
-import sed_tools.ml.completer
-import sed_tools.cube.combine
+import sed_tools
+for _, module, _ in pkgutil.walk_packages(sed_tools.__path__, "sed_tools."):
+    if not module.endswith("__main__"):  # what python -m runs: importing it would run the command
+        importlib.import_module(module)
 print(sorted(name for name in {optional!r} if sys.modules.get(name) is not None))
 """
 

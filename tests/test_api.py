@@ -26,12 +26,12 @@ from sed_tools import api, ml
 from sed_tools.api import SED, Filters, MLGenerator, SpectralGrid, SpectralGridInfo, Spectrum
 from sed_tools.cube.collision import CollisionConfig
 from sed_tools.cube.model import SED as GridFinder
-from sed_tools.ml.completer import SEDCompleter, SEDCompleterNetwork
+from sed_tools.ml.completer import SEDCompleter
 from sed_tools.ml.generator import SEDGenerator
 from sed_tools.photometry import AB_ZERO_FLUX
 
 from support import (CLEAN, GRABBERS, GRID, KURUCZ, STALE, answer, atmosphere_site, cpu_torch, fake_grabber,
-                     filters_api, njm_grids, scenarios, tiny_library, write_flux_cube)
+                     filters_api, njm_grids, run_cli, scenarios, tiny_library, write_flux_cube)
 
 SCENARIOS, row = scenarios()
 
@@ -352,6 +352,16 @@ def spectral_grid_axes_and_indexing(t):
 
 
 @row
+def spectral_grid_filter_raises_on_a_minimum_above_its_maximum(t):
+    # It returned an empty grid; one rule for a reversed range (ui_utils.ordered_range), as SED.fetch's bounds.
+    grid = SpectralGrid("G", "local", [_spectrum(5000.0), _spectrum(6000.0)])
+    with pytest.raises(ValueError, match="6000 to 5000 is reversed"):
+        grid.filter(teff_min=6000.0, teff_max=5000.0)
+    assert [s.teff for s in grid.filter(teff_min=5000.0, teff_max=5000.0)] == [5000.0]  # one value is a range
+    assert len(grid.filter(teff_min=5500.0)) == 1  # one bound leaves the other side open
+
+
+@row
 def grid_info_covers_a_point_and_shows_its_ranges(t):
     info = SpectralGridInfo("G", "njm", teff_range=(4000.0, 6000.0), logg_range=(4.0, 5.0))
     assert info.covers(5000.0, 4.5, 3.0)  # no [M/H] range: any value is covered
@@ -439,6 +449,26 @@ def coverage_reports_a_local_grid(t):
     assert f"Coverage: {GRID}" in t.capsys.readouterr().out
 
 
+@row
+def a_reversed_range_raises_from_the_cli_flags_fetch_the_grid_finder_and_mast(t):
+    # One rule (ui_utils.ordered_range), as in the menus and the ML completer. The CLI flags passed a reversed
+    # cut on, SED.fetch looked for spectra within it, and find_grids/find_model and the MAST cuts swapped its ends.
+    from sed_tools.grids import mast
+
+    assert run_cli(t.mp, "grids", "--source", "svo", "--models", "X", "--base", str(t.tmp),
+                   "--teff", "8000", "3500") == 1
+    assert "8000 to 3500 is reversed" in t.capsys.readouterr().err
+    with pytest.raises(ValueError, match="reversed"):
+        SED.fetch("X", source="svo", teff_min=8000, teff_max=3500, model_root=t.tmp / "fetched")
+    assert not (t.tmp / "fetched").exists()  # raised before anything was made or asked
+    with pytest.raises(ValueError, match="reversed"):
+        GridFinder(model_root=t.tmp).find_grids(teff_range=(8000, 3500))
+    with pytest.raises(ValueError, match="reversed"):
+        mast._in_range(5000.0, (8000.0, 3500.0))
+    with pytest.raises(ValueError, match="reversed"):
+        mast._apply_wl_range(np.array([1.0, 2.0]), np.array([1.0, 1.0]), None, (2.0, 1.0))
+
+
 # ----------------------------------------------------------------------
 # MLCompleter, MLGenerator and the 0.4.1 ml API, on a tiny grid
 # ----------------------------------------------------------------------
@@ -467,9 +497,12 @@ def ml_completer_trains_and_loads_a_model(t):
 @row
 def ml_generator_trains_lists_and_loads_a_model(t):
     _tiny_training(t)
-    generator = SED.ml_generator(model_root=t.tmp)
+    t.mp.setattr(SED, "_model_root", t.tmp)
+    generator = SED.ml_generator()
     assert generator.train("lib", epochs=1, batch_size=3) is generator
-    [listed] = MLGenerator.list_models(str(t.tmp / "models"))
+    # list_models() read ./models, not the <model_root>/models that train() saves to and load() reads.
+    assert MLGenerator.list_models() == generator.list_models() == MLGenerator.list_models(str(t.tmp / "models"))
+    [listed] = MLGenerator.list_models()
     assert listed["name"] == "sed_generator_lib"
     assert listed["parameter_ranges"] == {"teff": [4000.0, 6000.0], "logg": [4.0, 4.5], "meta": [-0.5, 0.0]}
     loaded = SED.ml_generator(model_root=t.tmp).load("sed_generator_lib")
@@ -489,13 +522,6 @@ def the_041_completer_api_loads_and_describes_a_model(t):
     assert repr(ml.Completer(str(second))) == f"<Completer(trained @ {second})>"
     assert ml.Completer().load(str(first)).model_path == str(first)
     assert sorted(m["name"] for m in ml.Completer.available_models(str(t.tmp / "models"))) == ["a", "b"]
-
-
-@row
-def the_completer_network_moves_to_a_device(t):
-    torch = cpu_torch(t)
-    network = SEDCompleterNetwork(input_dim=4, output_dim=3, hidden_layers=[2])
-    assert network.to(torch.device("cpu")) is network and network.device == torch.device("cpu")
 
 
 # ----------------------------------------------------------------------

@@ -1,9 +1,11 @@
 """Reference-output cases for the SED_Tools cleanup.
 
 Each case runs one science path on the fixed inputs in ``inputs/`` and writes
-everything it produces into ``out``. ``record.py`` stored the outputs of
-integration/0.4.2 (d622dcc) in ``expected/``; ``tests/test_golden.py`` reruns
-every case and requires byte-identical files.
+everything it produces into ``out``. ``record.py`` stores the outputs in
+``expected/``: first those of integration/0.4.2 (d622dcc), then, for a case
+whose output a change meant to alter, the new outputs, in the commit that
+explains the change (``git log -- tests/golden/expected/<case>``).
+``tests/test_golden.py`` reruns every case and requires byte-identical files.
 
 A difference means the code now gives a different answer. Explain it; never
 re-record to make it pass. Only the manager re-records.

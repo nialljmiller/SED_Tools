@@ -21,6 +21,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 import requests
 
+from ..ui_utils import ordered_range
 from .lookup import write_lookup_csv
 from .spectrum_io import write_atomically
 
@@ -82,9 +83,7 @@ def _is_monotonic_increasing(a: np.ndarray) -> bool:
 def _in_range(value: float, bounds: Optional[Tuple[float, float]]) -> bool:
     if bounds is None:
         return True
-    lo, hi = bounds
-    if lo > hi:
-        lo, hi = hi, lo
+    lo, hi = ordered_range(*bounds)
     return lo <= value <= hi
 
 def _metal_tag_to_float(tag: str) -> Optional[float]:
@@ -242,9 +241,7 @@ def _apply_wl_range(wl: np.ndarray, fx: np.ndarray, ct: Optional[np.ndarray],
                     wl_range: Optional[Tuple[float, float]]) -> Tuple[np.ndarray, np.ndarray, Optional[np.ndarray]]:
     if wl_range is None:
         return wl, fx, ct
-    lo, hi = wl_range
-    if lo > hi:
-        lo, hi = hi, lo
+    lo, hi = ordered_range(*wl_range)
     mask = (wl >= lo) & (wl <= hi)
     if not np.any(mask):
         return np.array([]), np.array([]), None

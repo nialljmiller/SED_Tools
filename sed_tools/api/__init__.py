@@ -185,7 +185,8 @@ class SpectralGrid:
         metallicity_min: Optional[float] = None,
         metallicity_max: Optional[float] = None,
     ) -> 'SpectralGrid':
-        """Return a new SpectralGrid with filtered spectra."""
+        """Return a new SpectralGrid with filtered spectra; a minimum above its maximum raises ValueError."""
+        _parameter_cuts(teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)  # ordered_range
         filtered = [spec for spec in self.spectra
                     if _not_outside(spec.teff, teff_min, teff_max) and _not_outside(spec.logg, logg_min, logg_max)
                     and _not_outside(spec.metallicity, metallicity_min, metallicity_max)]
@@ -500,7 +501,8 @@ class SED:
         ValueError
             If no source could supply the grid; the message gives each source's error.
             Also if the spectra do not declare their flux unit and flux_unit is not
-            given; the message gives the best guess.
+            given; the message gives the best guess. Also if a minimum is above
+            its maximum, before anything is downloaded.
         KeyError
             If flux_unit is not a known name, before anything is downloaded.
         RuntimeError
@@ -510,6 +512,7 @@ class SED:
         if flux_unit is not None:
             from ..grids.units import FLUX_UNITS
             FLUX_UNITS[flux_unit]  # the conversion, looked up before anything is downloaded
+        cuts = _parameter_cuts(teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)
         base_dir = Path(model_root) if model_root else cls._model_root
         base_dir.mkdir(parents=True, exist_ok=True)
 
@@ -518,7 +521,6 @@ class SED:
         else:
             sources_to_try, failures = [source], []
         model_dir = base_dir / catalog
-        cuts = _parameter_cuts(teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)
         created = not model_dir.exists()
         before = _directory_state(model_dir)
         used_source = cls._download_from_first_source(catalog, sources_to_try, failures, model_dir, workers, cuts)
@@ -1170,7 +1172,10 @@ class MLGenerator:
         Parameters
         ----------
         models_dir : str
-            Directory containing trained models
+            Directory containing trained models. A relative path is taken
+            under the stellar-model folder, as ``SED.ml_generator(models_dir=...)``
+            takes it, so the default lists the models ``SED.ml_generator()``
+            trains; an absolute path is used as it is.
 
         Returns
         -------
@@ -1179,7 +1184,7 @@ class MLGenerator:
             'parameter_ranges', and 'architecture' keys
         """
         from ..ml.generator import SEDGenerator
-        return SEDGenerator.list_models(models_dir)
+        return SEDGenerator.list_models(str(Path(SED._model_root) / models_dir))
 
 
 # ------------ Module-level aliases ------------

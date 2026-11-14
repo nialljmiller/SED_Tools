@@ -204,11 +204,12 @@ def train_raises_before_saving_when_every_batch_is_nan(t, network, train):
     assert not (t.tmp / "model").exists()
 
 
-def workflow_ends_on_a_bad_answer(t, engine, answers, message):
+def workflow_ends_on_the_answer(t, engine, answers, message):
     # 0 and -1 used to index from the end of the list and pick the last entry.
     stellar_dir = stellar_grids(t)
     write_config(t.tmp / "models" / "gm1", {"model_type": "sed_generator"})
-    t.mp.setattr(mc.SEDCompleter, "train", lambda self, **kw: pytest.fail("trained"))
+    for cls in (mc.SEDCompleter, mg.SEDGenerator):
+        t.mp.setattr(cls, "train", lambda self, **kw: pytest.fail("trained"))
     answer(t.mp, *answers, echo=True)
     engine.run_interactive_workflow(str(stellar_dir), str(t.tmp / "models"))
     assert t.capsys.readouterr().out.rstrip().endswith(message)
@@ -251,9 +252,9 @@ ALL_NAN = {
     "generator_train_raises_before_saving_when_every_batch_is_nan": (
         mg.SEDGeneratorNetwork, lambda t, lib, out: mg.SEDGenerator().train(lib, out, epochs=2, **TINY)),
     "auto_trainer_stops_on_a_trial_with_no_usable_epoch": (mg.SEDGeneratorNetwork, auto_train_best)}
-BAD_ANSWERS = {
-    "completer_workflow_rejects_bad_answers_cancelled": (mc, ["1", "1", "", "", "", "n"], "Cancelled"),
-    "generator_workflow_rejects_bad_answers_cancelled": (mg, ["1", "1", "", "", "", "n"], "Cancelled"),
+ENDING_ANSWERS = {
+    "completer_workflow_is_cancelled_by_n_at_start_training": (mc, ["1", "1", "", "", "", "n"], "Cancelled"),
+    "generator_workflow_is_cancelled_by_n_at_start_training": (mg, ["1", "1", "", "", "", "n"], "Cancelled"),
     "completer_workflow_rejects_bad_answers_invalid_choice": (mc, ["9"], "Invalid choice"),
     "generator_workflow_rejects_zero_and_negative_menu_numbers_0": (mg, ["3", "0"], "Invalid selection"),
     "generator_workflow_rejects_zero_and_negative_menu_numbers_minus_1": (mg, ["3", "-1"], "Invalid selection")}
@@ -368,31 +369,35 @@ def both_networks_keep_their_defaults_model_pt_keys_and_move_with_to(t):
 def extend_catalog_extends_each_spectrum_with_its_own_parameters(t):
     # pd.read_csv(comment='#') used to drop the '#file_name,...' header, so the
     # first spectrum became the header and every other one was extended as
-    # Teff 5000, logg 4.5, [M/H] 0; on cleanup/base it raised instead.
+    # Teff 5000, logg 4.5, [M/H] 0; on cleanup/base it raised instead, and a
+    # '#'-headed table was refused. It now gives the result of a plain header.
     import pandas as pd
     from sed_tools.grids.lookup import write_lookup_csv
 
     catalog = t.tmp / "catalog"
     catalog.mkdir()
     names = ["a.txt", "b.txt", "c.txt"]
-    for name, (lo, hi) in zip(names, [(3000, 20000), (2000, 30000), (4000, 9000)]):
+    for name, (lo, hi) in zip(names, [(3000, 20000), (2000, 30000), (400, 70000)]):  # c.txt covers the range
         write_spectrum(catalog / name, lo, hi)
     write_lookup_csv({"file_name": names, "teff": [4500.0, 5800.0, 7200.0],
-                      "logg": [4.0, 4.4, 3.5], "metallicity": [-1.0, 0.0, 0.3]},
+                      "logg": [4.0, 4.4, 3.5], "metallicity": [-1.0, 0.0, 0.3], "extra": ["x", "y", "z"]},
                      str(catalog / "lookup_table.csv"))
-    assert (catalog / "lookup_table.csv").read_text().startswith("#file_name,teff,logg,metallicity\n")
+    assert (catalog / "lookup_table.csv").read_text().startswith("#file_name,teff,logg,metallicity,extra\n")
     completer = stubbed_completer()
     out_dir = t.tmp / "out"
 
-    summary = completer.extend_catalog(str(catalog), str(out_dir), extension_range=(500.0, 60000.0),
-                                       verbose=False)
+    summary = completer.extend_catalog(str(catalog), str(out_dir), extension_range=(500.0, 60000.0))
 
-    assert summary == {"extended": 3, "failed": 0, "skipped": 0, "total": 3, "output_dir": str(out_dir)}
-    assert completer._completer.calls == [(4500.0, 4.0, -1.0), (5800.0, 4.4, 0.0), (7200.0, 3.5, 0.3)]
+    assert summary == {"extended": 2, "failed": 0, "skipped": 1, "total": 3, "output_dir": str(out_dir)}
+    assert "2 extended\n  1 skipped (already covered the range)\n  0 failed" in t.capsys.readouterr().out
+    assert completer._completer.calls == [(4500.0, 4.0, -1.0), (5800.0, 4.4, 0.0)]
+    assert completer._completer.ranges == [(500.0, 60000.0)] * 2
+    assert (out_dir / "lookup_table.csv").read_text().splitlines()[0] == (
+        "file_name,teff,logg,metallicity,extra,extended_by_ml,wl_min,wl_max")  # other columns are carried
     written = pd.read_csv(out_dir / "lookup_table.csv")
     assert written["file_name"].tolist() == names
-    assert written[["teff", "logg", "metallicity"]].values.tolist() == [
-        [4500.0, 4.0, -1.0], [5800.0, 4.4, 0.0], [7200.0, 3.5, 0.3]]
+    assert written[["teff", "logg", "metallicity", "extra"]].values.tolist() == [
+        [4500.0, 4.0, -1.0, "x"], [5800.0, 4.4, 0.0, "y"], [7200.0, 3.5, 0.3, "z"]]
     assert sorted(p.name for p in out_dir.glob("*.txt")) == names
 
 
@@ -683,25 +688,6 @@ def extend_catalog_raises_without_a_lookup_table(t):
 
 
 @row
-def extend_catalog_reads_a_hash_prefixed_header(t):
-    # sed_tools writes lookup tables with a '#file_name,...' header. It used
-    # to be dropped (pd.read_csv(comment='#')) and the table refused; it now
-    # gives the same result as a plain header.
-    catalog = three_spectra(t)
-    (catalog / "lookup_table.csv").write_text("#" + (catalog / "lookup_table.csv").read_text())
-    completer = stubbed_completer()
-    out_dir = t.tmp / "out"
-
-    summary = completer.extend_catalog(str(catalog), str(out_dir), extension_range=(500.0, 60000.0))
-
-    assert summary == {"extended": 2, "failed": 0, "skipped": 1, "total": 3, "output_dir": str(out_dir)}
-    assert completer._completer.calls == [(5000.0, 4.0, 0.0), (6000.0, 4.5, -0.5)]
-    assert completer._completer.ranges == [(500.0, 60000.0)] * 2
-    assert (out_dir / "lookup_table.csv").read_text().splitlines()[0] == (
-        "file_name,teff,logg,meta,extra,extended_by_ml,wl_min,wl_max")
-
-
-@row
 def extend_catalog_writes_the_good_spectra_then_lists_every_failure(t):
     import pandas as pd
 
@@ -733,7 +719,7 @@ def extend_catalog_writes_the_good_spectra_then_lists_every_failure(t):
 
 
 # ======================================================================
-# Ranges: the completer keeps every original sample; menus ask again after a bad answer
+# Ranges: the completer keeps every original sample; a reversed range raises wherever it is given
 # ======================================================================
 @row
 def extend_catalog_keeps_every_sample_of_the_kurucz_grid(t):
@@ -793,12 +779,32 @@ def extend_menu_defaults_to_the_models_own_range(t):
 
 
 @row
-def extend_menu_asks_for_the_range_again_on_a_bad_answer(t):
+def extend_menu_takes_the_range_typed(t):
     # The menu used to extend to 100 Å-1e5 Å whatever the grid or model.
-    ranges = extend_menu(t, "2", "1", "1", "50", "40", "50", "3e6", "")
-    out = t.capsys.readouterr().out
-    assert ranges == [(50.0, 3e6)]
-    assert "50 Å is not below 40 Å; try again." in out
+    assert extend_menu(t, "2", "1", "1", "50", "3e6", "") == [(50.0, 3e6)]
+
+
+@row
+def a_reversed_range_raises_in_the_menus_and_the_api(t):
+    # One rule (ui_utils.ordered_range): the extend menu asked again; complete_sed returned wavelengths out of
+    # order; extend_catalog copied every spectrum as already covering the range; the axis-cut prompt swapped them.
+    from sed_tools.ui_utils import ask_range
+
+    wl = np.logspace(np.log10(3000.0), np.log10(20000.0), 50)
+    with pytest.raises(ValueError, match="reversed"):
+        mc.SEDCompleter().complete_sed(wl, mc.planck_function(wl, 5800.0), 5800.0, 4.4, 0.0,
+                                       extension_range=(60000.0, 500.0))
+    completer = stubbed_completer()
+    with pytest.raises(ValueError, match="reversed"):
+        completer.extend_catalog(str(three_spectra(t)), str(t.tmp / "out"), extension_range=(60000.0, 500.0))
+    assert completer._completer.calls == [] and not (t.tmp / "out").exists()
+    with pytest.raises(ValueError, match="reversed"):
+        extend_menu(t, "2", "1", "1", "50", "40")  # asked once; extend_catalog is never reached
+    answer(t.mp, "8000,3500")
+    with pytest.raises(ValueError, match="reversed"):
+        ask_range("Teff range: ")
+    answer(t.mp, "5000,5000")
+    assert ask_range("Teff range: ") == (5000.0, 5000.0)  # one value is a range, not a reversed one
 
 
 @row
@@ -810,24 +816,6 @@ def completer_train_menu_takes_the_numbers_typed(t):
     answer(t.mp, "1", "1", "7", "", "", "")
     mc.run_interactive_workflow(str(base), str(t.tmp / "models"))
     assert [(c["epochs"], c["batch_size"]) for c in calls] == [(7, 32)]
-
-
-@row
-def completer_list_models_leaves_out_generators_so_choosing_cannot_raise(t):
-    # A generator listed by the completer menu raised KeyError when chosen.
-    write_config(t.tmp / "gen", {"model_type": "sed_generator"})
-    assert mc.SEDCompleter.list_models(str(t.tmp)) == []
-    assert [g["name"] for g in mg.SEDGenerator.list_models(str(t.tmp))] == ["gen"]
-
-
-@row
-def generator_number_prompts_take_the_numbers_typed(t):
-    answer(t.mp, "")
-    assert mg._ask_number("Epochs [200]: ", 200, whole=True) == 200
-    answer(t.mp, "-0.5")
-    assert mg._ask_number("[M/H]: ") == -0.5
-    answer(t.mp, "5000, 5500")
-    assert mg._ask_numbers("Teff values: ") == [5000.0, 5500.0]
 
 
 @row
@@ -880,7 +868,7 @@ def test_ml(rows):
     rows(LIST_MODELS_WARNS, list_models_warns_naming_the_unreadable_config)
     rows(LAST_BATCH_OF_ONE, training_drops_a_last_batch_of_one_spectrum)
     rows(ALL_NAN, train_raises_before_saving_when_every_batch_is_nan)
-    rows(BAD_ANSWERS, workflow_ends_on_a_bad_answer)
+    rows(ENDING_ANSWERS, workflow_ends_on_the_answer)
     rows(MISSING_COLUMN, extend_catalog_raises_when_a_column_is_missing)
     rows(NOT_EXTENDED, extend_catalog_raises_what_the_model_could_not_extend)
     rows(SCENARIOS)

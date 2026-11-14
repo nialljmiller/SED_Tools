@@ -23,7 +23,7 @@ from ..filters.njm_catalogue import CatalogueError
 from ..grids.units import FLUX_UNITS
 from ..grids.pipeline import local_grids
 from ..terminal_plots import terminal_color_enabled
-from ..ui_utils import _ansi, missing_package_error, refused_without
+from ..ui_utils import _ansi, missing_package_error, ordered_range, refused_without
 from .filters import (
     _UNSTATED, _availability_errors, _catalogue_entry, _print_filter_set, run_filter_combine_flow,
     run_filter_compose_flow, run_filter_info_flow, run_filters_flow,
@@ -210,6 +210,10 @@ def _add_filter_catalogue_parsers(sub) -> None:
     fip.add_argument("--offline", action="store_true", help="Inspect local data without contacting sources")
     fip.add_argument("--json", action="store_true", help="Emit availability as JSON")
 
+    vp = sub.add_parser("vega", help="Download NJM's Vega spectrum, which MESA colors needs for Vega magnitudes")
+    vp.add_argument("--out", default=None, metavar="DIR",
+                    help="Folder to write vega_flam.csv to (default: vega/ in the data directory)")
+
 
 def _add_filter_component_parsers(sub) -> None:
     fcop = sub.add_parser("filters-compose", help="Compose optical-path components")
@@ -319,8 +323,8 @@ def _add_grid_tool_parsers(sub) -> None:
 # and returns the process exit status: 0 done, 1 failed, 2 usage error.
 
 def _range(values) -> Optional[Tuple[float, float]]:
-    """A ``--NAME LOW HIGH`` cut as ``(low, high)``, or None when not given."""
-    return None if values is None else tuple(values)
+    """A ``--NAME LOW HIGH`` cut as ``(low, high)``, or None when not given; reversed, ValueError."""
+    return None if values is None else ordered_range(*values)
 
 
 def _cmd_grids(args, parser):
@@ -409,6 +413,12 @@ def _cmd_filters_info(args, parser):
     return 1 if _availability_errors(info) else 0
 
 
+def _cmd_vega(args, parser):
+    path = Filters.fetch_vega(args.out)
+    print(f"[vega] Wrote {path}\n  MESA colors inlist: vega_sed = '{path}'")
+    return 0
+
+
 def _cmd_filters_inventory(args, parser):
     result = Filters.inventory(filter_root=args.base, include_remote=not args.offline, facility=args.facility)
     if args.json:
@@ -423,23 +433,25 @@ def _cmd_filters_inventory(args, parser):
 
 
 def _cmd_filters_build_components(args, parser):
-    if args.source == "all":
-        return _build_all_component_sources(args.base, args.sites)
     options = (("raw", args.raw), ("instrument", args.instrument), ("sites", args.sites),
                ("airmasses", args.airmass), ("pwvs", args.pwv), ("archive_dir", args.archive))
     kwargs = {key: value for key, value in options if value}
-    print(f"[filters] Built {get_builder(args.source)(args.base, **kwargs)}")
-    return 0
+    if args.source != "all":
+        print(f"[filters] Built {get_builder(args.source)(args.base, **kwargs)}")
+        return 0
+    if kwargs:
+        parser.error("'all' runs every builder with its own defaults; give --raw, --instrument, --sites, "
+                     "--airmass, --pwv or --archive with one named source")
+    return _build_all_component_sources(args.base)
 
 
-def _build_all_component_sources(base: str, sites: Optional[List[str]]) -> int:
-    """Run every automatic builder; report each failure and return 1 if any failed."""
+def _build_all_component_sources(base: str) -> int:
+    """Run every automatic builder with its own defaults; report each failure and return 1 if any failed."""
     failed = []
     for name in AUTOMATIC_BUILDERS:
-        kw = {"sites": sites or ["paranal", "lasilla"]} if name == "skycalc" else {}
         print(f"[filters] === {name} ===")
         try:
-            get_builder(name)(base, **kw)
+            get_builder(name)(base)
         except (ValueError, RequestException, OSError, RuntimeError) as exc:
             failed.append(f"{name}: {exc}")
     return _failure_status("filters", failed)
@@ -538,6 +550,7 @@ _COMMANDS = {
     "filters-detector": _cmd_filters_detector,
     "filters-info": _cmd_filters_info,
     "filters-inventory": _cmd_filters_inventory,
+    "vega": _cmd_vega,
     "filters-build-components": _cmd_filters_build_components,
     "rebuild": _cmd_rebuild,
     "combine": _cmd_combine,

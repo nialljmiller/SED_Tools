@@ -19,6 +19,7 @@ from ..filters.manifest import is_auxiliary_path
 from ..photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve, Spectrum, _warn_outside_sed,
                           band_average_flux_lambda, band_average_flux_nu, get_metadata_float, load_filter_curve,
                           load_spectrum)
+from ..ui_utils import ordered_range
 from .fileio import read_axes
 from .fluxcube import FluxCube
 from .variants import _variant_paths
@@ -407,7 +408,8 @@ class SED:
         ----------
         teff_range, logg_range, metallicity_range:
             Inclusive parameter ranges expressed as ``(min, max)`` pairs. Any
-            parameter left as ``None`` will not be used for filtering.
+            parameter left as ``None`` will not be used for filtering. A
+            reversed pair raises ValueError.
         limit:
             Optional maximum number of matches to return after sorting by the
             proximity of the requested range to the spectral grid.
@@ -591,12 +593,8 @@ def _normalize_filter_sequence(filters: Sequence[FilterSpec]) -> List[FilterSpec
 
 
 def _normalize_range(value: Optional[Sequence[Number]]) -> Optional[Tuple[float, float]]:
-    if value is None:
-        return None
-    start, end = (float(v) for v in value)
-    if start > end:
-        start, end = end, start
-    return start, end
+    """``(min, max)`` as floats, or None; reversed, ValueError (``ordered_range``)."""
+    return None if value is None else ordered_range(*(float(v) for v in value))
 
 
 def _range_coverage(requested: Optional[Tuple[float, float]], available: Tuple[float, float]) -> Tuple[bool, bool]:

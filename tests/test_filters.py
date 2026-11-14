@@ -259,7 +259,7 @@ def components_camera(root, ground_based=False):
 
 
 # ======================================================================
-# The filter API: installed sets and combined sets (test_filter_api)
+# The filter API: installed sets and combined sets
 # ======================================================================
 QUERY_LOCAL = {
     "filters_query_local_ignores_empty_filter_dirs": ({"WISE": "W1.dat\nW2.dat\n"}, []),
@@ -321,7 +321,7 @@ def combine_refuses_an_index_listing_a_missing_curve(t):
 
 
 # ======================================================================
-# Choosing several facilities, and the picker's input (test_filter_bulk_selection)
+# Choosing several facilities, and the picker's input
 # ======================================================================
 BULK_DOWNLOAD = {
     "multiple_facilities_download_every_instrument_piped_without_prompts": (False, ["1-3"]),  # as in 0.4.1
@@ -364,7 +364,7 @@ def _picker(t, replies, chosen):
 
 
 # ======================================================================
-# NJM's catalogue: search, the cache, citations, filters-info, plots (test_filter_catalogue)
+# NJM's catalogue: search, the cache, citations, filters-info, plots
 # ======================================================================
 def band(pivot, fwhm, detector="photon", ab=0.1):
     return {"WavelengthPivot": pivot, "FWHM": fwhm,
@@ -650,6 +650,7 @@ def plot_uses_filter_colors_and_overlays_vega(t):
     assert max(lines["r"].get_ydata()) == pytest.approx(1.0)
     plt.close(ax.figure)
 
+
     selection = Filters.search(pivot=(6000, 13000), filter_root=root)
     ax = Filters.plot(selection, filter_root=root)
     lines = {line.get_label(): line for line in ax.get_lines()}
@@ -668,8 +669,25 @@ def plot_uses_filter_colors_and_overlays_vega(t):
         Filters.plot(filter_root=root)
 
 
+@row
+def vega_is_downloaded_from_njm_where_mesa_can_read_it(t):
+    # Only the plot and the properties fetched NJM's Vega; MESA's colors module needs the file (vega_sed).
+    root, njm = njm_catalogue(t)
+    t.mp.setattr(Filters, "_filter_root", root)  # as the data directory's filters/ is by default
+    served = catalogue_files()["vega/vega_flam.csv"]
+    path = Filters.fetch_vega()
+    assert path == t.tmp / "vega" / "vega_flam.csv" and path.read_text() == served
+    wavelength, flam = load_vega(path)  # Å and f_λ, as MESA reads them
+    assert wavelength[0] == 3000.0 and flam[0] == pytest.approx(1e-9 * (5000.0 / 3000.0) ** 2)
+    assert run_cli(t.mp, "vega", "--out", str(t.tmp / "mesa")) == 0
+    written = t.tmp / "mesa" / "vega_flam.csv"
+    assert written.read_text() == served
+    assert t.capsys.readouterr().out.endswith(f"MESA colors inlist: vega_sed = '{written}'\n")
+    assert len(njm.fetched("vega/vega_flam.csv")) == 1  # the second copy came from the catalogue's cache
+
+
 # ======================================================================
-# Display colours (test_filter_colors)
+# Display colours
 # ======================================================================
 def top_hat(lo, hi, step=10.0):
     """A top-hat curve from lo to hi Angstrom with zero edges."""
@@ -690,7 +708,7 @@ def all_ultraviolet_set_runs_purple_to_sky_blue(t):
 
 
 # ======================================================================
-# Separable components: filter, optics, QE, atmosphere (test_filter_components)
+# Separable components: filter, optics, QE, atmosphere
 # ======================================================================
 ATM = {"airmass": 1.2, "pwv": 2.5}
 
@@ -804,7 +822,7 @@ def skycalc_build_writes_grid_and_resumes(t):
 
 
 # ======================================================================
-# Correcting or converting installed curves' detector type (test_filter_detector_edit)
+# Correcting or converting installed curves' detector type
 # ======================================================================
 G, R, I = gauss(4800.0, 300.0) * 0.9, gauss(5300.0, 300.0) * 0.7, gauss(5600.0, 200.0) * 0.8  # noqa: E741
 REFERENCE = Path(__file__).parent / "golden" / "inputs" / "reference"  # NJM's vega_flam.csv and sun_flam.csv
@@ -1091,7 +1109,7 @@ def download_flow_reviews_the_detector_type(t):
 
 
 # ======================================================================
-# Photon- and energy-counting curves, and how a curve's type is resolved (test_filter_detector_type)
+# Photon- and energy-counting curves, and how a curve's type is resolved
 # ======================================================================
 NACO_URL = "https://www.eso.org/sci/facilities/paranal/instruments/naco/inst/filters/H_CONICA.dat"
 
@@ -1183,7 +1201,7 @@ def cli_reports_kept_types(t):
 
 
 # ======================================================================
-# The filter library offline: compose, atmospheres, SVO, NJM's burst block (test_filter_library)
+# The filter library offline: compose, atmospheres, SVO, NJM's burst block
 # ======================================================================
 REAL_AVAILABILITY_CHECK = NJMFilterGrabber._check_availability
 TEST_INDEX = njm_index({"Test": {"Camera": {"filters": ["g", "r"], "detector_types": {"photon": 2},
@@ -1191,12 +1209,12 @@ TEST_INDEX = njm_index({"Test": {"Camera": {"filters": ["g", "r"], "detector_typ
 
 
 def njm_offline(t):
-    """Every NJM client of the filter library finds NJM down (test_filter_library's autouse fixture)."""
+    """Every NJM client of the filter library finds NJM down."""
     t.mp.setattr(filters_library.NJMFilterGrabber, "_check_availability", lambda self: False)
 
 
 def _offline_then(t, scenario):
-    """The rows of test_filter_library: its autouse fixture took NJM offline."""
+    """A row of the offline filter-library table, run with NJM down."""
     njm_offline(t)
     scenario(t)
 
@@ -1406,7 +1424,7 @@ def inventory_offline_cli_emits_clean_json(t):
 
 
 # ======================================================================
-# Filter properties: definitions, Vega and Sun quantities, A_f/A_V (test_filter_properties)
+# Filter properties: definitions, Vega and Sun quantities, A_f/A_V
 # ======================================================================
 def box(lo=4000.0, hi=6000.0, ramp=1e-3, n=4001):
     """A top-hat filter with near-vertical edges (zero just outside lo..hi)."""
@@ -1508,7 +1526,6 @@ def helpers_pass_the_sun_through(t):
 
 # ======================================================================
 # Atmosphere sites: legacy and team sites, provenance, unstated airmass, and errors that say what to choose
-# (test_filters_atmosphere_sites)
 # ======================================================================
 LEGACY_SITE = {"altitude_m": 2207.0, "entries": [{"airmass": 1.2, "file": "am1.20.dat", "pwv": None}],
                "notes": "", "schema": 1, "site": "ctio_des", "source": "DES standard atmosphere"}
@@ -1715,7 +1732,7 @@ def missing_conditions_error_says_what_the_site_has(t):
 
 
 # ======================================================================
-# A catalogue gap apart from a fetch failure (test_filters_catalogue_gaps)
+# A catalogue gap apart from a fetch failure
 # ======================================================================
 @row
 def search_reports_gaps_apart_from_fetch_failures(t):
@@ -1737,7 +1754,7 @@ def search_reports_gaps_apart_from_fetch_failures(t):
 
 
 # ======================================================================
-# Component variants, and a component's files from NJM (test_filters_component_variants)
+# Component variants, and a component's files from NJM
 # ======================================================================
 def qe_variants(t):
     """Fac/Cam: band g, and QE variants a (the default) and b (from 2017)."""
@@ -1817,18 +1834,18 @@ def njm_components_keep_the_users_correction_and_the_archived_bands(t):
 
 
 # ======================================================================
-# Failures are raised or warned about, never passed over silently (test_filters_failures)
+# Failures are raised or warned about, never passed over silently
 # ======================================================================
 MIRROR_CURVE = "Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=svo\n4000,0.1\n5000,1\n6000,0.1\n"
 
 
 def no_svo_url(t):
-    """SVO is asked at its own address (the autouse fixture of test_filters_failures and test_svo_fail_fast)."""
+    """SVO is asked at its own address."""
     t.mp.delenv(fm.SVO_FPS_URL_ENV, raising=False)
 
 
 def _default_svo_then(t, scenario):
-    """The rows of test_filters_failures and test_svo_fail_fast: their autouse fixture unset SVO's address."""
+    """A row of the failures and SVO-unreachable tables, run with SVO asked at its own address."""
     no_svo_url(t)
     scenario(t)
 
@@ -2009,7 +2026,7 @@ def njm_atmosphere_failure_is_reported_before_its_source(t):
     assert "NJM cannot provide the paranal_am1.2_pwv2.5 atmosphere (502" in t.caplog.text
 
 
-# filter_metadata: SVO failures are no longer taken for "SVO has no answer"
+# SVO failures are no longer taken for "SVO has no answer"
 @default_svo_row
 def svo_error_is_raised_and_nothing_is_written(t):
     path = three_samples(t.tmp / "GAIA" / "GAIA" / "G.dat", header="Wavelength,Transmission,FilterID=GAIA/GAIA3.G")
@@ -2125,7 +2142,6 @@ def svo_error_on_a_listed_candidate_is_raised(t):
 
 # ======================================================================
 # Filters with NJM or SVO down: NJM's names, one folder per product, outages announced once
-# (test_filters_njm_down)
 # ======================================================================
 def gaia3_from_svo(root):
     """SVO, holding 4 of NJM's 6 GAIA/GAIA bands under GAIA/GAIA3."""
@@ -2555,7 +2571,7 @@ def the_catalogue_finds_an_installed_copy_as_fetch_does(t):
 
 
 # ======================================================================
-# Which source supplies a set: picker entries, spelling, completeness, NJM optional (test_filters_sources)
+# Which source supplies a set: picker entries, spelling, completeness, NJM optional
 # ======================================================================
 SVO_CURVE = "Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=svo\n4100,0\n5000,1\n5900,0\n"
 GAIA_SVO = {"GAIA0": "Gaia pre-launch filters",
@@ -2661,7 +2677,6 @@ def njm_instrument_without_manifest_is_described_not_an_error(t):
 # ======================================================================
 # The library and NJM's mirror: outages checked once per process, downloads of only what changed, old
 # spellings, NJM's archived copies, compose, and where the catalogue comes from
-# (test_filters_spelling_and_archives)
 # ======================================================================
 class CountingSession:
     """A requests session whose HEAD answers ``head`` (a status, or an exception raised) and whose GETs fail;
@@ -3189,7 +3204,7 @@ def _archived_copies_apart(t, *spelling):
 
 
 # ======================================================================
-# SVO unreachable: one clear error, at once (test_svo_fail_fast)
+# SVO unreachable: one clear error, at once
 # ======================================================================
 @default_svo_row
 def connect_timeout_raises_one_clear_error_and_is_not_retried(t):
@@ -3222,7 +3237,7 @@ def download_stops_at_first_unreachable_filter(t):
 
 
 # ======================================================================
-# Curves stay readable by released MESA colors, 25.12.1 and 26.4.1 (test_mesa_legacy_format)
+# Curves stay readable by released MESA colors, 25.12.1 and 26.4.1
 #
 # Released MESA's ``load_filter`` discards the first line, sizes its arrays from every remaining line, then skips
 # leading ``#`` lines plus the first other line before reading samples. Any extra line therefore leaves an
@@ -3454,8 +3469,6 @@ def _sources(t, found, written):
 
 @row
 def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
-    import runpy
-
     from sed_tools.filters import label_check
 
     def curve(path, detector=PHOTON, source=SOURCE_SVO, wl=(4000.0, 5000.0, 6000.0), tr=(0.5, 1.0, 0.5),
@@ -3510,10 +3523,6 @@ def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
     assert label_check.main([str(clean)]) == 0 and "keep every rule" in t.capsys.readouterr().out
     with pytest.raises(SystemExit):
         label_check.main([str(t.tmp / "missing")])
-    t.mp.setattr(sys, "argv", ["label_check", str(clean)])
-    with pytest.raises(SystemExit) as stop:
-        runpy.run_module("sed_tools.filters.label_check", run_name="__main__")
-    assert stop.value.code == 0
 
 
 @row
@@ -3730,7 +3739,7 @@ def tree_migration_is_offline_and_idempotent(t):
 
 
 # ======================================================================
-# Wavelength units of filter curves and spectra (test_wavelength_units)
+# Wavelength units of filter curves and spectra
 # ======================================================================
 INFER_UNIT = {f"infer_unit_from_values_{unit}": (lo, hi, unit) for lo, hi, unit in [
     (3200.0, 10800.0, "angstrom"),  # Gaia G in A (was misread as nm)

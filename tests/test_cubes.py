@@ -980,18 +980,21 @@ def mesa_prepare_still_exports_the_chosen_variant(t):
 
 
 @row
-def combine_menu_asks_again_until_the_selection_is_valid(t):
+def combine_menu_asks_once_and_raises_on_a_selection_it_cannot_use(t):
     from sed_tools.cube.combine import select_models_interactive
 
     grids = [(name, str(t.tmp / name)) for name in ("A", "B", "C")]
     # Empty input and a bad token used to combine every grid; out-of-range numbers were dropped silently. A
-    # repeated grid is refused too.
-    answer(t.mp, "", "two", "1,", "0", "4", "1,9", "2,2", "3,1")
+    # repeated grid is refused too. It then asked again; it now asks once, as every menu question does.
+    for reply in ("", "two", "1,", "0", "4", "1,9", "2,2"):
+        answer(t.mp, reply)
+        with pytest.raises(ValueError) as refused:
+            select_models_interactive(grids)
+        assert str(refused.value) == (f"Invalid selection {reply!r}: enter distinct numbers from 1 to 3, "
+                                      "comma-separated, or 'all'.")
+    answer(t.mp, "3,1")
     assert select_models_interactive(grids) == [grids[2], grids[0]]  # in the order typed
-    out = t.capsys.readouterr().out
-    for reply in ("''", "'two'", "'1,'", "'0'", "'4'", "'1,9'", "'2,2'"):
-        assert f"Invalid selection {reply}: enter distinct numbers from 1 to 3, comma-separated, or 'all'." in out
-    assert "Using all" not in out
+    assert "Using all" not in t.capsys.readouterr().out
 
 
 @row
@@ -1405,26 +1408,41 @@ def several_flux_cubes_are_offered_by_number(t):
     other = t.tmp / "grids" / "h" / "flux_cube.bin"
     other.parent.mkdir()
     other.write_bytes((grid / "flux_cube.bin").read_bytes())
-    answer(t.mp, "", "3", "2")  # Enter lists them again; 3 is not listed
+    answer(t.mp, "2")
     assert tool.prompt_for_flux_cube_path([t.tmp / "grids"]) == other.resolve()
-    out = t.capsys.readouterr().out
-    assert out.count("Discovered flux cube files:") == 3
-    assert "Invalid selection. Please choose one of the listed numbers." in out
+    assert "Discovered flux cube files:" in t.capsys.readouterr().out
+    answer(t.mp, "3")  # not listed: asked once, so it raises (it asked again)
+    with pytest.raises(KeyError):
+        tool.prompt_for_flux_cube_path([t.tmp / "grids"])
     answer(t.mp, str(grid))  # or a path: a folder holding one cube
     assert tool.prompt_for_flux_cube_path([t.tmp / "grids"]) == grid / "flux_cube.bin"
 
 
 @row
-def with_no_flux_cube_found_a_path_is_asked_for_until_quit(t):
+def with_no_flux_cube_found_a_path_is_asked_for_once(t):
     grid = _tool_grid(t)
-    answer(t.mp, "", "missing", str(grid / "flux_cube.bin"))
+    answer(t.mp, str(grid / "flux_cube.bin"))
     assert tool.prompt_for_flux_cube_path() == grid / "flux_cube.bin"
-    out = t.capsys.readouterr().out
-    assert "Please provide a path to a flux cube file." in out
-    assert "Flux cube path 'missing' does not exist" in out
-    answer(t.mp, "q")
-    with pytest.raises(SystemExit, match="No flux cube selected; aborting."):
+    answer(t.mp, "missing")  # it asked again after a path with no cube, and after a blank answer
+    with pytest.raises(FileNotFoundError, match="Flux cube path 'missing' does not exist"):
         tool.prompt_for_flux_cube_path()
+    for reply in ("", "q"):
+        answer(t.mp, reply)
+        with pytest.raises(SystemExit, match="No flux cube selected; aborting."):
+            tool.prompt_for_flux_cube_path()
+
+
+@row
+def several_filter_systems_are_offered_by_number_once(t):
+    entries = [("Gaia/G.dat", t.tmp / "G.dat"), ("Johnson/B.dat", t.tmp / "B.dat"), ("Johnson/V.dat", t.tmp / "V.dat")]
+    answer(t.mp, "2")
+    assert tool.prompt_for_filter_system(entries, None) == ("Johnson", entries[1:])
+    assert "  1) Gaia (1 filters)\n  2) Johnson (2 filters)\n  0) All systems" in t.capsys.readouterr().out
+    answer(t.mp, "")
+    assert tool.prompt_for_filter_system(entries, None) == (None, entries)
+    answer(t.mp, "3")  # not listed: it asked again
+    with pytest.raises(KeyError):
+        tool.prompt_for_filter_system(entries, None)
 
 
 @row
@@ -1450,11 +1468,13 @@ def vega_spectra_near_the_cube_are_found_and_offered_by_number(t):
     first = _write_vega(grid / "vega.dat")
     assert tool.resolve_vega_spectrum_path(None, cube) == first.resolve()
     second = _write_vega(grid.parent / "alpha_lyr_vega.txt")
-    answer(t.mp, "x", "3", "2")  # listed nearest first
+    answer(t.mp, "2")  # listed nearest first
     assert tool.resolve_vega_spectrum_path(None, cube) == second.resolve()
-    out = t.capsys.readouterr().out
-    assert "Discovered potential Vega spectra:" in out
-    assert out.count("Please select one of the listed Vega spectra.") == 2
+    assert "Discovered potential Vega spectra:" in t.capsys.readouterr().out
+    for reply in ("x", "3"):  # not listed: asked once, so it raises (it asked again)
+        answer(t.mp, reply)
+        with pytest.raises(KeyError):
+            tool.resolve_vega_spectrum_path(None, cube)
 
 
 #: name: (what is typed, the radius in metres). A bare number is in R☉, as the prompt says (it was taken as metres).
