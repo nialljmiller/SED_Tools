@@ -16,8 +16,8 @@ from ..grids.units import FLUX_GUESS_WHY, FLUX_UNITS, undeclared_flux_unit
 from ..grids.clean import clean_model_dir
 from ..grids.lookup import regenerate_lookup_table
 from ..grids.pipeline import (_build_combined_grid, _build_data_products, _build_flux_cube, _directory_state,
-                              _download_count, _import_sources, build_h5_bundle_from_txt, download_from_first_source,
-                              local_grids, rebuildable_grids, spectra_grabber)
+                              _download_count, _import_sources, _print_subgrids, build_h5_bundle_from_txt,
+                              download_from_first_source, local_grids, rebuildable_grids, spectra_grabber)
 from ..grids.spectrum_io import _bundle_path
 from ..ui_utils import ask_range, parse_multi_selection, prompt_choice, wrap
 
@@ -451,10 +451,11 @@ def run_combine_flow(
     *,
     models: Optional[List[str]] = None,
 ) -> None:
-    """Combine stellar spectral grids into one omni grid, with one flux cube spanning all their parameters.
+    """Combine stellar spectral grids into one omni grid, with one flux cube spanning all their parameters, or one
+    per variant when their extra axes vary (then it names the variant folders MESA can read).
 
     Args:
-        base_dir: Base directory containing stellar_models/ subdirectories
+        base_dir: The folder holding the grids (stellar_models/), where the combination is written
         output_name: Name for the combined spectral grid directory
         interactive: If True, prompt user to select spectral grids
         models: Names of the grids to combine, instead of choosing them.
@@ -497,6 +498,9 @@ def run_combine_flow(
 
     print(f"\nSuccessfully combined {len(selected_models)} stellar spectral grids!")
     print(f"Output saved to: {output_dir}")
+    if (Path(output_dir) / "variants_index.csv").is_file():
+        _print_subgrids(output_dir, Path(output_dir) / "variants_index.csv")
+        return
     print("You can now use this combined spectral grid in MESA by setting:")
     print(f"stellar_atm = '{output_dir}/'")
 

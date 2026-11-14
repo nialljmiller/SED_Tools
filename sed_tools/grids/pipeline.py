@@ -132,15 +132,20 @@ def _build_data_products(name: str, model_dir: str, src: str, force_bundle_h5: b
 
     written = _build_flux_cube(model_dir)
     if written.name == "variants_index.csv":
-        subgrids = _variant_paths(written)
-        print(f"Flux cubes    : {len(subgrids)} MESA-ready subgrid(s) created")
-        for subgrid in subgrids:
-            print(f"  -> {os.path.join(model_dir, subgrid)}/")
-        print("\n  Point MESA Colors to one of the above subdirectories.")
-        print(f"  See {written} for the full inventory.")
+        _print_subgrids(model_dir, written)
     else:
         print("Flux cube     : flux_cube.bin")
     return []
+
+
+def _print_subgrids(model_dir: str, variants_index: Path) -> None:
+    """Say which folders MESA can read when a grid is split: one per variant, each with its flux cube."""
+    subgrids = _variant_paths(variants_index)
+    print(f"Flux cubes    : {len(subgrids)} MESA-ready subgrid(s) created")
+    for subgrid in subgrids:
+        print(f"  -> {os.path.join(model_dir, subgrid)}/")
+    print("\n  Point MESA Colors to one of the above subdirectories.")
+    print(f"  See {variants_index} for the full inventory.")
 
 
 def _rebuild_command(name: str, model_dir: str) -> str:

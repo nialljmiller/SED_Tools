@@ -637,6 +637,22 @@ def combining_again_into_a_folder_replaces_the_earlier_combination(t):
 
 
 @row
+def combine_names_the_variant_folders_mesa_can_read(t):
+    # After a split combination the command told MESA stellar_atm = '<output>/', a folder that holds no flux cube.
+    import matplotlib
+
+    from sed_tools.cli import run_combine_flow
+
+    matplotlib.use("Agg")
+    _planck_grid(t, "a", [(5000.0, 4.5, 0.0, 0.0), (5000.0, 4.5, 0.0, 0.4)], columns=("teff", "logg", "meta", "alpha"))
+    _planck_grid(t, "b", [(6000.0, 4.5, 0.0)])
+    run_combine_flow(str(t.tmp / "models"), output_name="ab", interactive=False, models=["a", "b"])
+    out = t.capsys.readouterr().out
+    assert "stellar_atm" not in out and "Point MESA Colors to one of the above subdirectories." in out
+    assert f"  -> {t.tmp / 'models' / 'ab' / 'ab_alpha_0p40'}/" in out
+
+
+@row
 def combine_places_a_grid_without_log_g_at_every_log_g(t):
     # A grid without log g or [M/H] (a blackbody) used to be placed at log g 0 and [M/H] 0, as stars of that log g.
     # It holds the same spectrum at every log g, so it fills every value the other grids give the axis, except
