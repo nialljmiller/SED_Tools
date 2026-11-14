@@ -176,7 +176,8 @@ def _add_filter_download_parsers(sub) -> None:
     fcp.add_argument("inputs", nargs="+", help="Filter-set directories or .dat files to combine")
     _add_base_option(fcp, FILTER_DIR_DEFAULT, "Base filter directory")
     fcp.add_argument("--facility", default=None, help="Output facility label (default: Combined)")
-    fcp.add_argument("--instrument", default=None, help="Output instrument/index-file name")
+    fcp.add_argument("--instrument", default=None,
+                     help="Output instrument folder name; an absolute output path ignores it")
     fcp.add_argument("--on-conflict", choices=["rename", "overwrite", "error"], default="rename",
                      help="How duplicate filter filenames are handled")
 
