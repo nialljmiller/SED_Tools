@@ -228,7 +228,7 @@ atmospheres/<site>/     beside filters/: the site's manifest.json and its .dat c
 cache/njm/              beside filters/: NJM's index.json, properties.json and info.json, cached
 ```
 
-- **Curves.** Each `<band>.dat` starts with a column row, `Wavelength,Transmission,Key=value;...`, whose third field holds the metadata (`FilterID`, `DetectorType`, `DetectorTypeSource`, `WavelengthUnit`, `Components`, ...); then one `wavelength,transmission` sample per line. MESA discards the column row.
+- **Curves.** Each `<band>.dat` starts with a column row, `Wavelength,Transmission,Key=value;...`, whose third field holds the metadata (`FilterID`, `DetectorType`, `DetectorTypeSource`, `WavelengthUnit`, `Components`, ...); then one `wavelength,transmission` sample per line. MESA reads no sample from the column row: released MESA skips it, and MESA's photon-counting branch reads its `DetectorType`.
 - **MESA index file.** Named after the instrument directory. MESA loads only the curves it lists, so files beside it that it does not list (such as NJM's superseded `<band>_svo` copies) are not loaded.
 - **`manifest.json`.** `bands`; `published` and `published_bands` (what each published curve contains, e.g. `filter+qe`); `components` (role, then band or `*`, then a file under `components/`); `detector_type`, `detector_types` and `detector_type_sources`; `variants` (alternative component curves, used only when selected with `variants=` in Python); `default_site`, `atmosphere_sites` and `ground_based`; `sources`, `notes` and `outside_range`; and `archived_bands` (superseded copies kept beside the set, never part of `bands` or the MESA index). `variants`, `atmosphere_sites` and `archived_bands` are written only when set.
 - **Products.** A product directory's name records what was selected: `+<role>_<variant>` for a variant, `+atm_<label>` for an atmosphere, `+detector_<type>` for a detector override (e.g. `products/filter+qe+qe_single_layer/`).
@@ -260,7 +260,7 @@ QE describes the detector's wavelength-dependent efficiency; detector type descr
 
 A transmission curve is defined either for an energy-counting detector (e.g. Bessell's Johnson–Cousins curves) or for a photon-counting one (CCDs, e.g. Gaia DR3, JWST, 2MASS). Synthetic photometry weights the integrand by `T(λ)` in the first case and by `T(λ)·λ` in the second ([Bessell & Murphy 2012](https://ui.adsabs.harvard.edu/abs/2012PASP..124..140B/abstract), eq. A9); using the wrong one shifts Gaia G by ~0.035 mag.
 
-Every filter file records which applies on its column-name row, the one line MESA discards before reading samples:
+Every filter file records which applies on its column-name row, the first line, which holds no sample (released MESA skips it; MESA's photon-counting branch reads its `DetectorType`):
 
 ```
 Wavelength,Transmission,FilterID=GAIA/GAIA3.G;DetectorType=photon;DetectorTypeSource=svo;WavelengthUnit=Angstrom
@@ -1078,15 +1078,22 @@ ln -s $(pwd)/data/stellar_models/Kurucz2003all $MESA_DIR/data/colors_data/stella
 
 ### MESA Inlist Configuration
 
+MESA reads these from the `&colors` namelist (as in MESA's `custom_colors` test case):
+
 ```fortran
-&controls
-    ! Stellar spectral grid
-    stellar_atm = '/data/colors_data/stellar_models/Kurucz2003all/'
-    
-    ! Photometric filter set
-    instrument = '/data/colors_data/filters/Generic/Johnson'
+&colors
+    use_colors = .true.
+
+    ! Photometric filter set: the instrument folder, which holds the index file named after it
+    instrument = '/path/to/data/filters/Generic/Johnson'
+
+    ! Stellar spectral grid: the folder that holds flux_cube.bin. A grid split into variants
+    ! (Kurucz2003all: alpha 0 and 0.4) has one per variant subfolder; the download lists them
+    stellar_atm = '/path/to/data/stellar_models/Kurucz2003all/Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s'
 /
 ```
+
+`/path/to/data` is the SED_Tools data directory (`sed-tools config` shows it), or wherever you copied the folders.
 
 ### Filter Specifications
 
