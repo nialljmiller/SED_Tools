@@ -45,7 +45,7 @@ from .grids.clean import clean_model_dir
 from .grids.lookup import regenerate_lookup_table
 from .grids.svo import SVOSpectraGrabber
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 
 def list_txt_spectra(model_dir: str) -> list[str]:
