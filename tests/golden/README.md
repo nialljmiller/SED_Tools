@@ -1,9 +1,11 @@
 # Golden tests
 
 `tests/test_golden.py` reruns every case in `cases.py` on the fixed inputs in
-`inputs/` and requires the outputs to match `expected/` byte for byte. The
-expected outputs were recorded from integration/0.4.2 (d622dcc), so any
-refactor that changes a result, even in the last digit, fails.
+`inputs/` and requires the outputs to match `expected/` byte for byte, so any
+refactor that changes a result, even in the last digit, fails. The expected
+outputs were first recorded from integration/0.4.2 (d622dcc); a case whose
+output a change meant to alter was re-recorded in the commit that explains the
+change (`git log -- tests/golden/expected/<case>` lists them).
 
 The cases cover filter headers, filter properties (including A(λ)/A(V), which
 needs `dust_extinction`), plotting colours, component composition with an
