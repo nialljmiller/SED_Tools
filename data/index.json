@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-11-14T15:32:24.630473",
+  "generated": "2026-11-14T15:51:40.570588",
   "statistics": {
     "total_models": 8,
     "complete_models": 7,
@@ -614,8 +614,9 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 48748,
-            "size_human": "47.61 KB",
+            "size_bytes": 49059,
+            "size_human": "47.91 KB",
+            "description": "POLDER-2 passive optical imaging radiometer (CNES): 443 to 910 nm bands",
             "svo_instruments": [
               "ADEOS/POLDER-2"
             ]
@@ -1249,8 +1250,9 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 31673,
-            "size_human": "30.93 KB",
+            "size_bytes": 31998,
+            "size_human": "31.25 KB",
+            "description": "Archeops 143, 217 and 353 GHz bands from the July 1999 Trapani test flight",
             "svo_instruments": [
               "ARCHEOPS/Trapani"
             ]
@@ -1816,8 +1818,9 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 17714,
-            "size_human": "17.30 KB",
+            "size_bytes": 18021,
+            "size_human": "17.60 KB",
+            "description": "BICEP1 bolometric CMB polarimeter: 100 GHz spectral response",
             "svo_instruments": [
               "BICEP/BICEP1"
             ]
@@ -2318,8 +2321,9 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 641592,
-            "size_human": "626.55 KB",
+            "size_bytes": 641911,
+            "size_human": "626.87 KB",
+            "description": "ALHAMBRA Survey filters, Calar Alto observatory, with quad 2-4 versions",
             "svo_instruments": [
               "CAHA/ALHAMBRA"
             ]
@@ -3744,8 +3748,9 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 48717,
-            "size_human": "47.58 KB",
+            "size_bytes": 49026,
+            "size_human": "47.88 KB",
+            "description": "CSST Survey Camera spectroscopy: GU, GV, GI, grating only and grating+CCD",
             "svo_instruments": [
               "CSST/SC0-Spec"
             ]
@@ -3795,8 +3800,9 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 13157,
-            "size_human": "12.85 KB",
+            "size_bytes": 13474,
+            "size_human": "13.16 KB",
+            "description": "CSTAR2 g filter, one of the four CSTAR Schmidt telescopes",
             "svo_instruments": [
               "CSTAR/CSTAR2"
             ]
@@ -3817,8 +3823,9 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 12751,
-            "size_human": "12.45 KB",
+            "size_bytes": 13093,
+            "size_human": "12.79 KB",
+            "description": "CSTAR4 r filter, one of the four CSTAR Schmidt telescopes",
             "svo_instruments": [
               "CSTAR/CSTAR4"
             ]
@@ -7999,8 +8006,9 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 33931,
-            "size_human": "33.14 KB",
+            "size_bytes": 34236,
+            "size_human": "33.43 KB",
+            "description": "Euclid NISP approximate Blue and Red filters",
             "svo_instruments": [
               "Euclid/NISP0"
             ]
@@ -12187,8 +12195,9 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 19190,
-            "size_human": "18.74 KB",
+            "size_bytes": 19532,
+            "size_human": "19.07 KB",
+            "description": "Str\u00f6mgren photometric system: generic u, v, b, y filters",
             "svo_instruments": [
               "Generic/Stromgren"
             ]
@@ -19723,8 +19732,9 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 92068,
-            "size_human": "89.91 KB",
+            "size_bytes": 92393,
+            "size_human": "90.23 KB",
+            "description": "Las Cumbres Observatory filters: narrow bands, u', w, v, UV and solar",
             "svo_instruments": [
               "LasCumbres/LasCumbres"
             ]
@@ -20581,8 +20591,9 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 120514,
-            "size_human": "117.69 KB",
+            "size_bytes": 120821,
+            "size_human": "117.99 KB",
+            "description": "NSFCam 1-5 micron camera filters, Mauna Kea Observatories",
             "svo_instruments": [
               "MKO/NSFCam"
             ]
@@ -21905,8 +21916,9 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 20694,
-            "size_human": "20.21 KB",
+            "size_bytes": 20997,
+            "size_human": "20.50 KB",
+            "description": "Asteroid Terrestrial-impact Last Alert System (ATLAS) cyan and orange filters",
             "svo_instruments": [
               "Misc/Atlas"
             ]
@@ -22364,8 +22376,9 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 16634,
-            "size_human": "16.24 KB",
+            "size_bytes": 16949,
+            "size_human": "16.55 KB",
+            "description": "NSFCam 1-5 micron camera, NASA Infrared Telescope Facility: H2-2 and Kcont",
             "svo_instruments": [
               "NIRT/NSFCAM"
             ]
@@ -23232,8 +23245,9 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1092938,
+            "size_bytes": 1093245,
             "size_human": "1.04 MB",
+            "description": "Nordic Optical Telescope filters, by NOT filter number",
             "svo_instruments": [
               "NOT/NOT"
             ]
@@ -28913,8 +28927,9 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 460756,
-            "size_human": "449.96 KB",
+            "size_bytes": 461067,
+            "size_human": "450.26 KB",
+            "description": "Subaru Prime Focus Camera (Suprime-Cam) filters, mostly full transmission",
             "svo_instruments": [
               "Subaru/Suprime"
             ]
@@ -30129,8 +30144,9 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 33116,
-            "size_human": "32.34 KB",
+            "size_bytes": 33421,
+            "size_human": "32.64 KB",
+            "description": "Tycho B and V filters: original, Mann & von Braun 2014 and Bessell 2000",
             "svo_instruments": [
               "TYCHO/TYCHO"
             ]
