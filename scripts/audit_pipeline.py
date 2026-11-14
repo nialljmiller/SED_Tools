@@ -844,8 +844,7 @@ def make_sed_comparison_plot(results, target_teff, label, out_path):
             ax.plot(wl, fl / peak, color=color, alpha=0.85, lw=1.0,
                     label=f"{r['name']}  (Teff={best_teff:.0f} K, Δ={delta_teff:.0f} K)")
 
-            # Cube SED — use variant cube if available so match is exact
-            fname = Path(best_path).name
+            # Cube SED: the audited folder's own cube (a split grid is audited variant by variant)
             cube_path = Path(r["model_dir"]) / "flux_cube.bin"
             wl_c, fl_c = _extract_cube_sed(cube_path, best_teff, _lg, _mt)
             if wl_c is not None and fl_c.max() > 0:
@@ -940,8 +939,7 @@ def make_sed_bb_overlay_plot(results, out_path):
         ax.plot(wl, fl / peak, color=color, alpha=0.85, lw=1.0,
                 label=f"{name}  (Teff={teff:.0f} K)")
 
-        # Cube SED — use variant cube so match is exact
-        fname    = Path(fpath).name
+        # Cube SED: the audited folder's own cube (a split grid is audited variant by variant)
         cube_path = Path(model_dir) / "flux_cube.bin"
         wl_c, fl_c = _extract_cube_sed(cube_path, teff, logg, meta)
         if wl_c is not None and fl_c.max() > 0:
