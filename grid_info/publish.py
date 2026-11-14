@@ -1,6 +1,11 @@
 """Write a stellar grid's manifest.json, properties.json and info.json from the guard: the publish step (design §4).
 
-For each grid it runs grid_info.check_grids on data/stellar_models/<grid>/ and writes beside the spectra:
+For each grid it first builds the flux cubes with SED_Tools' cube builder when they need it (build_cubes): none yet,
+one lacking a spectrum beside it, a top-level cube beside variants_index.csv, or a layout other than SED_Tools'
+split rule gives (sed_tools.cube.collision.discover_extra_axes: a grid whose extra axes tell apart spectra at one node
+is split into one variant folder per value, each with its cube, lookup table and links to the spectra; a split
+grid has no top-level cube). Cube files it replaces or removes are first copied to backups/<UTC>-grid-publish/.
+Then it runs grid_info.check_grids on data/stellar_models/<grid>/ and writes beside the spectra:
   manifest.json    the files clients download (and the variant cubes), with size, modification time and SHA-256,
                    plus the SHA-256 of each spectrum's data lines; axes, variants, cube layout, the archived
                    copies and aliases from the curated record, and the guard's verdict. Its status is
@@ -15,7 +20,7 @@ generate_index.py lists a grid only if its manifest is "published" and its files
 
 Usage (on NJM, from the server checkout, under the NJM lock):
   flock /tmp/sed-filter-info.lock python3 -m grid_info.publish GRID [GRID ...] [--data data] [--dry-run]
-Exit status 1 if any grid is held.
+Exit status 1 if any grid is held. --dry-run says which grids' cubes it would build and builds none.
 """
 import argparse
 import json
@@ -30,7 +35,7 @@ import numpy as np
 
 from grid_info.check_grids import (CURATED, DEFAULT_CACHE, ROOT, SCHEMA, HashCache, _jsonable,
                                    check_grid, other_hashes, previous_manifest, read_lookup, served_paths,
-                                   variant_links)
+                                   variant_links, variant_paths)
 
 # Lookup columns that are bookkeeping, not axes (as SED_Tools' cube/collision.py lists them).
 BOOKKEEPING = {"file_name", "source", "units_standardized", "wavelength_unit", "flux_unit", "original_wavelength_unit",
@@ -187,9 +192,82 @@ def write_json(path, doc):
     os.replace(tmp, path)
 
 
+def _split_by_rule(grid):
+    """Whether SED_Tools' cube builder splits this grid into variants: its extra axes (the generic rule of
+    sed_tools.cube.collision.discover_extra_axes) give more than one combination of values."""
+    from sed_tools.cube.build import _parse_axes, _read_lookup_table
+    from sed_tools.cube.collision import discover_extra_axes
+    from sed_tools.cube.variants import _group_by_extra_axes
+    from sed_tools.grids.lookup import find_file_column
+
+    path = grid / "lookup_table.csv"
+    lookup, cols, _ = _read_lookup_table(str(path))
+    file_col = find_file_column(cols) or cols[0]
+    teff, logg, meta = _parse_axes(lookup, str(path), file_col)
+    extra = discover_extra_axes({c: lookup[c] for c in lookup if c != file_col}, list(zip(teff, logg, meta)))
+    return len(_group_by_extra_axes(lookup, extra, file_col, teff, logg, meta)) > 1
+
+
+def cube_build_needed(grid):
+    """Why the grid's flux cubes must be built with SED_Tools' builder, or None (see the module docstring)."""
+    from sed_tools.cube.check import _flux_cube_file, _flux_cube_shortfall
+
+    if not (grid / "lookup_table.csv").is_file() or not any(grid.glob("*.txt")):
+        return None   # check 3 reports it; nothing to build from
+    vindex, top = grid / "variants_index.csv", grid / "flux_cube.bin"
+    if vindex.is_file() and top.is_file():
+        return "a top-level flux_cube.bin beside variants_index.csv (a split grid has no cube of its own)"
+    cube = _flux_cube_file(grid)
+    if cube is None:
+        return "no flux cube"
+    shortfall = _flux_cube_shortfall(grid)
+    if shortfall:
+        return f"{cube.name} {shortfall}"
+    split = _split_by_rule(grid)
+    if split != vindex.is_file():
+        return ("SED_Tools' rule splits it into variants, and it has one cube" if split
+                else "it is split into variants, and SED_Tools' rule gives one cube")
+    return None
+
+
+def _cube_files(grid):
+    """The cube files a build replaces or removes: the top-level cube and variants index, and each listed variant's
+    cube and lookup table."""
+    paths = [grid / n for n in ("flux_cube.bin", "variants_index.csv", "lookup_table_full.csv")]
+    vindex = grid / "variants_index.csv"
+    if vindex.is_file():
+        for rel in variant_paths(vindex):
+            paths += [grid / rel / "flux_cube.bin", grid / rel / "lookup_table.csv"]
+    return [p for p in paths if p.is_file()]
+
+
+def build_cubes(grid, stamp, dry_run=False):
+    """Build the grid's cubes with SED_Tools' builder when cube_build_needed says why; returns that reason, or
+    None. RuntimeError from the builder (more variants than it splits without asking) is returned as the reason
+    with "not built: "; the check then holds the grid."""
+    why = cube_build_needed(grid)
+    if why is None or dry_run:
+        return why
+    from sed_tools.grids.pipeline import _build_flux_cube
+
+    backup = ROOT / "backups" / f"{stamp}-grid-publish" / grid.relative_to(ROOT)
+    for path in _cube_files(grid):
+        target = backup / path.relative_to(grid)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, target)
+    try:
+        _build_flux_cube(grid)
+    except RuntimeError as exc:
+        return f"not built: {exc}"
+    return why
+
+
 def publish(grid, cache, stamp, dry_run=False):
     curated_path = CURATED / f"{grid.name}.json"
     curated = json.loads(curated_path.read_text()) if curated_path.is_file() else {}
+    built = build_cubes(grid, stamp, dry_run)
+    if built:
+        print(f"{'would build' if dry_run else 'built'} the cubes of {grid.name}: {built}")
     report, aux = check_grid(grid, other_hashes(grid.parent, grid.name, cache), cache, previous_manifest(grid))
     cache.save()
     records = build_records(grid, report, aux, curated, cache)

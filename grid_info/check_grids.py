@@ -8,7 +8,8 @@ A grid (data/stellar_models/<grid>/) is listed only if all nine checks pass (des
                 re-read (no 999.9 placeholders, no lost minus signs, no missing columns)
   4 cube        each flux_cube.bin (or variant cube in variants_index.csv) has a header that agrees with its
                 axes and size, is filled at exactly its lookup's nodes, and holds its spectra; the .h5 bundle
-                holds the same spectra. A grid without a cube passes with a warning: clients build one
+                holds the same spectra. A grid split into variants has no top-level flux_cube.bin: MESA and
+                clients read a variant's folder. A grid without a cube passes with a warning: clients build one
   5 physics     (a) integral of F_lambda over each sampled spectrum and every filled cube node is within
                 0.5-2 of that of pi*B_lambda(Teff) on the same wavelengths (warning outside 0.9-1.1);
                 (b) shape: archived raw upstream files (source_evidence/grids/<grid>/raw/) equal their spectra
@@ -524,11 +525,10 @@ def variant_paths(index):
 def check_cubes(grid, cols, rows, read, record=None):
     """Check 4 for the top-level cube or every variant cube; returns the scans for check 5.
 
-    A split grid may also hold a top-level flux_cube.bin for clients that read only the top level (SED_Tools
-    0.4.1, MESA), if it is a byte copy of the cube of the variant its curated record names as default_variant."""
+    A split grid has no top-level flux_cube.bin (Nill, 14 Nov 2026): MESA and clients read a variant's folder, and
+    grid_info.publish removes one (SED_Tools' split does). record is no longer read here."""
     errors, warnings, details, scans = [], [], [], []
     top, vindex = grid / "flux_cube.bin", grid / "variants_index.csv"
-    default_copy = None
     if top.is_file() and not vindex.is_file():
         res, scan = check_one_cube(top, cols or [], rows, grid, "flux_cube.bin")
         details.append(res)
@@ -537,13 +537,8 @@ def check_cubes(grid, cols, rows, read, record=None):
         if scan:
             scans.append((top, scan))
     if vindex.is_file() and top.is_file():
-        default = (record or {}).get("default_variant")
-        dcube = grid / default / "flux_cube.bin" if default else None
-        if dcube is not None and dcube.is_file() and file_hash(top) == file_hash(dcube):
-            default_copy = default
-        else:
-            errors.append("flux_cube.bin beside variants_index.csv is not a byte copy of the cube of the curated "
-                          f"default_variant ({default!r})")
+        errors.append("flux_cube.bin beside variants_index.csv: a split grid has no top-level cube (MESA reads a "
+                      "variant's folder); grid_info.publish removes it")
     if vindex.is_file():
         covered = set()
         for rel in variant_paths(vindex):
@@ -590,14 +585,13 @@ def check_cubes(grid, cols, rows, read, record=None):
             warnings.append(f"{h5.name} not checked (no h5py)")
         except (OSError, KeyError, ValueError) as exc:
             errors.append(f"{h5.name} unreadable ({exc})")
-    allowed = {"lookup_table.csv", "flux_cube.bin", f"{grid.name}.h5"}
-    if vindex.is_file():
-        allowed |= {"variants_index.csv", "lookup_table_full.csv"}
+    allowed = {"lookup_table.csv", f"{grid.name}.h5"} | ({"variants_index.csv", "lookup_table_full.csv"}
+                                                        if vindex.is_file() else {"flux_cube.bin"})
     stray = sorted(p.name for p in grid.iterdir() if p.is_file() and p.suffix.lower() in SERVED_SUFFIXES[1:]
                    and p.name not in allowed)
     if stray:
         warnings.append(f"old clients also download {stray}")
-    return _result(errors, warnings, cubes=details, top_level_default_variant=default_copy), scans
+    return _result(errors, warnings, cubes=details), scans
 
 
 def ir_slope(wl, fl, teff):

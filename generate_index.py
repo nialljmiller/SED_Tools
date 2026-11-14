@@ -14,7 +14,7 @@ from urllib.parse import unquote
 
 from filter_info.compose import SCHEMA as INFO_SCHEMA, InfoSources, write_info
 from filter_info.references import UNRESOLVED
-from grid_info.check_grids import manifest_matches
+from grid_info.check_grids import manifest_matches, variant_paths
 from sed_tools import __version__ as SED_TOOLS_VERSION
 from sed_tools.filters.curve_metadata import read_filter_header
 from sed_tools.filters.display import instrument_colors
@@ -101,10 +101,14 @@ def scan_stellar_models(base_path: Path, keep=()):
         if not listed:
             print(f"  kept listed, as index.json lists it already: {model_name} ({why})")
 
-        # Check for key files
+        # Check for key files. A grid split into variants has no cube of its own: each variant's folder has one.
         flux_cube = model_dir / "flux_cube.bin"
         lookup_table = model_dir / "lookup_table.csv"
         h5_file = model_dir / f"{model_name}.h5"
+        vindex = model_dir / "variants_index.csv"
+        variants = variant_paths(vindex) if vindex.is_file() else []
+        has_cube = (all((model_dir / v / "flux_cube.bin").is_file() for v in variants) if variants
+                    else flux_cube.exists())
 
         # Count spectra files
         spectra_files = list(model_dir.glob("*.txt"))
@@ -121,7 +125,8 @@ def scan_stellar_models(base_path: Path, keep=()):
 
         models_detailed[model_name] = {
             "name": model_name,
-            "has_flux_cube": flux_cube.exists(),
+            "has_flux_cube": has_cube,
+            "variants": variants,
             "has_lookup_table": lookup_table.exists(),
             "has_h5_bundle": h5_file.exists(),
             "spectra_count": spectra_count,
