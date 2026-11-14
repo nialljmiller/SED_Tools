@@ -1577,6 +1577,22 @@ def set_data_dir_preserves_nested_ui(t):
 
 
 @row
+def a_split_grid_is_listed_by_its_variants(t):
+    # A grid split into variants has no top-level cube, so SED.query (local), available_grids, find_grids and
+    # find_model left it out, though SED.local("<grid>/<variant>") loads one: 10 of MSG's 25 grids split now.
+    from sed_tools.api import SED as API
+
+    models = t.tmp / "models"
+    _build(_simple_grid(models / "Plain"))
+    _build(_two_variant_grid(models / "Split"))
+    names = ["Plain", "Split/Split_alpha_0p00", "Split/Split_alpha_0p40"]
+    assert SED(model_root=models).available_grids() == names
+    assert sorted(match.name for match in SED(model_root=models).find_model(5000.0, 4.0, 0.0)) == names
+    t.mp.setattr(API, "_model_root", models)
+    assert [info.name for info in API.query(include_remote=False)] == names
+
+
+@row
 def find_grids_prefers_full_coverage(t):
     root = t.tmp / "stellar_models"  # header-only cubes: find_grids reads only the axes
     _raw_cube(root / "model_a" / "flux_cube.bin", [4000.0, 5000.0, 6000.0], [1.0, 2.0, 3.0], [-1.0, 0.0, 1.0],

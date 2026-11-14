@@ -21,6 +21,7 @@ from ..photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterC
                           load_spectrum)
 from .fileio import read_axes
 from .fluxcube import FluxCube
+from .variants import _variant_paths
 
 Number = Union[int, float, np.floating]
 FilterSpec = Union[str, os.PathLike[str], FilterCurve, Tuple[str, Union[str, os.PathLike[str]]]]
@@ -342,11 +343,19 @@ class SED:
     # --- Model discovery ---
 
     def available_grids(self) -> List[str]:
-        """List locally installed spectral grids with a flux cube."""
+        """The locally installed spectral grids with a flux cube, by name. A grid split into variants
+        (variants_index.csv) is listed as each variant whose cube is there, ``<grid>/<variant>``, the name
+        ``model()`` and ``sed_tools.SED.local`` take; a flux_cube.bin beside its index is a variant's copy."""
         if not self.model_root.exists():
             return []
-        entries = sorted(self.model_root.iterdir())
-        return [entry.name for entry in entries if entry.is_dir() and (entry / "flux_cube.bin").is_file()]
+        names = []
+        for entry in sorted(path for path in self.model_root.iterdir() if path.is_dir()):
+            if (entry / "variants_index.csv").is_file():
+                names += [f"{entry.name}/{path}" for path in _variant_paths(entry / "variants_index.csv")
+                          if (entry / path / "flux_cube.bin").is_file()]
+            elif (entry / "flux_cube.bin").is_file():
+                names.append(entry.name)
+        return names
 
     def find_model(
         self,

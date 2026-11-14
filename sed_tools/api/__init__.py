@@ -378,30 +378,27 @@ class SED:
     
     @classmethod
     def _query_local(cls) -> List[SpectralGridInfo]:
-        """Installed grids with a flux_cube.bin, with their ranges from its header."""
+        """Installed grids with a flux cube, as cube.model.SED.available_grids names them (a split grid's variants
+        as ``<grid>/<variant>``), with their ranges from the cube's header."""
         catalogs = []
-        if not cls._model_root.exists():
-            return catalogs
-        for entry in sorted(cls._model_root.iterdir()):
-            cube = entry / "flux_cube.bin"
-            lookup = entry / "lookup_table.csv"
-            if not cube.is_file():
-                continue
-            info = SpectralGridInfo(name=entry.name, source='local', is_local=True)
+        for name in _SEDCore(model_root=cls._model_root).available_grids():
+            cube = cls._model_root / name / "flux_cube.bin"
+            lookup = cls._model_root / name / "lookup_table.csv"
+            info = SpectralGridInfo(name=name, source='local', is_local=True)
             try:
                 meta = _read_flux_cube_header(cube)
                 for attr, key in (("teff_range", "teff"), ("logg_range", "logg"), ("metallicity_range", "meta"),
                                   ("wavelength_range", "wavelengths")):
                     setattr(info, attr, (float(meta[key][0]), float(meta[key][-1])))
             except (OSError, ValueError, IndexError) as exc:
-                raise ValueError(f"Cannot read the flux cube header of local grid '{entry.name}' ({cube}): "
-                                 f"{exc}. Rebuild it with: sed-tools rebuild --grids {entry.name}") from exc
+                raise ValueError(f"Cannot read the flux cube header of local grid '{name}' ({cube}): {exc}. "
+                                 f"Rebuild it with: sed-tools rebuild --grids {name.split('/')[0]}") from exc
 
             if lookup.exists():
                 try:
                     info.n_spectra = len(pd.read_csv(lookup))
                 except (OSError, ValueError) as exc:
-                    raise ValueError(f"Cannot read {lookup} of local grid '{entry.name}': {exc}") from exc
+                    raise ValueError(f"Cannot read {lookup} of local grid '{name}': {exc}") from exc
 
             catalogs.append(info)
         return catalogs
