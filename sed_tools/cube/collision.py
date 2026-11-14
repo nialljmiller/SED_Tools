@@ -17,6 +17,7 @@ directory when a cube is built, so the configuration used stays beside the data.
 
 from __future__ import annotations
 
+import math
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -65,6 +66,16 @@ VALID_STRATEGIES = {"split", "all-warn", "all", "mean", "filter"}
 def _normalise_key(key: str) -> str:
     """Lowercase with every non-alphanumeric removed: '[alpha/Fe]' -> 'alphafe', 'v_turb' -> 'vturb'."""
     return re.sub(r"[^a-z0-9]+", "", key.strip().lower())
+
+
+def _value(text: Any) -> Any:
+    """An extra-axis value as variants are told apart by it: a number where it reads as one, so "0" and "0.0" are
+    one value; otherwise the text, stripped and lower-cased."""
+    try:
+        number = float(text)
+    except (TypeError, ValueError):
+        number = float("nan")
+    return number if math.isfinite(number) else str(text).strip().lower()
 
 
 def _keys_match(a: str, b: str) -> bool:

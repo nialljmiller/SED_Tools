@@ -417,6 +417,19 @@ def a_grid_built_as_one_cube_after_a_split_drops_the_split(t):
 
 
 @row
+def variants_are_told_apart_by_value_and_named_apart(t):
+    # Variants were grouped by text and named by number with two decimals: alpha "0" and "0.0" were two variants
+    # in one folder, the second overwriting the first (its 4000 K spectrum in no cube), as yhe 0.001 and 0.004 were.
+    grid = _write_grid(t.tmp / "G", [("a.txt", 4000.0, 4.0, 0.0, "0", "0.001"),
+                                     ("b.txt", 5000.0, 4.0, 0.0, "0.0", "0.001"),
+                                     ("c.txt", 4000.0, 4.0, 0.0, "0.4", "0.004")], (*COLUMNS, "alpha", "yhe"))
+    _build(grid)
+    assert sorted(p.name for p in grid.iterdir() if p.is_dir()) == [
+        "G_alpha_0p00_yhe_0p001", "G_alpha_0p40_yhe_0p004"]
+    assert _flux_cube_shortfall(grid) is None
+
+
+@row
 def a_spectrum_zero_at_every_sampled_wavelength_is_still_found(t):
     """A spectrum covering only part of the cube's wavelengths is zero elsewhere (resample_to_grid)."""
     flux = np.zeros((3, 1, 1, 20))  # the sampled wavelength planes are 2, 4, 6, 8, 11, 13, 15, 17

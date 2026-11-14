@@ -19,9 +19,9 @@ import pandas as pd
 from tqdm import tqdm
 
 from .build import compute_common_wavelengths, resample_to_grid
-from .collision import _normalise_key, discover_extra_axes
+from .collision import _normalise_key, _value, discover_extra_axes
 from .fileio import write_header
-from .variants import _link_spectra, _remove_variants, _subdir_name
+from .variants import _link_spectra, _remove_variants, _subdir_names
 from ..ui_utils import banner
 from ..grids.lookup import find_logg_column, find_metallicity_column, find_teff_column, write_lookup_csv
 from ..grids.spectrum_io import read_text_spectrum
@@ -377,15 +377,6 @@ def _lookup_rows(all_models_data, grids, names, extra=None):
                                        "original_file"])
 
 
-def _value(text):
-    """An extra-axis value as grids are compared by it: a number where it reads as one, so "0" and "0.0" agree."""
-    try:
-        number = float(text)
-    except ValueError:
-        number = float("nan")
-    return number if np.isfinite(number) else str(text).strip().lower()
-
-
 def _variants(all_models_data):
     """The combination's variants: [(key, grids)], key being ((column, value), ...) sorted by column, as the cube
     builder names one grid's variants, and grids each grid's rows in that variant (all of them, () with no extra
@@ -464,10 +455,10 @@ def write_combined_grid(all_models_data, output_dir, visualization=True):
 
     os.makedirs(output_dir, exist_ok=True)
     names = _copy_names(all_models_data)
-    model_name = os.path.basename(os.path.abspath(output_dir))
+    subdirs = _subdir_names(os.path.basename(os.path.abspath(output_dir)), [key for key, *_ in built])
     tables, index = [], []
     for key, grids, axes, flux_cube, source_map in built:
-        name = _subdir_name(model_name, key)
+        name = subdirs[key]
         subdir = os.path.join(output_dir, name)
         os.makedirs(subdir, exist_ok=True)
         print(f"\n  [{name}]")
