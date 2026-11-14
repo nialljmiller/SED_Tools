@@ -461,8 +461,9 @@ def run_combine_flow(
             Without it and without prompting, every local grid except the
             output of an earlier combine is used.
 
-    A grid is never combined into itself: ValueError when ``output_name`` is
-    one of the inputs.
+    A grid is never combined into itself: ValueError (from
+    :func:`~sed_tools.grids.pipeline._build_combined_grid`) when ``output_name``
+    is one of the inputs.
     """
     from ..cube.combine import _grids_with_lookup, find_stellar_models, select_models_interactive
 
@@ -484,7 +485,7 @@ def run_combine_flow(
         print("No spectral grids selected.")
         return
 
-    output_name = _combined_grid_name(output_name, [name for name, _ in selected_models], interactive)
+    output_name = _combined_grid_name(output_name, interactive)
     print("\nSpectral grid will be saved as:", output_name, "\n")
 
     print(f"\nSelected {len(selected_models)} spectral grids to combine:")
@@ -500,12 +501,10 @@ def run_combine_flow(
     print(f"stellar_atm = '{output_dir}/'")
 
 
-def _combined_grid_name(output_name: str, inputs: List[str], interactive: bool) -> str:
-    """The output grid's name, asked for when interactive; ValueError if it is one of the ``inputs``."""
+def _combined_grid_name(output_name: str, interactive: bool) -> str:
+    """The output grid's name, asked for when interactive."""
     if interactive:
         output_name = input(f"What should the combined spectral grid be called? [{output_name}] ").strip() or output_name
-    if output_name in inputs:
-        raise ValueError(f"The output grid {output_name} is also one of the grids to combine")
     return output_name
 
 

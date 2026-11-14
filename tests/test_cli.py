@@ -932,8 +932,8 @@ def _combine(t):
         columns = "#file_name,teff,logg,meta" + (",source_model,original_file" if combined else "")
         (t.tmp / name / "lookup_table.csv").write_text(columns + "\n")
     built = []
-    t.mp.setattr("sed_tools.cli.grids._build_combined_grid", lambda models, out: built.append(
-        ([name for name, _ in models], Path(out).name)))
+    t.mp.setattr("sed_tools.cube.combine.write_combined_grid", lambda grids, out, visualization=True: built.append(
+        ([Path(grid["model_dir"]).name for grid in grids], Path(out).name)))
     return built
 
 

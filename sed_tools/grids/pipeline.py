@@ -155,9 +155,13 @@ def _rebuild_command(name: str, model_dir: str) -> str:
 def _build_combined_grid(selected_models: List[Tuple[str, str]], output_dir: str, *,
                          visualization: bool = True) -> None:
     """Merge the ``(name, path)`` grids onto common parameter and wavelength grids and save to ``output_dir``
-    (:func:`~sed_tools.cube.combine.write_combined_grid`)."""
+    (:func:`~sed_tools.cube.combine.write_combined_grid`). ValueError, before anything is read or written, when
+    ``output_dir`` is one of the grids: the API and the CLI share this rule."""
     from ..cube.combine import load_model_data, write_combined_grid
 
+    if os.path.realpath(output_dir) in {os.path.realpath(path) for _, path in selected_models}:
+        raise ValueError(f"The output grid {os.path.basename(os.path.normpath(output_dir))} is also one of the "
+                         "grids to combine; nothing was written")
     print("\nLoading spectral grid data...")
     all_models_data = []
     for name, path in selected_models:

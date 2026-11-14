@@ -557,6 +557,19 @@ def combine_keeps_axis_values_that_are_close(t):
 
 
 @row
+def combine_refuses_to_write_into_one_of_its_grids(t):
+    # The CLI refused this; SED.combine replaced a's lookup table and cube and copied a's own spectra into it.
+    from sed_tools.api import SED
+
+    _planck_grid(t, "a", [(5000.0, 4.5, 0.0)])
+    _planck_grid(t, "b", [(6000.0, 4.5, 0.0)])
+    before = sorted(p.name for p in (t.tmp / "models" / "a").iterdir())
+    with pytest.raises(ValueError, match="The output grid a is also one of the grids to combine"):
+        SED.combine(["a", "b"], output="a", model_root=t.tmp / "models", visualization=False)
+    assert sorted(p.name for p in (t.tmp / "models" / "a").iterdir()) == before
+
+
+@row
 def combine_places_a_grid_without_log_g_at_every_log_g(t):
     # A grid without log g or [M/H] (a blackbody) used to be placed at log g 0 and [M/H] 0, as stars of that log g.
     # It holds the same spectrum at every log g, so it fills every value the other grids give the axis, except

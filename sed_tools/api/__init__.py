@@ -820,6 +820,11 @@ class SED:
         -------
         SED
             SED instance with the combined spectral grid
+
+        Raises
+        ------
+        ValueError
+            If ``output`` is one of ``catalogs``, before anything is written.
         """
         base_dir = Path(model_root) if model_root else cls._model_root
         selected_models = [(cat, str(base_dir / cat)) for cat in catalogs]
