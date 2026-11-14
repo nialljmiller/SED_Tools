@@ -232,7 +232,7 @@ def set_problems(directory: PathLike, claims: Optional[Mapping[str, Iterable[str
     """Where a set folder's records disagree, one line each; [] when they agree (or it holds no curves).
 
     One rule for every set, served or installed: the MESA index, named after the folder as MESA opens
-    it, lists exactly the curves there less ``archived_bands``; ``manifest.json``, if any, names this
+    it, lists exactly the curves there less ``archived_bands``, each once; ``manifest.json``, if any, names this
     folder and declares no band the index does not list.  With ``claims`` ({"Facility/Instrument":
     the source instruments the set is made from}, as NJM's ``svo_instruments.json``), a set they
     describe holds no curve of a source instrument another set is made from and it is not, and no copy
@@ -261,6 +261,11 @@ def set_problems(directory: PathLike, claims: Optional[Mapping[str, Iterable[str
             found.append(f"{index} lists {', '.join(absent)}, not in the folder")
         if unlisted := [name for name in curves if name not in listed and Path(name).stem not in archived]:
             found.append(f"{directory} holds {', '.join(unlisted)}, which its index does not list")
+        if superseded := [name for name in listed if Path(name).stem in archived]:
+            found.append(f"{index} lists {', '.join(superseded)}, which its manifest archives: MESA would load "
+                         "the superseded copy")
+        if repeated := sorted({name for name in listed if listed.count(name) > 1}):
+            found.append(f"{index} lists {', '.join(repeated)} more than once")
     if data is not None:
         if not (data.get("facility") and data.get("instrument")):
             found.append(f"{manifest} names no set")

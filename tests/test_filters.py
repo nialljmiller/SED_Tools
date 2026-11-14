@@ -2948,6 +2948,10 @@ def set_problems_names_each_way_a_sets_records_drift(t):
         a_set("Broken", {"Broken": "b.dat\n", "manifest.json": "{"}): "Broken/manifest.json cannot be read",
         a_set("Stale", {"Stale": "b.dat\n", "manifest.json": named}): (
             "Stale/manifest.json declares c, which its index does not list (an incomplete set, or a stale manifest)"),
+        a_set("Old", {"Old": "b.dat\nb_old.dat\n", "b_old.dat": FILTER_CURVE, "manifest.json": json.dumps(
+            {"facility": "Fac", "instrument": "Old", "bands": ["b"], "archived_bands": {"b_old": {}}})}): (
+            "Fac/Old/Old lists b_old.dat, which its manifest archives: MESA would load the superseded copy"),
+        a_set("Twice", {"Twice": "b.dat\nb.dat\n"}): "Fac/Twice/Twice lists b.dat more than once",
     }
     write_set(t.tmp / "Fac" / "Good", ["b"])
     found = check_sets(t.tmp)
