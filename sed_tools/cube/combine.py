@@ -81,9 +81,9 @@ def _count_spectra(lookup_file):
 
 
 def select_models_interactive(model_dirs):
-    """Present spectral grid options and ask until the answer is 'all', valid grid numbers, or q/b.
+    """Present spectral grid options and ask once for 'all', distinct grid numbers, or q/b.
 
-    The grids are returned in the order typed; q or b (back) returns [].
+    The grids are returned in the order typed; q or b (back) returns []; any other answer raises ValueError.
     """
     print("\nAvailable stellar spectral grids:")
     print("-" * 50)
@@ -96,18 +96,17 @@ def select_models_interactive(model_dirs):
         print(f"{idx}. {name} ({n_models} model spectra)")
 
     print("\nEnter spectral grid numbers (comma-separated) or 'all'; q or b to go back:")
-    while True:
-        user_input = input("> ").strip()
-        if user_input.lower() == "all":
-            return model_dirs
-        if user_input.lower() in ("q", "quit", "exit", "b", "back"):  # as in the pickers
-            return []
-        tokens = [x.strip() for x in user_input.split(",")]
-        valid = all(t.isdecimal() and 1 <= int(t) <= len(model_dirs) for t in tokens)
-        if valid and len(set(map(int, tokens))) == len(tokens):
-            return [model_dirs[int(t) - 1] for t in tokens]
-        print(f"Invalid selection {user_input!r}: enter distinct numbers from 1 to "
-              f"{len(model_dirs)}, comma-separated, or 'all'.")
+    user_input = input("> ").strip()
+    if user_input.lower() == "all":
+        return model_dirs
+    if user_input.lower() in ("q", "quit", "exit", "b", "back"):  # as in the pickers
+        return []
+    tokens = [x.strip() for x in user_input.split(",")]
+    valid = all(t.isdecimal() and 1 <= int(t) <= len(model_dirs) for t in tokens)
+    if not valid or len(set(map(int, tokens))) != len(tokens):
+        raise ValueError(f"Invalid selection {user_input!r}: enter distinct numbers from 1 to "
+                         f"{len(model_dirs)}, comma-separated, or 'all'.")
+    return [model_dirs[int(t) - 1] for t in tokens]
 
 
 def load_model_data(model_path):
