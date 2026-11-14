@@ -22,6 +22,7 @@ import numpy as np
 import requests
 
 from .lookup import write_lookup_csv
+from .spectrum_io import write_atomically
 
 logger = logging.getLogger(__name__)
 
@@ -251,6 +252,11 @@ def _apply_wl_range(wl: np.ndarray, fx: np.ndarray, ct: Optional[np.ndarray],
 
 def _write_spectrum_txt(out_path: str, wl: np.ndarray, fx: np.ndarray, ct: Optional[np.ndarray],
                         src_url: str, params: Dict[str, str], wave_url_used: Optional[str]) -> None:
+    write_atomically(out_path, lambda part: _write_spectrum_to(part, wl, fx, ct, src_url, params, wave_url_used))
+
+
+def _write_spectrum_to(out_path: str, wl: np.ndarray, fx: np.ndarray, ct: Optional[np.ndarray],
+                       src_url: str, params: Dict[str, str], wave_url_used: Optional[str]) -> None:
     with open(out_path, "w", encoding="utf-8") as f:
         f.write("# source = BOSZ@MAST (HLSP)\n")
         f.write("# url = " + src_url + "\n")

@@ -19,6 +19,7 @@ from tqdm import tqdm
 
 from ..njm_mirror import BASE_URL, NJM_CONNECT_TIMEOUT, USER_AGENT, pause, paused, plain_reason, skip_ssl_verification
 from .lookup import find_file_column, find_logg_column, find_metallicity_column, find_teff_column
+from .spectrum_io import write_atomically
 
 logger = logging.getLogger(__name__)
 
@@ -361,30 +362,24 @@ class NJMSpectraGrabber:
     # ---- Download ----
 
     def _download_one_file(self, url: str, output_path: str) -> None:
-        """Download a single file. Raises on failure, leaving no partial file."""
-        try:
+        """Download a single file. Raises on failure, leaving no partial or empty file."""
+        def download(part):
             response = self.session.get(url, timeout=300, stream=True)
             response.raise_for_status()
-            
-            with open(output_path, 'wb') as f:
+            with open(part, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=65536):
                     f.write(chunk)
-        except Exception:
-            # A partial file larger than the skip threshold would pass as complete on the next run
-            if os.path.exists(output_path):
-                os.remove(output_path)
-            raise
-
-        if os.path.getsize(output_path) == 0:
-            raise ValueError(f"{url} returned an empty file")
+            if os.path.getsize(part) == 0:
+                raise ValueError(f"{url} returned an empty file")
+        write_atomically(output_path, download)
 
     def _fetch_file(self, model_dir: str, model_url: str, filename: str) -> Tuple[str, Optional[str]]:
         """Download one model file unless a complete copy is on disk: ('ok', 'skip' or 'fail', why it failed or None)."""
         output_path = os.path.join(model_dir, filename)
 
-        if os.path.exists(output_path):
-            if os.path.getsize(output_path) > (100 if filename.endswith('.csv') else 1024):
-                return 'skip', None
+        # Written whole or not at all (write_atomically); a smaller file is a partial one an earlier version left
+        if os.path.exists(output_path) and os.path.getsize(output_path) > (100 if filename.endswith('.csv') else 1024):
+            return 'skip', None
 
         try:
             self._download_one_file(urljoin(model_url, filename), output_path)

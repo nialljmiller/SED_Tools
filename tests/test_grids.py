@@ -137,8 +137,7 @@ def clean_model_dir_unreadable_sampled_file_stops_before_any_rewrite(t):
 
 @row
 def clean_model_dir_stops_at_once_when_a_rewrite_fails(t):
-    """A failed rewrite can leave a header-only file that later runs skip, so the batch stops (it used to record
-    'error' and carry on)."""
+    """A failed rewrite stops the batch (it used to record 'error' and carry on), and leaves the file unchanged."""
     for name in ("a.txt", "b.txt"):
         _spectrum(t.tmp / name)
     calls = []
@@ -148,7 +147,7 @@ def clean_model_dir_stops_at_once_when_a_rewrite_fails(t):
         raise OSError(28, "No space left on device")
 
     t.mp.setattr("sed_tools.grids.clean.write_standardized_spectrum", disk_full)
-    with pytest.raises(RuntimeError, match=r"a\.txt.*only its new header"):
+    with pytest.raises(RuntimeError, match=r"a\.txt.*The file is unchanged"):
         clean_model_dir(str(t.tmp), sample_fraction=1.0)
     assert len(calls) == 1
 
@@ -1264,6 +1263,43 @@ def msg_cut_exclusions_are_not_failures(t):
     assert grabber.download_model_spectra("sg-Test", spectra, teff_range=(3200, 4000)) == 0
     assert grabber.download_model_spectra("sg-Test", spectra, teff_range=(2500, 3200)) == 1
     assert (model_dir / "lookup_table.csv").exists()
+
+
+@row
+def an_msg_spectrum_whose_writing_stopped_is_extracted_again(t):
+    # Spectra were written in place, and any file over 1 KB counted as extracted: one whose writing stopped part way
+    # (a full disk, a killed run) was reused on the next run, its flux zero in the cube beyond where it stopped.
+    import builtins
+
+    grabber, model_dir = _msg_grid(t)
+    spectrum = grabber.get_model_metadata("sg-Test")[0]
+    extract = lambda: grabber._extract_to_text("sg-Test", str(model_dir / "sg-Test.h5"), str(model_dir), spectrum,
+                                               dict.fromkeys(("teff", "logg", "meta", "wl")))
+
+    class FullDisk:
+        """A file that takes 1500 bytes, then fails as a full disk does."""
+        def __init__(self, fh):
+            self.fh, self.written = fh, 0
+
+        def write(self, text):
+            self.written += len(text)
+            if self.written > 1500:
+                raise OSError(28, "No space left on device")
+            return self.fh.write(text)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            self.fh.close()
+
+    t.mp.setattr(msg, "open", lambda *a, **k: FullDisk(builtins.open(*a, **k)), raising=False)
+    with pytest.raises(OSError, match="No space left"):
+        extract()
+    t.mp.setattr(msg, "open", builtins.open, raising=False)
+    status, name, _ = extract()
+    assert status == "ok" and read_text_spectrum(model_dir / name)[0].size == 50
+    assert sorted(p.name for p in model_dir.iterdir()) == ["sg-Test.h5", name]
 
 
 def _msg_vgrid_read(t, revision, departure, error):

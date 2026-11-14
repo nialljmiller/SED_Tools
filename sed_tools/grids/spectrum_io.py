@@ -1,10 +1,12 @@
 """A grid's text spectra and its HDF5 bundle: list_text_spectra, read_text_spectrum, build_h5_bundle and
-bundled_spectra, with where the bundle goes (_bundle_path)."""
+bundled_spectra, with where the bundle goes (_bundle_path); and write_atomically, the one way a downloaded or
+rewritten spectrum is written."""
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
-from typing import Union
+from typing import Callable, Union
 
 import h5py
 import numpy as np
@@ -12,6 +14,19 @@ import numpy as np
 from .header_parser import parse_header
 
 PathLike = Union[str, Path]
+
+
+def write_atomically(path: PathLike, write: Callable[[str], None]) -> None:
+    """Write ``path`` whole or not at all: ``write(part)`` writes the new content to ``part`` (``path`` + '.part'),
+    which then replaces ``path``. If ``write`` raises, or the process stops first, ``path`` is as it was and the part
+    is gone (removed, or left under its own name), so a file at ``path`` is always complete."""
+    part = f"{path}.part"
+    try:
+        write(part)
+        os.replace(part, path)
+    finally:
+        if os.path.exists(part):
+            os.remove(part)
 
 
 def list_text_spectra(model_dir: PathLike) -> list[Path]:
