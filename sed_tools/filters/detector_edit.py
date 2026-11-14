@@ -97,7 +97,7 @@ def edit_detector_type(path: PathLike, detector_type: str, *, convert: bool,
     if convert and untagged:
         raise ValueError(f"No DetectorType to convert from in {', '.join(untagged)}; "
                          "tag first (sed-tools filters-detector)")
-    rows, edited = [], {}
+    rows, edited, converted = [], {}, {}
     for curve, header in headers.items():
         previous = normalize_detector_type(header.get("DetectorType"))
         if previous != target:
@@ -106,31 +106,36 @@ def edit_detector_type(path: PathLike, detector_type: str, *, convert: bool,
             if convert:
                 power = conversion_power(header.get("DetectorTypeConversion")) + (1 if target == ENERGY else -1)
                 fields["DetectorTypeConversion"] = conversion_label(power)
-                _write_converted(curve, fields, target)
+                converted[curve] = _converted(curve, fields, target)  # every curve is read before one is written
             else:
                 write_filter_header(curve, fields)
             edited.setdefault(curve.parent, {})[curve.stem] = {k: v for k, v in fields.items() if v}
         rows.append({"path": str(curve), "band": curve.stem, "detector_type": target, "previous": previous,
                      "changed": previous != target})
+    for curve, lines in converted.items():
+        _replace(curve, lines)
     for directory, bands_edited in edited.items():
         _update_set_records(directory, bands_edited, corrected=not convert, spectrum=spectrum)
     return rows
 
 
-def _write_converted(path: Path, fields: Mapping[str, Optional[str]], target: str) -> None:
-    """Convert the samples of ``path`` to ``target``; the lines before them keep their text, ``fields`` on the
-    column row."""
+def _converted(path: Path, fields: Mapping[str, Optional[str]], target: str) -> List[bytes]:
+    """The lines of ``path`` with its samples converted to ``target``; the lines before them keep their text,
+    ``fields`` on the column row."""
     wavelength, transmission = _read_curve(path)
     samples = [f"{float(w)!r},{float(t)!r}\n".encode()
                for w, t in zip(wavelength, converted_transmission(wavelength, transmission, target))]
     layout = _layout(path)
     if layout.column_row is None:  # metadata only on 0.3.0 "#" lines: the curve gets a column row
-        head = [f"{COLUMN_ROW},{format_metadata_field(fields)}\n".encode()]
-    else:
-        head = _rewritten(layout, fields)[:layout.column_row + 1 - len(layout.legacy_rows)]
+        return [f"{COLUMN_ROW},{format_metadata_field(fields)}\n".encode()] + samples
+    return _rewritten(layout, fields)[:layout.column_row + 1 - len(layout.legacy_rows)] + samples
+
+
+def _replace(path: Path, lines: List[bytes]) -> None:
+    """Write ``lines`` over ``path`` through a temporary file, keeping its mode."""
     tmp = f"{path}.tmp"
     with open(tmp, "wb") as fh:
-        fh.writelines(head + samples)
+        fh.writelines(lines)
     shutil.copymode(path, tmp)
     os.replace(tmp, path)
 

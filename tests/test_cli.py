@@ -11,6 +11,7 @@ from __future__ import annotations
 import contextlib
 import importlib
 import importlib.util
+import inspect
 import re
 import shutil
 import subprocess
@@ -150,6 +151,19 @@ def run_filter_combine_flow_wizard(t):
     assert sorted(p.name for p in out.glob("*.dat")) == ["G.dat", "J.dat"]
     assert (out / "Gaia2MASS").read_text().splitlines() == ["G.dat", "J.dat"]
     assert "Combined 2 filters" in t.capsys.readouterr().out
+
+
+@row
+def filter_combine_wizard_names_the_folder_and_index_it_writes(t):
+    (t.tmp / "GAIA" / "GAIA").mkdir(parents=True)
+    (t.tmp / "GAIA" / "GAIA" / "G.dat").write_text("Wavelength,Transmission\n1,1\n")
+    out = t.tmp / "elsewhere" / "Mine"
+    # the base dir given, the set, an absolute output, the default facility, an instrument name, conflicts, proceed
+    answer(t.mp, "", "1", str(out), "", "MyIndex", "", "")
+    cli.run_filter_combine_flow(base_dir=str(t.tmp))
+    printed = t.capsys.readouterr().out
+    assert f"Folder    : {out}\n" in printed and (out / "Mine").is_file()  # an absolute output keeps its name
+    assert f"Wrote MESA index file: {out / 'Mine'}\n" in printed
 
 
 # ----------------------------------------------------------------------
@@ -485,6 +499,8 @@ def _in_its_folder(t):
 #: Each module with a main(), and its help's description.
 HELP = {
     "cube.tool": "Inspect and interpolate a flux cube",
+    "filters.label_check": "The rules a served filter tree's labels must keep; NJM checks them on every refresh, "
+                           "a MESA build against its last tree.",
 }
 
 
@@ -534,13 +550,19 @@ def building_all_components_runs_every_builder_and_lists_the_failures(t):
     t.mp.setattr(cli, "AUTOMATIC_BUILDERS", ("first", "skycalc", "bad"))
     t.mp.setattr(cli, "get_builder", builder)
     assert run_cli(t.mp, "filters-build-components", "all", "--base", str(t.tmp)) == 1
-    assert built == [("first", str(t.tmp), {}), ("skycalc", str(t.tmp), {"sites": ["paranal", "lasilla"]})]
+    # Each with its own defaults: 'all' used to give skycalc the sites paranal and lasilla by name.
+    assert built == [("first", str(t.tmp), {}), ("skycalc", str(t.tmp), {})]
     out = t.capsys.readouterr().out
     assert "[filters] === bad ===" in out and out.endswith("[filters] FAILED bad: source did not answer\n")
     built.clear()
-    t.mp.setattr(cli, "AUTOMATIC_BUILDERS", ("skycalc",))
-    assert run_cli(t.mp, "filters-build-components", "all", "--base", str(t.tmp), "--sites", "lapalma") == 0
-    assert built == [("skycalc", str(t.tmp), {"sites": ["lapalma"]})]
+    # An option is one source's input: 'all' refuses it, rather than give it to skycalc alone or ignore it.
+    with pytest.raises(SystemExit) as stop:
+        run_cli(t.mp, "filters-build-components", "all", "--base", str(t.tmp), "--sites", "lapalma")
+    assert stop.value.code == 2 and built == []
+    assert "'all' runs every builder with its own defaults" in t.capsys.readouterr().err
+    from sed_tools.component_sources import skycalc
+
+    assert inspect.signature(skycalc.build).parameters["sites"].default == ("paranal", "lasilla")  # NJM's two
 
 
 @main_row
@@ -932,8 +954,8 @@ def _combine(t):
         columns = "#file_name,teff,logg,meta" + (",source_model,original_file" if combined else "")
         (t.tmp / name / "lookup_table.csv").write_text(columns + "\n")
     built = []
-    t.mp.setattr("sed_tools.cli.grids._build_combined_grid", lambda models, out: built.append(
-        ([name for name, _ in models], Path(out).name)))
+    t.mp.setattr("sed_tools.cube.combine.write_combined_grid", lambda grids, out, visualization=True: built.append(
+        ([Path(grid["model_dir"]).name for grid in grids], Path(out).name)))
     return built
 
 
@@ -1139,6 +1161,9 @@ def menu_ml_options_open_and_refuse_only_the_action_that_needs_a_package(t):
     _without(t, *INSTALLS["none"])
     model = _densifier_inputs(t)
     _menu_ml_flows_in_the_row_folder(t)
+    answer(t.mp, "9", "0", "q")
+    assert cli._run_menu() == 0  # nothing refused: the session ends with status 0, as in 0.4.1
+    assert t.capsys.readouterr().err == ""
     # 8 and 9 open and go back with 0, as in 0.4.1; their training is refused when chosen; 10 is refused
     # once an ML model is named, before the output question
     answer(t.mp, "8", "0", "9", "0", "8", "1", "9", "1", "10", "1", "", str(model), "q")
@@ -1152,18 +1177,9 @@ def menu_ml_options_open_and_refuse_only_the_action_that_needs_a_package(t):
 
 
 @row
-def menu_9_opens_and_returns_without_torch(t):
-    _without(t, *INSTALLS["none"])
-    _menu_ml_flows_in_the_row_folder(t)
-    answer(t.mp, "9", "0", "q")
-    assert cli._run_menu() == 0  # final test, check 16: as in 0.4.1
-    assert t.capsys.readouterr().err == ""
-
-
-@row
-def combine_without_scipy_says_what_to_install(t):
+def a_flow_without_scipy_says_what_to_install(t):
     def needs_scipy():
-        from scipy.spatial import KDTree  # noqa: F401  (as combine_stellar_atm does)
+        from scipy.stats import anderson  # noqa: F401  (as the coverage report does)
 
     _without(t, "scipy")
     assert cli._run_menu_flow(needs_scipy) is False
@@ -1229,6 +1245,10 @@ def number_prompts_take_a_number_a_default_or_a_word(t):
     assert cli.filters._ask_number("PWV: ", default=None) is None
     answer(t.mp, "UNSTATED")
     assert cli.filters._ask_number("Airmass: ", words=("unstated",)) == "unstated"
+    from sed_tools.ml import generator
+
+    answer(t.mp, "5000, 5500")
+    assert generator._ask_numbers("Teff values: ") == [5000.0, 5500.0]
 
 
 @menu_row

@@ -10,8 +10,23 @@ import textwrap
 from .terminal_plots import terminal_color_enabled, terminal_width
 
 
+def ordered_range(low: float, high: float) -> Tuple[float, float]:
+    """``(low, high)`` as given; ValueError when ``low`` is above ``high``.
+
+    The one rule for a range typed at a menu prompt, given as a CLI flag or given to the API (the ML
+    completer, SED.fetch's bounds, the grid finder): a reversed range is neither swapped nor asked for
+    again. Equal ends are a range of one value.
+    """
+    if low > high:
+        raise ValueError(f"The range {low:g} to {high:g} is reversed: give the lower end first")
+    return low, high
+
+
 def parse_numeric_range(raw: str) -> Optional[Tuple[float, float]]:
-    """Parse two numbers separated by comma, whitespace, colon, ``..`` or dash."""
+    """Parse two numbers separated by comma, whitespace, colon, ``..`` or dash.
+
+    None when ``raw`` is not two numbers; ValueError when they are reversed (``ordered_range``).
+    """
     text = raw.strip()
     if not text:
         return None
@@ -23,8 +38,7 @@ def parse_numeric_range(raw: str) -> Optional[Tuple[float, float]]:
     )
     if match is None:
         return None
-    low, high = (float(value) for value in match.groups())
-    return (low, high) if low <= high else (high, low)
+    return ordered_range(*(float(value) for value in match.groups()))
 
 
 def parse_multi_selection(spec: str, total: int) -> list[int]:
@@ -58,7 +72,8 @@ def ask_yes(prompt: str) -> bool:
 
 
 def ask_range(prompt: str) -> Optional[Tuple[float, float]]:
-    """The range typed, like '3500,8000'; None for a blank answer (no cut). Anything else raises ValueError."""
+    """The range typed, like '3500,8000'; None for a blank answer (no cut). Anything else, a reversed range
+    among it, raises ValueError."""
     raw = input(prompt).strip()
     parsed = parse_numeric_range(raw)
     if raw and parsed is None:

@@ -15,8 +15,8 @@ from typing import Callable, Dict, Iterable, Mapping, Optional, Sequence, Tuple,
 import numpy as np
 
 from ..filters.compose import ATMOSPHERE, FILTER, OPTICS, QE, SHARED, AtmosphereGrid, InstrumentManifest, add_component
-from ..filters.curve_metadata import (ENERGY, PHOTON, SVOMetadataClient, read_filter_header, svo_components_header,
-                                      svo_detector, svo_fps_url, write_filter_file)
+from ..filters.curve_metadata import (ENERGY, PHOTON, SVO_FPS_URL, SVOMetadataClient, read_filter_header,
+                                      svo_components_header, svo_detector, write_filter_file)
 from ._original import Curve, CachingSession, download, product
 
 
@@ -159,11 +159,12 @@ def ensure_published(inst_dir: Path, svo_ids: Mapping[str, str], client: SVOMeta
             missing.append(fid)
             continue
         detector_type, source = svo_detector(record, PHOTON)
+        # SVO's record, whichever FPS endpoint ($SED_SVO_FPS_URL) served it: set_problems knows a copy by it.
         write_filter_file(
             path, record.wavelength, record.transmission,
             detector_type=detector_type, source=source, filter_id=fid,
             wavelength_unit=record.wavelength_unit,
-            extra={**svo_components_header(record.components, fid), "Sources": f"{svo_fps_url()}?ID={fid}"},
+            extra={**svo_components_header(record.components, fid), "Sources": f"{SVO_FPS_URL}?ID={fid}"},
         )
     if missing:
         raise RuntimeError(

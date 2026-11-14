@@ -19,8 +19,10 @@ from ..filters.manifest import is_auxiliary_path
 from ..photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve, Spectrum, _warn_outside_sed,
                           band_average_flux_lambda, band_average_flux_nu, get_metadata_float, load_filter_curve,
                           load_spectrum)
+from ..ui_utils import ordered_range
 from .fileio import read_axes
 from .fluxcube import FluxCube
+from .variants import _variant_paths
 
 Number = Union[int, float, np.floating]
 FilterSpec = Union[str, os.PathLike[str], FilterCurve, Tuple[str, Union[str, os.PathLike[str]]]]
@@ -317,6 +319,16 @@ class SEDModel:
         return float(min(max(value, lower), upper))
 
 
+def _refuse_split_grid(directory: Path, name: str) -> None:
+    """FileNotFoundError naming the variants when ``directory`` is a grid split into variants (variants_index.csv):
+    such a grid has no cube of its own, and photometry and MESA read one variant's folder."""
+    index = Path(directory) / "variants_index.csv"
+    if index.is_file():
+        variants = [f"{name}/{path}" for path in _variant_paths(index)]
+        raise FileNotFoundError(f"{name} is split into variants, each with its own flux cube; name one of them: "
+                                + ", ".join(variants))
+
+
 class SED:
     """The installed spectral grids under model_root: find the ones covering a point or range, and evaluate one.
 
@@ -342,11 +354,19 @@ class SED:
     # --- Model discovery ---
 
     def available_grids(self) -> List[str]:
-        """List locally installed spectral grids with a flux cube."""
+        """The locally installed spectral grids with a flux cube, by name. A grid split into variants
+        (variants_index.csv) is listed as each variant whose cube is there, ``<grid>/<variant>``, the name
+        ``model()`` and ``sed_tools.SED.local`` take; a split grid has no cube of its own."""
         if not self.model_root.exists():
             return []
-        entries = sorted(self.model_root.iterdir())
-        return [entry.name for entry in entries if entry.is_dir() and (entry / "flux_cube.bin").is_file()]
+        names = []
+        for entry in sorted(path for path in self.model_root.iterdir() if path.is_dir()):
+            if (entry / "variants_index.csv").is_file():
+                names += [f"{entry.name}/{path}" for path in _variant_paths(entry / "variants_index.csv")
+                          if (entry / path / "flux_cube.bin").is_file()]
+            elif (entry / "flux_cube.bin").is_file():
+                names.append(entry.name)
+        return names
 
     def find_model(
         self,
@@ -388,7 +408,8 @@ class SED:
         ----------
         teff_range, logg_range, metallicity_range:
             Inclusive parameter ranges expressed as ``(min, max)`` pairs. Any
-            parameter left as ``None`` will not be used for filtering.
+            parameter left as ``None`` will not be used for filtering. A
+            reversed pair raises ValueError.
         limit:
             Optional maximum number of matches to return after sorting by the
             proximity of the requested range to the spectral grid.
@@ -473,6 +494,7 @@ class SED:
         if path.is_file() and path.suffix.lower() == ".bin":
             return path
         for directory in (path, self.model_root / path):
+            _refuse_split_grid(directory, str(model))
             if directory.is_dir() and (directory / "flux_cube.bin").is_file():
                 return directory / "flux_cube.bin"
 
@@ -571,12 +593,8 @@ def _normalize_filter_sequence(filters: Sequence[FilterSpec]) -> List[FilterSpec
 
 
 def _normalize_range(value: Optional[Sequence[Number]]) -> Optional[Tuple[float, float]]:
-    if value is None:
-        return None
-    start, end = (float(v) for v in value)
-    if start > end:
-        start, end = end, start
-    return start, end
+    """``(min, max)`` as floats, or None; reversed, ValueError (``ordered_range``)."""
+    return None if value is None else ordered_range(*(float(v) for v in value))
 
 
 def _range_coverage(requested: Optional[Tuple[float, float]], available: Tuple[float, float]) -> Tuple[bool, bool]:

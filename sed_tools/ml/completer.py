@@ -16,7 +16,8 @@ import numpy as np
 
 from .._constants import H as PLANCK_H, C as SPEED_C, K as BOLTZMANN_K, SIGMA
 from ..cube.fileio import load as load_cube
-from ..ui_utils import ask_number as _ask_number, banner as _banner, menu_choice as _menu_choice, section as _section
+from ..ui_utils import (ask_number as _ask_number, banner as _banner, menu_choice as _menu_choice, ordered_range,
+                        section as _section)
 from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, Engine, Network, action_menu, confirmed, data_loaders, fit,
                      log_grid, model_configs, normalised_params, param_scaler, predict, print_libraries, resample,
                      sample_spectra, training_libraries, write_spectrum)
@@ -566,7 +567,8 @@ class SEDCompleter(Engine):
         meta : float
             Metallicity [M/H]
         extension_range : tuple
-            (min_wavelength, max_wavelength) the output SED must cover
+            (min_wavelength, max_wavelength) the output SED must cover; a
+            reversed range raises ValueError
         
         Returns
         -------
@@ -575,8 +577,9 @@ class SEDCompleter(Engine):
         flux_extended : np.ndarray
             Flux at those wavelengths
         """
+        low, high = ordered_range(*extension_range)
         self.model.eval()
-        full_grid = self._create_wavelength_grid(extension_range[0], extension_range[1])
+        full_grid = self._create_wavelength_grid(low, high)
         wl_min, wl_max = wavelength.min(), wavelength.max()
         need_low = full_grid < wl_min
         need_high = full_grid > wl_max
@@ -783,13 +786,16 @@ class Completer:
         FileNotFoundError
             If ``input_dir`` has no lookup_table.csv.
         ValueError
-            If the lookup table has no file-name, Teff, logg or [M/H] column
-            (the names sed_tools.grids.lookup's find_*_column accept).
+            If ``extension_range`` is reversed (its first end above its second),
+            before anything is read or written; or if the lookup table has no
+            file-name, Teff, logg or [M/H] column (the names
+            sed_tools.grids.lookup's find_*_column accept).
         RuntimeError
             After every other spectrum has been written, if any could not be
             read or extended; the message lists each one and why.
         """
         import pandas as pd
+        extension_range = ordered_range(*extension_range)
         df, columns = _read_catalog_table(input_dir)
         if verbose:
             print(f"  Total rows to process: {len(df)}")
@@ -1020,16 +1026,14 @@ def _train_menu(base_dir: str, models_dir: str) -> None:
 
 
 def _ask_extension_range(model_grid: np.ndarray) -> Tuple[float, float]:
-    """Ask for the wavelength range to extend to; Enter keeps the model's own range."""
+    """Ask once for the wavelength range to extend to; Enter keeps the model's own range. A reversed range
+    raises ValueError (``ordered_range``)."""
     default_lo, default_hi = float(model_grid[0]), float(model_grid[-1])
     print(f"\nWavelength range to extend to (the model covers {default_lo:g}-{default_hi:g} Å).")
     print("Every spectrum keeps all its own points; points are added only beyond its ends.")
-    while True:
-        lo = _ask_number(f"  Shortest wavelength in Å [{default_lo:g}]: ", default_lo)
-        hi = _ask_number(f"  Longest wavelength in Å [{default_hi:g}]: ", default_hi)
-        if lo < hi:
-            return lo, hi
-        print(f"  {lo:g} Å is not below {hi:g} Å; try again.")
+    lo = _ask_number(f"  Shortest wavelength in Å [{default_lo:g}]: ", default_lo)
+    hi = _ask_number(f"  Longest wavelength in Å [{default_hi:g}]: ", default_hi)
+    return ordered_range(lo, hi)
 
 
 def _extend_menu(base_dir: str, models_dir: str) -> None:

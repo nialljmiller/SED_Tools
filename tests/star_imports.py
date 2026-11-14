@@ -11,7 +11,6 @@ recorded name a module no longer gives, and on any module whose star import fail
 
 from __future__ import annotations
 
-import importlib
 import json
 import pkgutil
 import sys

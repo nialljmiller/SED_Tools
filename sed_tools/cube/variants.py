@@ -3,6 +3,7 @@
 precompute_flux_cube in cube/build.py chooses the strategy and passes in SPLIT_THRESHOLD and its writer of one cube.
 """
 
+import csv
 import logging
 import os
 import re
@@ -14,6 +15,7 @@ import numpy as np
 
 from ..grids.lookup import (find_file_column, find_logg_column, find_metallicity_column, find_teff_column,
                             write_lookup_csv)
+from .collision import _value
 
 logger = logging.getLogger(__name__)
 
@@ -23,14 +25,19 @@ logger = logging.getLogger(__name__)
 def _group_by_extra_axes(lookup: Dict[str, List], extra_cols: List[str], file_col: str, teff_vals: np.ndarray,
                          logg_vals: np.ndarray, meta_vals: np.ndarray) -> Dict[Tuple, Dict]:
     """The lookup rows grouped by their extra-axis values: {key: {"rows", "file_names", "teff", "logg", "meta",
-    "extra_vals"}}, where key is the sorted (column, value) pairs and "rows" are row numbers in *lookup*."""
+    "extra_vals"}}, where key is the sorted (column, value) pairs, each value as its first row spells it, and "rows"
+    are row numbers in *lookup*. Values are compared as collision._value compares them ("0" and "0.0" are one)."""
     groups: Dict[Tuple, Dict] = {}
+    by_value: Dict[Tuple, Dict] = {}
 
     for i, fname in enumerate(lookup[file_col]):
         extra_key = tuple(sorted((col, lookup[col][i]) for col in extra_cols))
-        g = groups.setdefault(extra_key, {
-            "rows": [], "file_names": [], "teff": [], "logg": [], "meta": [], "extra_vals": dict(extra_key),
-        })
+        same = tuple((col, _value(text)) for col, text in extra_key)
+        if same not in by_value:
+            by_value[same] = groups[extra_key] = {
+                "rows": [], "file_names": [], "teff": [], "logg": [], "meta": [], "extra_vals": dict(extra_key),
+            }
+        g = by_value[same]
         g["rows"].append(i)
         g["file_names"].append(fname)
         for column, values in (("teff", teff_vals), ("logg", logg_vals), ("meta", meta_vals)):
@@ -49,23 +56,43 @@ def _extra_key_to_filename(extra_key: Tuple) -> str:
     return "__".join(parts) if parts else "default"
 
 
-def _value_to_safe_str(val: str) -> str:
+def _value_to_safe_str(val: str, decimals: int = 2) -> str:
     """A value as a file-name fragment: "0.1" -> "0p10", "-0.5" -> "m0p50", "+0.5" -> "0p50", "h-rich" -> "h_rich"."""
     val = str(val).strip()
     try:
         f = float(val)
     except ValueError:
         return re.sub(r"[^a-zA-Z0-9]+", "_", val).strip("_")
-    return ("m" if f < 0 else "") + f"{abs(f):.2f}".replace(".", "p")
+    return ("m" if f < 0 else "") + f"{abs(f):.{decimals}f}".replace(".", "p")
 
 
-def _subdir_name(model_name: str, extra_key: Tuple) -> str:
-    """A variant's subgrid folder: "Husfeld", (("alpha", "0.4"), ("yhe", "0.10")) -> Husfeld_alpha_0p40_yhe_0p10."""
+def _subdir_name(model_name: str, extra_key: Tuple, decimals: Dict[str, int]) -> str:
+    """A variant's subgrid folder: "Husfeld", (("alpha", "0.4"), ("yhe", "0.10")) -> Husfeld_alpha_0p40_yhe_0p10,
+    each numeric value with its column's ``decimals``."""
     parts = []
     for col, val in extra_key:
         safe_col = re.sub(r"[^a-zA-Z0-9]+", "_", col.strip()).strip("_")
-        parts.append(f"{safe_col}_{_value_to_safe_str(val)}")
+        parts.append(f"{safe_col}_{_value_to_safe_str(val, decimals[col])}")
     return f"{model_name}_" + "_".join(parts) if parts else model_name
+
+
+def _subdir_names(model_name: str, keys) -> Dict[Tuple, str]:
+    """Each variant's subgrid folder, {key: name} (:func:`_subdir_name`). A numeric axis is written with two decimals,
+    or with as many more as keep its values apart (0.001 and 0.004: 0p001 and 0p004). ValueError, before anything is
+    written, if two variants would still share a folder (text values that differ only in punctuation)."""
+    decimals = {}
+    for col in {col for key in keys for col, _ in key}:
+        numbers = {n for key in keys for c, v in key if c == col for n in [_value(v)] if isinstance(n, float)}
+        decimals[col] = 2
+        while len({_value_to_safe_str(n, decimals[col]) for n in numbers}) < len(numbers):
+            decimals[col] += 1
+    names = {key: _subdir_name(model_name, key, decimals) for key in keys}
+    shared = sorted(name for name in set(names.values()) if list(names.values()).count(name) > 1)
+    if shared:
+        raise ValueError(f"Variants with different extra-axis values would share the subgrid folder(s) "
+                         f"{', '.join(shared)}; no flux cube was written. Make each axis's values differ in more "
+                         "than punctuation.")
+    return names
 
 
 def _filter_lookup_by_files(lookup: Dict[str, List], file_names: List[str], file_col: str) -> Dict[str, List]:
@@ -75,9 +102,9 @@ def _filter_lookup_by_files(lookup: Dict[str, List], file_names: List[str], file
     return {col: [lookup[col][i] for i in indices] for col in lookup}
 
 
-def _print_split_announcement(groups: Dict, extra_cols: List[str], model_name: str, threshold: int) -> None:
+def _print_split_announcement(groups: Dict, extra_cols: List[str], names: Dict[Tuple, str], threshold: int) -> None:
     """Print the 'Extra physical axis detected' message, naming only the axes that vary between the variants: a
-    column with one value throughout (lh and vtur in Kurucz) is no variant axis, though subgrid names carry it."""
+    column with one value throughout (lh and vtur in Kurucz) is no variant axis, though subgrid ``names`` carry it."""
     n_combos = len(groups)
     varying = [col for col in extra_cols if len({dict(key)[col] for key in groups}) > 1]
     axis_label = ", ".join(varying)
@@ -93,11 +120,30 @@ def _print_split_announcement(groups: Dict, extra_cols: List[str], model_name: s
     if n_combos <= threshold:
         print("\nWriting separate MESA-ready subgrids:")
         for key in sorted(groups):
-            print(f"  {_subdir_name(model_name, key)}/")
+            print(f"  {names[key]}/")
         print("\nThe parent directory will retain the full source grid.")
         print("Use one of the subdirectories as the spectral grid in MESA Colors.")
     else:
         print(f"\n{n_combos} combinations exceed the auto-split threshold ({threshold}).")
+
+
+def _variant_paths(variants_index) -> List[str]:
+    """The folder of each variant ``variants_index.csv`` lists, relative to the grid's folder."""
+    with open(variants_index, newline="", encoding="utf-8") as fh:
+        fields = [name.lstrip("#").strip() for name in fh.readline().strip().split(",")]
+        return [row["path"] for row in csv.DictReader(fh, fieldnames=fields)]
+
+
+def _remove_variants(folder: str) -> None:
+    """Remove an earlier split from *folder*: the subgrid folders its variants_index.csv lists, then the index."""
+    index = os.path.join(folder, "variants_index.csv")
+    if not os.path.isfile(index):
+        return
+    for path in _variant_paths(index):
+        subgrid = os.path.join(folder, path)
+        if os.path.dirname(os.path.normpath(subgrid)) == os.path.normpath(folder) and os.path.isdir(subgrid):
+            shutil.rmtree(subgrid)
+    os.remove(index)
 
 
 def _link_spectra(subdir: str, file_names: List[str]) -> None:
@@ -177,10 +223,11 @@ def _confirm_large_split(model_dir: str, n_groups: int, threshold: int) -> bool:
 def _split_into_subgrids(model_dir: str, groups: Dict, extra_cols: List[str], lookup: Dict[str, List], file_col: str,
                          write_cube, threshold: int) -> None:
     """Strategy 'split': one MESA-ready subgrid folder per variant (its lookup_table.csv, links to the parent's
-    spectra, its flux_cube.bin), then variants_index.csv, and lookup_table_full.csv as the record of the full grid;
-    the parent, which is not MESA-ready, gets no cube. Above *threshold* variants it asks first."""
-    model_name = os.path.basename(os.path.abspath(model_dir))
-    _print_split_announcement(groups, extra_cols, model_name, threshold)
+    spectra, its flux_cube.bin), then variants_index.csv, and lookup_table_full.csv as the record of the full grid.
+    The parent, which is not MESA-ready, has no cube: one an earlier build left there is removed, so MESA can read
+    the grid only from a variant's folder. Above *threshold* variants it asks first."""
+    names = _subdir_names(os.path.basename(os.path.abspath(model_dir)), list(groups))
+    _print_split_announcement(groups, extra_cols, names, threshold)
 
     if len(groups) > threshold and not _confirm_large_split(model_dir, len(groups), threshold):
         print("Aborted. No flux cube built.")
@@ -189,7 +236,7 @@ def _split_into_subgrids(model_dir: str, groups: Dict, extra_cols: List[str], lo
     index_entries: List[Dict[str, Any]] = []
 
     for key, g in sorted(groups.items()):
-        name = _subdir_name(model_name, key)
+        name = names[key]
         subdir = os.path.join(model_dir, name)
         os.makedirs(subdir, exist_ok=True)
 
@@ -215,6 +262,10 @@ def _split_into_subgrids(model_dir: str, groups: Dict, extra_cols: List[str], lo
     if os.path.exists(src_lookup) and not os.path.exists(full_lookup):
         shutil.copy2(src_lookup, full_lookup)
         print("Full-grid lookup preserved: lookup_table_full.csv")
+    top_cube = os.path.join(model_dir, "flux_cube.bin")
+    if os.path.isfile(top_cube):
+        os.remove(top_cube)
+        print("Removed the grid's top-level flux_cube.bin: a split grid's cubes are its variants'.")
     print("\nDone. The parent directory is the source collection.")
     print("Point MESA Colors to one of the subgrid directories listed above.")
 
@@ -245,9 +296,9 @@ def _build_filtered_cube(cfg, groups: Dict, extra_cols: List[str], lookup: Dict[
 
     print(f"Filter: {resolved}")
 
-    def selected(key: Tuple) -> bool:
+    def selected(key: Tuple) -> bool:  # values compared as the variants were grouped ("0" and "0.0" agree)
         values = dict(key)
-        return all(str(values[col]).strip().lower() == str(val).strip().lower() for col, val in resolved.items())
+        return all(_value(values[col]) == _value(val) for col, val in resolved.items())
 
     matched_group = next((g for key, g in groups.items() if selected(key)), None)
 

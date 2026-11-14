@@ -15,7 +15,7 @@ from requests import RequestException
 from ..cube.model import FILTER_DIR_DEFAULT
 from ..filters.njm_catalogue import (CatalogueError, FilterCatalogue, collect_citations, format_bibtex,
                                      format_citations, parse_target)
-from ..njm_mirror import NJM_NOT_LISTED
+from ..njm_mirror import NJM_NOT_LISTED, _write_atomic
 
 logger = logging.getLogger("sed_tools.api")
 
@@ -449,6 +449,29 @@ class Filters:
         :meth:`properties`.
         """
         return cls._catalogue(filter_root, offline=offline).info(facility, instrument, refresh=refresh)
+
+    @classmethod
+    def fetch_vega(
+        cls,
+        out_dir: Optional[Union[str, Path]] = None,
+        *,
+        filter_root: Optional[Union[str, Path]] = None,
+        refresh: bool = False,
+    ) -> Path:
+        """Download NJM's Vega spectrum and return the path of the copy written.
+
+        NJM's ``vega/vega_flam.csv`` (wavelength in Å, f_λ in erg/s/cm²/Å) is the spectrum its Vega
+        properties use, and the file MESA's colors module needs for Vega magnitudes (its ``vega_sed``
+        inlist option). It is written under its own name in ``out_dir``: by default ``vega/`` beside the
+        filter root, in the data directory. It comes through the catalogue's cache
+        (``<filter root>/../cache/njm/``), as :meth:`properties` does; ``refresh=True`` asks NJM again.
+        Raises :class:`sed_tools.filters.njm_catalogue.CatalogueError` when neither NJM nor the cache has it.
+        """
+        source = cls._catalogue(filter_root).vega(refresh=refresh)
+        target = Path(out_dir or Path(filter_root or cls._filter_root).parent / "vega").expanduser() / source.name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        _write_atomic(target, source.read_bytes())
+        return target
 
     @classmethod
     def search(

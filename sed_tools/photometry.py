@@ -362,20 +362,44 @@ def _warn_outside_sed(sed_wavelength: np.ndarray, curves: Iterable[FilterCurve])
         )
 
 
+def on_band_grid(
+    sed_wavelength: Sequence[float], sed_flux: Sequence[float], wavelength: Sequence[float],
+    transmission: Sequence[float],
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """A spectrum and a filter curve on the wavelengths a band average integrates over: (wavelength, transmission,
+    flux).
+
+    They are the curve's own samples and the spectrum's within the curve's range: the transmission is interpolated
+    onto the spectrum's points and the spectrum onto the curve's (linearly; zero flux beyond the spectrum), as MESA
+    interpolates a curve onto the SED.  A coarsely tabulated curve (Johnson U: 13 samples) then sees every spectral
+    feature in its band, not the spectrum at its 13 wavelengths.  Both increase (a curve may repeat a wavelength).
+    """
+    lam = np.asarray(wavelength, dtype=float)
+    sed_wavelength = np.asarray(sed_wavelength, dtype=float)
+    added = sed_wavelength[(sed_wavelength > lam[0]) & (sed_wavelength < lam[-1])]
+    added = added[~np.isin(added, lam)]
+    grid = np.concatenate([lam, added])
+    order = np.argsort(grid, kind="stable")  # a curve's repeated wavelength (a vertical edge) keeps its order
+    t = np.concatenate([np.asarray(transmission, dtype=float), np.interp(added, lam, transmission)])
+    return grid[order], t[order], np.interp(grid[order], sed_wavelength, sed_flux, left=0.0, right=0.0)
+
+
 def band_average_flux_lambda(
     sed_wavelength: np.ndarray, sed_flux: np.ndarray, curve: FilterCurve
 ) -> float:
-    interp_flux = np.interp(curve.wavelength, sed_wavelength, sed_flux, left=0.0, right=0.0)
-    return band_average_flux_lambda_from_arrays(curve.wavelength, interp_flux, curve.transmission, curve.detector_type)
+    """The band-averaged f_λ of a spectrum: ∫ F W dλ / ∫ W dλ on :func:`on_band_grid`, W the curve's weight."""
+    wavelength, transmission, flux = on_band_grid(sed_wavelength, sed_flux, curve.wavelength, curve.transmission)
+    return band_average_flux_lambda_from_arrays(wavelength, flux, transmission, curve.detector_type)
 
 
 def band_average_flux_nu(
     sed_wavelength: np.ndarray, sed_flux: np.ndarray, curve: FilterCurve
 ) -> float:
-    interp_flux = np.interp(curve.wavelength, sed_wavelength, sed_flux, left=0.0, right=0.0)
-    weight = curve.weight
-    numerator = np.trapezoid(interp_flux * weight, curve.wavelength)
-    denom = np.trapezoid(weight * SPEED_OF_LIGHT_ANG_PER_S / (curve.wavelength**2), curve.wavelength)
+    """The band-averaged f_ν of a spectrum: ∫ F W dλ / ∫ W c/λ² dλ on :func:`on_band_grid`."""
+    wavelength, transmission, flux = on_band_grid(sed_wavelength, sed_flux, curve.wavelength, curve.transmission)
+    weight = filter_weight(wavelength, transmission, curve.detector_type)
+    numerator = np.trapezoid(flux * weight, wavelength)
+    denom = np.trapezoid(weight * SPEED_OF_LIGHT_ANG_PER_S / (wavelength**2), wavelength)
     if denom == 0:
         raise ValueError("Filter transmission integrates to zero")
     return float(numerator / denom)

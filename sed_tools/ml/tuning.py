@@ -1,10 +1,9 @@
 """Hyperparameter search for the SED generator (``sed-tools ml_generator --auto``).
 
 Each optuna trial trains a SEDGenerator network briefly; the shape, dropout and learning rate with the lowest validation
-loss are then trained in full by SEDGenerator.train. Needs optuna: ``pip install 'sed-tools[ml-tune]'``.
+loss are then trained in full by SEDGenerator.train. Needs optuna: ``pip install 'sed-tools[ml-tune]'``, imported
+when the search runs, as the package imports its other optional packages.
 """
-
-import optuna
 
 from .generator import SEDGenerator, SEDGeneratorNetwork, _optimizer_and_scheduler
 from .common import data_loaders, fit
@@ -50,6 +49,8 @@ class AutoTrainer:
         Returns the trained SEDGenerator and the best parameters
         (hidden_dim, num_blocks, lr, dropout).
         """
+        import optuna
+
         train_set, val_set = SEDGenerator()._training_split(library_path, MAX_SAMPLES)
         train_loader, val_loader = data_loaders(train_set, val_set, BATCH_SIZE)
         output_dim = val_set[1].shape[1]

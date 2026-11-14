@@ -259,7 +259,7 @@ def components_camera(root, ground_based=False):
 
 
 # ======================================================================
-# The filter API: installed sets and combined sets (test_filter_api)
+# The filter API: installed sets and combined sets
 # ======================================================================
 QUERY_LOCAL = {
     "filters_query_local_ignores_empty_filter_dirs": ({"WISE": "W1.dat\nW2.dat\n"}, []),
@@ -288,6 +288,9 @@ def combine_renamed_band_has_no_dot_before_dat(t):
     assert all("." not in name[: -len(".dat")] for name in names)
     assert (out / "Sony").read_text().splitlines() == names
     assert (out / "Old_SonypA200_V.dat").read_text() == "Wavelength,Transmission\n3,1\n"
+    # Run again, each curve finds its own earlier copy: no band is added twice.
+    Filters.combine("Combined/Sony", t.tmp / "Cameras/Sony.A200", t.tmp / "Old/Sony.A200", filter_root=t.tmp)
+    assert sorted(p.name for p in out.glob("*.dat")) == names and (out / "Sony").read_text().splitlines() == names
 
 
 @row
@@ -318,7 +321,7 @@ def combine_refuses_an_index_listing_a_missing_curve(t):
 
 
 # ======================================================================
-# Choosing several facilities, and the picker's input (test_filter_bulk_selection)
+# Choosing several facilities, and the picker's input
 # ======================================================================
 BULK_DOWNLOAD = {
     "multiple_facilities_download_every_instrument_piped_without_prompts": (False, ["1-3"]),  # as in 0.4.1
@@ -361,7 +364,7 @@ def _picker(t, replies, chosen):
 
 
 # ======================================================================
-# NJM's catalogue: search, the cache, citations, filters-info, plots (test_filter_catalogue)
+# NJM's catalogue: search, the cache, citations, filters-info, plots
 # ======================================================================
 def band(pivot, fwhm, detector="photon", ab=0.1):
     return {"WavelengthPivot": pivot, "FWHM": fwhm,
@@ -647,6 +650,7 @@ def plot_uses_filter_colors_and_overlays_vega(t):
     assert max(lines["r"].get_ydata()) == pytest.approx(1.0)
     plt.close(ax.figure)
 
+
     selection = Filters.search(pivot=(6000, 13000), filter_root=root)
     ax = Filters.plot(selection, filter_root=root)
     lines = {line.get_label(): line for line in ax.get_lines()}
@@ -665,8 +669,25 @@ def plot_uses_filter_colors_and_overlays_vega(t):
         Filters.plot(filter_root=root)
 
 
+@row
+def vega_is_downloaded_from_njm_where_mesa_can_read_it(t):
+    # Only the plot and the properties fetched NJM's Vega; MESA's colors module needs the file (vega_sed).
+    root, njm = njm_catalogue(t)
+    t.mp.setattr(Filters, "_filter_root", root)  # as the data directory's filters/ is by default
+    served = catalogue_files()["vega/vega_flam.csv"]
+    path = Filters.fetch_vega()
+    assert path == t.tmp / "vega" / "vega_flam.csv" and path.read_text() == served
+    wavelength, flam = load_vega(path)  # Å and f_λ, as MESA reads them
+    assert wavelength[0] == 3000.0 and flam[0] == pytest.approx(1e-9 * (5000.0 / 3000.0) ** 2)
+    assert run_cli(t.mp, "vega", "--out", str(t.tmp / "mesa")) == 0
+    written = t.tmp / "mesa" / "vega_flam.csv"
+    assert written.read_text() == served
+    assert t.capsys.readouterr().out.endswith(f"MESA colors inlist: vega_sed = '{written}'\n")
+    assert len(njm.fetched("vega/vega_flam.csv")) == 1  # the second copy came from the catalogue's cache
+
+
 # ======================================================================
-# Display colours (test_filter_colors)
+# Display colours
 # ======================================================================
 def top_hat(lo, hi, step=10.0):
     """A top-hat curve from lo to hi Angstrom with zero edges."""
@@ -687,7 +708,7 @@ def all_ultraviolet_set_runs_purple_to_sky_blue(t):
 
 
 # ======================================================================
-# Separable components: filter, optics, QE, atmosphere (test_filter_components)
+# Separable components: filter, optics, QE, atmosphere
 # ======================================================================
 ATM = {"airmass": 1.2, "pwv": 2.5}
 
@@ -801,7 +822,7 @@ def skycalc_build_writes_grid_and_resumes(t):
 
 
 # ======================================================================
-# Correcting or converting installed curves' detector type (test_filter_detector_edit)
+# Correcting or converting installed curves' detector type
 # ======================================================================
 G, R, I = gauss(4800.0, 300.0) * 0.9, gauss(5300.0, 300.0) * 0.7, gauss(5600.0, 200.0) * 0.8  # noqa: E741
 REFERENCE = Path(__file__).parent / "golden" / "inputs" / "reference"  # NJM's vega_flam.csv and sun_flam.csv
@@ -997,6 +1018,17 @@ def edit_refuses_unknown_bands_types_and_untagged_conversions(t):
 
 
 @row
+def a_set_with_an_unreadable_curve_is_not_converted_at_all(t):
+    inst = sdss(spectra_cached(t))
+    with open(inst / "r.dat", "a") as fh:
+        fh.write("8000.0,abc\n")
+    before = {p.name: p.read_bytes() for p in inst.iterdir() if p.is_file()}
+    with pytest.raises(ValueError, match=r"r\.dat, line"):
+        Filters.convert_detector_type(inst, "energy")
+    assert {p.name: p.read_bytes() for p in inst.iterdir() if p.is_file()} == before  # g.dat is not converted
+
+
+@row
 def retagging_keeps_edited_types(t):
     inst = sdss(spectra_cached(t))
     Filters.convert_detector_type(inst, "energy", bands=["g"])
@@ -1077,7 +1109,7 @@ def download_flow_reviews_the_detector_type(t):
 
 
 # ======================================================================
-# Photon- and energy-counting curves, and how a curve's type is resolved (test_filter_detector_type)
+# Photon- and energy-counting curves, and how a curve's type is resolved
 # ======================================================================
 NACO_URL = "https://www.eso.org/sci/facilities/paranal/instruments/naco/inst/filters/H_CONICA.dat"
 
@@ -1169,7 +1201,7 @@ def cli_reports_kept_types(t):
 
 
 # ======================================================================
-# The filter library offline: compose, atmospheres, SVO, NJM's burst block (test_filter_library)
+# The filter library offline: compose, atmospheres, SVO, NJM's burst block
 # ======================================================================
 REAL_AVAILABILITY_CHECK = NJMFilterGrabber._check_availability
 TEST_INDEX = njm_index({"Test": {"Camera": {"filters": ["g", "r"], "detector_types": {"photon": 2},
@@ -1177,12 +1209,12 @@ TEST_INDEX = njm_index({"Test": {"Camera": {"filters": ["g", "r"], "detector_typ
 
 
 def njm_offline(t):
-    """Every NJM client of the filter library finds NJM down (test_filter_library's autouse fixture)."""
+    """Every NJM client of the filter library finds NJM down."""
     t.mp.setattr(filters_library.NJMFilterGrabber, "_check_availability", lambda self: False)
 
 
 def _offline_then(t, scenario):
-    """The rows of test_filter_library: its autouse fixture took NJM offline."""
+    """A row of the offline filter-library table, run with NJM down."""
     njm_offline(t)
     scenario(t)
 
@@ -1392,7 +1424,7 @@ def inventory_offline_cli_emits_clean_json(t):
 
 
 # ======================================================================
-# Filter properties: definitions, Vega and Sun quantities, A_f/A_V (test_filter_properties)
+# Filter properties: definitions, Vega and Sun quantities, A_f/A_V
 # ======================================================================
 def box(lo=4000.0, hi=6000.0, ramp=1e-3, n=4001):
     """A top-hat filter with near-vertical edges (zero just outside lo..hi)."""
@@ -1430,6 +1462,19 @@ def vega_quantities_need_coverage_where_the_filter_transmits(t):
     lam, tr = gaussian(5500.0, 300.0)  # tabulated out to 7300 A; above 1 % of peak only to ~6400 A
     tail = np.concatenate([lam, [8000.0]]), np.concatenate([tr, [0.0]])
     assert filter_properties(*tail, "photon", vega=vega)["ZeroPointVega_flam"] == pytest.approx(1e-9, rel=1e-6)
+
+
+@row
+def a_coarse_curve_sees_the_spectrum_between_its_samples(t):
+    from sed_tools.photometry import FilterCurve, band_average_flux_lambda
+
+    # A flat band tabulated at three points, and a flat spectrum with a line between them (height 11 at 4500 Å):
+    # (2000 + 1000) / 2000 = 1.5, where the curve's own samples see 1.0.
+    curve = FilterCurve("c", np.array([4000.0, 5000.0, 6000.0]), np.ones(3), {}, detector_type=ENERGY)
+    spectrum = np.array([3000.0, 4400.0, 4500.0, 4600.0, 7000.0]), np.array([1.0, 1.0, 11.0, 1.0, 1.0])
+    assert band_average_flux_lambda(*spectrum, curve) == pytest.approx(1.5, rel=1e-12)
+    p = filter_properties(curve.wavelength, curve.transmission, ENERGY, vega=spectrum, sun=spectrum)
+    assert p["ZeroPointVega_flam"] == pytest.approx(1.5, rel=1e-12) and p["Fsun"] == pytest.approx(1.5, rel=1e-12)
 
 
 @row
@@ -1481,7 +1526,6 @@ def helpers_pass_the_sun_through(t):
 
 # ======================================================================
 # Atmosphere sites: legacy and team sites, provenance, unstated airmass, and errors that say what to choose
-# (test_filters_atmosphere_sites)
 # ======================================================================
 LEGACY_SITE = {"altitude_m": 2207.0, "entries": [{"airmass": 1.2, "file": "am1.20.dat", "pwv": None}],
                "notes": "", "schema": 1, "site": "ctio_des", "source": "DES standard atmosphere"}
@@ -1688,7 +1732,7 @@ def missing_conditions_error_says_what_the_site_has(t):
 
 
 # ======================================================================
-# A catalogue gap apart from a fetch failure (test_filters_catalogue_gaps)
+# A catalogue gap apart from a fetch failure
 # ======================================================================
 @row
 def search_reports_gaps_apart_from_fetch_failures(t):
@@ -1710,7 +1754,7 @@ def search_reports_gaps_apart_from_fetch_failures(t):
 
 
 # ======================================================================
-# Component variants, and a component's files from NJM (test_filters_component_variants)
+# Component variants, and a component's files from NJM
 # ======================================================================
 def qe_variants(t):
     """Fac/Cam: band g, and QE variants a (the default) and b (from 2017)."""
@@ -1774,19 +1818,34 @@ def njm_downloads_variant_files(t):
     assert (t.tmp / "F/I/components/qe/qe_a.dat").exists()
 
 
+@row
+def njm_components_keep_the_users_correction_and_the_archived_bands(t):
+    inst = sdss(spectra_cached(t), manifest=False)
+    InstrumentManifest.from_published(inst).save(inst)
+    served = (inst / "manifest.json").read_text()  # NJM's manifest of the set: SVO's photon g, nothing archived
+    put(inst, {"g_old.dat": (inst / "g.dat").read_text()})
+    (inst / "manifest.json").write_text(json.dumps({**json.loads(served), "archived_bands": {"g_old": {}}}))
+    Filters.correct_detector_type(inst, "energy", bands=["g"])
+    njm_filters(t, inst.parents[1], {"filters/SLOAN/SDSS/manifest.json": served}).download_components("SLOAN", "SDSS")
+    saved = InstrumentManifest.load(inst)
+    assert (saved.detector_types["g"], saved.detector_type_sources["g"]) == (ENERGY, "user")
+    assert saved.archived_bands == {"g_old": {}} and set_problems(inst) == []
+    assert read_filter_header(build_product(inst, ["filter"], bands=["g"]) / "g.dat")["DetectorType"] == ENERGY
+
+
 # ======================================================================
-# Failures are raised or warned about, never passed over silently (test_filters_failures)
+# Failures are raised or warned about, never passed over silently
 # ======================================================================
 MIRROR_CURVE = "Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=svo\n4000,0.1\n5000,1\n6000,0.1\n"
 
 
 def no_svo_url(t):
-    """SVO is asked at its own address (the autouse fixture of test_filters_failures and test_svo_fail_fast)."""
+    """SVO is asked at its own address."""
     t.mp.delenv(fm.SVO_FPS_URL_ENV, raising=False)
 
 
 def _default_svo_then(t, scenario):
-    """The rows of test_filters_failures and test_svo_fail_fast: their autouse fixture unset SVO's address."""
+    """A row of the failures and SVO-unreachable tables, run with SVO asked at its own address."""
     no_svo_url(t)
     scenario(t)
 
@@ -1825,12 +1884,20 @@ def unreadable_installed_catalogue_file_is_refused(t):
 
 
 @default_svo_row
-def unknown_components_header_is_reported(t):
+def unknown_components_header_stops_the_description(t):
     headers = {"g": {"Components": "filter+warp"}, "r": {"Components": "filter"}}
-    with t.caplog.at_level(logging.WARNING):
-        manifest = InstrumentManifest.from_headers("Fac", "Cam", headers)
-    assert manifest.published_bands == {"r": "filter"}
-    assert "Fac/Cam band g" in t.caplog.text and "'warp'" in t.caplog.text
+    with pytest.raises(ComponentError, match=r"Fac/Cam band g: .*'warp'.* in its Components header"):
+        InstrumentManifest.from_headers("Fac", "Cam", headers)
+
+
+@default_svo_row
+def label_check_refuses_a_tree_to_compare_with_that_is_not_there(t):
+    from sed_tools.filters import label_check
+
+    (t.tmp / "new").mkdir()
+    with pytest.raises(SystemExit) as stop:
+        label_check.main([str(t.tmp / "new"), "--against", str(t.tmp / "old")])
+    assert stop.value.code == 2 and f"{t.tmp / 'old'} is not a directory" in t.capsys.readouterr().err
 
 
 # filters/njm.py, on a stand-in session
@@ -1959,7 +2026,7 @@ def njm_atmosphere_failure_is_reported_before_its_source(t):
     assert "NJM cannot provide the paranal_am1.2_pwv2.5 atmosphere (502" in t.caplog.text
 
 
-# filter_metadata: SVO failures are no longer taken for "SVO has no answer"
+# SVO failures are no longer taken for "SVO has no answer"
 @default_svo_row
 def svo_error_is_raised_and_nothing_is_written(t):
     path = three_samples(t.tmp / "GAIA" / "GAIA" / "G.dat", header="Wavelength,Transmission,FilterID=GAIA/GAIA3.G")
@@ -2075,7 +2142,6 @@ def svo_error_on_a_listed_candidate_is_raised(t):
 
 # ======================================================================
 # Filters with NJM or SVO down: NJM's names, one folder per product, outages announced once
-# (test_filters_njm_down)
 # ======================================================================
 def gaia3_from_svo(root):
     """SVO, holding 4 of NJM's 6 GAIA/GAIA bands under GAIA/GAIA3."""
@@ -2505,7 +2571,7 @@ def the_catalogue_finds_an_installed_copy_as_fetch_does(t):
 
 
 # ======================================================================
-# Which source supplies a set: picker entries, spelling, completeness, NJM optional (test_filters_sources)
+# Which source supplies a set: picker entries, spelling, completeness, NJM optional
 # ======================================================================
 SVO_CURVE = "Wavelength,Transmission,DetectorType=photon;DetectorTypeSource=svo\n4100,0\n5000,1\n5900,0\n"
 GAIA_SVO = {"GAIA0": "Gaia pre-launch filters",
@@ -2611,7 +2677,6 @@ def njm_instrument_without_manifest_is_described_not_an_error(t):
 # ======================================================================
 # The library and NJM's mirror: outages checked once per process, downloads of only what changed, old
 # spellings, NJM's archived copies, compose, and where the catalogue comes from
-# (test_filters_spelling_and_archives)
 # ======================================================================
 class CountingSession:
     """A requests session whose HEAD answers ``head`` (a status, or an exception raised) and whose GETs fail;
@@ -2922,6 +2987,10 @@ def set_problems_names_each_way_a_sets_records_drift(t):
         a_set("Broken", {"Broken": "b.dat\n", "manifest.json": "{"}): "Broken/manifest.json cannot be read",
         a_set("Stale", {"Stale": "b.dat\n", "manifest.json": named}): (
             "Stale/manifest.json declares c, which its index does not list (an incomplete set, or a stale manifest)"),
+        a_set("Old", {"Old": "b.dat\nb_old.dat\n", "b_old.dat": FILTER_CURVE, "manifest.json": json.dumps(
+            {"facility": "Fac", "instrument": "Old", "bands": ["b"], "archived_bands": {"b_old": {}}})}): (
+            "Fac/Old/Old lists b_old.dat, which its manifest archives: MESA would load the superseded copy"),
+        a_set("Twice", {"Twice": "b.dat\nb.dat\n"}): "Fac/Twice/Twice lists b.dat more than once",
     }
     write_set(t.tmp / "Fac" / "Good", ["b"])
     found = check_sets(t.tmp)
@@ -3135,7 +3204,7 @@ def _archived_copies_apart(t, *spelling):
 
 
 # ======================================================================
-# SVO unreachable: one clear error, at once (test_svo_fail_fast)
+# SVO unreachable: one clear error, at once
 # ======================================================================
 @default_svo_row
 def connect_timeout_raises_one_clear_error_and_is_not_retried(t):
@@ -3168,7 +3237,7 @@ def download_stops_at_first_unreachable_filter(t):
 
 
 # ======================================================================
-# Curves stay readable by released MESA colors, 25.12.1 and 26.4.1 (test_mesa_legacy_format)
+# Curves stay readable by released MESA colors, 25.12.1 and 26.4.1
 #
 # Released MESA's ``load_filter`` discards the first line, sizes its arrays from every remaining line, then skips
 # leading ``#`` lines plus the first other line before reading samples. Any extra line therefore leaves an
@@ -3400,13 +3469,15 @@ def _sources(t, found, written):
 
 @row
 def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
-    import runpy
-
     from sed_tools.filters import label_check
 
-    def curve(path, detector=PHOTON, source=SOURCE_SVO, wl=(4000.0, 5000.0, 6000.0), tr=(0.5, 1.0, 0.5), **extra):
+    def curve(path, detector=PHOTON, source=SOURCE_SVO, wl=(4000.0, 5000.0, 6000.0), tr=(0.5, 1.0, 0.5),
+              unit="Angstrom", **extra):
+        if "Components" in extra:
+            extra.setdefault("ComponentsSource", SOURCE_SVO)
         path.parent.mkdir(parents=True, exist_ok=True)
-        write_filter_file(path, wl, tr, detector_type=detector, source=source, extra=extra or None)
+        write_filter_file(path, wl, tr, detector_type=detector, source=source, wavelength_unit=unit,
+                          extra=extra or None)
 
     new, old = t.tmp / "new", t.tmp / "old"
     ins = new / "Fac" / "Ins"
@@ -3416,12 +3487,14 @@ def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
     curve(ins / "components/qe/flat.dat", source="component", tr=(0.0, 0.0, 0.0))
     curve(ins / "r.dat", detector="both", wl=(4500.0, 5500.0), tr=(1.0, 1.0))   # rule 1; the filter's wings
     curve(ins / "i.dat", source="manual")                                         # rule 1: a word no one ranks
+    curve(ins / "k.dat", Components=FILTER, ComponentsSource="eso-original")      # rule 1, for Components too
+    curve(ins / "h.dat", unit=None)                                               # rule 9: read by a guess
     curve(ins / "z.dat", source="original", Components="filter+lens")             # rule 2
     curve(ins / "u.dat", source="user")
     curve(ins / "y.dat")                                                          # SVO reclassified it
     curve(ins / "w.dat")                                                          # rule 6: the ingest's credit
     (ins / "w.dat").write_text((ins / "w.dat").read_text().replace("\n", f";Sources={quote(INGESTED)}\n", 1))
-    (ins / "bad.dat").write_text("Wavelength,Transmission\n4000,-1\n5000,1\n")
+    (ins / "bad.dat").write_text("Wavelength,Transmission,WavelengthUnit=Angstrom\n4000,-1\n5000,1\n")
     (ins / "manifest.json").write_text(json.dumps({"components": {
         FILTER: {"g": "components/filter/g.dat"}, QE: {"*": "components/qe/flat.dat"},
         "filter+qe": {"g": "g.dat"}}}))
@@ -3440,7 +3513,8 @@ def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
     found = {(path.name, message.split(" ")[0]) for path, message in label_check.problems(new, old)}
     assert found == {("r.dat", "DetectorType"), ("i.dat", "DetectorTypeSource"), ("z.dat", "Components"),
                      ("g_filter.dat", "named"), ("g_filter.dat", "is"), ("bad.dat", str(ins / "bad.dat") + ":"),
-                     ("g.dat", "DetectorType"), ("y.dat", "DetectorType"), ("w.dat", "Sources")}, found
+                     ("g.dat", "DetectorType"), ("y.dat", "DetectorType"), ("w.dat", "Sources"),
+                     ("k.dat", "ComponentsSource"), ("h.dat", "WavelengthUnit")}, found
     messages = [m for _, m in label_check.problems(new, old)]
     assert "DetectorType energy (manual) became photon (svo), which does not outrank it" in messages
     assert "DetectorType energy (svo) became photon (svo), which does not outrank it" in messages
@@ -3449,10 +3523,6 @@ def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
     assert label_check.main([str(clean)]) == 0 and "keep every rule" in t.capsys.readouterr().out
     with pytest.raises(SystemExit):
         label_check.main([str(t.tmp / "missing")])
-    t.mp.setattr(sys, "argv", ["label_check", str(clean)])
-    with pytest.raises(SystemExit) as stop:
-        runpy.run_module("sed_tools.filters.label_check", run_name="__main__")
-    assert stop.value.code == 0
 
 
 @row
@@ -3467,7 +3537,8 @@ def label_check_finds_the_same_curve_served_with_two_detector_types(t):
             ("LBT/MODS/g.dat", tr, PHOTON, SOURCE_SVO),                     # the same tag: no clash
             ("Misc/APASS/r.dat", tr[::-1], ENERGY, SOURCE_SVO)):            # another curve
         (t.tmp / rel).parent.mkdir(parents=True, exist_ok=True)
-        write_filter_file(t.tmp / rel, wl, [float(v) for v in transmission], detector_type=detector, source=source)
+        write_filter_file(t.tmp / rel, wl, [float(v) for v in transmission], detector_type=detector, source=source,
+                          wavelength_unit="Angstrom")
     component = t.tmp / "Misc" / "APASS" / "components" / "filter" / "g.dat"   # components keep their own labels
     component.parent.mkdir(parents=True)
     write_filter_file(component, wl, tr, detector_type=ENERGY, source="component")
@@ -3494,7 +3565,7 @@ def label_check_makes_a_weaker_label_follow_the_same_curve(t):
         shift = 0.0 if "SDSS" in rel or "APASS" in rel else 1000.0 if "LCO" in rel else 2000.0
         (t.tmp / rel).parent.mkdir(parents=True, exist_ok=True)
         write_filter_file(t.tmp / rel, [w + shift for w in wl], tr, detector_type=PHOTON, source=SOURCE_SVO,
-                          extra={"Components": components, "ComponentsSource": source})
+                          wavelength_unit="Angstrom", extra={"Components": components, "ComponentsSource": source})
     [(path, message)] = label_check.problems(t.tmp)
     assert path.name == "sdss_g.dat" and message == ("labelled Components=filter (assumed), but the same curve "
                                                      "SLOAN/SDSS/g.dat is filter+instrument+atmosphere (svo)"), message
@@ -3668,7 +3739,7 @@ def tree_migration_is_offline_and_idempotent(t):
 
 
 # ======================================================================
-# Wavelength units of filter curves and spectra (test_wavelength_units)
+# Wavelength units of filter curves and spectra
 # ======================================================================
 INFER_UNIT = {f"infer_unit_from_values_{unit}": (lo, hi, unit) for lo, hi, unit in [
     (3200.0, 10800.0, "angstrom"),  # Gaia G in A (was misread as nm)

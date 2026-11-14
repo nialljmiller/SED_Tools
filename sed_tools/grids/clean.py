@@ -20,7 +20,7 @@ from .._constants import SIGMA, planck_flam
 from .lookup import write_lookup_csv
 
 from .hdf5_wavelengths import is_index_grid, recover_wavelengths_from_hdf5
-from .spectrum_io import read_text_spectrum
+from .spectrum_io import read_text_spectrum, write_atomically
 from .units import (FLUX_UNITS, SpectrumMeta, UnitInfo, _load_header, _with_flux_unit, convert_to_standard_units,
                     detect_catalog_units, detect_units_single_file, validate_converted_spectrum)
 
@@ -78,12 +78,14 @@ def write_standardized_spectrum(
                        'original_wavelength_unit', 'original_flux_unit', 'conversion_confidence'):
             header += f"# {key} = {value}\n"
     
-    # Stack first so a length mismatch fails before the file is truncated.
     data = np.column_stack([wl, flux])
-    with open(filepath, 'w', encoding='utf-8') as f:
-        f.write(header)
-    with open(filepath, 'ab') as f:
-        np.savetxt(f, data, fmt='%.6f %.8e')
+
+    def write(part):
+        with open(part, 'w', encoding='utf-8') as f:
+            f.write(header)
+        with open(part, 'ab') as f:
+            np.savetxt(f, data, fmt='%.6f %.8e')
+    write_atomically(filepath, write)
 
 
 # ---- Main cleaning logic ----
@@ -109,8 +111,7 @@ def clean_spectrum_file(
                 'recovered_renormed' when the flux scale was also corrected
                 (see _bolometric_renorm_ratio); detail then gives the factor.
 
-    Raises RuntimeError if rewriting the file fails; the file may then hold
-    only its new header.
+    Raises RuntimeError if rewriting the file fails; the file is then unchanged.
     """
     status, detail, renorm_ratio = _clean_spectrum(filepath, catalog_units, try_h5_recovery)
     if renorm_ratio is not None:
@@ -168,11 +169,8 @@ def _clean_spectrum(
     try:
         write_standardized_spectrum(filepath, wl_std, flux_std, meta, unit_info)
     except OSError as exc:
-        raise RuntimeError(
-            f"Failed while rewriting {filepath}: {exc}. The file may now hold only its new "
-            "header, which marks it as standardized, so later runs would skip it. Restore "
-            "it from the original download, then run the cleaning again."
-        ) from exc
+        raise RuntimeError(f"Failed while rewriting {filepath}: {exc}. The file is unchanged; fix the cause, "
+                           "then run the cleaning again.") from exc
     
     detail = f"{wl_std[0]:.0f}-{wl_std[-1]:.0f}Å, {unit_info.wavelength_unit}→Å, conf={unit_info.confidence}"
     if renorm_ratio is not None:

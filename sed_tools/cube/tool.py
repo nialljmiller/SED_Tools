@@ -232,14 +232,11 @@ def prompt_for_filter_system(
         print(f"  {idx}) {system} ({count} filters)")
     print("  0) All systems")
 
-    while True:
-        response = input("Select a filter system by number (or '0' for all): ").strip()
-        if response.lower() in {"", "0", "all", "a", "*"}:
-            return None, filter_entries
-        if response.isdigit() and 1 <= int(response) <= len(ordered):
-            system = ordered[int(response) - 1][0]
-            return system, systems[system]
-        print("Please enter a valid selection from the list above.")
+    response = input("Select a filter system by number (or '0' for all): ").strip()
+    if response.lower() in {"", "0", "all", "a", "*"}:
+        return None, filter_entries
+    system = {str(idx): name for idx, (name, _) in enumerate(ordered, start=1)}[response]  # else KeyError
+    return system, systems[system]
 
 
 def prompt_for_photometric_system(provided: str | None) -> str:
@@ -301,11 +298,8 @@ def resolve_vega_spectrum_path(
     for idx, path in enumerate(candidates, start=1):
         print(f"  {idx}) {path}")
 
-    while True:
-        choice = input("Select Vega spectrum by number: ").strip()
-        if choice.isdigit() and 1 <= int(choice) <= len(candidates):
-            return candidates[int(choice) - 1]
-        print("Please select one of the listed Vega spectra.")
+    choice = input("Select Vega spectrum by number: ").strip()
+    return {str(idx): path for idx, path in enumerate(candidates, start=1)}[choice]  # any other answer: KeyError
 
 
 def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = None) -> List[Path]:
@@ -383,40 +377,27 @@ def resolve_flux_cube_path(path: str) -> Path:
 
 
 def prompt_for_flux_cube_path(hints: Sequence[str | os.PathLike[str]] | None = None) -> Path:
-    """Interactively determine which flux cube file to use."""
-    hints = list(hints or [])
+    """Interactively determine which flux cube file to use, asking once.
 
-    while True:
-        candidates = discover_flux_cube_files(hints)
-        if len(candidates) == 1:
-            print(f"Using flux cube: {candidates[0]}")
-            return candidates[0]
-        if candidates:
-            print("Discovered flux cube files:")
-            for idx, candidate in enumerate(candidates, start=1):
-                print(f"  {idx}. {candidate}")
-            response = input("Select a flux cube by number or enter a path (or 'q' to quit): ").strip()
-            if not response:
-                continue
-        else:
-            response = input("Enter path to flux_cube.bin (or 'q' to quit): ").strip()
-            if not response:
-                print("Please provide a path to a flux cube file.")
-                continue
-        if response.lower() in {"q", "quit", "exit"}:
-            raise SystemExit("No flux cube selected; aborting.")
-        if candidates and response.isdigit():
-            index = int(response)
-            if 1 <= index <= len(candidates):
-                return candidates[index - 1]
-            print("Invalid selection. Please choose one of the listed numbers.")
-            continue
-        try:
-            return resolve_flux_cube_path(response)
-        except FileNotFoundError as exc:
-            print(exc)
-            if not candidates:  # a path typed with no cube found becomes a search hint
-                hints.append(response)
+    A listed number or a path (resolve_flux_cube_path) picks the cube; a blank answer or q stops with
+    SystemExit; an unlisted number raises KeyError, and a path with no cube FileNotFoundError.
+    """
+    candidates = discover_flux_cube_files(hints)
+    if len(candidates) == 1:
+        print(f"Using flux cube: {candidates[0]}")
+        return candidates[0]
+    if candidates:
+        print("Discovered flux cube files:")
+        for idx, candidate in enumerate(candidates, start=1):
+            print(f"  {idx}. {candidate}")
+        response = input("Select a flux cube by number or enter a path (or 'q' to quit): ").strip()
+    else:
+        response = input("Enter path to flux_cube.bin (or 'q' to quit): ").strip()
+    if response.lower() in {"", "q", "quit", "exit"}:
+        raise SystemExit("No flux cube selected; aborting.")
+    if candidates and response.isdigit():
+        return {str(idx): path for idx, path in enumerate(candidates, start=1)}[response]
+    return resolve_flux_cube_path(response)
 
 
 def _build_parser() -> argparse.ArgumentParser:

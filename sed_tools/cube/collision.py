@@ -17,44 +17,27 @@ directory when a cube is built, so the configuration used stays beside the data.
 
 from __future__ import annotations
 
+import math
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 from ..config import load_defaults_config, load_toml, merge_config
+from ..grids.lookup import _FILE_CANDIDATES, _LOGG_CANDIDATES, _META_CANDIDATES, _TEFF_CANDIDATES
 
-# Lookup columns that are not extra axes: MESA's three parameters, then bookkeeping and provenance.
-_MESA_PARAM_AXES: Set[str] = {
-    "teff", "Teff", "T_eff",
-    "logg", "logG", "log g", "log_g", "log(g)", "LOGG",
-    "metallicity", "meta", "feh",
-    "z", "Z", "zh", "zmet",
-}
+# Lookup columns that are not extra axes: the file column and MESA's three parameters, under every name
+# grids.lookup's find_*_column accept, then bookkeeping.
+_MESA_PARAM_AXES: Set[str] = {*_FILE_CANDIDATES, *_TEFF_CANDIDATES, *_LOGG_CANDIDATES, *_META_CANDIDATES}
 
-# Written by the spectra cleaner and regenerate_lookup_table, unless noted
+# Bookkeeping: the columns SED_Tools itself writes to describe a file (where it came from, its units and format,
+# what was done to it), never a property of the model. Every other column is one (discover_extra_axes).
 _BOOKKEEPING_AXES: Set[str] = {
-    "file_name", "filename", "file",
-    "source",
-    "units_standardized", "unitsstandardized",
-    "wavelength_unit", "wavelengthunit",
-    "flux_unit", "fluxunit", "flux_units",
-    "original_wavelength_unit", "originalwavelengthunit",
-    "original_flux_unit", "originalfluxunit",
-    "conversion_confidence", "conversionconfidence",
-    "spec_group", "specgroup",
-    # common SVO/MSG provenance fields
-    "url", "wave_grid", "columns", "res", "atmos",
-    # teff, logg, meta variants used by various grabbers
-    "t_eff", "log_g", "mh", "m_h", "feh",
-    # grids/clean.py bookkeeping, and grids/msg.py's for a spectrum with negative fluxes
-    "renormed", "negative_flux_fraction",
-    # common provenance / model-type labels
-    "atmosphere", "model", "model_type", "grid", "library",
-    # MAST BOSZ specific
-    "vturb", "cm", "am",
-    # Provenance of a combined grid (cube/combine.py save_combined_data) and of
-    # an ML-extended one (Completer.extend_catalog): they differ row to row, but
-    # are not physical axes, so such a grid is one cube, not one per row.
+    # the spectra cleaner (grids/clean.py)
+    "source", "spec_group", "units_standardized", "wavelength_unit", "flux_unit", "original_wavelength_unit",
+    "original_flux_unit", "conversion_confidence",
+    # the MSG and MAST grabbers (grids/msg.py, grids/mast.py)
+    "negative_flux_fraction", "columns", "url", "wave_grid", "res",
+    # combine (cube/combine.py save_combined_data) and Completer.extend_catalog
     "source_model", "original_file", "extended_by_ml", "wl_min", "wl_max",
 }
 
@@ -65,6 +48,16 @@ VALID_STRATEGIES = {"split", "all-warn", "all", "mean", "filter"}
 def _normalise_key(key: str) -> str:
     """Lowercase with every non-alphanumeric removed: '[alpha/Fe]' -> 'alphafe', 'v_turb' -> 'vturb'."""
     return re.sub(r"[^a-z0-9]+", "", key.strip().lower())
+
+
+def _value(text: Any) -> Any:
+    """An extra-axis value as variants are told apart by it: a number where it reads as one, so "0" and "0.0" are
+    one value; otherwise the text, stripped and lower-cased."""
+    try:
+        number = float(text)
+    except (TypeError, ValueError):
+        number = float("nan")
+    return number if math.isfinite(number) else str(text).strip().lower()
 
 
 def _keys_match(a: str, b: str) -> bool:
@@ -229,7 +222,25 @@ def copy_global_config_to_model(root_dir: Path, model_dir: Path) -> None:
         dst.write_bytes(src.read_bytes())
 
 
-def discover_extra_axes(lookup_columns: List[str]) -> List[str]:
-    """The lookup columns that are not MESA axes or bookkeeping (MESA_AXES), compared after _normalise_key."""
+def discover_extra_axes(columns: Dict[str, Sequence], nodes: Sequence[Tuple]) -> List[str]:
+    """The extra axes among a grid's lookup ``columns`` ({name: one value per row}), its rows being at ``nodes``
+    (each row's Teff, log g and [M/H]).
+
+    A column that is a file or parameter column or bookkeeping (MESA_AXES, compared after _normalise_key) is no
+    axis. Every other column states something about the model. It is an axis where it tells apart rows at one node
+    (BOSZ's [alpha/M]: the grid is split by it) or has one value (Kurucz's lh and vtur: it names the variants); one
+    that varies only between nodes labels the spectra (hres's model code, Phoenix or Tlusty) and splits nothing.
+    Values are compared as _value compares them.
+    """
     mesa_norms = {_normalise_key(k) for k in MESA_AXES}
-    return [col for col in lookup_columns if _normalise_key(col) not in mesa_norms]
+    axes = []
+    for name, values in columns.items():
+        if _normalise_key(name) in mesa_norms:
+            continue
+        at_node: Dict[Tuple, Set] = {}
+        for node, value in zip(nodes, values):
+            at_node.setdefault(tuple(node), set()).add(_value(value))
+        varies = len(set().union(*at_node.values())) > 1
+        if not varies or any(len(found) > 1 for found in at_node.values()):
+            axes.append(name)
+    return axes

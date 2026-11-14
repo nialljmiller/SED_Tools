@@ -16,6 +16,7 @@ from tqdm import tqdm
 
 from ._http import DISCOVERY_TIMEOUT, discovery_failure, mount_discovery, retrying_session
 from .lookup import find_logg_column, find_metallicity_column, find_teff_column, write_lookup_csv
+from .spectrum_io import write_atomically
 
 logger = logging.getLogger(__name__)
 
@@ -206,15 +207,17 @@ class MSGSpectraGrabber:
 
         if not os.path.exists(h5_path):
             print(f"    Downloading {model_name}.h5 ...")
-            try:
+
+            def download(part):
                 with self.session.get(url, stream=True, timeout=60) as r:
                     r.raise_for_status()
-                    with open(h5_path, "wb") as f:
+                    with open(part, "wb") as f:
                         for chunk in r.iter_content(chunk_size=1<<20):
                             f.write(chunk)
+            try:
+                write_atomically(h5_path, download)
             except requests.RequestException as e:
-                raise RuntimeError(f"MSG: could not download {url} to {h5_path}: {e}. "
-                                   f"Delete any partial {h5_path} before retrying") from e
+                raise RuntimeError(f"MSG: could not download {url} to {h5_path}: {e}") from e
 
         try:
             f = h5py.File(h5_path, "r")
@@ -298,6 +301,7 @@ class MSGSpectraGrabber:
         fname = f"{model_name}_fid{fid}.txt"
         fpath = os.path.join(out_dir, fname)
 
+        # Written whole or not at all (write_atomically); a smaller file is a partial one an earlier version left
         if os.path.exists(fpath) and os.path.getsize(fpath) > 1024:
             return ("cached", fname, params)
 
@@ -327,18 +331,20 @@ class MSGSpectraGrabber:
             if wl.size == 0:
                 return ("excluded", fname, None)
 
-        with open(fpath, "w", encoding="utf-8") as fh:
-            fh.write("# source = MSG HDF5\n")
-            fh.write(f"# spec_group = {gpath}\n")
-            for key, value in params.items():
-                fh.write(f"# {key} = {value}\n")
-            if negative is not None:
-                fh.write(f"# negative_flux_fraction = {negative:.3e}\n")
-            fh.write("# wavelength_unit = Angstrom\n")
-            fh.write("# flux_unit = erg/cm2/s/A\n")
-            fh.write("# columns = wavelength_A flux\n")
-            for x, y in zip(wl, fx):
-                fh.write(f"{float(x):.6f} {float(y):.8e}\n")
+        def write(part):
+            with open(part, "w", encoding="utf-8") as fh:
+                fh.write("# source = MSG HDF5\n")
+                fh.write(f"# spec_group = {gpath}\n")
+                for key, value in params.items():
+                    fh.write(f"# {key} = {value}\n")
+                if negative is not None:
+                    fh.write(f"# negative_flux_fraction = {negative:.3e}\n")
+                fh.write("# wavelength_unit = Angstrom\n")
+                fh.write("# flux_unit = erg/cm2/s/A\n")
+                fh.write("# columns = wavelength_A flux\n")
+                for x, y in zip(wl, fx):
+                    fh.write(f"{float(x):.6f} {float(y):.8e}\n")
+        write_atomically(fpath, write)
 
         return ("ok", fname, params)
 

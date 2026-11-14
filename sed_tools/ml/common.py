@@ -21,7 +21,7 @@ DEFAULT_WL_MAX = 100000.0   # Angstroms
 DEFAULT_WL_POINTS = 1000
 _PARAMS = ('teff', 'logg', 'meta')
 
-# Both engines' training-data and library warnings log under the completer's logger name.
+# Both engines' training-data and library warnings log under this module's name, sed_tools.ml.common.
 logger = logging.getLogger(__name__)
 
 

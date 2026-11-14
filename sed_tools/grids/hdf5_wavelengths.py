@@ -1,6 +1,7 @@
 """Real wavelengths for index-grid spectra, recovered from the grid's HDF5 files (MSG grids), for the cleaner.
 
-msg.py's own recovery uses the physical-grid test and the dataset walk from here.
+Only spectra an MSG extraction before 0.7.0 wrote with index "wavelengths" need it: 0.7.0's MSG reader writes
+real wavelengths.
 """
 
 from __future__ import annotations
