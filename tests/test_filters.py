@@ -288,6 +288,9 @@ def combine_renamed_band_has_no_dot_before_dat(t):
     assert all("." not in name[: -len(".dat")] for name in names)
     assert (out / "Sony").read_text().splitlines() == names
     assert (out / "Old_SonypA200_V.dat").read_text() == "Wavelength,Transmission\n3,1\n"
+    # Run again, each curve finds its own earlier copy: no band is added twice.
+    Filters.combine("Combined/Sony", t.tmp / "Cameras/Sony.A200", t.tmp / "Old/Sony.A200", filter_root=t.tmp)
+    assert sorted(p.name for p in out.glob("*.dat")) == names and (out / "Sony").read_text().splitlines() == names
 
 
 @row
