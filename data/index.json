@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-11-14T15:51:40.570588",
+  "generated": "2026-11-14T16:15:20.344578",
   "statistics": {
     "total_models": 8,
     "complete_models": 7,
@@ -32212,7 +32212,7 @@
       },
       "vega_spectrum": {
         "file": "data/vega/vega_flam.csv",
-        "sha256": "e8eb02a1919bebd38244d93db08a9d878c3b8ba07c174c1d09fcc2d62c1cf3ee",
+        "sha256": "f5d77623188ab923d63cbb67a76b6a575e04ffff5881c7eea7891a9502148478",
         "url": "vega/vega_flam.csv",
         "spectrum": "CALSPEC alpha_lyr_mod_004 (vega/README.md)"
       },
