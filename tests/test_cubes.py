@@ -1166,6 +1166,24 @@ def mesa_prepare_menu_exports_a_variant_of_a_split_grid(t):
 
 
 @row
+def mesa_prepare_exports_the_variant_named_without_asking(t):
+    # mesa_prepare asked which variant to export and had no option to name it, so it could not be scripted.
+    from support import run_cli
+
+    split_grid = _split_grid(t)
+    base, variant = str(split_grid.parent), "KuruczAlpha_alpha_0p40_lh_1p25_vtur_2_km_s"
+    out = t.tmp / "exported"
+    assert run_cli(t.mp, "mesa_prepare", "--base", base, "--grid", "KuruczAlpha", "--variant", variant,
+                   "--output", str(out)) == 0
+    assert (out / "flux_cube.bin").read_bytes() == (split_grid / variant / "flux_cube.bin").read_bytes()
+    with pytest.raises(SystemExit, match="KuruczAlpha has no variant 'alpha_0.4'; its variants are "
+                                         f"KuruczAlpha_alpha_0p00_lh_1p25_vtur_2_km_s, {variant}. Nothing was exported"):
+        run_cli(t.mp, "mesa_prepare", "--base", base, "--grid", "KuruczAlpha", "--variant", "alpha_0.4",
+                "--output", str(t.tmp / "other"))
+    assert not (t.tmp / "other").exists()
+
+
+@row
 def list_variants_raises_for_a_subgrid_without_its_cube(t):
     sub = _split_grid(t) / "KuruczAlpha_alpha_0p00_lh_1p25_vtur_2_km_s"
     (sub / "flux_cube.bin").rename(sub / "flux_cube.bin.moved")

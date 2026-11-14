@@ -438,10 +438,12 @@ def run_mesa_prepare_flow(
     base_dir: str = str(STELLAR_DIR_DEFAULT),
     model: Optional[str] = None,
     output: Optional[str] = None,
+    variant: Optional[str] = None,
 ) -> None:
-    """Export one extra-axis variant of a spectral grid as a MESA-ready folder, asking for what is not given."""
+    """Export one extra-axis variant of a spectral grid as a MESA-ready folder, asking for what is not given;
+    ``variant`` is the variant's subgrid folder name, as variants_index.csv lists it."""
     from ..cube.mesa_export import run_interactive
-    run_interactive(base_dir=base_dir, model=model, output=output)
+    run_interactive(base_dir=base_dir, model=model, output=output, variant=variant)
 
 
 def run_combine_flow(

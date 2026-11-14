@@ -740,6 +740,10 @@ Export one extra-axis variant (e.g. one alpha-enhancement, microturbulence or mi
 ```bash
 # Interactive spectral grid and variant selection
 sed-tools mesa_prepare
+
+# No prompts: name the grid, the variant's subgrid folder (as variants_index.csv lists it) and the output
+sed-tools mesa_prepare --grid Kurucz2003all --variant Kurucz2003all_alpha_0p40_lh_1p25_vtur_2_km_s \
+                       --output /path/to/Kurucz2003all_alpha04
 ```
 
 ---

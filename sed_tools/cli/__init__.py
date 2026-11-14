@@ -282,6 +282,9 @@ def _add_grid_tool_parsers(sub) -> None:
     _add_base_option(pp, STELLAR_DIR_DEFAULT, "Base spectral grid directory")
     pp.add_argument("--grid", "--model", dest="model", default=None,
                     help="Spectral grid name (e.g. Kurucz2003all); prompted if omitted")
+    pp.add_argument("--variant", default=None,
+                    help="The variant's subgrid folder name, as variants_index.csv lists it (e.g. "
+                         "Kurucz2003all_alpha_0p40_lh_1p25_vtur_2_km_s); prompted if omitted")
     pp.add_argument("--output", default=None, help="Output directory for the exported variant; prompted if omitted")
 
     cfg_p = sub.add_parser("config", help="Show or set the data directory")
@@ -485,7 +488,7 @@ def _cmd_densify(args, parser):
 
 
 def _cmd_mesa_prepare(args, parser):
-    run_mesa_prepare_flow(base_dir=args.base, model=args.model, output=args.output)
+    run_mesa_prepare_flow(base_dir=args.base, model=args.model, output=args.output, variant=args.variant)
     return 0
 
 

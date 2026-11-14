@@ -1,6 +1,6 @@
 """Export one variant of a spectral grid (e.g. one alpha-enhancement or microturbulence value) as a clean
 MESA-ready folder: list_variants, print_variant_table, export_variant, and the interactive flow behind
-``sed-tools mesa_prepare [--grid NAME] [--output DIR]``. list_variants reads the subgrids cube/variants.py
+``sed-tools mesa_prepare [--grid NAME] [--variant NAME] [--output DIR]``. list_variants reads the subgrids cube/variants.py
 writes.
 """
 
@@ -326,6 +326,16 @@ def _choose_grid(base_path: Path) -> str:
                      f"Enter a number from 1 to {len(available)} or a grid name. Nothing was exported.")
 
 
+def _named_variant(variants: List[VariantInfo], model: str, name: str) -> VariantInfo:
+    """The variant whose subgrid folder is *name* (as variants_index.csv and ``SED.query`` name it); exits with
+    status 1, listing the names, if there is none."""
+    for variant in variants:
+        if variant.flux_cube_path.parent.name == name:
+            return variant
+    names = ", ".join(v.flux_cube_path.parent.name for v in variants)
+    raise SystemExit(f"Error: {model} has no variant {name!r}; its variants are {names}. Nothing was exported.")
+
+
 def _choose_variant(variants: List[VariantInfo]) -> VariantInfo:
     """Prompt for one of *variants*; exits with status 1 on an invalid choice."""
     raw = input("\nSelect variant number: ").strip()
@@ -335,15 +345,17 @@ def _choose_variant(variants: List[VariantInfo]) -> VariantInfo:
     return variants[int(raw) - 1]
 
 
-def run_interactive(base_dir: str = None, model=None, output=None):
+def run_interactive(base_dir: str = None, model=None, output=None, variant=None):
     """
     Interactive MESA-prepare workflow.
 
     Prompts the user to pick a spectral grid (if not supplied), lists its variants,
-    lets the user select one, and exports it to a clean folder. Exits with status 1
-    and an error message if nothing was exported: no grid to pick, an invalid
-    choice, a missing lookup table or flux cube, a grid with no variants to
-    choose from, or an existing output directory the user chose not to overwrite.
+    lets the user select one (unless ``variant`` names its subgrid folder, as
+    variants_index.csv lists it), and exports it to a clean folder. Exits with
+    status 1 and an error message if nothing was exported: no grid to pick, an
+    invalid choice or variant name, a missing lookup table or flux cube, a grid
+    with no variants to choose from, or an existing output directory the user
+    chose not to overwrite.
     """
     base_path = Path(base_dir if base_dir is not None else STELLAR_DIR_DEFAULT)
 
@@ -368,7 +380,7 @@ def run_interactive(base_dir: str = None, model=None, output=None):
         return
 
     print_variant_table(variants, model_name=model)
-    chosen = _choose_variant(variants)
+    chosen = _choose_variant(variants) if variant is None else _named_variant(variants, model, variant)
 
     print(f"\nSelected: {chosen.label}")
     for k, v in chosen.extra_axes.items():
