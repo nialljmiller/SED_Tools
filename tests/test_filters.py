@@ -1447,6 +1447,19 @@ def vega_quantities_need_coverage_where_the_filter_transmits(t):
 
 
 @row
+def a_coarse_curve_sees_the_spectrum_between_its_samples(t):
+    from sed_tools.photometry import FilterCurve, band_average_flux_lambda
+
+    # A flat band tabulated at three points, and a flat spectrum with a line between them (height 11 at 4500 Å):
+    # (2000 + 1000) / 2000 = 1.5, where the curve's own samples see 1.0.
+    curve = FilterCurve("c", np.array([4000.0, 5000.0, 6000.0]), np.ones(3), {}, detector_type=ENERGY)
+    spectrum = np.array([3000.0, 4400.0, 4500.0, 4600.0, 7000.0]), np.array([1.0, 1.0, 11.0, 1.0, 1.0])
+    assert band_average_flux_lambda(*spectrum, curve) == pytest.approx(1.5, rel=1e-12)
+    p = filter_properties(curve.wavelength, curve.transmission, ENERGY, vega=spectrum, sun=spectrum)
+    assert p["ZeroPointVega_flam"] == pytest.approx(1.5, rel=1e-12) and p["Fsun"] == pytest.approx(1.5, rel=1e-12)
+
+
+@row
 def rejects_unusable_curves(t):
     with pytest.raises(ValueError):
         filter_properties([5000.0], [1.0])
