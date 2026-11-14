@@ -1774,6 +1774,21 @@ def njm_downloads_variant_files(t):
     assert (t.tmp / "F/I/components/qe/qe_a.dat").exists()
 
 
+@row
+def njm_components_keep_the_users_correction_and_the_archived_bands(t):
+    inst = sdss(spectra_cached(t), manifest=False)
+    InstrumentManifest.from_published(inst).save(inst)
+    served = (inst / "manifest.json").read_text()  # NJM's manifest of the set: SVO's photon g, nothing archived
+    put(inst, {"g_old.dat": (inst / "g.dat").read_text()})
+    (inst / "manifest.json").write_text(json.dumps({**json.loads(served), "archived_bands": {"g_old": {}}}))
+    Filters.correct_detector_type(inst, "energy", bands=["g"])
+    njm_filters(t, inst.parents[1], {"filters/SLOAN/SDSS/manifest.json": served}).download_components("SLOAN", "SDSS")
+    saved = InstrumentManifest.load(inst)
+    assert (saved.detector_types["g"], saved.detector_type_sources["g"]) == (ENERGY, "user")
+    assert saved.archived_bands == {"g_old": {}} and set_problems(inst) == []
+    assert read_filter_header(build_product(inst, ["filter"], bands=["g"]) / "g.dat")["DetectorType"] == ENERGY
+
+
 # ======================================================================
 # Failures are raised or warned about, never passed over silently (test_filters_failures)
 # ======================================================================
