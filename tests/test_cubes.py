@@ -445,6 +445,24 @@ def a_parameter_column_under_any_name_lookup_accepts_is_no_extra_axis(t):
 
 
 @row
+def a_split_grid_has_no_cube_of_its_own_and_photometry_names_its_variants(t):
+    # A rebuild that split a grid left the cube of an earlier single build at the top, which MESA pointed at the
+    # grid's folder read, and SED.local and SED().model() used. Only a variant's folder has a cube now.
+    from sed_tools.api import SED as API
+
+    grid = _write_grid(t.tmp / "G", [("a0.txt", 5000.0, 4.0, 0.0, "0.0"), ("b0.txt", 6000.0, 4.0, 0.0, "0.0")],
+                       (*COLUMNS, "alpha"))
+    _build(grid)
+    _two_variant_grid(grid)
+    _build(grid)
+    assert not (grid / "flux_cube.bin").exists()
+    for load in (lambda: API.local("G", model_root=t.tmp), lambda: SED(model_root=t.tmp).model("G")):
+        with pytest.raises(FileNotFoundError, match="G is split into variants.*G/G_alpha_0p00, G/G_alpha_0p40"):
+            load()
+    assert API.local("G/G_alpha_0p40", model_root=t.tmp).model().flux_cube_path.is_file()
+
+
+@row
 def a_spectrum_zero_at_every_sampled_wavelength_is_still_found(t):
     """A spectrum covering only part of the cube's wavelengths is zero elsewhere (resample_to_grid)."""
     flux = np.zeros((3, 1, 1, 20))  # the sampled wavelength planes are 2, 4, 6, 8, 11, 13, 15, 17

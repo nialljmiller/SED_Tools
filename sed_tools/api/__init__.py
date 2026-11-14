@@ -28,6 +28,7 @@ from ..cube.model import (
     SEDModel,
     SED as _SEDCore,
     _read_flux_cube_header,
+    _refuse_split_grid,
 )
 from ..cube.check import _bundle_shortfall, _flux_cube_file, _flux_cube_shortfall  # noqa: F401
 from ..grids.pipeline import (  # noqa: F401  (_build_combined_grid and _parameter_cuts are re-exported)
@@ -647,7 +648,8 @@ class SED:
         filter_root: Optional[Union[str, Path]] = None,
         fill_gaps: bool = True,
     ) -> 'SED':
-        """Load a local stellar spectral grid (it needs its flux_cube.bin).
+        """Load a local stellar spectral grid (it needs its flux_cube.bin). A grid split into variants has
+        none of its own: load a variant, ``SED.local("<grid>/<variant>")``; FileNotFoundError names them.
 
         Parameters
         ----------
@@ -667,6 +669,7 @@ class SED:
         """
         base_dir = Path(model_root) if model_root else cls._model_root
         model_dir = base_dir / catalog
+        _refuse_split_grid(model_dir, catalog)
         sed_model = SEDModel(name=catalog, flux_cube_path=model_dir / "flux_cube.bin",
                              filters_dir=filter_root or cls._filter_root, fill_gaps=fill_gaps)
         cat = cls._load_catalog_from_dir(model_dir, catalog, 'local')

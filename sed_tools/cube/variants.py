@@ -223,8 +223,9 @@ def _confirm_large_split(model_dir: str, n_groups: int, threshold: int) -> bool:
 def _split_into_subgrids(model_dir: str, groups: Dict, extra_cols: List[str], lookup: Dict[str, List], file_col: str,
                          write_cube, threshold: int) -> None:
     """Strategy 'split': one MESA-ready subgrid folder per variant (its lookup_table.csv, links to the parent's
-    spectra, its flux_cube.bin), then variants_index.csv, and lookup_table_full.csv as the record of the full grid;
-    the parent, which is not MESA-ready, gets no cube. Above *threshold* variants it asks first."""
+    spectra, its flux_cube.bin), then variants_index.csv, and lookup_table_full.csv as the record of the full grid.
+    The parent, which is not MESA-ready, has no cube: one an earlier build left there is removed, so MESA can read
+    the grid only from a variant's folder. Above *threshold* variants it asks first."""
     names = _subdir_names(os.path.basename(os.path.abspath(model_dir)), list(groups))
     _print_split_announcement(groups, extra_cols, names, threshold)
 
@@ -261,6 +262,10 @@ def _split_into_subgrids(model_dir: str, groups: Dict, extra_cols: List[str], lo
     if os.path.exists(src_lookup) and not os.path.exists(full_lookup):
         shutil.copy2(src_lookup, full_lookup)
         print("Full-grid lookup preserved: lookup_table_full.csv")
+    top_cube = os.path.join(model_dir, "flux_cube.bin")
+    if os.path.isfile(top_cube):
+        os.remove(top_cube)
+        print("Removed the grid's top-level flux_cube.bin: a split grid's cubes are its variants'.")
     print("\nDone. The parent directory is the source collection.")
     print("Point MESA Colors to one of the subgrid directories listed above.")
 

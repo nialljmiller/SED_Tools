@@ -318,6 +318,16 @@ class SEDModel:
         return float(min(max(value, lower), upper))
 
 
+def _refuse_split_grid(directory: Path, name: str) -> None:
+    """FileNotFoundError naming the variants when ``directory`` is a grid split into variants (variants_index.csv):
+    such a grid has no cube of its own, and photometry and MESA read one variant's folder."""
+    index = Path(directory) / "variants_index.csv"
+    if index.is_file():
+        variants = [f"{name}/{path}" for path in _variant_paths(index)]
+        raise FileNotFoundError(f"{name} is split into variants, each with its own flux cube; name one of them: "
+                                + ", ".join(variants))
+
+
 class SED:
     """The installed spectral grids under model_root: find the ones covering a point or range, and evaluate one.
 
@@ -345,7 +355,7 @@ class SED:
     def available_grids(self) -> List[str]:
         """The locally installed spectral grids with a flux cube, by name. A grid split into variants
         (variants_index.csv) is listed as each variant whose cube is there, ``<grid>/<variant>``, the name
-        ``model()`` and ``sed_tools.SED.local`` take; a flux_cube.bin beside its index is a variant's copy."""
+        ``model()`` and ``sed_tools.SED.local`` take; a split grid has no cube of its own."""
         if not self.model_root.exists():
             return []
         names = []
@@ -482,6 +492,7 @@ class SED:
         if path.is_file() and path.suffix.lower() == ".bin":
             return path
         for directory in (path, self.model_root / path):
+            _refuse_split_grid(directory, str(model))
             if directory.is_dir() and (directory / "flux_cube.bin").is_file():
                 return directory / "flux_cube.bin"
 
