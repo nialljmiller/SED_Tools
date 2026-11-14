@@ -21,7 +21,7 @@ from tqdm import tqdm
 from .build import compute_common_wavelengths, resample_to_grid
 from .collision import _normalise_key, discover_extra_axes
 from .fileio import write_header
-from .variants import _link_spectra, _subdir_name
+from .variants import _link_spectra, _remove_variants, _subdir_name
 from ..ui_utils import banner
 from ..grids.lookup import find_logg_column, find_metallicity_column, find_teff_column, write_lookup_csv
 from ..grids.spectrum_io import read_text_spectrum
@@ -268,8 +268,7 @@ def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
 
     The lookup table has one row per node a spectrum fills (:func:`_placements`), at the spectrum's own values and,
     for an axis its grid does not state, the node's; so a copied spectrum has a row at each of its nodes, and a
-    spectrum that fills no node has none. A spectrum already present in output_dir under its new name is not
-    copied again. Raises OSError after writing the lookup table if any copy failed.
+    spectrum that fills no node has none. Raises OSError after writing the lookup table if any copy failed.
     """
     os.makedirs(output_dir, exist_ok=True)
     grids = (teff_grid, logg_grid, meta_grid)
@@ -328,13 +327,28 @@ def _copy_spectra(output_dir, all_models_data, names, listed):
             if names[g, row] not in listed:
                 continue
             src_path = os.path.join(model_data["model_dir"], orig_file)
-            dst_path = os.path.join(output_dir, names[g, row])
-            if not os.path.exists(dst_path):
-                try:
-                    shutil.copy2(src_path, dst_path)
-                except OSError as exc:
-                    failures.append(f"{src_path}: {exc}")
+            try:
+                shutil.copy2(src_path, os.path.join(output_dir, names[g, row]))
+            except OSError as exc:
+                failures.append(f"{src_path}: {exc}")
     return failures
+
+
+def _remove_previous_output(output_dir):
+    """Remove what an earlier combine wrote in output_dir, so none of it is left beside the new combination or read
+    in its place: the spectra its lookup table lists, its flux_cube.bin, and its variants (variants_index.csv and
+    the subgrids it lists). A folder whose lookup table is not a combine's is left alone."""
+    lookup = os.path.join(output_dir, "lookup_table.csv")
+    if not os.path.isfile(lookup) or not _is_combined_output(None, lookup):
+        return
+    listed = pd.read_csv(lookup, comment=None, dtype=str).iloc[:, 0]
+    for name in set(listed.dropna()):
+        path = os.path.join(output_dir, name)
+        if os.path.basename(name) == name and os.path.isfile(path):
+            os.remove(path)
+    _remove_variants(output_dir)
+    if os.path.isfile(os.path.join(output_dir, "flux_cube.bin")):
+        os.remove(os.path.join(output_dir, "flux_cube.bin"))
 
 
 def _row_ids(model_data):
@@ -428,6 +442,7 @@ def write_combined_grid(all_models_data, output_dir, visualization=True):
     extra-axis values, and variants_index.csv, and each variant is a subgrid folder with its lookup table, links to
     its spectra and its flux_cube.bin, so no spectrum collides with or overwrites another variant's. Every cube is
     built before anything is written: a spectrum that cannot be read or placed stops the combine with nothing written.
+    What an earlier combine wrote in output_dir is then replaced (:func:`_remove_previous_output`).
     """
     wavelength_grid = create_common_wavelength_grid(all_models_data)
     built = []
@@ -438,6 +453,7 @@ def write_combined_grid(all_models_data, output_dir, visualization=True):
         flux_cube, source_map = build_combined_flux_cube(grids, *axes, wavelength_grid)
         built.append((key, grids, axes, flux_cube, source_map))
 
+    _remove_previous_output(output_dir)
     if len(built) == 1:
         _, grids, axes, flux_cube, source_map = built[0]
         save_combined_data(output_dir, *axes, wavelength_grid, flux_cube, grids)

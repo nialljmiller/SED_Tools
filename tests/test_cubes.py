@@ -404,6 +404,19 @@ def a_split_grid_is_checked_by_its_variants_not_by_a_top_level_copy(t):
 
 
 @row
+def a_grid_built_as_one_cube_after_a_split_drops_the_split(t):
+    # A rebuild that no longer split the grid left the earlier variants_index.csv and subgrids, read as its cubes.
+    grid = _two_variant_grid(t.tmp / "G")
+    _build(grid)
+    for name in ("a4.txt", "b4.txt"):
+        (grid / name).unlink()
+    _write_grid(grid, [("a0.txt", 5000.0, 4.0, 0.0, "0.0"), ("b0.txt", 6000.0, 4.0, 0.0, "0.0")], (*COLUMNS, "alpha"))
+    _build(grid)
+    assert [variant.label for variant in list_variants(grid)] == ["full_grid"]
+    assert not [p for p in grid.iterdir() if p.is_dir()] and _flux_cube_shortfall(grid) is None
+
+
+@row
 def a_spectrum_zero_at_every_sampled_wavelength_is_still_found(t):
     """A spectrum covering only part of the cube's wavelengths is zero elsewhere (resample_to_grid)."""
     flux = np.zeros((3, 1, 1, 20))  # the sampled wavelength planes are 2, 4, 6, 8, 11, 13, 15, 17
@@ -581,6 +594,23 @@ def combine_refuses_to_write_into_one_of_its_grids(t):
     with pytest.raises(ValueError, match="The output grid a is also one of the grids to combine"):
         SED.combine(["a", "b"], output="a", model_root=t.tmp / "models", visualization=False)
     assert sorted(p.name for p in (t.tmp / "models" / "a").iterdir()) == before
+
+
+@row
+def combining_again_into_a_folder_replaces_the_earlier_combination(t):
+    # A rerun kept what the earlier one wrote: combining [a, b] then [b, a] left a_000002.txt, listed at 4000 K,
+    # holding a's 6000 K spectrum, with four stale copies beside it; and an earlier single cube stayed beside a later
+    # split, so SED.combine returned the earlier combination.
+    _planck_grid(t, "a", [(4000.0, 4.5, 0.0), (5000.0, 4.5, 0.0), (6000.0, 4.5, 0.0)])
+    _planck_grid(t, "b", [(7000.0, 4.5, 0.0), (8000.0, 4.5, 0.0)])
+    _planck_grid(t, "al", [(4000.0, 4.5, 0.0, 0.0), (4000.0, 4.5, 0.0, 0.4)], columns=("teff", "logg", "meta", "alpha"))
+    combined = t.tmp / "models" / "combined"
+    _combined_cubes(t, ["a", "b"])
+    _combined_cubes(t, ["b", "a"])  # each listed copy holds its own node's spectrum
+    assert _flux_cube_shortfall(combined) is None  # no stale copies
+    _combined_cubes(t, ["a", "al"])
+    assert sorted(p.name for p in combined.iterdir() if not p.name.endswith(".txt")) == [
+        "combined_alpha_0p00", "combined_alpha_0p40", "lookup_table.csv", "variants_index.csv"]
 
 
 @row

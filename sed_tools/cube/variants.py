@@ -3,6 +3,7 @@
 precompute_flux_cube in cube/build.py chooses the strategy and passes in SPLIT_THRESHOLD and its writer of one cube.
 """
 
+import csv
 import logging
 import os
 import re
@@ -98,6 +99,25 @@ def _print_split_announcement(groups: Dict, extra_cols: List[str], model_name: s
         print("Use one of the subdirectories as the spectral grid in MESA Colors.")
     else:
         print(f"\n{n_combos} combinations exceed the auto-split threshold ({threshold}).")
+
+
+def _variant_paths(variants_index) -> List[str]:
+    """The folder of each variant ``variants_index.csv`` lists, relative to the grid's folder."""
+    with open(variants_index, newline="", encoding="utf-8") as fh:
+        fields = [name.lstrip("#").strip() for name in fh.readline().strip().split(",")]
+        return [row["path"] for row in csv.DictReader(fh, fieldnames=fields)]
+
+
+def _remove_variants(folder: str) -> None:
+    """Remove an earlier split from *folder*: the subgrid folders its variants_index.csv lists, then the index."""
+    index = os.path.join(folder, "variants_index.csv")
+    if not os.path.isfile(index):
+        return
+    for path in _variant_paths(index):
+        subgrid = os.path.join(folder, path)
+        if os.path.dirname(os.path.normpath(subgrid)) == os.path.normpath(folder) and os.path.isdir(subgrid):
+            shutil.rmtree(subgrid)
+    os.remove(index)
 
 
 def _link_spectra(subdir: str, file_names: List[str]) -> None:

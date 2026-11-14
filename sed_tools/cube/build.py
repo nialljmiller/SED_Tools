@@ -21,7 +21,7 @@ from ..grids.lookup import (
 from .collision import copy_global_config_to_model, discover_extra_axes, load_config
 from .fileio import flux_offset, write_header
 from .variants import (_build_filtered_cube, _build_mean_cube, _group_by_extra_axes, _parameter_arrays, _print_summary,
-                       _split_into_subgrids, _warn_averaged_rows)
+                       _remove_variants, _split_into_subgrids, _warn_averaged_rows)
 from ..grids.spectrum_io import read_text_spectrum
 
 logger = logging.getLogger(__name__)
@@ -382,7 +382,14 @@ def _accumulate_spectra(
     return count_cube
 
 
-# --- precompute_flux_cube and its command line ---
+# --- precompute_flux_cube ---
+
+def _remove_earlier_split(model_dir: str, output_file: str) -> None:
+    """Once one cube is written as the grid's own (model_dir/flux_cube.bin), remove an earlier split of the grid,
+    whose variants_index.csv would otherwise be read as the grid's cubes (cube/check.py)."""
+    if os.path.abspath(output_file) == os.path.abspath(os.path.join(model_dir, "flux_cube.bin")):
+        _remove_variants(model_dir)
+
 
 def precompute_flux_cube(
     model_dir:     str,
@@ -436,6 +443,7 @@ def precompute_flux_cube(
     if len(groups) <= 1:
         _warn_averaged_rows(lookup, range(len(file_names)), zip(teff_vals, logg_vals, meta_vals), output_file)
         _populate_and_write(model_dir, file_names, teff_vals, logg_vals, meta_vals, wavelengths, output_file, usable)
+        _remove_earlier_split(model_dir, output_file)
         _print_summary(output_file, teff_vals, logg_vals, meta_vals)
         return
 
@@ -453,5 +461,6 @@ def precompute_flux_cube(
         _build_mean_cube(groups, output_file, write_cube)
     elif cfg.strategy == "filter":
         _build_filtered_cube(cfg, groups, extra_cols, lookup, output_file, write_cube)
+    _remove_earlier_split(model_dir, output_file)
 
     _print_summary(output_file, teff_vals, logg_vals, meta_vals)

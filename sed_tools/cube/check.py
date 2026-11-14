@@ -5,12 +5,12 @@ The files' contents decide, never their times, so a grid copied without its time
 
 from __future__ import annotations
 
-import csv
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from ..grids.spectrum_io import bundled_spectra, list_text_spectra
 from .build import spectra_not_in_cube
+from .variants import _variant_paths
 
 
 def _flux_cube_file(model_dir: Path) -> Optional[Path]:
@@ -49,13 +49,6 @@ def _flux_cube_shortfall(model_dir: Path) -> Optional[str]:
         return f"cannot be compared with the spectra beside it ({exc})"
     lacking = (lacking | (present - listed)) & present
     return f"does not include {len(lacking)} of the {len(present)} spectra beside it" if lacking else None
-
-
-def _variant_paths(variants_index: Path) -> List[str]:
-    """The folder of each variant ``variants_index.csv`` lists, relative to the grid's folder."""
-    with open(variants_index, newline="", encoding="utf-8") as fh:
-        fields = [name.lstrip("#").strip() for name in fh.readline().strip().split(",")]
-        return [row["path"] for row in csv.DictReader(fh, fieldnames=fields)]
 
 
 def _bundle_shortfall(bundle: Path, model_dir: Path) -> Optional[str]:
