@@ -1137,6 +1137,18 @@ def ensure_published_writes_index_when_complete(t):
 
 
 @row
+def ensure_published_cites_svos_record_whichever_endpoint_served_it(t):
+    from sed_tools.filters.curve_metadata import SVO_FPS_URL, SVO_FPS_URL_ENV
+    from sed_tools.filters.manifest import copied_from_source
+
+    t.mp.setenv(SVO_FPS_URL_ENV, "https://fps-mirror.example/fps.php")
+    inst = t.tmp / "Fac" / "Cam"
+    ensure_published(inst, {"g": "Fac/Cam.g"}, SVOClient({"Fac/Cam.g": record("Fac/Cam.g")}.get))
+    header = read_filter_header(inst / "g.dat")
+    assert header["Sources"] == f"{SVO_FPS_URL}?ID=Fac/Cam.g" and copied_from_source(header)
+
+
+@row
 def build_simple_refuses_a_filter_band_without_a_published_curve(t):
     inst = t.tmp / "Fac" / "Cam"
     published(inst, "g", source=None)
