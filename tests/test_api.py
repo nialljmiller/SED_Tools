@@ -352,6 +352,16 @@ def spectral_grid_axes_and_indexing(t):
 
 
 @row
+def spectral_grid_filter_raises_on_a_minimum_above_its_maximum(t):
+    # It returned an empty grid; one rule for a reversed range (ui_utils.ordered_range), as SED.fetch's bounds.
+    grid = SpectralGrid("G", "local", [_spectrum(5000.0), _spectrum(6000.0)])
+    with pytest.raises(ValueError, match="6000 to 5000 is reversed"):
+        grid.filter(teff_min=6000.0, teff_max=5000.0)
+    assert [s.teff for s in grid.filter(teff_min=5000.0, teff_max=5000.0)] == [5000.0]  # one value is a range
+    assert len(grid.filter(teff_min=5500.0)) == 1  # one bound leaves the other side open
+
+
+@row
 def grid_info_covers_a_point_and_shows_its_ranges(t):
     info = SpectralGridInfo("G", "njm", teff_range=(4000.0, 6000.0), logg_range=(4.0, 5.0))
     assert info.covers(5000.0, 4.5, 3.0)  # no [M/H] range: any value is covered

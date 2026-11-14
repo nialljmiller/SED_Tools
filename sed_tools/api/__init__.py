@@ -184,7 +184,8 @@ class SpectralGrid:
         metallicity_min: Optional[float] = None,
         metallicity_max: Optional[float] = None,
     ) -> 'SpectralGrid':
-        """Return a new SpectralGrid with filtered spectra."""
+        """Return a new SpectralGrid with filtered spectra; a minimum above its maximum raises ValueError."""
+        _parameter_cuts(teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)  # ordered_range
         filtered = [spec for spec in self.spectra
                     if _not_outside(spec.teff, teff_min, teff_max) and _not_outside(spec.logg, logg_min, logg_max)
                     and _not_outside(spec.metallicity, metallicity_min, metallicity_max)]
