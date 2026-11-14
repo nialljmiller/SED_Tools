@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from .build import resample_to_grid
+from .build import compute_common_wavelengths, resample_to_grid
 from .collision import _normalise_key, discover_extra_axes
 from .fileio import write_header
 from .variants import _link_spectra, _subdir_name
@@ -167,52 +167,15 @@ def create_unified_grid(all_models_data):
     return clean_grid("teff", 1.0), clean_grid("logg", 0.01), clean_grid("meta", 0.01)
 
 
-def create_common_wavelength_grid(all_models_data, sample_size=20):
-    """Create a common wavelength grid by sampling model spectra."""
-    print("\nAnalyzing wavelength coverage...")
-
-    min_wave = float("inf")
-    max_wave = 0
-    resolutions = []
-
-    for model_data in all_models_data:
-        n_sample = min(sample_size, len(model_data["files"]))
-        indices = np.random.choice(len(model_data["files"]), n_sample, replace=False)
-
-        for idx in indices:
-            filepath = os.path.join(model_data["model_dir"], model_data["files"][idx])
-            try:
-                wavelengths, _ = read_text_spectrum(filepath)
-            except OSError:
-                # Every spectrum is read again when the cube is built, and that
-                # pass raises one error listing all unreadable files.
-                continue
-            if len(wavelengths) <= 10:
-                continue
-            mask = (wavelengths >= 3000) & (wavelengths <= 25000)
-            if mask.sum() <= 10:
-                continue
-            wl_subset = wavelengths[mask]
-            min_wave = min(min_wave, wl_subset.min())
-            max_wave = max(max_wave, wl_subset.max())
-            resolutions.append(np.median(np.diff(wl_subset)))
-
-    if not resolutions:
-        names = ", ".join(os.path.basename(d["model_dir"]) for d in all_models_data)
-        raise ValueError(
-            f"No sampled spectrum from {names} has more than 10 points between 3000 and "
-            "25000 Å, so no common wavelength grid can be built. Check that the spectra "
-            "are readable and in Angstrom (run the spectra cleaner on each grid)."
-        )
-    typical_resolution = np.median(resolutions)
-    grid_resolution = max(50.0, typical_resolution * 2)
-    n_points = min(int((max_wave - min_wave) / grid_resolution) + 1, 5000)
-    wavelength_grid = np.linspace(min_wave, max_wave, n_points)
-
-    print(f"  Range: {min_wave:.0f} - {max_wave:.0f} Å")
-    print(f"  Points: {len(wavelength_grid)}, Resolution: {grid_resolution:.1f} Å")
-
-    return wavelength_grid
+def create_common_wavelength_grid(all_models_data):
+    """The combined cube's wavelengths: the union of every grid's own, each grid's taken as the cube builder takes
+    them (:func:`~sed_tools.cube.build.compute_common_wavelengths`), so the combination keeps each grid's whole
+    coverage, and the same grids always give the same axis."""
+    print("\nWavelengths of each grid:")
+    axes = [compute_common_wavelengths(d["model_dir"], list(d["files"])) for d in all_models_data]
+    wavelengths = np.unique(np.concatenate(axes))
+    print(f"Combined wavelength grid: {len(wavelengths)} points ({wavelengths[0]:.1f}–{wavelengths[-1]:.1f} Å)")
+    return wavelengths
 
 
 def _placements(all_models_data, teff_grid, logg_grid, meta_grid):
@@ -460,7 +423,7 @@ def _variants(all_models_data):
 
 
 def write_combined_grid(all_models_data, output_dir, visualization=True):
-    """Combine the grids into output_dir on one wavelength grid, drawn from all of them.
+    """Combine the grids into output_dir on one wavelength grid, the union of theirs.
 
     With no extra axis, or one value of each, output_dir holds the combined flux cube, a copy of every spectrum and
     the lookup table (:func:`save_combined_data`). Otherwise the combination is split as the cube builder splits one

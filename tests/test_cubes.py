@@ -129,7 +129,6 @@ def _golden_pair(t):
 def _combine(models, output="combined"):
     from sed_tools.api import SED  # the API's, not the models' SED
 
-    np.random.seed(0)
     SED.combine([GRID, ALPHA_04], output=output, model_root=models, visualization=False)
 
 
@@ -485,12 +484,12 @@ def combine_raises_after_writing_when_a_copy_fails(t):
     assert (models / "combined" / "lookup_table.csv").exists()
 
 
-def _planck_grid(t, name, nodes, scale=1.0, columns=("teff", "logg", "metallicity")):
+def _planck_grid(t, name, nodes, scale=1.0, columns=("teff", "logg", "metallicity"), wl=None):
     """A grid of pi*B_lambda spectra, ``scale`` times their own flux in the files, at ``nodes``: one tuple of values per
-    spectrum, for the lookup ``columns`` (Teff first)."""
+    spectrum, for the lookup ``columns`` (Teff first), at the wavelengths ``wl`` (1000 Å to 30 µm by default)."""
     folder = t.tmp / "models" / name
     folder.mkdir(parents=True)
-    wl = np.geomspace(1000.0, 3.0e5, 2000)
+    wl = np.geomspace(1000.0, 3.0e5, 2000) if wl is None else wl
     rows = ["#file_name," + ",".join(columns)]
     for i, values in enumerate(nodes):
         np.savetxt(folder / f"s{i}.txt", np.column_stack([wl, scale * _constants.planck_flam(wl, values[0])]))
@@ -507,7 +506,6 @@ def _combined_cubes(t, grids):
     from sed_tools.cube import fileio
     from sed_tools.grids.spectrum_io import read_text_spectrum
 
-    np.random.seed(0)
     SED.combine(grids, output="combined", model_root=t.tmp / "models", visualization=False)
     cubes = {}
     for folder in (p.parent for p in sorted((t.tmp / "models" / "combined").rglob("flux_cube.bin"))):
@@ -578,13 +576,16 @@ def combine_keeps_each_grids_flux_at_shared_nodes(t):
 
 
 @row
-def common_wavelength_grid_needs_a_usable_spectrum(t):
-    # Used to fail with OverflowError (int of -inf).
-    from sed_tools.cube.combine import create_common_wavelength_grid
+def combined_wavelengths_are_the_union_of_the_grids_own(t):
+    # The axis used to be at most 5000 even steps over 3000-25000 Å, set by spectra drawn at random: no flux in the
+    # UV or the mid-IR (a 30,000 K star 2.4 mag too faint), and two runs on the same grids could write two cubes.
+    from sed_tools.cube import fileio
 
-    (t.tmp / "far_ir.txt").write_text("".join(f"{w} 1.0\n" for w in np.linspace(3e4, 9e4, 50)))
-    with pytest.raises(ValueError, match="between 3000 and 25000"):
-        create_common_wavelength_grid([{"files": np.array(["far_ir.txt"]), "model_dir": str(t.tmp)}])
+    uv, ir = np.geomspace(900.0, 3.0e4, 300), np.geomspace(2.0e4, 3.0e5, 200)
+    _planck_grid(t, "uv", [(30000.0, 4.0, 0.0)], wl=uv)
+    _planck_grid(t, "ir", [(3000.0, 5.0, 0.0)], wl=ir)
+    _combined_cubes(t, ["uv", "ir"])
+    assert np.array_equal(fileio.load_axes(t.tmp / "models" / "combined" / "flux_cube.bin")[3], np.union1d(uv, ir))
 
 
 # ----------------------------------------------------------------------
@@ -1022,7 +1023,6 @@ def non_interactive_combine_does_not_fold_in_the_previous_output(t):
     _planck_grid(t, "a", [(5000.0, 4.5, 0.0), (5500.0, 4.5, 0.0), (6000.0, 4.5, 0.0)])
     _planck_grid(t, "b", [(7000.0, 4.5, 0.0), (7500.0, 4.5, 0.0)])
     two_grids = t.tmp / "models"
-    np.random.seed(0)
     run_combine_flow(str(two_grids), interactive=False)
     run_combine_flow(str(two_grids), output_name="combined2", interactive=False)
     out = t.capsys.readouterr().out

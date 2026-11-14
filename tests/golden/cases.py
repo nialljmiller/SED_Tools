@@ -267,7 +267,6 @@ def combine_models(work, out):
     models = work / "models"
     for name in ("Kurucz2003all", "Kurucz2003all__alpha_04"):
         copy_tree(MODELS / name, models / name)
-    np.random.seed(0)
     SED.combine(["Kurucz2003all", "Kurucz2003all__alpha_04"], output="combined", model_root=models, visualization=False)
     save_tree(models / "combined", out, work=work)
 
