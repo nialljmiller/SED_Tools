@@ -209,6 +209,10 @@ def _add_filter_catalogue_parsers(sub) -> None:
     fip.add_argument("--offline", action="store_true", help="Inspect local data without contacting sources")
     fip.add_argument("--json", action="store_true", help="Emit availability as JSON")
 
+    vp = sub.add_parser("vega", help="Download NJM's Vega spectrum, which MESA colors needs for Vega magnitudes")
+    vp.add_argument("--out", default=None, metavar="DIR",
+                    help="Folder to write vega_flam.csv to (default: vega/ in the data directory)")
+
 
 def _add_filter_component_parsers(sub) -> None:
     fcop = sub.add_parser("filters-compose", help="Compose optical-path components")
@@ -405,6 +409,12 @@ def _cmd_filters_info(args, parser):
     return 1 if _availability_errors(info) else 0
 
 
+def _cmd_vega(args, parser):
+    path = Filters.fetch_vega(args.out)
+    print(f"[vega] Wrote {path}\n  MESA colors inlist: vega_sed = '{path}'")
+    return 0
+
+
 def _cmd_filters_inventory(args, parser):
     result = Filters.inventory(filter_root=args.base, include_remote=not args.offline, facility=args.facility)
     if args.json:
@@ -536,6 +546,7 @@ _COMMANDS = {
     "filters-detector": _cmd_filters_detector,
     "filters-info": _cmd_filters_info,
     "filters-inventory": _cmd_filters_inventory,
+    "vega": _cmd_vega,
     "filters-build-components": _cmd_filters_build_components,
     "rebuild": _cmd_rebuild,
     "combine": _cmd_combine,

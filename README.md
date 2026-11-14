@@ -138,6 +138,10 @@ sed-tools import --path /path/to/spectra/ --name MyGrid
 # Report parameter-space coverage of an installed grid
 sed-tools coverage --grids Kurucz2003all
 
+# Download NJM's Vega spectrum, which MESA needs for Vega magnitudes: give the path it prints as
+# vega_sed in the colors inlist (Python: Filters.fetch_vega())
+sed-tools vega
+
 # Show or set the data directory
 sed-tools config
 sed-tools config --set /path/to/data --move

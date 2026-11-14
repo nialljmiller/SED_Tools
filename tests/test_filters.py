@@ -647,6 +647,7 @@ def plot_uses_filter_colors_and_overlays_vega(t):
     assert max(lines["r"].get_ydata()) == pytest.approx(1.0)
     plt.close(ax.figure)
 
+
     selection = Filters.search(pivot=(6000, 13000), filter_root=root)
     ax = Filters.plot(selection, filter_root=root)
     lines = {line.get_label(): line for line in ax.get_lines()}
@@ -663,6 +664,23 @@ def plot_uses_filter_colors_and_overlays_vega(t):
         Filters.plot("Fac/Missing", filter_root=root, fetch=False)
     with pytest.raises(ValueError):
         Filters.plot(filter_root=root)
+
+
+@row
+def vega_is_downloaded_from_njm_where_mesa_can_read_it(t):
+    # Only the plot and the properties fetched NJM's Vega; MESA's colors module needs the file (vega_sed).
+    root, njm = njm_catalogue(t)
+    t.mp.setattr(Filters, "_filter_root", root)  # as the data directory's filters/ is by default
+    served = catalogue_files()["vega/vega_flam.csv"]
+    path = Filters.fetch_vega()
+    assert path == t.tmp / "vega" / "vega_flam.csv" and path.read_text() == served
+    wavelength, flam = load_vega(path)  # Å and f_λ, as MESA reads them
+    assert wavelength[0] == 3000.0 and flam[0] == pytest.approx(1e-9 * (5000.0 / 3000.0) ** 2)
+    assert run_cli(t.mp, "vega", "--out", str(t.tmp / "mesa")) == 0
+    written = t.tmp / "mesa" / "vega_flam.csv"
+    assert written.read_text() == served
+    assert t.capsys.readouterr().out.endswith(f"MESA colors inlist: vega_sed = '{written}'\n")
+    assert len(njm.fetched("vega/vega_flam.csv")) == 1  # the second copy came from the catalogue's cache
 
 
 # ======================================================================
