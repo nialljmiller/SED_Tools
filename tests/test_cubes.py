@@ -390,6 +390,20 @@ def a_variants_grid_is_compared_variant_by_variant(t):
 
 
 @row
+def a_split_grid_is_checked_by_its_variants_not_by_a_top_level_copy(t):
+    # NJM serves a split grid with a top-level flux_cube.bin, a copy of its default variant's. The check compared
+    # that copy with every variant's rows, so Kurucz2003all "lacked" 476 of 8092 spectra and SED.fetch rebuilt it on
+    # every call; and downloaded without the variant folders, Husfeld (the same nodes in every variant) passed.
+    grid = _write_grid(t.tmp / "G", [("a0.txt", 5000.0, 4.0, 0.0, "0.0"), ("a4.txt", 5000.0, 4.0, 0.0, "0.4"),
+                                     ("b4.txt", 6000.0, 4.0, 0.0, "0.4")], (*COLUMNS, "alpha"))
+    _build(grid)
+    shutil.copy2(grid / "G_alpha_0p00" / "flux_cube.bin", grid / "flux_cube.bin")
+    assert _flux_cube_shortfall(grid) is None
+    shutil.rmtree(grid / "G_alpha_0p00")
+    assert _flux_cube_shortfall(grid).startswith("cannot be compared with the spectra beside it")
+
+
+@row
 def a_spectrum_zero_at_every_sampled_wavelength_is_still_found(t):
     """A spectrum covering only part of the cube's wavelengths is zero elsewhere (resample_to_grid)."""
     flux = np.zeros((3, 1, 1, 20))  # the sampled wavelength planes are 2, 4, 6, 8, 11, 13, 15, 17
