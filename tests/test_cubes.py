@@ -430,6 +430,16 @@ def variants_are_told_apart_by_value_and_named_apart(t):
 
 
 @row
+def a_parameter_column_under_any_name_lookup_accepts_is_no_extra_axis(t):
+    # A Teff column named temperature, or an [M/H] column named Z/Zo, was read as that axis and also split on: one
+    # subgrid per Teff. lookup's find_*_column accept these names; the extra-axis list did not.
+    grid = _write_grid(t.tmp / "G", [("a.txt", 4000.0, 4.0, 0.0), ("b.txt", 5000.0, 4.0, 0.02),
+                                     ("c.txt", 6000.0, 4.5, 0.02)], ("file_name", "temperature", "logg", "Z/Zo"))
+    _build(grid)
+    assert (grid / "flux_cube.bin").is_file() and not (grid / "variants_index.csv").exists()
+
+
+@row
 def a_spectrum_zero_at_every_sampled_wavelength_is_still_found(t):
     """A spectrum covering only part of the cube's wavelengths is zero elsewhere (resample_to_grid)."""
     flux = np.zeros((3, 1, 1, 20))  # the sampled wavelength planes are 2, 4, 6, 8, 11, 13, 15, 17

@@ -23,18 +23,14 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from ..config import load_defaults_config, load_toml, merge_config
+from ..grids.lookup import _FILE_CANDIDATES, _LOGG_CANDIDATES, _META_CANDIDATES, _TEFF_CANDIDATES
 
-# Lookup columns that are not extra axes: MESA's three parameters, then bookkeeping and provenance.
-_MESA_PARAM_AXES: Set[str] = {
-    "teff", "Teff", "T_eff",
-    "logg", "logG", "log g", "log_g", "log(g)", "LOGG",
-    "metallicity", "meta", "feh",
-    "z", "Z", "zh", "zmet",
-}
+# Lookup columns that are not extra axes: the file column and MESA's three parameters, under every name
+# grids.lookup's find_*_column accept, then bookkeeping and provenance.
+_MESA_PARAM_AXES: Set[str] = {*_FILE_CANDIDATES, *_TEFF_CANDIDATES, *_LOGG_CANDIDATES, *_META_CANDIDATES}
 
 # Written by the spectra cleaner and regenerate_lookup_table, unless noted
 _BOOKKEEPING_AXES: Set[str] = {
-    "file_name", "filename", "file",
     "source",
     "units_standardized", "unitsstandardized",
     "wavelength_unit", "wavelengthunit",
@@ -45,8 +41,6 @@ _BOOKKEEPING_AXES: Set[str] = {
     "spec_group", "specgroup",
     # common SVO/MSG provenance fields
     "url", "wave_grid", "columns", "res", "atmos",
-    # teff, logg, meta variants used by various grabbers
-    "t_eff", "log_g", "mh", "m_h", "feh",
     # grids/clean.py bookkeeping, and grids/msg.py's for a spectrum with negative fluxes
     "renormed", "negative_flux_fraction",
     # common provenance / model-type labels
