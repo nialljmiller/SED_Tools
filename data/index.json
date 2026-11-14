@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-11-13T16:55:21.758047",
+  "generated": "2026-11-14T00:55:43.869292",
   "statistics": {
     "total_models": 8,
     "complete_models": 7,
@@ -7181,8 +7181,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 659306,
-            "size_human": "643.85 KB",
+            "size_bytes": 659170,
+            "size_human": "643.72 KB",
             "description": "ERIS/NIX infrared imager filters, J through M, on VLT UT4",
             "svo_instruments": [
               "Paranal/ERIS"
@@ -12358,8 +12358,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 351916,
-            "size_human": "343.67 KB",
+            "size_bytes": 351820,
+            "size_human": "343.57 KB",
             "description": "VLT HAWK-I wide-field near-infrared imager cryogenic filter scans",
             "svo_instruments": []
           }
@@ -27077,7 +27077,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1598232,
+            "size_bytes": 1598376,
             "size_human": "1.52 MB",
             "description": "SPHERE IRDIS dual-band imager filters, incl. neutral densities",
             "svo_instruments": []
@@ -27120,8 +27120,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 553436,
-            "size_human": "540.46 KB",
+            "size_bytes": 553988,
+            "size_human": "541.00 KB",
             "description": "SPHERE Zurich Imaging Polarimeter (ZIMPOL) filters and NDs",
             "svo_instruments": []
           }
@@ -30158,8 +30158,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 22417,
-            "size_human": "21.89 KB",
+            "size_bytes": 22465,
+            "size_human": "21.94 KB",
             "description": "COSMOSOMAS COSMO11 11 GHz radiometer channels, Teide Observatory",
             "svo_instruments": []
           },
@@ -30181,8 +30181,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 11216,
-            "size_human": "10.95 KB",
+            "size_bytes": 11288,
+            "size_human": "11.02 KB",
             "description": "COSMOSOMAS COSMO15 13-17 GHz radiometer channels, Teide Observatory",
             "svo_instruments": []
           }
