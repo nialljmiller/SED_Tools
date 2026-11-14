@@ -386,10 +386,10 @@ def extend_catalog_extends_each_spectrum_with_its_own_parameters(t):
     completer = stubbed_completer()
     out_dir = t.tmp / "out"
 
-    summary = completer.extend_catalog(str(catalog), str(out_dir), extension_range=(500.0, 60000.0),
-                                       verbose=False)
+    summary = completer.extend_catalog(str(catalog), str(out_dir), extension_range=(500.0, 60000.0))
 
     assert summary == {"extended": 2, "failed": 0, "skipped": 1, "total": 3, "output_dir": str(out_dir)}
+    assert "2 extended\n  1 skipped (already covered the range)\n  0 failed" in t.capsys.readouterr().out
     assert completer._completer.calls == [(4500.0, 4.0, -1.0), (5800.0, 4.4, 0.0)]
     assert completer._completer.ranges == [(500.0, 60000.0)] * 2
     assert (out_dir / "lookup_table.csv").read_text().splitlines()[0] == (
