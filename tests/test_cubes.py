@@ -427,6 +427,11 @@ def variants_are_told_apart_by_value_and_named_apart(t):
     assert sorted(p.name for p in grid.iterdir() if p.is_dir()) == [
         "G_alpha_0p00_yhe_0p001", "G_alpha_0p40_yhe_0p004"]
     assert _flux_cube_shortfall(grid) is None
+    # The filter strategy finds that variant by either spelling, whichever row comes first
+    grid = _write_grid(t.tmp / "F", [("a.txt", 4000.0, 4.0, 0.0, "0.0"), ("b.txt", 5000.0, 4.0, 0.0, "0"),
+                                     ("c.txt", 4000.0, 4.0, 0.0, "0.4")], (*COLUMNS, "alpha"))
+    _build(grid, override_dict={"on_collision": {"strategy": "filter", "filter": {"alpha": "0"}}})
+    assert FluxCube.from_file(str(grid / "flux_cube.bin")).teff_grid.tolist() == [4000.0, 5000.0]
 
 
 @row

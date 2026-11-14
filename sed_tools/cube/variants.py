@@ -291,9 +291,9 @@ def _build_filtered_cube(cfg, groups: Dict, extra_cols: List[str], lookup: Dict[
 
     print(f"Filter: {resolved}")
 
-    def selected(key: Tuple) -> bool:
+    def selected(key: Tuple) -> bool:  # values compared as the variants were grouped ("0" and "0.0" agree)
         values = dict(key)
-        return all(str(values[col]).strip().lower() == str(val).strip().lower() for col, val in resolved.items())
+        return all(_value(values[col]) == _value(val) for col, val in resolved.items())
 
     matched_group = next((g for key, g in groups.items() if selected(key)), None)
 
