@@ -204,11 +204,12 @@ def train_raises_before_saving_when_every_batch_is_nan(t, network, train):
     assert not (t.tmp / "model").exists()
 
 
-def workflow_ends_on_a_bad_answer(t, engine, answers, message):
+def workflow_ends_on_the_answer(t, engine, answers, message):
     # 0 and -1 used to index from the end of the list and pick the last entry.
     stellar_dir = stellar_grids(t)
     write_config(t.tmp / "models" / "gm1", {"model_type": "sed_generator"})
-    t.mp.setattr(mc.SEDCompleter, "train", lambda self, **kw: pytest.fail("trained"))
+    for cls in (mc.SEDCompleter, mg.SEDGenerator):
+        t.mp.setattr(cls, "train", lambda self, **kw: pytest.fail("trained"))
     answer(t.mp, *answers, echo=True)
     engine.run_interactive_workflow(str(stellar_dir), str(t.tmp / "models"))
     assert t.capsys.readouterr().out.rstrip().endswith(message)
@@ -251,9 +252,9 @@ ALL_NAN = {
     "generator_train_raises_before_saving_when_every_batch_is_nan": (
         mg.SEDGeneratorNetwork, lambda t, lib, out: mg.SEDGenerator().train(lib, out, epochs=2, **TINY)),
     "auto_trainer_stops_on_a_trial_with_no_usable_epoch": (mg.SEDGeneratorNetwork, auto_train_best)}
-BAD_ANSWERS = {
-    "completer_workflow_rejects_bad_answers_cancelled": (mc, ["1", "1", "", "", "", "n"], "Cancelled"),
-    "generator_workflow_rejects_bad_answers_cancelled": (mg, ["1", "1", "", "", "", "n"], "Cancelled"),
+ENDING_ANSWERS = {
+    "completer_workflow_is_cancelled_by_n_at_start_training": (mc, ["1", "1", "", "", "", "n"], "Cancelled"),
+    "generator_workflow_is_cancelled_by_n_at_start_training": (mg, ["1", "1", "", "", "", "n"], "Cancelled"),
     "completer_workflow_rejects_bad_answers_invalid_choice": (mc, ["9"], "Invalid choice"),
     "generator_workflow_rejects_zero_and_negative_menu_numbers_0": (mg, ["3", "0"], "Invalid selection"),
     "generator_workflow_rejects_zero_and_negative_menu_numbers_minus_1": (mg, ["3", "-1"], "Invalid selection")}
@@ -900,7 +901,7 @@ def test_ml(rows):
     rows(LIST_MODELS_WARNS, list_models_warns_naming_the_unreadable_config)
     rows(LAST_BATCH_OF_ONE, training_drops_a_last_batch_of_one_spectrum)
     rows(ALL_NAN, train_raises_before_saving_when_every_batch_is_nan)
-    rows(BAD_ANSWERS, workflow_ends_on_a_bad_answer)
+    rows(ENDING_ANSWERS, workflow_ends_on_the_answer)
     rows(MISSING_COLUMN, extend_catalog_raises_when_a_column_is_missing)
     rows(NOT_EXTENDED, extend_catalog_raises_what_the_model_could_not_extend)
     rows(SCENARIOS)
