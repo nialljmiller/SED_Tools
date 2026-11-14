@@ -546,6 +546,17 @@ def combine_leaves_a_node_no_spectrum_fills_at_zero(t):
 
 
 @row
+def combine_keeps_axis_values_that_are_close(t):
+    # Values within 1 K, 0.01 dex of log g or 0.01 of [M/H] used to be merged into one node, the later spectrum
+    # kept: MSG's OSTAR2002 states Z/Zo 0, 0.001 and 0.01, and only the 0.01 spectrum stayed, at node 0.
+    from sed_tools.cube import fileio
+
+    _planck_grid(t, "O", [(30000.0, 4.0, z) for z in (0.0, 0.001, 0.01, 0.02)])
+    assert [len(ratios) for ratios in _combined_cubes(t, ["O"]).values()] == [4]
+    assert fileio.load_axes(t.tmp / "models" / "combined" / "flux_cube.bin")[2].tolist() == [0.0, 0.001, 0.01, 0.02]
+
+
+@row
 def combine_places_a_grid_without_log_g_at_every_log_g(t):
     # A grid without log g or [M/H] (a blackbody) used to be placed at log g 0 and [M/H] 0, as stars of that log g.
     # It holds the same spectrum at every log g, so it fills every value the other grids give the axis, except

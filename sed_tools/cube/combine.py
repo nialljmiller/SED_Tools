@@ -151,20 +151,17 @@ def prepare_sed(filepath):
 
 
 def create_unified_grid(all_models_data):
-    """Create unified parameter grids from all spectral grids: each axis holds the values of the grids that state
-    it, or 0.0 alone when none does (a lone blackbody grid's log g and [M/H], as the cube builder reads them)."""
-    def clean_grid(key, tol):
-        stated = [d[key] for d in all_models_data if key not in d.get("unstated", ())]
-        grid = np.unique(np.sort(np.concatenate(stated))) if stated else np.array([0.0])
-        if len(grid) <= 1:
-            return grid
-        cleaned = [grid[0]]
-        for val in grid[1:]:
-            if abs(val - cleaned[-1]) > tol:
-                cleaned.append(val)
-        return np.array(cleaned)
+    """Create unified parameter grids from all spectral grids: each axis holds every distinct finite value of the
+    grids that state it, compared exactly, as the cube builder compares one grid's; or 0.0 alone when none does (a
+    lone blackbody grid's log g and [M/H], as the cube builder reads them)."""
+    def axis(key):
+        stated = [np.asarray(d[key], dtype=float) for d in all_models_data if key not in d.get("unstated", ())]
+        if not stated:
+            return np.array([0.0])
+        values = np.concatenate(stated)
+        return np.unique(values[np.isfinite(values)])
 
-    return clean_grid("teff", 1.0), clean_grid("logg", 0.01), clean_grid("meta", 0.01)
+    return axis("teff"), axis("logg"), axis("meta")
 
 
 def create_common_wavelength_grid(all_models_data):
