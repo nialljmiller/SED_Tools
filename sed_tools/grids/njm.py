@@ -19,6 +19,7 @@ from tqdm import tqdm
 
 from ..njm_mirror import BASE_URL, NJM_CONNECT_TIMEOUT, USER_AGENT, pause, paused, plain_reason, skip_ssl_verification
 from .lookup import find_file_column, find_logg_column, find_metallicity_column, find_teff_column
+from .spectrum_io import write_atomically
 
 logger = logging.getLogger(__name__)
 
@@ -218,8 +219,8 @@ class NJMSpectraGrabber:
         logger.warning("NJM mirror: no directory listing for %s (%s); taking spectrum names from lookup_table.csv",
                        model_url, listing_problem)
         result['txt_files'] = list(self._fetch_remote_lookup(model_name, model_url))
-        for aux_name, category in [("lookup_table.csv", 'csv_files'), (f"{model_name}.h5", 'h5_files'),
-                                   ("flux_cube.bin", 'bin_files')]:
+        for aux_name, category in [("lookup_table.csv", 'csv_files'), ("variants_index.csv", 'csv_files'),
+                                   (f"{model_name}.h5", 'h5_files'), ("flux_cube.bin", 'bin_files')]:
             if self.session.head(urljoin(model_url, aux_name), timeout=5).status_code == 200:
                 result[category].append(aux_name)
         
@@ -361,30 +362,24 @@ class NJMSpectraGrabber:
     # ---- Download ----
 
     def _download_one_file(self, url: str, output_path: str) -> None:
-        """Download a single file. Raises on failure, leaving no partial file."""
-        try:
+        """Download a single file. Raises on failure, leaving no partial or empty file."""
+        def download(part):
             response = self.session.get(url, timeout=300, stream=True)
             response.raise_for_status()
-            
-            with open(output_path, 'wb') as f:
+            with open(part, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=65536):
                     f.write(chunk)
-        except Exception:
-            # A partial file larger than the skip threshold would pass as complete on the next run
-            if os.path.exists(output_path):
-                os.remove(output_path)
-            raise
-
-        if os.path.getsize(output_path) == 0:
-            raise ValueError(f"{url} returned an empty file")
+            if os.path.getsize(part) == 0:
+                raise ValueError(f"{url} returned an empty file")
+        write_atomically(output_path, download)
 
     def _fetch_file(self, model_dir: str, model_url: str, filename: str) -> Tuple[str, Optional[str]]:
         """Download one model file unless a complete copy is on disk: ('ok', 'skip' or 'fail', why it failed or None)."""
         output_path = os.path.join(model_dir, filename)
 
-        if os.path.exists(output_path):
-            if os.path.getsize(output_path) > (100 if filename.endswith('.csv') else 1024):
-                return 'skip', None
+        # Written whole or not at all (write_atomically); a smaller file is a partial one an earlier version left
+        if os.path.exists(output_path) and os.path.getsize(output_path) > (100 if filename.endswith('.csv') else 1024):
+            return 'skip', None
 
         try:
             self._download_one_file(urljoin(model_url, filename), output_path)
@@ -416,6 +411,30 @@ class NJMSpectraGrabber:
                 failures.append(error)
         
         return counts, failures
+
+    def _download_variants(self, model_dir: str, model_url: str, counts: Dict[str, int]) -> List[str]:
+        """A split grid's variant folders as NJM serves them: each folder's flux_cube.bin and lookup_table.csv,
+        and links to the grid's spectra its lookup table lists (as a local split makes them), so the grid needs no
+        rebuild. Adds to ``counts``; returns the failures."""
+        from ..cube.variants import _link_spectra, _variant_paths
+
+        failures = []
+        for rel in _variant_paths(os.path.join(model_dir, "variants_index.csv")):
+            subdir = os.path.join(model_dir, rel)
+            os.makedirs(subdir, exist_ok=True)
+            for name in ("lookup_table.csv", "flux_cube.bin"):
+                status, error = self._fetch_file(subdir, urljoin(model_url, f"{rel}/"), name)
+                counts[status] += 1
+                print(f"    [{status}] {rel}/{name}")
+                if error:
+                    failures.append(f"{rel}/{error}")
+            lookup = os.path.join(subdir, "lookup_table.csv")
+            if os.path.isfile(lookup):
+                with open(lookup, newline="", encoding="utf-8") as fh:
+                    header = [c.strip().lstrip("#").strip() for c in fh.readline().split(",")]
+                    column = header.index(find_file_column(header) or header[0])
+                    _link_spectra(subdir, [row[column].strip() for row in csv.reader(fh) if row])
+        return failures
 
     def _select_spectra(self, model_name: str, model_url: str, txt_files: List[str],
                         teff_range, logg_range, meta_range) -> List[str]:
@@ -502,11 +521,18 @@ class NJMSpectraGrabber:
             h5_files = []
             if has_param_cuts:
                 csv_files = []
+        split = "variants_index.csv" in csv_files and not (has_param_cuts or wl_range)
+        if split:  # its cubes are its variants' (below); a split grid has no cube of its own
+            bin_files = [f for f in bin_files if f != "flux_cube.bin"]
+            if os.path.isfile(os.path.join(model_dir, "flux_cube.bin")):
+                os.remove(os.path.join(model_dir, "flux_cube.bin"))
         aux_files = bin_files + h5_files + csv_files
         
         print(f"[njm] Downloading {len(txt_files)} spectra + {len(aux_files)} auxiliary for {model_name}...")
         
         counts, failures = self._download_files(model_dir, model_url, txt_files, aux_files)
+        if split and os.path.isfile(os.path.join(model_dir, "variants_index.csv")):
+            failures += self._download_variants(model_dir, model_url, counts)
         
         print(f"[njm] {model_name}: {counts['ok']} downloaded, {counts['skip']} skipped, {counts['fail']} failed")
         

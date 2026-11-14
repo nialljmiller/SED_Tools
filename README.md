@@ -603,6 +603,8 @@ sed-tools combine --non-interactive
 sed-tools combine --grids Kurucz2003all bt-settl --output my_combined_grid
 ```
 
+The combined cube's wavelengths are the union of the grids' own, so it keeps each grid's whole coverage and grows with the number of distinct wavelengths. Each spectrum keeps its own flux, and a node no spectrum fills stays at zero. A combination whose extra axes vary is split into one subgrid per variant, and the command then names the subgrid folders to give MESA. Combining again into the same output folder replaces the earlier combination; the output may not be one of the grids combined.
+
 **Use cases:**
 
 - Extend temperature coverage by combining hot and cool stellar spectral grids
@@ -653,7 +655,7 @@ Train and apply neural networks to generate complete SEDs from stellar parameter
 sed-tools ml_generator
 
 # Hyperparameter search, then training of the best model (needs: pip install "sed-tools[full,ml-tune]")
-sed-tools ml_generator --auto --library data/stellar_models/Kurucz2003all --output models/auto \
+sed-tools ml_generator --auto --library data/stellar_models/Kurucz2003all/Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s --output models/auto \
                        --trials 20 --epochs 100
 ```
 
@@ -676,7 +678,7 @@ sed-tools ml_generator --auto --library data/stellar_models/Kurucz2003all --outp
 
 ### `sed-tools densify`
 
-Fill coarse Teff gaps in an existing flux cube to eliminate stair-stepping artefacts in MESA photometric outputs. New Teff nodes are filled with ML predictions (when a generator model is provided and the point is within its training range) or a Planck blackbody scaled to the nearest real SED's bolometric flux. The densifier reads the source cube through `np.memmap` and builds the dense cube one block of wavelengths at a time, with blocks sized to half the available RAM, so cubes larger than memory are handled.
+Fill coarse Teff gaps in an existing flux cube to eliminate stair-stepping artefacts in MESA photometric outputs. New Teff nodes are filled with ML predictions (when a generator model is provided and the point is within its training range) or a Planck blackbody scaled to the nearest real SED's bolometric flux (a Teff beside a node that holds no spectrum stays empty there). The densifier reads the source cube through `np.memmap` and builds the dense cube one block of wavelengths at a time, with blocks sized to half the available RAM, so cubes larger than memory are handled. The source grid's `lookup_table.csv`, which MESA requires beside the cube, is copied beside the output.
 
 ```bash
 # Densify with blackbody fallback (no ML model)
@@ -733,11 +735,15 @@ sed-tools coverage --grids Kurucz2003all --no-plot
 
 ### `sed-tools mesa_prepare`
 
-Export one extra-axis variant (e.g. one alpha-enhancement, microturbulence or mixing-length combination) of a spectral grid as a clean, self-contained MESA-ready folder holding only that variant's flux cube and lookup table. `sed-tools rebuild` splits a grid whose extra axes vary into one subgrid per variant (`<grid>/<variant path>/`, each with its own `flux_cube.bin` and `lookup_table.csv`) and lists them in `<grid>/variants_index.csv`; `mesa_prepare` reads that file first. A uniform grid with its `flux_cube.bin` is already MESA-ready, and the command says so. The provenance columns of combined and ML-extended grids are not variant axes.
+Export one extra-axis variant (e.g. one alpha-enhancement, microturbulence or mixing-length combination) of a spectral grid as a clean, self-contained MESA-ready folder holding only that variant's flux cube and lookup table. `sed-tools rebuild` splits a grid whose extra axes vary into one subgrid per variant (`<grid>/<variant path>/`, each with its own `flux_cube.bin` and `lookup_table.csv`) and lists them in `<grid>/variants_index.csv`; `mesa_prepare` reads that file first. A uniform grid with its `flux_cube.bin` is already MESA-ready, and the command says so. A lookup column is a variant axis when it tells apart spectra at one (Teff, log g, [M/H]) node; the columns SED_Tools writes to describe a file (units, source, the provenance of combined and ML-extended grids) never are, and a column that varies only between nodes (`hres`'s model atmosphere code) labels the spectra and splits nothing.
 
 ```bash
 # Interactive spectral grid and variant selection
 sed-tools mesa_prepare
+
+# No prompts: name the grid, the variant's subgrid folder (as variants_index.csv lists it) and the output
+sed-tools mesa_prepare --grid Kurucz2003all --variant Kurucz2003all_alpha_0p40_lh_1p25_vtur_2_km_s \
+                       --output /path/to/Kurucz2003all_alpha04
 ```
 
 ---
@@ -810,19 +816,20 @@ sed = SED.fetch(
 sed.grid.write('/custom/output/path')
 ```
 
-**With `teff_min` … `metallicity_max`, only the spectra within them are downloaded**, as `sed-tools grids --teff … --logg … --meta …` does. The grid's folder (`Kurucz2003all` under the stellar model directory) then holds those spectra, their `lookup_table.csv`, HDF5 bundle and `flux_cube.bin`, so `SED.local('Kurucz2003all')` and MESA use that selection. NJM's flux cube and bundle of the whole grid are not downloaded. MSG downloads its grid's single HDF5 file whole and extracts only the spectra within the bounds. SVO cannot select spectra, so from SVO the whole grid is downloaded, with a warning, then cut.
+**With `teff_min` … `metallicity_max`, only the spectra within them are downloaded**, as `sed-tools grids --teff … --logg … --meta …` does. The grid's folder (`Kurucz2003all` under the stellar model directory) then holds those spectra, their `lookup_table.csv`, HDF5 bundle and flux cubes (one per variant, as Kurucz2003all is split into variants), so `SED.local('Kurucz2003all/<variant>')` and MESA use that selection. NJM's flux cube and bundle of the whole grid are not downloaded. MSG downloads its grid's single HDF5 file whole and extracts only the spectra within the bounds. SVO cannot select spectra, so from SVO the whole grid is downloaded, with a warning, then cut.
 
 - A folder that already holds every spectrum within the bounds, with a flux cube holding every spectrum there (the whole grid, or a wider selection), is cut as it stands: nothing is downloaded or rewritten. Whether the cube holds them is read from the cube and the lookup table, not from file times, so a grid copied without its times (`cp -R`, `scp`) counts as complete.
 - A later fetch without bounds, or with wider ones, downloads the rest and rebuilds the lookup table, bundle and flux cube from every spectrum in the folder.
 - Separate selections fetched into one folder (say Teff ≤ 5800 with log g ≤ 4.2, then Teff ≥ 6200 with log g ≥ 4.3) leave points of the flux cube's Teff × log g × [M/H] grid without a spectrum, whose flux is zero and pulls interpolation near them toward zero.
-- A whole grid from NJM comes with NJM's flux cube. For a grid from SVO, or a whole grid from MSG, build it with `sed-tools rebuild --grids NAME`.
+- A whole grid from NJM comes with NJM's flux cube, or, for a grid split into variants, with each variant's folder and cube; neither `SED.fetch` nor `sed-tools grids` rebuilds a cube that holds every spectrum beside it. For a grid from SVO, or a whole grid from MSG, build it with `sed-tools rebuild --grids NAME`.
 - `sed.grid.write()` without a path writes into the grid's own folder, replacing its spectra with copies whose header keeps only Teff, log g, [M/H] and the units; give it another folder.
 
 #### Loading Local Data
 
 ```python
-# Load an installed spectral grid
-sed = SED.local('Kurucz2003all')
+# Load an installed spectral grid. Kurucz2003all is split into variants ([alpha/M] 0 and 0.4), each with its own
+# flux cube, so a variant is loaded; SED.local('Kurucz2003all') names them. A grid that is not split loads by name.
+sed = SED.local('Kurucz2003all/Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s')
 
 # Check parameter coverage
 ranges = sed.parameter_ranges()
@@ -832,7 +839,7 @@ ranges = sed.parameter_ranges()
 #### Interpolation
 
 ```python
-sed = SED.local('Kurucz2003all')
+sed = SED.local('Kurucz2003all/Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s')
 
 # Interpolate a spectrum at specific stellar parameters
 spectrum = sed(teff=5777, logg=4.44, metallicity=0.0)
@@ -901,7 +908,7 @@ extended.write()
 generator = SED.ml_generator()
 
 # Train on a stellar spectral grid
-generator.train(grid='Kurucz2003all', epochs=200)
+generator.train(grid='Kurucz2003all/Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s', save_name='sed_generator_Kurucz2003all', epochs=200)
 
 # Generate a single SED
 wl, flux = generator.generate(teff=5777, logg=4.44, metallicity=0.0)
@@ -1078,6 +1085,8 @@ ln -s $(pwd)/data/stellar_models/Kurucz2003all $MESA_DIR/data/colors_data/stella
 
 ### MESA Inlist Configuration
 
+Kurucz2003all is split into variants ([alpha/M] 0 and 0.4), each a folder with its own `flux_cube.bin` and `lookup_table.csv`, and has no flux cube of its own. MESA reads one variant: point `stellar_atm` at its folder. A grid that is not split is read from its own folder.
+
 MESA reads these from the `&colors` namelist (as in MESA's `custom_colors` test case):
 
 ```fortran
@@ -1120,11 +1129,15 @@ SED_Tools/
 
 ~/.sed_tools/data/          # Downloaded data (the default; see `sed-tools config`)
 ├── stellar_models/
-│   └── Kurucz2003all/
-│       ├── flux_cube.bin
+│   └── Kurucz2003all/      # split into variants: no flux_cube.bin of its own
 │       ├── lookup_table.csv
+│       ├── variants_index.csv
 │       ├── Kurucz2003all.h5
-│       └── *.txt
+│       ├── *.txt
+│       └── Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s/
+│           ├── flux_cube.bin
+│           ├── lookup_table.csv
+│           └── *.txt       # links to the grid's spectra
 └── filters/
     └── Generic/
         └── Johnson/
@@ -1160,7 +1173,7 @@ The BOSZ 2024 fixed-resolution products (`BOSZ-2024-r500` through `BOSZ-2024-r50
 ```python
 from sed_tools.api import SED
 
-sed = SED.local('Kurucz2003all')
+sed = SED.local('Kurucz2003all/Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s')
 
 stars = [
     {'name': 'Sun',         'teff': 5777, 'logg': 4.44, 'met':  0.0},
@@ -1221,7 +1234,7 @@ from sed_tools.api import SED
 
 # Train a generator on a comprehensive grid
 generator = SED.ml_generator()
-generator.train('Kurucz2003all', epochs=200)
+generator.train('Kurucz2003all/Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s', save_name='sed_generator_Kurucz2003all', epochs=200)
 
 # Generate SEDs for a list of stars
 stars = [
@@ -1278,10 +1291,12 @@ pip install torch
 Verify the directory structure matches MESA expectations:
 
 ```
-$MESA_DIR/data/colors_data/stellar_models/Kurucz2003all/
+$MESA_DIR/data/colors_data/stellar_models/Kurucz2003all/Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s/
 ├── flux_cube.bin       # Must exist
 └── lookup_table.csv    # Must exist
 ```
+
+A grid split into variants (it has `variants_index.csv`) has no `flux_cube.bin` of its own: point `stellar_atm` at one variant's folder, as above.
 
 
 **Filter set cannot be resolved**

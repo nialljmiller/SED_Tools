@@ -16,6 +16,7 @@ from urllib3.util.retry import Retry
 from ._http import DISCOVERY_TIMEOUT, discovery_failure, mount_discovery, retrying_session
 from .header_parser import parse_header
 from .lookup import write_lookup_csv
+from .spectrum_io import write_atomically
 
 logger = logging.getLogger(__name__)
 
@@ -328,22 +329,19 @@ class SVOSpectraGrabber:
         Raises the request's error, or ValueError if what SVO sent is not a spectrum.
         """
         params = {"model": model_name, "fid": int(fid), "format": "ascii"}
-        tmp_path = out_path + ".tmp"
-        try:
+
+        def download(part):
             with self.session.get(self.spectra_base_url, params=params,
                                   timeout=self.dl_timeout, stream=True) as r:
                 r.raise_for_status()
-                with open(tmp_path, "wb") as f:
+                with open(part, "wb") as f:
                     for chunk in r.iter_content(chunk_size=65536):
                         f.write(chunk)
-            if os.path.getsize(tmp_path) < 512:
+            if os.path.getsize(part) < 512:
                 raise ValueError("file too small")
-            if not _file_is_spectral(tmp_path):
+            if not _file_is_spectral(part):
                 raise ValueError("content is not spectral data (HTML error?)")
-            os.replace(tmp_path, out_path)
-        finally:
-            if os.path.exists(tmp_path):
-                os.remove(tmp_path)
+        write_atomically(out_path, download)
 
 
     def _write_lookup(self, out_dir, rows):

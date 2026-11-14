@@ -28,6 +28,7 @@ from ..cube.model import (
     SEDModel,
     SED as _SEDCore,
     _read_flux_cube_header,
+    _refuse_split_grid,
 )
 from ..cube.check import _bundle_shortfall, _flux_cube_file, _flux_cube_shortfall  # noqa: F401
 from ..grids.pipeline import (  # noqa: F401  (_build_combined_grid and _parameter_cuts are re-exported)
@@ -378,30 +379,27 @@ class SED:
     
     @classmethod
     def _query_local(cls) -> List[SpectralGridInfo]:
-        """Installed grids with a flux_cube.bin, with their ranges from its header."""
+        """Installed grids with a flux cube, as cube.model.SED.available_grids names them (a split grid's variants
+        as ``<grid>/<variant>``), with their ranges from the cube's header."""
         catalogs = []
-        if not cls._model_root.exists():
-            return catalogs
-        for entry in sorted(cls._model_root.iterdir()):
-            cube = entry / "flux_cube.bin"
-            lookup = entry / "lookup_table.csv"
-            if not cube.is_file():
-                continue
-            info = SpectralGridInfo(name=entry.name, source='local', is_local=True)
+        for name in _SEDCore(model_root=cls._model_root).available_grids():
+            cube = cls._model_root / name / "flux_cube.bin"
+            lookup = cls._model_root / name / "lookup_table.csv"
+            info = SpectralGridInfo(name=name, source='local', is_local=True)
             try:
                 meta = _read_flux_cube_header(cube)
                 for attr, key in (("teff_range", "teff"), ("logg_range", "logg"), ("metallicity_range", "meta"),
                                   ("wavelength_range", "wavelengths")):
                     setattr(info, attr, (float(meta[key][0]), float(meta[key][-1])))
             except (OSError, ValueError, IndexError) as exc:
-                raise ValueError(f"Cannot read the flux cube header of local grid '{entry.name}' ({cube}): "
-                                 f"{exc}. Rebuild it with: sed-tools rebuild --grids {entry.name}") from exc
+                raise ValueError(f"Cannot read the flux cube header of local grid '{name}' ({cube}): {exc}. "
+                                 f"Rebuild it with: sed-tools rebuild --grids {name.split('/')[0]}") from exc
 
             if lookup.exists():
                 try:
                     info.n_spectra = len(pd.read_csv(lookup))
                 except (OSError, ValueError) as exc:
-                    raise ValueError(f"Cannot read {lookup} of local grid '{entry.name}': {exc}") from exc
+                    raise ValueError(f"Cannot read {lookup} of local grid '{name}': {exc}") from exc
 
             catalogs.append(info)
         return catalogs
@@ -650,7 +648,8 @@ class SED:
         filter_root: Optional[Union[str, Path]] = None,
         fill_gaps: bool = True,
     ) -> 'SED':
-        """Load a local stellar spectral grid (it needs its flux_cube.bin).
+        """Load a local stellar spectral grid (it needs its flux_cube.bin). A grid split into variants has
+        none of its own: load a variant, ``SED.local("<grid>/<variant>")``; FileNotFoundError names them.
 
         Parameters
         ----------
@@ -670,6 +669,7 @@ class SED:
         """
         base_dir = Path(model_root) if model_root else cls._model_root
         model_dir = base_dir / catalog
+        _refuse_split_grid(model_dir, catalog)
         sed_model = SEDModel(name=catalog, flux_cube_path=model_dir / "flux_cube.bin",
                              filters_dir=filter_root or cls._filter_root, fill_gaps=fill_gaps)
         cat = cls._load_catalog_from_dir(model_dir, catalog, 'local')
@@ -803,7 +803,8 @@ class SED:
         (alpha, [alpha/Fe], C/O, ...) vary is split into one subgrid per
         variant, as ``sed-tools rebuild`` splits one grid; it then has no
         flux cube of its own, and the SED returned holds its spectral grid
-        only (load a variant with ``SED.local("<output>/<variant>")``).
+        only (load a variant with ``SED.local("<output>/<variant>")``). An
+        earlier combination in the ``output`` folder is replaced.
 
         Parameters
         ----------
@@ -820,6 +821,11 @@ class SED:
         -------
         SED
             SED instance with the combined spectral grid
+
+        Raises
+        ------
+        ValueError
+            If ``output`` is one of ``catalogs``, before anything is written.
         """
         base_dir = Path(model_root) if model_root else cls._model_root
         selected_models = [(cat, str(base_dir / cat)) for cat in catalogs]

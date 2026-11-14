@@ -129,7 +129,6 @@ def _golden_pair(t):
 def _combine(models, output="combined"):
     from sed_tools.api import SED  # the API's, not the models' SED
 
-    np.random.seed(0)
     SED.combine([GRID, ALPHA_04], output=output, model_root=models, visualization=False)
 
 
@@ -391,6 +390,105 @@ def a_variants_grid_is_compared_variant_by_variant(t):
 
 
 @row
+def a_split_grid_is_checked_by_its_variants_not_by_a_top_level_copy(t):
+    # NJM serves a split grid with a top-level flux_cube.bin, a copy of its default variant's. The check compared
+    # that copy with every variant's rows, so Kurucz2003all "lacked" 476 of 8092 spectra and SED.fetch rebuilt it on
+    # every call; and downloaded without the variant folders, Husfeld (the same nodes in every variant) passed.
+    grid = _write_grid(t.tmp / "G", [("a0.txt", 5000.0, 4.0, 0.0, "0.0"), ("a4.txt", 5000.0, 4.0, 0.0, "0.4"),
+                                     ("b4.txt", 6000.0, 4.0, 0.0, "0.4")], (*COLUMNS, "alpha"))
+    _build(grid)
+    shutil.copy2(grid / "G_alpha_0p00" / "flux_cube.bin", grid / "flux_cube.bin")
+    assert _flux_cube_shortfall(grid) is None
+    shutil.rmtree(grid / "G_alpha_0p00")
+    assert _flux_cube_shortfall(grid).startswith("cannot be compared with the spectra beside it")
+
+
+@row
+def a_grid_built_as_one_cube_after_a_split_drops_the_split(t):
+    # A rebuild that no longer split the grid left the earlier variants_index.csv and subgrids, read as its cubes.
+    grid = _two_variant_grid(t.tmp / "G")
+    _build(grid)
+    for name in ("a4.txt", "b4.txt"):
+        (grid / name).unlink()
+    _write_grid(grid, [("a0.txt", 5000.0, 4.0, 0.0, "0.0"), ("b0.txt", 6000.0, 4.0, 0.0, "0.0")], (*COLUMNS, "alpha"))
+    _build(grid)
+    assert [variant.label for variant in list_variants(grid)] == ["full_grid"]
+    assert not [p for p in grid.iterdir() if p.is_dir()] and _flux_cube_shortfall(grid) is None
+
+
+@row
+def variants_are_told_apart_by_value_and_named_apart(t):
+    # Variants were grouped by text and named by number with two decimals: alpha "0" and "0.0" were two variants
+    # in one folder, the second overwriting the first (its 4000 K spectrum in no cube), as yhe 0.001 and 0.004 were.
+    grid = _write_grid(t.tmp / "G", [("a.txt", 4000.0, 4.0, 0.0, "0", "0.001"),
+                                     ("b.txt", 5000.0, 4.0, 0.0, "0.0", "0.001"),
+                                     ("c.txt", 4000.0, 4.0, 0.0, "0.4", "0.004")], (*COLUMNS, "alpha", "yhe"))
+    _build(grid)
+    assert sorted(p.name for p in grid.iterdir() if p.is_dir()) == [
+        "G_alpha_0p00_yhe_0p001", "G_alpha_0p40_yhe_0p004"]
+    assert _flux_cube_shortfall(grid) is None
+    # The filter strategy finds that variant by either spelling, whichever row comes first
+    grid = _write_grid(t.tmp / "F", [("a.txt", 4000.0, 4.0, 0.0, "0.0"), ("b.txt", 5000.0, 4.0, 0.0, "0"),
+                                     ("c.txt", 4000.0, 4.0, 0.0, "0.4")], (*COLUMNS, "alpha"))
+    _build(grid, override_dict={"on_collision": {"strategy": "filter", "filter": {"alpha": "0"}}})
+    assert FluxCube.from_file(str(grid / "flux_cube.bin")).teff_grid.tolist() == [4000.0, 5000.0]
+
+
+@row
+def a_parameter_column_under_any_name_lookup_accepts_is_no_extra_axis(t):
+    # A Teff column named temperature, or an [M/H] column named Z/Zo, was read as that axis and also split on: one
+    # subgrid per Teff. lookup's find_*_column accept these names; the extra-axis list did not.
+    grid = _write_grid(t.tmp / "G", [("a.txt", 4000.0, 4.0, 0.0), ("b.txt", 5000.0, 4.0, 0.02),
+                                     ("c.txt", 6000.0, 4.5, 0.02)], ("file_name", "temperature", "logg", "Z/Zo"))
+    _build(grid)
+    assert (grid / "flux_cube.bin").is_file() and not (grid / "variants_index.csv").exists()
+
+
+@row
+def a_split_grid_has_no_cube_of_its_own_and_photometry_names_its_variants(t):
+    # A rebuild that split a grid left the cube of an earlier single build at the top, which MESA pointed at the
+    # grid's folder read, and SED.local and SED().model() used. Only a variant's folder has a cube now.
+    from sed_tools.api import SED as API
+
+    grid = _write_grid(t.tmp / "G", [("a0.txt", 5000.0, 4.0, 0.0, "0.0"), ("b0.txt", 6000.0, 4.0, 0.0, "0.0")],
+                       (*COLUMNS, "alpha"))
+    _build(grid)
+    _two_variant_grid(grid)
+    _build(grid)
+    assert not (grid / "flux_cube.bin").exists()
+    for load in (lambda: API.local("G", model_root=t.tmp), lambda: SED(model_root=t.tmp).model("G")):
+        with pytest.raises(FileNotFoundError, match="G is split into variants.*G/G_alpha_0p00, G/G_alpha_0p40"):
+            load()
+    assert API.local("G/G_alpha_0p40", model_root=t.tmp).model().flux_cube_path.is_file()
+
+
+@row
+def a_split_grid_from_njm_comes_with_its_variant_folders_and_is_not_rebuilt(t):
+    # NJM serves Kurucz2003all and Husfeld split, each variant's folder with its cube and lookup table, but the client
+    # took only the top-level files (and NJM's top-level copy of a variant's cube): SED.fetch rebuilt the grid, and
+    # sed-tools grids rebuilt it on every download.
+    from sed_tools.api import SED as API
+    from sed_tools.cube import build
+    from support import GridServer, run_cli
+
+    root = t.tmp / "njm"
+    served = _kurucz_alpha(root / "stellar_models" / GRID, build=True)
+    variant = f"{GRID}_alpha_0p00_lh_1p25_vtur_2_km_s"
+    shutil.copy2(served / variant / "flux_cube.bin", served / "flux_cube.bin")  # until NJM drops its copy
+    (root / "index.json").write_text('{"models": ["%s"]}' % GRID)
+    t.mp.setattr("sed_tools.grids.njm.requests.Session", GridServer(root))
+    builds = []
+    t.mp.setattr(build, "precompute_flux_cube", lambda *args, **kwargs: builds.append(args))
+    API.fetch(GRID, source="njm", model_root=t.tmp / "api")
+    assert run_cli(t.mp, "grids", "--source", "njm", "--grids", GRID, "--base", str(t.tmp / "cli")) == 0
+    for folder in (t.tmp / "api" / GRID, t.tmp / "cli" / GRID):
+        assert not (folder / "flux_cube.bin").exists() and _flux_cube_shortfall(folder) is None
+        assert (folder / variant / "flux_cube.bin").read_bytes() == (served / variant / "flux_cube.bin").read_bytes()
+        assert [v.label for v in list_variants(folder)] == ["alpha_0", "alpha_0.4"]
+    assert builds == []
+
+
+@row
 def a_spectrum_zero_at_every_sampled_wavelength_is_still_found(t):
     """A spectrum covering only part of the cube's wavelengths is zero elsewhere (resample_to_grid)."""
     flux = np.zeros((3, 1, 1, 20))  # the sampled wavelength planes are 2, 4, 6, 8, 11, 13, 15, 17
@@ -485,12 +583,12 @@ def combine_raises_after_writing_when_a_copy_fails(t):
     assert (models / "combined" / "lookup_table.csv").exists()
 
 
-def _planck_grid(t, name, nodes, scale=1.0, columns=("teff", "logg", "metallicity")):
+def _planck_grid(t, name, nodes, scale=1.0, columns=("teff", "logg", "metallicity"), wl=None):
     """A grid of pi*B_lambda spectra, ``scale`` times their own flux in the files, at ``nodes``: one tuple of values per
-    spectrum, for the lookup ``columns`` (Teff first)."""
+    spectrum, for the lookup ``columns`` (Teff first), at the wavelengths ``wl`` (1000 Å to 30 µm by default)."""
     folder = t.tmp / "models" / name
     folder.mkdir(parents=True)
-    wl = np.geomspace(1000.0, 3.0e5, 2000)
+    wl = np.geomspace(1000.0, 3.0e5, 2000) if wl is None else wl
     rows = ["#file_name," + ",".join(columns)]
     for i, values in enumerate(nodes):
         np.savetxt(folder / f"s{i}.txt", np.column_stack([wl, scale * _constants.planck_flam(wl, values[0])]))
@@ -507,7 +605,6 @@ def _combined_cubes(t, grids):
     from sed_tools.cube import fileio
     from sed_tools.grids.spectrum_io import read_text_spectrum
 
-    np.random.seed(0)
     SED.combine(grids, output="combined", model_root=t.tmp / "models", visualization=False)
     cubes = {}
     for folder in (p.parent for p in sorted((t.tmp / "models" / "combined").rglob("flux_cube.bin"))):
@@ -532,6 +629,116 @@ def combined_cube_nodes_hold_their_own_spectra(t):
     _planck_grid(t, "cool", [(800.0, 4.5, 0.0), (900.0, 4.5, 0.0)])
     _planck_grid(t, "warm", [(3500.0, 4.5, 0.0), (3600.0, 4.5, 0.0)])
     assert [len(ratios) for ratios in _combined_cubes(t, ["cool", "warm"]).values()] == [4]
+
+
+@row
+def combine_leaves_a_node_no_spectrum_fills_at_zero(t):
+    # Every empty node used to hold its nearest filled node's spectrum, unscaled: (3500 K, log g 4.5) held the
+    # 900 K star's and (800 K, log g 5.0) the 3500 K star's, which the 1 % guard cannot see (it checks listed nodes).
+    from sed_tools.cube import fileio
+
+    _planck_grid(t, "cool", [(800.0, 4.5, 0.0), (900.0, 4.5, 0.0)])
+    _planck_grid(t, "warm", [(3500.0, 5.0, 0.0), (3600.0, 5.0, 0.0)])
+    _combined_cubes(t, ["cool", "warm"])
+    *_, flux = fileio.load(t.tmp / "models" / "combined" / "flux_cube.bin")
+    assert flux.any(axis=0)[0].tolist() == [[True, True, False, False], [False, False, True, True]]  # [log g][Teff]
+
+
+@row
+def combine_keeps_axis_values_that_are_close(t):
+    # Values within 1 K, 0.01 dex of log g or 0.01 of [M/H] used to be merged into one node, the later spectrum
+    # kept: MSG's OSTAR2002 states Z/Zo 0, 0.001 and 0.01, and only the 0.01 spectrum stayed, at node 0.
+    from sed_tools.cube import fileio
+
+    _planck_grid(t, "O", [(30000.0, 4.0, z) for z in (0.0, 0.001, 0.01, 0.02)])
+    assert [len(ratios) for ratios in _combined_cubes(t, ["O"]).values()] == [4]
+    assert fileio.load_axes(t.tmp / "models" / "combined" / "flux_cube.bin")[2].tolist() == [0.0, 0.001, 0.01, 0.02]
+
+
+@row
+def combine_refuses_to_write_into_one_of_its_grids(t):
+    # The CLI refused this; SED.combine replaced a's lookup table and cube and copied a's own spectra into it.
+    from sed_tools.api import SED
+
+    _planck_grid(t, "a", [(5000.0, 4.5, 0.0)])
+    _planck_grid(t, "b", [(6000.0, 4.5, 0.0)])
+    before = sorted(p.name for p in (t.tmp / "models" / "a").iterdir())
+    with pytest.raises(ValueError, match="The output grid a is also one of the grids to combine"):
+        SED.combine(["a", "b"], output="a", model_root=t.tmp / "models", visualization=False)
+    assert sorted(p.name for p in (t.tmp / "models" / "a").iterdir()) == before
+
+
+@row
+def combining_again_into_a_folder_replaces_the_earlier_combination(t):
+    # A rerun kept what the earlier one wrote: combining [a, b] then [b, a] left a_000002.txt, listed at 4000 K,
+    # holding a's 6000 K spectrum, with four stale copies beside it; and an earlier single cube stayed beside a later
+    # split, so SED.combine returned the earlier combination.
+    _planck_grid(t, "a", [(4000.0, 4.5, 0.0), (5000.0, 4.5, 0.0), (6000.0, 4.5, 0.0)])
+    _planck_grid(t, "b", [(7000.0, 4.5, 0.0), (8000.0, 4.5, 0.0)])
+    _planck_grid(t, "al", [(4000.0, 4.5, 0.0, 0.0), (4000.0, 4.5, 0.0, 0.4)], columns=("teff", "logg", "meta", "alpha"))
+    combined = t.tmp / "models" / "combined"
+    _combined_cubes(t, ["a", "b"])
+    _combined_cubes(t, ["b", "a"])  # each listed copy holds its own node's spectrum
+    assert _flux_cube_shortfall(combined) is None  # no stale copies
+    _combined_cubes(t, ["a", "al"])
+    assert sorted(p.name for p in combined.iterdir() if not p.name.endswith(".txt")) == [
+        "combined_alpha_0p00", "combined_alpha_0p40", "lookup_table.csv", "variants_index.csv"]
+
+
+@row
+def combine_names_the_variant_folders_mesa_can_read(t):
+    # After a split combination the command told MESA stellar_atm = '<output>/', a folder that holds no flux cube.
+    import matplotlib
+
+    from sed_tools.cli import run_combine_flow
+
+    matplotlib.use("Agg")
+    _planck_grid(t, "a", [(5000.0, 4.5, 0.0, 0.0), (5000.0, 4.5, 0.0, 0.4)], columns=("teff", "logg", "meta", "alpha"))
+    _planck_grid(t, "b", [(6000.0, 4.5, 0.0)])
+    run_combine_flow(str(t.tmp / "models"), output_name="ab", interactive=False, models=["a", "b"])
+    out = t.capsys.readouterr().out
+    assert "stellar_atm" not in out and "Point MESA Colors to one of the above subdirectories." in out
+    assert f"  -> {t.tmp / 'models' / 'ab' / 'ab_alpha_0p40'}/" in out
+
+
+@row
+def mesa_prepare_counts_and_copies_each_spectrum_of_a_combined_variant_once(t):
+    # A combined grid lists a spectrum at every node it fills (a blackbody at every log g), and mesa_prepare counted
+    # those rows as spectra: 4 for these 3 files, and "Copied 4 spectrum files", one file twice.
+    _planck_grid(t, "stars", [(5000.0, logg, 0.0, alpha) for alpha in (0.0, 0.4) for logg in (4.0, 4.5)],
+                 columns=("teff", "logg", "meta", "alpha"))
+    _planck_grid(t, "bb", [(7000.0,)], columns=("teff",))
+    _combined_cubes(t, ["stars", "bb"])
+    variants = list_variants(t.tmp / "models" / "combined")
+    assert [(len(v.lookup_rows), v.n_spectra) for v in variants] == [(4, 3), (4, 3)]
+    mesa_export.export_variant(variants[0], t.tmp / "export")
+    assert "Copied 3 spectrum files." in t.capsys.readouterr().out
+
+
+@row
+def combine_builds_its_cubes_on_disk_and_writes_them_in_parts(t):
+    # combine held every cube of a combination in memory, and a copy of each as it was written: about 28 GB for
+    # notebook 06's three grids once the axis is every grid's wavelengths. Each cube is now built on disk and written
+    # in parts (here of 1 MiB), the same bytes; the golden combine_models shows they are the same.
+    import tracemalloc
+
+    import sed_tools.cube.combine as combine
+    from sed_tools.grids.pipeline import _build_combined_grid
+
+    t.mp.setattr(combine, "_PART_BYTES", 1 << 20)
+    _planck_grid(t, "stars", [(5000.0, logg, 0.0) for logg in np.linspace(3.0, 5.0, 20)])
+    _planck_grid(t, "bb", [(teff,) for teff in np.linspace(3010.0, 9010.0, 100)], columns=("teff",))
+    models = t.tmp / "models"
+    tracemalloc.start()
+    try:
+        _build_combined_grid([(name, str(models / name)) for name in ("stars", "bb")], str(models / "combined"),
+                             visualization=False)
+        peak = tracemalloc.get_traced_memory()[1]
+    finally:
+        tracemalloc.stop()
+    size = (models / "combined" / "flux_cube.bin").stat().st_size
+    assert size > 32e6 and peak < size / 4, (size, peak)
+    assert not [p for p in models.iterdir() if p.name.startswith(".")]  # its working folder is gone
 
 
 @row
@@ -565,13 +772,16 @@ def combine_keeps_each_grids_flux_at_shared_nodes(t):
 
 
 @row
-def common_wavelength_grid_needs_a_usable_spectrum(t):
-    # Used to fail with OverflowError (int of -inf).
-    from sed_tools.cube.combine import create_common_wavelength_grid
+def combined_wavelengths_are_the_union_of_the_grids_own(t):
+    # The axis used to be at most 5000 even steps over 3000-25000 Å, set by spectra drawn at random: no flux in the
+    # UV or the mid-IR (a 30,000 K star 2.4 mag too faint), and two runs on the same grids could write two cubes.
+    from sed_tools.cube import fileio
 
-    (t.tmp / "far_ir.txt").write_text("".join(f"{w} 1.0\n" for w in np.linspace(3e4, 9e4, 50)))
-    with pytest.raises(ValueError, match="between 3000 and 25000"):
-        create_common_wavelength_grid([{"files": np.array(["far_ir.txt"]), "model_dir": str(t.tmp)}])
+    uv, ir = np.geomspace(900.0, 3.0e4, 300), np.geomspace(2.0e4, 3.0e5, 200)
+    _planck_grid(t, "uv", [(30000.0, 4.0, 0.0)], wl=uv)
+    _planck_grid(t, "ir", [(3000.0, 5.0, 0.0)], wl=ir)
+    _combined_cubes(t, ["uv", "ir"])
+    assert np.array_equal(fileio.load_axes(t.tmp / "models" / "combined" / "flux_cube.bin")[3], np.union1d(uv, ir))
 
 
 # ----------------------------------------------------------------------
@@ -618,6 +828,22 @@ def every_densified_node_integrates_to_sigma_t4(t):
             ratio = np.trapezoid(cube.flux[i_t, i_l, i_m], cube.wavelengths) / (
                 _constants.SIGMA * cube.teff_grid[i_t] ** 4)
             assert ratio == pytest.approx(1.0, rel=0.02), (cube.teff_grid[i_t], i_l, i_m)
+
+
+@row
+def densify_leaves_a_hole_empty_and_writes_the_lookup_table_mesa_needs(t):
+    # A synthetic Teff beside an empty node got an unscaled blackbody, so a hole became zeros and blackbodies along
+    # Teff (4.0e6 at 5000 K, log g 5, here); and the output had no lookup_table.csv, which MESA stops without.
+    flux = np.zeros((2, 2, 1, 7))
+    flux[:, 0, 0] = _constants.planck_flam(np.linspace(3000.0, 9000.0, 7), np.array([[4000.0], [6000.0]]))
+    write_flux_cube(t.tmp / "src" / "flux_cube.bin", [4000.0, 6000.0], [4.0, 5.0], [0.0], np.linspace(3e3, 9e3, 7),
+                    flux)
+    (t.tmp / "src" / "lookup_table.csv").write_text("#file_name,teff,logg,meta\na.txt,4000,4.0,0\nb.txt,6000,4.0,0\n")
+    densify_grid(str(t.tmp / "src" / "flux_cube.bin"), str(t.tmp / "dense" / "flux_cube.bin"), teff_spacing=1000.0)
+    dense = FluxCube.from_file(str(t.tmp / "dense" / "flux_cube.bin"))
+    assert dense.teff_grid.tolist() == [4000.0, 5000.0, 6000.0]
+    assert dense.flux[:, 0, 0].any(axis=1).tolist() == [True] * 3 and not dense.flux[:, 1].any()
+    assert (t.tmp / "dense" / "lookup_table.csv").read_text() == (t.tmp / "src" / "lookup_table.csv").read_text()
 
 
 def _ml_generator(t, generate):
@@ -807,15 +1033,18 @@ def _averaged_rows(model_dir, caplog, **override):
 
 
 @row
-def bosz_bookkeeping_columns_that_vary_are_named_when_averaged(t):
-    # am, cm and vturb are not extra axes, so rows differing only there share a node.
+def a_column_that_tells_apart_spectra_at_one_node_splits_the_grid(t):
+    # BOSZ's am, cm, vturb and atmos were bookkeeping by name ("MAST BOSZ specific"), so rows differing in them were
+    # averaged onto one node, with a warning. Only what SED_Tools writes to describe a file is bookkeeping now: a
+    # column that tells apart spectra at one node splits the grid, and one that varies only between nodes (atmos
+    # here, hres's model code on NJM) labels the spectra and splits nothing.
     grid = _write_grid(t.tmp / "BOSZ", [
-        ("a.txt", 5000, 4.0, 0.0, 0.0, 0.0, 1), ("b.txt", 5000, 4.0, 0.0, 0.4, 0.0, 2),
-        ("c.txt", 6000, 4.0, 0.0, 0.0, 0.0, 1), ("d.txt", 6000, 4.0, 0.0, 0.0, 0.0, 1),
-        ("e.txt", 6000, 4.5, 0.0, 0.0, 0.0, 1)], (*COLUMNS, "am", "cm", "vturb"))
-    assert _averaged_rows(grid, t.caplog) == [
-        f"{grid / 'flux_cube.bin'}: 4 lookup rows were averaged onto 2 (Teff, logg, [M/H]) node(s), so each "
-        "of those nodes holds a mean spectrum. The averaged rows differ in: am, vturb."]
+        ("a.txt", 5000, 4.0, 0.0, 0.0, 0.0, 1, "ap"), ("b.txt", 5000, 4.0, 0.0, 0.4, 0.0, 2, "ap"),
+        ("c.txt", 6000, 4.0, 0.0, 0.0, 0.0, 1, "mp"), ("d.txt", 6000, 4.0, 0.0, 0.4, 0.0, 2, "mp")],
+        (*COLUMNS, "am", "cm", "vturb", "atmos"))
+    assert _averaged_rows(grid, t.caplog) == []
+    assert sorted(p.name for p in grid.iterdir() if p.is_dir()) == [
+        "BOSZ_am_0p00_cm_0p00_vturb_1p00", "BOSZ_am_0p40_cm_0p00_vturb_2p00"]
 
 
 @row
@@ -835,13 +1064,13 @@ def a_grid_with_one_row_per_node_does_not_warn(t):
 
 @row
 def split_and_filter_cubes_report_their_own_averaged_rows(t):
-    columns = (*COLUMNS, "alpha", "vturb")
-    rows = [("a.txt", 5000, 4.0, 0.0, "0.0", 1), ("b.txt", 5000, 4.0, 0.0, "0.0", 2),
-            ("c.txt", 5000, 4.0, 0.0, "0.4", 1)]
+    columns = (*COLUMNS, "alpha", "source")
+    rows = [("a.txt", 5000, 4.0, 0.0, "0.0", "x"), ("b.txt", 5000, 4.0, 0.0, "0.0", "y"),
+            ("c.txt", 5000, 4.0, 0.0, "0.4", "x")]
     split = _write_grid(t.tmp / "Split", rows, columns)
     (message,) = _averaged_rows(split, t.caplog)
     assert message.startswith(f"{split / 'Split_alpha_0p00' / 'flux_cube.bin'}: 2 lookup rows were averaged")
-    assert message.endswith("differ in: vturb.")
+    assert message.endswith("differ in: source.")
 
     t.caplog.clear()
     filtered = _write_grid(t.tmp / "Filtered", rows, columns)
@@ -937,6 +1166,24 @@ def mesa_prepare_menu_exports_a_variant_of_a_split_grid(t):
 
 
 @row
+def mesa_prepare_exports_the_variant_named_without_asking(t):
+    # mesa_prepare asked which variant to export and had no option to name it, so it could not be scripted.
+    from support import run_cli
+
+    split_grid = _split_grid(t)
+    base, variant = str(split_grid.parent), "KuruczAlpha_alpha_0p40_lh_1p25_vtur_2_km_s"
+    out = t.tmp / "exported"
+    assert run_cli(t.mp, "mesa_prepare", "--base", base, "--grid", "KuruczAlpha", "--variant", variant,
+                   "--output", str(out)) == 0
+    assert (out / "flux_cube.bin").read_bytes() == (split_grid / variant / "flux_cube.bin").read_bytes()
+    with pytest.raises(SystemExit, match="KuruczAlpha has no variant 'alpha_0.4'; its variants are "
+                                         f"KuruczAlpha_alpha_0p00_lh_1p25_vtur_2_km_s, {variant}. Nothing was exported"):
+        run_cli(t.mp, "mesa_prepare", "--base", base, "--grid", "KuruczAlpha", "--variant", "alpha_0.4",
+                "--output", str(t.tmp / "other"))
+    assert not (t.tmp / "other").exists()
+
+
+@row
 def list_variants_raises_for_a_subgrid_without_its_cube(t):
     sub = _split_grid(t) / "KuruczAlpha_alpha_0p00_lh_1p25_vtur_2_km_s"
     (sub / "flux_cube.bin").rename(sub / "flux_cube.bin.moved")
@@ -1009,7 +1256,6 @@ def non_interactive_combine_does_not_fold_in_the_previous_output(t):
     _planck_grid(t, "a", [(5000.0, 4.5, 0.0), (5500.0, 4.5, 0.0), (6000.0, 4.5, 0.0)])
     _planck_grid(t, "b", [(7000.0, 4.5, 0.0), (7500.0, 4.5, 0.0)])
     two_grids = t.tmp / "models"
-    np.random.seed(0)
     run_combine_flow(str(two_grids), interactive=False)
     run_combine_flow(str(two_grids), output_name="combined2", interactive=False)
     out = t.capsys.readouterr().out
@@ -1451,6 +1697,22 @@ def set_data_dir_preserves_nested_ui(t):
     loaded = config.load_user_config()
     assert loaded["ui"] == {"terminal_plots": "always", "terminal_color": "never"}
     assert loaded["data_dir"] == str(t.tmp / "data")
+
+
+@row
+def a_split_grid_is_listed_by_its_variants(t):
+    # A grid split into variants has no top-level cube, so SED.query (local), available_grids, find_grids and
+    # find_model left it out, though SED.local("<grid>/<variant>") loads one: 10 of MSG's 25 grids split now.
+    from sed_tools.api import SED as API
+
+    models = t.tmp / "models"
+    _build(_simple_grid(models / "Plain"))
+    _build(_two_variant_grid(models / "Split"))
+    names = ["Plain", "Split/Split_alpha_0p00", "Split/Split_alpha_0p40"]
+    assert SED(model_root=models).available_grids() == names
+    assert sorted(match.name for match in SED(model_root=models).find_model(5000.0, 4.0, 0.0)) == names
+    t.mp.setattr(API, "_model_root", models)
+    assert [info.name for info in API.query(include_remote=False)] == names
 
 
 @row

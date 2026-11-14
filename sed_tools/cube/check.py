@@ -5,17 +5,22 @@ The files' contents decide, never their times, so a grid copied without its time
 
 from __future__ import annotations
 
-import csv
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from ..grids.spectrum_io import bundled_spectra, list_text_spectra
 from .build import spectra_not_in_cube
+from .variants import _variant_paths
 
 
 def _flux_cube_file(model_dir: Path) -> Optional[Path]:
-    """The grid's flux cube: ``flux_cube.bin``, else ``variants_index.csv`` (one cube per variant), else None."""
-    for name in ("flux_cube.bin", "variants_index.csv"):
+    """The grid's flux cube: ``variants_index.csv`` (one cube per variant), else ``flux_cube.bin``, else None.
+
+    A split grid has no top-level cube (a split, and an NJM download of a split grid, remove one). One left beside
+    ``variants_index.csv`` by an earlier version is not the grid's cube, so it is never compared with the grid's
+    spectra, which every variant's rows list.
+    """
+    for name in ("variants_index.csv", "flux_cube.bin"):
         if (Path(model_dir) / name).is_file():
             return Path(model_dir) / name
     return None
@@ -25,7 +30,8 @@ def _flux_cube_shortfall(model_dir: Path) -> Optional[str]:
     """What the flux cube lacks of the grid's .txt spectra, judged by content; None if nothing or no cube.
 
     With ``variants_index.csv``, each variant's cube is compared with its own lookup table, and between
-    them they must list every spectrum.
+    them they must list every spectrum; a variant whose folder or cube is missing cannot be compared, which is
+    reported too.
     """
     model_dir = Path(model_dir)
     cube = _flux_cube_file(model_dir)
@@ -43,13 +49,6 @@ def _flux_cube_shortfall(model_dir: Path) -> Optional[str]:
         return f"cannot be compared with the spectra beside it ({exc})"
     lacking = (lacking | (present - listed)) & present
     return f"does not include {len(lacking)} of the {len(present)} spectra beside it" if lacking else None
-
-
-def _variant_paths(variants_index: Path) -> List[str]:
-    """The folder of each variant ``variants_index.csv`` lists, relative to the grid's folder."""
-    with open(variants_index, newline="", encoding="utf-8") as fh:
-        fields = [name.lstrip("#").strip() for name in fh.readline().strip().split(",")]
-        return [row["path"] for row in csv.DictReader(fh, fieldnames=fields)]
 
 
 def _bundle_shortfall(bundle: Path, model_dir: Path) -> Optional[str]:

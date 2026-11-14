@@ -12,6 +12,8 @@ Audits every installed stellar atmosphere model for:
 
 It audits the grids in $SED_STELLAR_DIR, else in the configured stellar_models folder:
     python scripts/audit_pipeline.py
+A grid split into variants (variants_index.csv) is audited variant by variant: each subgrid has its own
+lookup table, flux cube and links to the grid's spectra.
 
 Output, in the working directory:
     audit_report.txt        — full per-model results
@@ -21,7 +23,7 @@ Output, in the working directory:
     sed_comparison_cold.png — overlaid SEDs near a cold Teff across all models
     sed_bb_overlay.png      — one SED per model over the blackbody at its Teff
     rawcube_diag_<model>_<spectrum>.png — for each raw-vs-cube node over the threshold
-                              (up to 3 per model without fluxcube_library/)
+                              (up to 3 per model)
 """
 
 import os
@@ -38,6 +40,7 @@ import matplotlib.ticker as mticker
 from sed_tools import STELLAR_DIR_DEFAULT
 from sed_tools._constants import SIGMA, planck_flam
 from sed_tools.cube.fileio import flux_offset, read_axes
+from sed_tools.cube.variants import _variant_paths
 
 # ---------------------------------------------------------------------------
 FLOOR   = 1e-300
@@ -148,7 +151,6 @@ def audit_model(model_dir):
         "bol_ratios_raw": [],
         "bol_coverage_fracs": [],
         "cube_exists": False,
-        "library_exists": False,
         "cube_size_gib": 0.0,
         "cube_grid": None,
         "cube_bol_ratios": [],
@@ -296,7 +298,6 @@ def audit_model(model_dir):
 
     result["cube_exists"] = True
     result["cube_size_gib"] = cube_path.stat().st_size / 1e9
-    result["library_exists"] = (model_dir / "fluxcube_library").is_dir()
 
     try:
         teff_g, logg_g, meta_g, wl_g, cube_flux = read_cube(cube_path)
@@ -533,19 +534,12 @@ def format_report(results):
             lines.append(f"  Lookup      : {n_entries} entries -> {n_nodes} unique nodes  "
                          f"(max {max_fpn} files/node)")
             if n_coll > 0:
-                if r.get("library_exists"):
-                    lines.append(f"  Note: {n_coll} collision nodes — handled (fluxcube_library/ present, mean cube built)")
-                    for ex in r.get("collision_examples", [])[:3]:
-                        t, g, m = ex["node"]
-                        lines.append(f"       Teff={t} logg={g} [M/H]={m} - "
-                                     f"{ex['n_files']} files: {', '.join(ex['examples'])}")
-                else:
-                    lines.append(f"  *** {n_coll} NODES HAVE MULTIPLE FILES (last-write-wins in cube)")
-                    for ex in r.get("collision_examples", []):
-                        t, g, m = ex["node"]
-                        lines.append(f"       Teff={t} logg={g} [M/H]={m} - "
-                                     f"{ex['n_files']} files: {', '.join(ex['examples'])}")
-                    ok = False
+                lines.append(f"  *** {n_coll} NODES HAVE MULTIPLE FILES (last-write-wins in cube)")
+                for ex in r.get("collision_examples", []):
+                    t, g, m = ex["node"]
+                    lines.append(f"       Teff={t} logg={g} [M/H]={m} - "
+                                 f"{ex['n_files']} files: {', '.join(ex['examples'])}")
+                ok = False
 
         ok = True
 
@@ -643,19 +637,15 @@ def format_report(results):
                     f"[M/H]={r.get('raw_vs_cube_meta', float('nan')):.2f})"
                 )
                 if n_bad > 0:
-                    if r.get("library_exists"):
-                        lines.append(f"  Note: RAW VS CUBE: {n_bad}/{n_nodes} nodes exceed "
-                                     f"{RAW_CUBE_TOL*100:.0f}% (expected — mean cube, variants in fluxcube_library/)")
-                    else:
-                        lines.append(f"  *** RAW VS CUBE: {n_bad}/{n_nodes} NODES EXCEED {RAW_CUBE_TOL*100:.0f}% ERROR")
-                        for bad in r.get("raw_vs_cube_bad_nodes", [])[:3]:
-                            lines.append(
-                                "      Worst nodes: "
-                                f"{bad['file']} -> Teff={bad['teff']:.0f} K, "
-                                f"log g={bad['logg']:.2f}, [M/H]={bad['meta']:.2f}, "
-                                f"max_err={bad['max_err']:.3f}, med_err={bad['median_err']:.3f}"
-                            )
-                        ok = False
+                    lines.append(f"  *** RAW VS CUBE: {n_bad}/{n_nodes} NODES EXCEED {RAW_CUBE_TOL*100:.0f}% ERROR")
+                    for bad in r.get("raw_vs_cube_bad_nodes", [])[:3]:
+                        lines.append(
+                            "      Worst nodes: "
+                            f"{bad['file']} -> Teff={bad['teff']:.0f} K, "
+                            f"log g={bad['logg']:.2f}, [M/H]={bad['meta']:.2f}, "
+                            f"max_err={bad['max_err']:.3f}, med_err={bad['median_err']:.3f}"
+                        )
+                    ok = False
             else:
                 if n_skipped == n_checked and n_checked > 0:
                     lines.append(f"  Raw vs cube : skipped — all {n_checked} sampled files "
@@ -718,76 +708,6 @@ def format_report(results):
 # ---------------------------------------------------------------------------
 # Plots
 # ---------------------------------------------------------------------------
-
-def _find_cube_for_file(model_dir, fname, teff, logg, meta):
-    """
-    Return the path to the best cube for this specific file.
-    If a fluxcube_library/index.csv exists, find the variant whose
-    extra-axis values match this file in the lookup table.
-    Falls back to flux_cube.bin (mean cube) if anything is unclear.
-    """
-    import csv as _csv
-    model_dir = Path(model_dir)
-    library_dir = model_dir / "fluxcube_library"
-    mean_cube   = model_dir / "flux_cube.bin"
-
-    if not library_dir.is_dir():
-        return mean_cube
-
-    index_path = library_dir / "index.csv"
-    if not index_path.exists():
-        return mean_cube
-
-    # Read lookup table to find this file's extra-axis values
-    lookup_path = model_dir / "lookup_table.csv"
-    if not lookup_path.exists():
-        return mean_cube
-
-    try:
-        with open(lookup_path, encoding="utf-8", errors="ignore") as f:
-            header = f.readline().lstrip("#").strip()
-            cols   = [c.strip() for c in header.split(",")]
-            reader = _csv.reader(f)
-            file_row = None
-            for row in reader:
-                if row and row[0].strip().lstrip("#") == fname:
-                    file_row = {cols[i]: row[i].strip() for i in range(min(len(cols), len(row)))}
-                    break
-        if file_row is None:
-            return mean_cube
-
-        # Load library index
-        with open(index_path, encoding="utf-8", errors="ignore") as f:
-            header2 = f.readline().lstrip("#").strip()
-            icols   = [c.strip() for c in header2.split(",")]
-            ireader = _csv.reader(f)
-            index_rows = [
-                {icols[i]: row[i].strip() for i in range(min(len(icols), len(row)))}
-                for row in ireader if row and not row[0].strip().startswith("#")
-            ]
-
-        extra_cols = [c for c in icols if c not in (
-            "cube_file", "n_spectra",
-            "teff_min", "teff_max", "logg_min", "logg_max", "meta_min", "meta_max"
-        )]
-
-        # Find index row whose extra-axis values match this file
-        for irow in index_rows:
-            match = all(
-                str(file_row.get(col, "")).strip().lower() ==
-                str(irow.get(col, "")).strip().lower()
-                for col in extra_cols
-            )
-            if match:
-                variant_path = library_dir / irow["cube_file"]
-                if variant_path.exists():
-                    return variant_path
-
-    except Exception:
-        pass
-
-    return mean_cube
-
 
 def _extract_cube_sed(cube_path, teff, logg, meta):
     """
@@ -924,9 +844,8 @@ def make_sed_comparison_plot(results, target_teff, label, out_path):
             ax.plot(wl, fl / peak, color=color, alpha=0.85, lw=1.0,
                     label=f"{r['name']}  (Teff={best_teff:.0f} K, Δ={delta_teff:.0f} K)")
 
-            # Cube SED — use variant cube if available so match is exact
-            fname = Path(best_path).name
-            cube_path = _find_cube_for_file(r["model_dir"], fname, best_teff, _lg, _mt)
+            # Cube SED: the audited folder's own cube (a split grid is audited variant by variant)
+            cube_path = Path(r["model_dir"]) / "flux_cube.bin"
             wl_c, fl_c = _extract_cube_sed(cube_path, best_teff, _lg, _mt)
             if wl_c is not None and fl_c.max() > 0:
                 ax.plot(wl_c, fl_c / fl_c.max(), color=color, alpha=0.45,
@@ -1020,9 +939,8 @@ def make_sed_bb_overlay_plot(results, out_path):
         ax.plot(wl, fl / peak, color=color, alpha=0.85, lw=1.0,
                 label=f"{name}  (Teff={teff:.0f} K)")
 
-        # Cube SED — use variant cube so match is exact
-        fname    = Path(fpath).name
-        cube_path = _find_cube_for_file(model_dir, fname, teff, logg, meta)
+        # Cube SED: the audited folder's own cube (a split grid is audited variant by variant)
+        cube_path = Path(model_dir) / "flux_cube.bin"
         wl_c, fl_c = _extract_cube_sed(cube_path, teff, logg, meta)
         if wl_c is not None and fl_c.max() > 0:
             ax.plot(wl_c, fl_c / fl_c.max(), color=color, alpha=0.45,
@@ -1192,10 +1110,10 @@ if __name__ == "__main__":
     stellar_dir = Path(os.environ.get("SED_STELLAR_DIR", STELLAR_DIR_DEFAULT))
     print(f"Auditing models in: {stellar_dir}")
 
-    model_dirs = sorted(
-        d for d in stellar_dir.iterdir()
-        if d.is_dir() and any(d.glob("*.txt"))
-    )
+    model_dirs = []
+    for d in sorted(d for d in stellar_dir.iterdir() if d.is_dir() and any(d.glob("*.txt"))):
+        index = d / "variants_index.csv"  # a split grid: each variant's subgrid is audited
+        model_dirs += [d / path for path in _variant_paths(index)] if index.is_file() else [d]
 
     if not model_dirs:
         sys.exit(f"No model directories with .txt files found under {stellar_dir}")
@@ -1227,7 +1145,7 @@ if __name__ == "__main__":
 
     # Generate raw-vs-cube diagnostic plots for any model with genuine bad nodes.
     for r in results:
-        if r.get("raw_vs_cube_bad_nodes") and not r.get("library_exists"):
+        if r.get("raw_vs_cube_bad_nodes"):
             make_raw_cube_diag_plots(r, out_dir=".")
 
     # -----------------------------------------------------------------------

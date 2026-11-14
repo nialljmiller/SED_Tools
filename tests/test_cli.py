@@ -945,8 +945,8 @@ def _combine(t):
         columns = "#file_name,teff,logg,meta" + (",source_model,original_file" if combined else "")
         (t.tmp / name / "lookup_table.csv").write_text(columns + "\n")
     built = []
-    t.mp.setattr("sed_tools.cli.grids._build_combined_grid", lambda models, out: built.append(
-        ([name for name, _ in models], Path(out).name)))
+    t.mp.setattr("sed_tools.cube.combine.write_combined_grid", lambda grids, out, visualization=True: built.append(
+        ([Path(grid["model_dir"]).name for grid in grids], Path(out).name)))
     return built
 
 
@@ -1174,9 +1174,9 @@ def menu_9_opens_and_returns_without_torch(t):
 
 
 @row
-def combine_without_scipy_says_what_to_install(t):
+def a_flow_without_scipy_says_what_to_install(t):
     def needs_scipy():
-        from scipy.spatial import KDTree  # noqa: F401  (as combine_stellar_atm does)
+        from scipy.stats import anderson  # noqa: F401  (as the coverage report does)
 
     _without(t, "scipy")
     assert cli._run_menu_flow(needs_scipy) is False

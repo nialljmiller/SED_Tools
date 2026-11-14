@@ -16,8 +16,8 @@ from ..grids.units import FLUX_GUESS_WHY, FLUX_UNITS, undeclared_flux_unit
 from ..grids.clean import clean_model_dir
 from ..grids.lookup import regenerate_lookup_table
 from ..grids.pipeline import (_build_combined_grid, _build_data_products, _build_flux_cube, _directory_state,
-                              _download_count, _import_sources, build_h5_bundle_from_txt, download_from_first_source,
-                              local_grids, rebuildable_grids, spectra_grabber)
+                              _download_count, _import_sources, _print_subgrids, build_h5_bundle_from_txt,
+                              download_from_first_source, local_grids, rebuildable_grids, spectra_grabber)
 from ..grids.spectrum_io import _bundle_path
 from ..ui_utils import ask_range, parse_multi_selection, prompt_choice, wrap
 
@@ -438,10 +438,12 @@ def run_mesa_prepare_flow(
     base_dir: str = str(STELLAR_DIR_DEFAULT),
     model: Optional[str] = None,
     output: Optional[str] = None,
+    variant: Optional[str] = None,
 ) -> None:
-    """Export one extra-axis variant of a spectral grid as a MESA-ready folder, asking for what is not given."""
+    """Export one extra-axis variant of a spectral grid as a MESA-ready folder, asking for what is not given;
+    ``variant`` is the variant's subgrid folder name, as variants_index.csv lists it."""
     from ..cube.mesa_export import run_interactive
-    run_interactive(base_dir=base_dir, model=model, output=output)
+    run_interactive(base_dir=base_dir, model=model, output=output, variant=variant)
 
 
 def run_combine_flow(
@@ -451,18 +453,20 @@ def run_combine_flow(
     *,
     models: Optional[List[str]] = None,
 ) -> None:
-    """Combine stellar spectral grids into one omni grid, with one flux cube spanning all their parameters.
+    """Combine stellar spectral grids into one omni grid, with one flux cube spanning all their parameters, or one
+    per variant when their extra axes vary (then it names the variant folders MESA can read).
 
     Args:
-        base_dir: Base directory containing stellar_models/ subdirectories
+        base_dir: The folder holding the grids (stellar_models/), where the combination is written
         output_name: Name for the combined spectral grid directory
         interactive: If True, prompt user to select spectral grids
         models: Names of the grids to combine, instead of choosing them.
             Without it and without prompting, every local grid except the
             output of an earlier combine is used.
 
-    A grid is never combined into itself: ValueError when ``output_name`` is
-    one of the inputs.
+    A grid is never combined into itself: ValueError (from
+    :func:`~sed_tools.grids.pipeline._build_combined_grid`) when ``output_name``
+    is one of the inputs.
     """
     from ..cube.combine import _grids_with_lookup, find_stellar_models, select_models_interactive
 
@@ -484,7 +488,7 @@ def run_combine_flow(
         print("No spectral grids selected.")
         return
 
-    output_name = _combined_grid_name(output_name, [name for name, _ in selected_models], interactive)
+    output_name = _combined_grid_name(output_name, interactive)
     print("\nSpectral grid will be saved as:", output_name, "\n")
 
     print(f"\nSelected {len(selected_models)} spectral grids to combine:")
@@ -496,16 +500,17 @@ def run_combine_flow(
 
     print(f"\nSuccessfully combined {len(selected_models)} stellar spectral grids!")
     print(f"Output saved to: {output_dir}")
+    if (Path(output_dir) / "variants_index.csv").is_file():
+        _print_subgrids(output_dir, Path(output_dir) / "variants_index.csv")
+        return
     print("You can now use this combined spectral grid in MESA by setting:")
     print(f"stellar_atm = '{output_dir}/'")
 
 
-def _combined_grid_name(output_name: str, inputs: List[str], interactive: bool) -> str:
-    """The output grid's name, asked for when interactive; ValueError if it is one of the ``inputs``."""
+def _combined_grid_name(output_name: str, interactive: bool) -> str:
+    """The output grid's name, asked for when interactive."""
     if interactive:
         output_name = input(f"What should the combined spectral grid be called? [{output_name}] ").strip() or output_name
-    if output_name in inputs:
-        raise ValueError(f"The output grid {output_name} is also one of the grids to combine")
     return output_name
 
 

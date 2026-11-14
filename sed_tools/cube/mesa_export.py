@@ -1,7 +1,7 @@
 """Export one variant of a spectral grid (e.g. one alpha-enhancement or microturbulence value) as a clean
 MESA-ready folder: list_variants, print_variant_table, export_variant, and the interactive flow behind
-``sed-tools mesa_prepare [--grid NAME] [--output DIR]``. list_variants reads the subgrids cube/variants.py
-writes, and the layout of earlier versions.
+``sed-tools mesa_prepare [--grid NAME] [--variant NAME] [--output DIR]``. list_variants reads the subgrids cube/variants.py
+writes.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from typing import Dict, List
 import numpy as np
 import pandas as pd
 
-from ..grids.lookup import find_logg_column, find_metallicity_column, find_teff_column
+from ..grids.lookup import find_file_column, find_logg_column, find_metallicity_column, find_teff_column
 from .collision import discover_extra_axes
 from .model import STELLAR_DIR_DEFAULT, _read_flux_cube_header
 
@@ -26,7 +26,7 @@ class VariantInfo:
 
     label: str                          # e.g. "alpha_0.4__lh_1.25__vtur_2"
     extra_axes: Dict[str, str]          # e.g. {"alpha": "0.4", "lh": "1.25", "vtur": "2"}
-    n_spectra: int
+    n_spectra: int                      # distinct spectrum files (a combined grid lists one at several nodes)
     teff_min: float
     teff_max: float
     teff_n: int
@@ -77,7 +77,9 @@ def list_variants(model_dir: str | os.PathLike) -> List[VariantInfo]:
         return _split_variants(model_dir)
 
     master_cube = model_dir / "flux_cube.bin"
-    axes = discover_extra_axes(list(df.columns))
+    finders = (find_teff_column, find_logg_column, find_metallicity_column)
+    nodes = zip(*(pd.to_numeric(df[col], errors="coerce") for col in (find(df.columns) for find in finders) if col))
+    axes = discover_extra_axes({col: df[col] for col in df.columns}, list(nodes))
     varying = _varying_columns(df, axes)
     if varying:
         if not master_cube.exists():
@@ -156,13 +158,18 @@ def _variant_from_rows(rows: pd.DataFrame, axes: Dict[str, str], cube_path: Path
     return VariantInfo(
         label=label,
         extra_axes=axes,
-        n_spectra=len(rows),
+        n_spectra=rows[_file_column(rows)].nunique(),
         teff_min=teff_min, teff_max=teff_max, teff_n=teff_n,
         logg_min=logg_min, logg_max=logg_max, logg_n=logg_n,
         meta_min=meta_min, meta_max=meta_max, meta_n=meta_n,
         wavelength_min=wave_min, wavelength_max=wave_max, wavelength_n=wave_n,
         flux_cube_path=cube_path, source_model_dir=model_dir, lookup_rows=rows,
     )
+
+
+def _file_column(rows: pd.DataFrame) -> str:
+    """The lookup table's file column (find_file_column's, else the first, as MESA reads it)."""
+    return find_file_column(rows.columns) or rows.columns[0]
 
 
 def _fmt_range(lo: float, hi: float, n: int, decimals: int) -> str:
@@ -263,7 +270,8 @@ def export_variant(variant: VariantInfo, output_dir: str | os.PathLike, *, overw
     if file_col is None:
         raise KeyError("lookup_rows has no 'file_name' column — cannot locate spectra.")
 
-    filenames = variant.lookup_rows[file_col].dropna().tolist()
+    # Each file once: a combined grid lists a spectrum at every node it fills
+    filenames = list(dict.fromkeys(variant.lookup_rows[file_col].dropna()))
     missing = [fname for fname in filenames if not (src / fname).exists()]
     if missing:
         raise FileNotFoundError(
@@ -318,6 +326,16 @@ def _choose_grid(base_path: Path) -> str:
                      f"Enter a number from 1 to {len(available)} or a grid name. Nothing was exported.")
 
 
+def _named_variant(variants: List[VariantInfo], model: str, name: str) -> VariantInfo:
+    """The variant whose subgrid folder is *name* (as variants_index.csv and ``SED.query`` name it); exits with
+    status 1, listing the names, if there is none."""
+    for variant in variants:
+        if variant.flux_cube_path.parent.name == name:
+            return variant
+    names = ", ".join(v.flux_cube_path.parent.name for v in variants)
+    raise SystemExit(f"Error: {model} has no variant {name!r}; its variants are {names}. Nothing was exported.")
+
+
 def _choose_variant(variants: List[VariantInfo]) -> VariantInfo:
     """Prompt for one of *variants*; exits with status 1 on an invalid choice."""
     raw = input("\nSelect variant number: ").strip()
@@ -327,15 +345,17 @@ def _choose_variant(variants: List[VariantInfo]) -> VariantInfo:
     return variants[int(raw) - 1]
 
 
-def run_interactive(base_dir: str = None, model=None, output=None):
+def run_interactive(base_dir: str = None, model=None, output=None, variant=None):
     """
     Interactive MESA-prepare workflow.
 
     Prompts the user to pick a spectral grid (if not supplied), lists its variants,
-    lets the user select one, and exports it to a clean folder. Exits with status 1
-    and an error message if nothing was exported: no grid to pick, an invalid
-    choice, a missing lookup table or flux cube, a grid with no variants to
-    choose from, or an existing output directory the user chose not to overwrite.
+    lets the user select one (unless ``variant`` names its subgrid folder, as
+    variants_index.csv lists it), and exports it to a clean folder. Exits with
+    status 1 and an error message if nothing was exported: no grid to pick, an
+    invalid choice or variant name, a missing lookup table or flux cube, a grid
+    with no variants to choose from, or an existing output directory the user
+    chose not to overwrite.
     """
     base_path = Path(base_dir if base_dir is not None else STELLAR_DIR_DEFAULT)
 
@@ -360,7 +380,7 @@ def run_interactive(base_dir: str = None, model=None, output=None):
         return
 
     print_variant_table(variants, model_name=model)
-    chosen = _choose_variant(variants)
+    chosen = _choose_variant(variants) if variant is None else _named_variant(variants, model, variant)
 
     print(f"\nSelected: {chosen.label}")
     for k, v in chosen.extra_axes.items():

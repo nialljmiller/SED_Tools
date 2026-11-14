@@ -21,7 +21,7 @@ from ..grids.lookup import (
 from .collision import copy_global_config_to_model, discover_extra_axes, load_config
 from .fileio import flux_offset, write_header
 from .variants import (_build_filtered_cube, _build_mean_cube, _group_by_extra_axes, _parameter_arrays, _print_summary,
-                       _split_into_subgrids, _warn_averaged_rows)
+                       _remove_variants, _split_into_subgrids, _warn_averaged_rows)
 from ..grids.spectrum_io import read_text_spectrum
 
 logger = logging.getLogger(__name__)
@@ -35,7 +35,6 @@ SPLIT_THRESHOLD = 25
 _FLUX_FLOOR = 1e-300
 
 
-# Quoted annotations keep the signature help() has always shown for resample_to_grid.
 def resample_to_grid(
     wl_src:  "np.ndarray",
     fl_src:  "np.ndarray",
@@ -180,6 +179,8 @@ def _allocate_cube(teff_grid, logg_grid, meta_grid, wavelengths, tmp_path=None) 
 
 def _write_cube(output_file: str, teff_grid, logg_grid, meta_grid, wavelengths, flux_cube: np.ndarray,
                 usable_ram: int) -> None:
+    """Write the cube (Teff, log g, [M/H], wavelength; in RAM or memory-mapped) as MESA reads it, a part of
+    wavelengths at a time: each part is one copy of about usable_ram / 2 bytes."""
     nt, nl, nm, nw = len(teff_grid), len(logg_grid), len(meta_grid), len(wavelengths)
     tlm = nt * nl * nm
     w_chunk = max(1, usable_ram // (tlm * 2 * 8))
@@ -193,11 +194,9 @@ def _write_cube(output_file: str, teff_grid, logg_grid, meta_grid, wavelengths, 
         write_header(f, teff_grid, logg_grid, meta_grid, wavelengths)
         for ci in range(n_chunks):
             w0, w1 = ci * w_chunk, min((ci + 1) * w_chunk, nw)
-            chunk = np.array(flux_cube[:, :, :, w0:w1])
-            chunk_t = np.ascontiguousarray(np.transpose(chunk, (3, 2, 1, 0)))
-            del chunk
-            chunk_t.astype(np.float64).tofile(f)
-            del chunk_t
+            part = np.ascontiguousarray(flux_cube[:, :, :, w0:w1].transpose(3, 2, 1, 0), dtype=np.float64)
+            part.tofile(f)
+            del part
             if n_chunks > 1:
                 elapsed = time.time() - t0
                 eta = (n_chunks - ci - 1) / ((ci + 1) / elapsed) if elapsed > 0 else 0
@@ -382,7 +381,14 @@ def _accumulate_spectra(
     return count_cube
 
 
-# --- precompute_flux_cube and its command line ---
+# --- precompute_flux_cube ---
+
+def _remove_earlier_split(model_dir: str, output_file: str) -> None:
+    """Once one cube is written as the grid's own (model_dir/flux_cube.bin), remove an earlier split of the grid,
+    whose variants_index.csv would otherwise be read as the grid's cubes (cube/check.py)."""
+    if os.path.abspath(output_file) == os.path.abspath(os.path.join(model_dir, "flux_cube.bin")):
+        _remove_variants(model_dir)
+
 
 def precompute_flux_cube(
     model_dir:     str,
@@ -418,7 +424,8 @@ def precompute_flux_cube(
     teff_vals, logg_vals, meta_vals = _parse_axes(lookup, lookup_file, file_col)
     _require_spectra(model_dir, file_names, lookup_file)
 
-    extra_cols = discover_extra_axes([col for col in lookup if col != file_col])  # the file column is no axis
+    extra_cols = discover_extra_axes({col: lookup[col] for col in lookup if col != file_col},
+                                     list(zip(teff_vals, logg_vals, meta_vals)))
     if extra_cols:
         print(f"Extra axes detected: {', '.join(extra_cols)}")
     else:
@@ -436,6 +443,7 @@ def precompute_flux_cube(
     if len(groups) <= 1:
         _warn_averaged_rows(lookup, range(len(file_names)), zip(teff_vals, logg_vals, meta_vals), output_file)
         _populate_and_write(model_dir, file_names, teff_vals, logg_vals, meta_vals, wavelengths, output_file, usable)
+        _remove_earlier_split(model_dir, output_file)
         _print_summary(output_file, teff_vals, logg_vals, meta_vals)
         return
 
@@ -453,5 +461,6 @@ def precompute_flux_cube(
         _build_mean_cube(groups, output_file, write_cube)
     elif cfg.strategy == "filter":
         _build_filtered_cube(cfg, groups, extra_cols, lookup, output_file, write_cube)
+    _remove_earlier_split(model_dir, output_file)
 
     _print_summary(output_file, teff_vals, logg_vals, meta_vals)

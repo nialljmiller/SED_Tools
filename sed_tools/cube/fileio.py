@@ -1,7 +1,7 @@
 """flux_cube.bin: four int32 axis lengths (Teff, log g, [M/H], wavelength), the four float64 axes, then the
 float64 flux in (wavelength, [M/H], log g, Teff) order with Teff varying fastest, as MESA reads it.
 
-Callers keep their own checks of a short or corrupt file, so each keeps the error it has always raised.
+Each reader checks a short or corrupt file itself.
 """
 
 import struct
