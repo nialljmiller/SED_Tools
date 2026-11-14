@@ -219,8 +219,8 @@ class NJMSpectraGrabber:
         logger.warning("NJM mirror: no directory listing for %s (%s); taking spectrum names from lookup_table.csv",
                        model_url, listing_problem)
         result['txt_files'] = list(self._fetch_remote_lookup(model_name, model_url))
-        for aux_name, category in [("lookup_table.csv", 'csv_files'), (f"{model_name}.h5", 'h5_files'),
-                                   ("flux_cube.bin", 'bin_files')]:
+        for aux_name, category in [("lookup_table.csv", 'csv_files'), ("variants_index.csv", 'csv_files'),
+                                   (f"{model_name}.h5", 'h5_files'), ("flux_cube.bin", 'bin_files')]:
             if self.session.head(urljoin(model_url, aux_name), timeout=5).status_code == 200:
                 result[category].append(aux_name)
         
@@ -412,6 +412,30 @@ class NJMSpectraGrabber:
         
         return counts, failures
 
+    def _download_variants(self, model_dir: str, model_url: str, counts: Dict[str, int]) -> List[str]:
+        """A split grid's variant folders as NJM serves them: each folder's flux_cube.bin and lookup_table.csv,
+        and links to the grid's spectra its lookup table lists (as a local split makes them), so the grid needs no
+        rebuild. Adds to ``counts``; returns the failures."""
+        from ..cube.variants import _link_spectra, _variant_paths
+
+        failures = []
+        for rel in _variant_paths(os.path.join(model_dir, "variants_index.csv")):
+            subdir = os.path.join(model_dir, rel)
+            os.makedirs(subdir, exist_ok=True)
+            for name in ("lookup_table.csv", "flux_cube.bin"):
+                status, error = self._fetch_file(subdir, urljoin(model_url, f"{rel}/"), name)
+                counts[status] += 1
+                print(f"    [{status}] {rel}/{name}")
+                if error:
+                    failures.append(f"{rel}/{error}")
+            lookup = os.path.join(subdir, "lookup_table.csv")
+            if os.path.isfile(lookup):
+                with open(lookup, newline="", encoding="utf-8") as fh:
+                    header = [c.strip().lstrip("#").strip() for c in fh.readline().split(",")]
+                    column = header.index(find_file_column(header) or header[0])
+                    _link_spectra(subdir, [row[column].strip() for row in csv.reader(fh) if row])
+        return failures
+
     def _select_spectra(self, model_name: str, model_url: str, txt_files: List[str],
                         teff_range, logg_range, meta_range) -> List[str]:
         """Apply the parameter cuts to the spectrum list using the remote lookup table.
@@ -497,11 +521,18 @@ class NJMSpectraGrabber:
             h5_files = []
             if has_param_cuts:
                 csv_files = []
+        split = "variants_index.csv" in csv_files and not (has_param_cuts or wl_range)
+        if split:  # its cubes are its variants' (below); a split grid has no cube of its own
+            bin_files = [f for f in bin_files if f != "flux_cube.bin"]
+            if os.path.isfile(os.path.join(model_dir, "flux_cube.bin")):
+                os.remove(os.path.join(model_dir, "flux_cube.bin"))
         aux_files = bin_files + h5_files + csv_files
         
         print(f"[njm] Downloading {len(txt_files)} spectra + {len(aux_files)} auxiliary for {model_name}...")
         
         counts, failures = self._download_files(model_dir, model_url, txt_files, aux_files)
+        if split and os.path.isfile(os.path.join(model_dir, "variants_index.csv")):
+            failures += self._download_variants(model_dir, model_url, counts)
         
         print(f"[njm] {model_name}: {counts['ok']} downloaded, {counts['skip']} skipped, {counts['fail']} failed")
         

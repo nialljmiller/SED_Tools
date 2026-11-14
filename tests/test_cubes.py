@@ -463,6 +463,32 @@ def a_split_grid_has_no_cube_of_its_own_and_photometry_names_its_variants(t):
 
 
 @row
+def a_split_grid_from_njm_comes_with_its_variant_folders_and_is_not_rebuilt(t):
+    # NJM serves Kurucz2003all and Husfeld split, each variant's folder with its cube and lookup table, but the client
+    # took only the top-level files (and NJM's top-level copy of a variant's cube): SED.fetch rebuilt the grid, and
+    # sed-tools grids rebuilt it on every download.
+    from sed_tools.api import SED as API
+    from sed_tools.cube import build
+    from support import GridServer, run_cli
+
+    root = t.tmp / "njm"
+    served = _kurucz_alpha(root / "stellar_models" / GRID, build=True)
+    variant = f"{GRID}_alpha_0p00_lh_1p25_vtur_2_km_s"
+    shutil.copy2(served / variant / "flux_cube.bin", served / "flux_cube.bin")  # until NJM drops its copy
+    (root / "index.json").write_text('{"models": ["%s"]}' % GRID)
+    t.mp.setattr("sed_tools.grids.njm.requests.Session", GridServer(root))
+    builds = []
+    t.mp.setattr(build, "precompute_flux_cube", lambda *args, **kwargs: builds.append(args))
+    API.fetch(GRID, source="njm", model_root=t.tmp / "api")
+    assert run_cli(t.mp, "grids", "--source", "njm", "--grids", GRID, "--base", str(t.tmp / "cli")) == 0
+    for folder in (t.tmp / "api" / GRID, t.tmp / "cli" / GRID):
+        assert not (folder / "flux_cube.bin").exists() and _flux_cube_shortfall(folder) is None
+        assert (folder / variant / "flux_cube.bin").read_bytes() == (served / variant / "flux_cube.bin").read_bytes()
+        assert [v.label for v in list_variants(folder)] == ["alpha_0", "alpha_0.4"]
+    assert builds == []
+
+
+@row
 def a_spectrum_zero_at_every_sampled_wavelength_is_still_found(t):
     """A spectrum covering only part of the cube's wavelengths is zero elsewhere (resample_to_grid)."""
     flux = np.zeros((3, 1, 1, 20))  # the sampled wavelength planes are 2, 4, 6, 8, 11, 13, 15, 17

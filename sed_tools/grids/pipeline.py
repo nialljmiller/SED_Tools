@@ -106,7 +106,8 @@ def _build_data_products(name: str, model_dir: str, src: str, force_bundle_h5: b
                          build_flux_cube: bool) -> List[str]:
     """Build the HDF5 bundle, lookup table and flux cube of a downloaded grid; returns what was not done.
 
-    A bundle or cube lacking spectra beside it is rebuilt; with ``build_flux_cube`` False such a cube is a problem.
+    A bundle or cube lacking spectra beside it is rebuilt, and one holding every spectrum is kept (NJM serves both,
+    and a split grid's variant cubes); with ``build_flux_cube`` False a cube lacking spectra is a problem.
     """
     out_h5 = str(_bundle_path(model_dir, name))
     fresh = force_bundle_h5 or not os.path.exists(out_h5)
@@ -130,7 +131,12 @@ def _build_data_products(name: str, model_dir: str, src: str, force_bundle_h5: b
                     f"Rebuild it with: {_rebuild_command(name, model_dir)}"]
         return []
 
-    written = _build_flux_cube(model_dir)
+    cube = _flux_cube_file(Path(model_dir))
+    if cube is not None and _flux_cube_shortfall(Path(model_dir)) is None:
+        written = cube
+        print(f"Flux cube     : {cube.name} (holds every spectrum; kept)")
+    else:
+        written = _build_flux_cube(model_dir)
     if written.name == "variants_index.csv":
         _print_subgrids(model_dir, written)
     else:

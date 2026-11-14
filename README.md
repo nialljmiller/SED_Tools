@@ -817,7 +817,7 @@ sed.grid.write('/custom/output/path')
 - A folder that already holds every spectrum within the bounds, with a flux cube holding every spectrum there (the whole grid, or a wider selection), is cut as it stands: nothing is downloaded or rewritten. Whether the cube holds them is read from the cube and the lookup table, not from file times, so a grid copied without its times (`cp -R`, `scp`) counts as complete.
 - A later fetch without bounds, or with wider ones, downloads the rest and rebuilds the lookup table, bundle and flux cube from every spectrum in the folder.
 - Separate selections fetched into one folder (say Teff ≤ 5800 with log g ≤ 4.2, then Teff ≥ 6200 with log g ≥ 4.3) leave points of the flux cube's Teff × log g × [M/H] grid without a spectrum, whose flux is zero and pulls interpolation near them toward zero.
-- A whole grid from NJM comes with NJM's flux cube. For a grid from SVO, or a whole grid from MSG, build it with `sed-tools rebuild --grids NAME`.
+- A whole grid from NJM comes with NJM's flux cube, or, for a grid split into variants, with each variant's folder and cube; neither `SED.fetch` nor `sed-tools grids` rebuilds a cube that holds every spectrum beside it. For a grid from SVO, or a whole grid from MSG, build it with `sed-tools rebuild --grids NAME`.
 - `sed.grid.write()` without a path writes into the grid's own folder, replacing its spectra with copies whose header keeps only Teff, log g, [M/H] and the units; give it another folder.
 
 #### Loading Local Data
