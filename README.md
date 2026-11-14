@@ -676,7 +676,7 @@ sed-tools ml_generator --auto --library data/stellar_models/Kurucz2003all --outp
 
 ### `sed-tools densify`
 
-Fill coarse Teff gaps in an existing flux cube to eliminate stair-stepping artefacts in MESA photometric outputs. New Teff nodes are filled with ML predictions (when a generator model is provided and the point is within its training range) or a Planck blackbody scaled to the nearest real SED's bolometric flux. The densifier reads the source cube through `np.memmap` and builds the dense cube one block of wavelengths at a time, with blocks sized to half the available RAM, so cubes larger than memory are handled.
+Fill coarse Teff gaps in an existing flux cube to eliminate stair-stepping artefacts in MESA photometric outputs. New Teff nodes are filled with ML predictions (when a generator model is provided and the point is within its training range) or a Planck blackbody scaled to the nearest real SED's bolometric flux (a Teff beside a node that holds no spectrum stays empty there). The densifier reads the source cube through `np.memmap` and builds the dense cube one block of wavelengths at a time, with blocks sized to half the available RAM, so cubes larger than memory are handled. The source grid's `lookup_table.csv`, which MESA requires beside the cube, is copied beside the output.
 
 ```bash
 # Densify with blackbody fallback (no ML model)

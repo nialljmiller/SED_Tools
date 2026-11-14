@@ -7,6 +7,7 @@ The dense cube is written a block of wavelengths at a time (contiguous in the fi
 from __future__ import annotations
 
 import os
+import shutil
 import struct
 import time
 from typing import Optional
@@ -42,10 +43,11 @@ def _build_dense_teff(teff_orig, spacing):
 
 
 def _blackbody_scales(flux_orig, teff_orig, wavelengths):
-    """Each real node's bolometric flux over its Teff's blackbody (1 where either is <= 0), indexed [teff, logg, meta];
-    computed one node at a time, so no (nt, nw) array is held."""
+    """Each real node's bolometric flux over its Teff's blackbody, indexed [teff, logg, meta]: 0 where either is
+    <= 0, so a synthetic Teff beside an empty node stays empty. Computed one node at a time, so no (nt, nw) array is
+    held."""
     _, nm, nl, nt = flux_orig.shape
-    bb_scale = np.ones((nt, nl, nm), dtype=np.float64)
+    bb_scale = np.zeros((nt, nl, nm), dtype=np.float64)
     for i_t in range(nt):
         bb_bol = np.trapezoid(_blackbody(wavelengths, teff_orig[i_t]), wavelengths)
         if not bb_bol > 0:  # also skips NaN
@@ -146,7 +148,8 @@ def densify_grid(
     teff_spacing : target Teff spacing in K (default 1000)
     ml_model     : path to a trained SEDGenerator model directory
 
-    Raises RuntimeError if the ML model fails at any node; dst is then incomplete.
+    The source grid's lookup_table.csv, which MESA requires beside a flux cube, is copied beside dst. Raises
+    RuntimeError if the ML model fails at any node; dst is then incomplete.
     """
     print(f"\n{'='*60}")
     print("SED_Tools Grid Densifier")
@@ -189,6 +192,11 @@ def densify_grid(
                           logg_grid, meta_grid, wavelengths, bb_scale, generator, dst)
 
     print(f"  Written: {nt_new} × {nl} × {nm} × {nw}  ({os.path.getsize(dst) / (1024**2):.1f} MiB)")
+    lookup = os.path.join(os.path.dirname(os.path.abspath(src)), "lookup_table.csv")
+    dst_lookup = os.path.join(os.path.dirname(os.path.abspath(dst)), "lookup_table.csv")
+    if os.path.isfile(lookup) and lookup != dst_lookup:
+        shutil.copy2(lookup, dst_lookup)
+        print(f"  Lookup table: {dst_lookup} (the source grid's, which MESA reads beside the cube)")
     print(f"{'='*60}\n")
 
 

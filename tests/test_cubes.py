@@ -725,6 +725,22 @@ def every_densified_node_integrates_to_sigma_t4(t):
             assert ratio == pytest.approx(1.0, rel=0.02), (cube.teff_grid[i_t], i_l, i_m)
 
 
+@row
+def densify_leaves_a_hole_empty_and_writes_the_lookup_table_mesa_needs(t):
+    # A synthetic Teff beside an empty node got an unscaled blackbody, so a hole became zeros and blackbodies along
+    # Teff (4.0e6 at 5000 K, log g 5, here); and the output had no lookup_table.csv, which MESA stops without.
+    flux = np.zeros((2, 2, 1, 7))
+    flux[:, 0, 0] = _constants.planck_flam(np.linspace(3000.0, 9000.0, 7), np.array([[4000.0], [6000.0]]))
+    write_flux_cube(t.tmp / "src" / "flux_cube.bin", [4000.0, 6000.0], [4.0, 5.0], [0.0], np.linspace(3e3, 9e3, 7),
+                    flux)
+    (t.tmp / "src" / "lookup_table.csv").write_text("#file_name,teff,logg,meta\na.txt,4000,4.0,0\nb.txt,6000,4.0,0\n")
+    densify_grid(str(t.tmp / "src" / "flux_cube.bin"), str(t.tmp / "dense" / "flux_cube.bin"), teff_spacing=1000.0)
+    dense = FluxCube.from_file(str(t.tmp / "dense" / "flux_cube.bin"))
+    assert dense.teff_grid.tolist() == [4000.0, 5000.0, 6000.0]
+    assert dense.flux[:, 0, 0].any(axis=1).tolist() == [True] * 3 and not dense.flux[:, 1].any()
+    assert (t.tmp / "dense" / "lookup_table.csv").read_text() == (t.tmp / "src" / "lookup_table.csv").read_text()
+
+
 def _ml_generator(t, generate):
     """sed_tools.ml.generator's SEDGenerator replaced by one whose ``generate`` is this function."""
     fake = types.ModuleType("sed_tools.ml.generator")
