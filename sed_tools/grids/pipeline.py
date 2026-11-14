@@ -11,7 +11,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 from ..cube.check import _bundle_shortfall, _flux_cube_file, _flux_cube_shortfall, _variant_paths
 from ..cube.model import STELLAR_DIR_DEFAULT
-from ..ui_utils import wrap
+from ..ui_utils import ordered_range, wrap
 from . import mast, msg, njm, svo
 from .header_parser import parse_header
 from .lookup import regenerate_lookup_table
@@ -69,13 +69,15 @@ def _parameter_cuts(teff_min, teff_max, logg_min, logg_max, metallicity_min,
                     metallicity_max) -> Dict[str, Tuple[float, float]]:
     """The grabbers' ``teff_range``, ``logg_range`` and ``meta_range`` for the bounds given.
 
-    A bound of 0 is a bound; an axis bounded on one side only is open on the other.
+    A bound of 0 is a bound; an axis bounded on one side only is open on the other. A low bound above
+    its high bound raises ValueError (``ordered_range``).
     """
     cuts = {}
     for name, low, high in (("teff_range", teff_min, teff_max), ("logg_range", logg_min, logg_max),
                             ("meta_range", metallicity_min, metallicity_max)):
         if low is not None or high is not None:
-            cuts[name] = (-math.inf if low is None else float(low), math.inf if high is None else float(high))
+            cuts[name] = ordered_range(-math.inf if low is None else float(low),
+                                       math.inf if high is None else float(high))
     return cuts
 
 

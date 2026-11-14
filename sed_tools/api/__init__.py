@@ -502,7 +502,8 @@ class SED:
         ValueError
             If no source could supply the grid; the message gives each source's error.
             Also if the spectra do not declare their flux unit and flux_unit is not
-            given; the message gives the best guess.
+            given; the message gives the best guess. Also if a minimum is above
+            its maximum, before anything is downloaded.
         KeyError
             If flux_unit is not a known name, before anything is downloaded.
         RuntimeError
@@ -512,6 +513,7 @@ class SED:
         if flux_unit is not None:
             from ..grids.units import FLUX_UNITS
             FLUX_UNITS[flux_unit]  # the conversion, looked up before anything is downloaded
+        cuts = _parameter_cuts(teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)
         base_dir = Path(model_root) if model_root else cls._model_root
         base_dir.mkdir(parents=True, exist_ok=True)
 
@@ -520,7 +522,6 @@ class SED:
         else:
             sources_to_try, failures = [source], []
         model_dir = base_dir / catalog
-        cuts = _parameter_cuts(teff_min, teff_max, logg_min, logg_max, metallicity_min, metallicity_max)
         created = not model_dir.exists()
         before = _directory_state(model_dir)
         used_source = cls._download_from_first_source(catalog, sources_to_try, failures, model_dir, workers, cuts)

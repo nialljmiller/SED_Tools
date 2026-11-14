@@ -31,7 +31,7 @@ from sed_tools.ml.generator import SEDGenerator
 from sed_tools.photometry import AB_ZERO_FLUX
 
 from support import (CLEAN, GRABBERS, GRID, KURUCZ, STALE, answer, atmosphere_site, cpu_torch, fake_grabber,
-                     filters_api, njm_grids, scenarios, tiny_library, write_flux_cube)
+                     filters_api, njm_grids, run_cli, scenarios, tiny_library, write_flux_cube)
 
 SCENARIOS, row = scenarios()
 
@@ -437,6 +437,26 @@ def coverage_reports_a_local_grid(t):
     summary = SED.coverage(GRID, model_root=t.tmp, plot=False)
     assert summary["n_spectra"] == 12 and summary["axes"]["teff"]["unique"].tolist() == [5750.0, 6000.0, 6250.0]
     assert f"Coverage: {GRID}" in t.capsys.readouterr().out
+
+
+@row
+def a_reversed_range_raises_from_the_cli_flags_fetch_the_grid_finder_and_mast(t):
+    # One rule (ui_utils.ordered_range), as in the menus and the ML completer. The CLI flags passed a reversed
+    # cut on, SED.fetch looked for spectra within it, and find_grids/find_model and the MAST cuts swapped its ends.
+    from sed_tools.grids import mast
+
+    assert run_cli(t.mp, "grids", "--source", "svo", "--models", "X", "--base", str(t.tmp),
+                   "--teff", "8000", "3500") == 1
+    assert "8000 to 3500 is reversed" in t.capsys.readouterr().err
+    with pytest.raises(ValueError, match="reversed"):
+        SED.fetch("X", source="svo", teff_min=8000, teff_max=3500, model_root=t.tmp / "fetched")
+    assert not (t.tmp / "fetched").exists()  # raised before anything was made or asked
+    with pytest.raises(ValueError, match="reversed"):
+        GridFinder(model_root=t.tmp).find_grids(teff_range=(8000, 3500))
+    with pytest.raises(ValueError, match="reversed"):
+        mast._in_range(5000.0, (8000.0, 3500.0))
+    with pytest.raises(ValueError, match="reversed"):
+        mast._apply_wl_range(np.array([1.0, 2.0]), np.array([1.0, 1.0]), None, (2.0, 1.0))
 
 
 # ----------------------------------------------------------------------

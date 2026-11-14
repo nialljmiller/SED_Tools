@@ -23,7 +23,7 @@ from ..filters.njm_catalogue import CatalogueError
 from ..grids.units import FLUX_UNITS
 from ..grids.pipeline import local_grids
 from ..terminal_plots import terminal_color_enabled
-from ..ui_utils import _ansi, missing_package_error, refused_without
+from ..ui_utils import _ansi, missing_package_error, ordered_range, refused_without
 from .filters import (
     _UNSTATED, _availability_errors, _catalogue_entry, _print_filter_set, run_filter_combine_flow,
     run_filter_compose_flow, run_filter_info_flow, run_filters_flow,
@@ -315,8 +315,8 @@ def _add_grid_tool_parsers(sub) -> None:
 # and returns the process exit status: 0 done, 1 failed, 2 usage error.
 
 def _range(values) -> Optional[Tuple[float, float]]:
-    """A ``--NAME LOW HIGH`` cut as ``(low, high)``, or None when not given."""
-    return None if values is None else tuple(values)
+    """A ``--NAME LOW HIGH`` cut as ``(low, high)``, or None when not given; reversed, ValueError."""
+    return None if values is None else ordered_range(*values)
 
 
 def _cmd_grids(args, parser):
