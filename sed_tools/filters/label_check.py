@@ -244,8 +244,9 @@ def main(argv=None) -> int:
     parser.add_argument("filters_dir", type=Path, help="Facility/Instrument/*.dat tree, e.g. data/filters")
     parser.add_argument("--against", type=Path, help="the tree it replaces, e.g. the last release's filters")
     args = parser.parse_args(argv)
-    if not args.filters_dir.is_dir():
-        parser.error(f"{args.filters_dir} is not a directory")
+    for tree in (args.filters_dir, args.against):
+        if tree is not None and not tree.is_dir():
+            parser.error(f"{tree} is not a directory")
     found = list(problems(args.filters_dir, args.against))
     for path, message in found:
         print(f"ERROR {path}: {message}", file=sys.stderr)

@@ -427,7 +427,10 @@ class InstrumentManifest:
     @classmethod
     def from_headers(cls, facility: str, instrument: str,
                      headers: Mapping[str, Mapping[str, str]]) -> "InstrumentManifest":
-        """Describe local headers or SVO metadata without downloading files."""
+        """Describe local headers or SVO metadata without downloading files.
+
+        ComponentError when a band's ``Components`` header names no known roles: the set cannot be described.
+        """
         bands = sorted(headers)
         published_bands: Dict[str, str] = {}
         sources = set()
@@ -440,9 +443,7 @@ class InstrumentManifest:
             try:
                 roles = parse_components(header.get("Components"))
             except ComponentError as exc:
-                logger.warning("%s/%s band %s: %s in its Components header; its published contents "
-                               "are treated as unknown", facility, instrument, band, exc)
-                roles = ()
+                raise ComponentError(f"{facility}/{instrument} band {band}: {exc} in its Components header") from exc
             if roles:
                 published_bands[band] = recipe_name(roles)
                 if roles == (FILTER,):

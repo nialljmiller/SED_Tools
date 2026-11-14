@@ -1854,12 +1854,20 @@ def unreadable_installed_catalogue_file_is_refused(t):
 
 
 @default_svo_row
-def unknown_components_header_is_reported(t):
+def unknown_components_header_stops_the_description(t):
     headers = {"g": {"Components": "filter+warp"}, "r": {"Components": "filter"}}
-    with t.caplog.at_level(logging.WARNING):
-        manifest = InstrumentManifest.from_headers("Fac", "Cam", headers)
-    assert manifest.published_bands == {"r": "filter"}
-    assert "Fac/Cam band g" in t.caplog.text and "'warp'" in t.caplog.text
+    with pytest.raises(ComponentError, match=r"Fac/Cam band g: .*'warp'.* in its Components header"):
+        InstrumentManifest.from_headers("Fac", "Cam", headers)
+
+
+@default_svo_row
+def label_check_refuses_a_tree_to_compare_with_that_is_not_there(t):
+    from sed_tools.filters import label_check
+
+    (t.tmp / "new").mkdir()
+    with pytest.raises(SystemExit) as stop:
+        label_check.main([str(t.tmp / "new"), "--against", str(t.tmp / "old")])
+    assert stop.value.code == 2 and f"{t.tmp / 'old'} is not a directory" in t.capsys.readouterr().err
 
 
 # filters/njm.py, on a stand-in session
