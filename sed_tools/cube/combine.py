@@ -126,7 +126,9 @@ def load_model_data(model_path):
     if teff_col is None:
         raise ValueError(f"{lookup_file} has no Teff column (teff, t_eff, temperature or temp); "
                          "a grid cannot be combined without it.")
-    extra = discover_extra_axes([col for col in columns if col not in (file_col, teff_col, logg_col, meta_col)])
+    extra = discover_extra_axes({col: df[col].values for col in columns
+                                 if col not in (file_col, teff_col, logg_col, meta_col)},
+                                list(zip(*(df[col].values for col in (teff_col, logg_col, meta_col) if col))))
     return {
         "files": df[file_col].values,
         "teff": df[teff_col].values,

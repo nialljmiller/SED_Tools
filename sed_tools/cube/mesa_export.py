@@ -77,7 +77,9 @@ def list_variants(model_dir: str | os.PathLike) -> List[VariantInfo]:
         return _split_variants(model_dir)
 
     master_cube = model_dir / "flux_cube.bin"
-    axes = discover_extra_axes(list(df.columns))
+    finders = (find_teff_column, find_logg_column, find_metallicity_column)
+    nodes = zip(*(pd.to_numeric(df[col], errors="coerce") for col in (find(df.columns) for find in finders) if col))
+    axes = discover_extra_axes({col: df[col] for col in df.columns}, list(nodes))
     varying = _varying_columns(df, axes)
     if varying:
         if not master_cube.exists():

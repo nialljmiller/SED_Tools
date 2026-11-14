@@ -912,15 +912,18 @@ def _averaged_rows(model_dir, caplog, **override):
 
 
 @row
-def bosz_bookkeeping_columns_that_vary_are_named_when_averaged(t):
-    # am, cm and vturb are not extra axes, so rows differing only there share a node.
+def a_column_that_tells_apart_spectra_at_one_node_splits_the_grid(t):
+    # BOSZ's am, cm, vturb and atmos were bookkeeping by name ("MAST BOSZ specific"), so rows differing in them were
+    # averaged onto one node, with a warning. Only what SED_Tools writes to describe a file is bookkeeping now: a
+    # column that tells apart spectra at one node splits the grid, and one that varies only between nodes (atmos
+    # here, hres's model code on NJM) labels the spectra and splits nothing.
     grid = _write_grid(t.tmp / "BOSZ", [
-        ("a.txt", 5000, 4.0, 0.0, 0.0, 0.0, 1), ("b.txt", 5000, 4.0, 0.0, 0.4, 0.0, 2),
-        ("c.txt", 6000, 4.0, 0.0, 0.0, 0.0, 1), ("d.txt", 6000, 4.0, 0.0, 0.0, 0.0, 1),
-        ("e.txt", 6000, 4.5, 0.0, 0.0, 0.0, 1)], (*COLUMNS, "am", "cm", "vturb"))
-    assert _averaged_rows(grid, t.caplog) == [
-        f"{grid / 'flux_cube.bin'}: 4 lookup rows were averaged onto 2 (Teff, logg, [M/H]) node(s), so each "
-        "of those nodes holds a mean spectrum. The averaged rows differ in: am, vturb."]
+        ("a.txt", 5000, 4.0, 0.0, 0.0, 0.0, 1, "ap"), ("b.txt", 5000, 4.0, 0.0, 0.4, 0.0, 2, "ap"),
+        ("c.txt", 6000, 4.0, 0.0, 0.0, 0.0, 1, "mp"), ("d.txt", 6000, 4.0, 0.0, 0.4, 0.0, 2, "mp")],
+        (*COLUMNS, "am", "cm", "vturb", "atmos"))
+    assert _averaged_rows(grid, t.caplog) == []
+    assert sorted(p.name for p in grid.iterdir() if p.is_dir()) == [
+        "BOSZ_am_0p00_cm_0p00_vturb_1p00", "BOSZ_am_0p40_cm_0p00_vturb_2p00"]
 
 
 @row
@@ -940,13 +943,13 @@ def a_grid_with_one_row_per_node_does_not_warn(t):
 
 @row
 def split_and_filter_cubes_report_their_own_averaged_rows(t):
-    columns = (*COLUMNS, "alpha", "vturb")
-    rows = [("a.txt", 5000, 4.0, 0.0, "0.0", 1), ("b.txt", 5000, 4.0, 0.0, "0.0", 2),
-            ("c.txt", 5000, 4.0, 0.0, "0.4", 1)]
+    columns = (*COLUMNS, "alpha", "source")
+    rows = [("a.txt", 5000, 4.0, 0.0, "0.0", "x"), ("b.txt", 5000, 4.0, 0.0, "0.0", "y"),
+            ("c.txt", 5000, 4.0, 0.0, "0.4", "x")]
     split = _write_grid(t.tmp / "Split", rows, columns)
     (message,) = _averaged_rows(split, t.caplog)
     assert message.startswith(f"{split / 'Split_alpha_0p00' / 'flux_cube.bin'}: 2 lookup rows were averaged")
-    assert message.endswith("differ in: vturb.")
+    assert message.endswith("differ in: source.")
 
     t.caplog.clear()
     filtered = _write_grid(t.tmp / "Filtered", rows, columns)
