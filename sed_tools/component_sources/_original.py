@@ -41,28 +41,22 @@ CONNECT_TIMEOUT = 10.0
 
 
 class Fetcher:
-    """Download each URL once per build through a ``requests``-like session."""
+    """Download each URL once per build through a ``requests``-like session.
+
+    ``session`` is that session wrapped in a :class:`CachingSession`, so whatever else the build
+    downloads through it (an instrument's team sites) shares the one cache.
+    """
 
     def __init__(self, session=None, timeout: Union[float, Tuple[float, float]] = (CONNECT_TIMEOUT, 300)):
-        if session is None:
-            import requests
-
-            session = requests.Session()
-            session.headers["User-Agent"] = USER_AGENT
-        self.session = session
+        self.session = CachingSession(session)
         self.timeout = timeout
-        self._cache: Dict[str, bytes] = {}
 
     def get(self, url: str, *, allow_html: bool = False) -> bytes:
-        if url not in self._cache:
-            resp = self.session.get(url, timeout=self.timeout)
-            resp.raise_for_status()
-            data = resp.content
-            head = data[:512].lstrip().lower()
-            if not allow_html and (head.startswith(b"<!doctype html") or head.startswith(b"<html")):
-                raise ValueError(f"{url} returned HTML, not data")
-            self._cache[url] = data
-        return self._cache[url]
+        data = self.session.get(url, timeout=self.timeout).content
+        head = data[:512].lstrip().lower()
+        if not allow_html and (head.startswith(b"<!doctype html") or head.startswith(b"<html")):
+            raise ValueError(f"{url} returned HTML, not data")
+        return data
 
     def text(self, url: str, encoding: str = "utf-8", errors: str = "strict", **kw) -> str:
         return self.get(url, **kw).decode(encoding, errors)
