@@ -13,8 +13,8 @@ from .terminal_plots import terminal_color_enabled, terminal_width
 def ordered_range(low: float, high: float) -> Tuple[float, float]:
     """``(low, high)`` as given; ValueError when ``low`` is above ``high``.
 
-    The one rule for a range typed at a menu or given to the API: a reversed range is neither swapped
-    nor asked for again. Equal ends are a range of one value.
+    The one rule for a range typed at a menu prompt or given to the ML completer: a reversed range is
+    neither swapped nor asked for again. Equal ends are a range of one value.
     """
     if low > high:
         raise ValueError(f"The range {low:g} to {high:g} is reversed: give the lower end first")

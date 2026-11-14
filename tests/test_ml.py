@@ -380,9 +380,9 @@ def extend_catalog_extends_each_spectrum_with_its_own_parameters(t):
     for name, (lo, hi) in zip(names, [(3000, 20000), (2000, 30000), (400, 70000)]):  # c.txt covers the range
         write_spectrum(catalog / name, lo, hi)
     write_lookup_csv({"file_name": names, "teff": [4500.0, 5800.0, 7200.0],
-                      "logg": [4.0, 4.4, 3.5], "metallicity": [-1.0, 0.0, 0.3]},
+                      "logg": [4.0, 4.4, 3.5], "metallicity": [-1.0, 0.0, 0.3], "extra": ["x", "y", "z"]},
                      str(catalog / "lookup_table.csv"))
-    assert (catalog / "lookup_table.csv").read_text().startswith("#file_name,teff,logg,metallicity\n")
+    assert (catalog / "lookup_table.csv").read_text().startswith("#file_name,teff,logg,metallicity,extra\n")
     completer = stubbed_completer()
     out_dir = t.tmp / "out"
 
@@ -393,11 +393,11 @@ def extend_catalog_extends_each_spectrum_with_its_own_parameters(t):
     assert completer._completer.calls == [(4500.0, 4.0, -1.0), (5800.0, 4.4, 0.0)]
     assert completer._completer.ranges == [(500.0, 60000.0)] * 2
     assert (out_dir / "lookup_table.csv").read_text().splitlines()[0] == (
-        "file_name,teff,logg,metallicity,extended_by_ml,wl_min,wl_max")
+        "file_name,teff,logg,metallicity,extra,extended_by_ml,wl_min,wl_max")  # other columns are carried
     written = pd.read_csv(out_dir / "lookup_table.csv")
     assert written["file_name"].tolist() == names
-    assert written[["teff", "logg", "metallicity"]].values.tolist() == [
-        [4500.0, 4.0, -1.0], [5800.0, 4.4, 0.0], [7200.0, 3.5, 0.3]]
+    assert written[["teff", "logg", "metallicity", "extra"]].values.tolist() == [
+        [4500.0, 4.0, -1.0, "x"], [5800.0, 4.4, 0.0, "y"], [7200.0, 3.5, 0.3, "z"]]
     assert sorted(p.name for p in out_dir.glob("*.txt")) == names
 
 
