@@ -94,6 +94,22 @@ sed\_tools.filters.curve\_metadata module
    :show-inheritance:
    :undoc-members:
 
+sed\_tools.filters.detector\_edit module
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: sed_tools.filters.detector_edit
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
+sed\_tools.filters.label\_check module
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: sed_tools.filters.label_check
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 sed\_tools.filters.njm module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

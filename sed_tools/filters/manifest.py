@@ -1,7 +1,7 @@
 """One instrument folder as it is on disk: its manifest, the component vocabulary and the MESA index file.
 
-Nothing here downloads or multiplies curves.  :mod:`.compose` multiplies components into products
-(and re-exports every name here); :mod:`.library` decides where a set's curves come from.
+Nothing here downloads or multiplies curves.  :mod:`.compose` multiplies components into products;
+:mod:`.library` decides where a set's curves come from.
 """
 
 from __future__ import annotations
