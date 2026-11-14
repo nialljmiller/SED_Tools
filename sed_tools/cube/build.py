@@ -179,6 +179,8 @@ def _allocate_cube(teff_grid, logg_grid, meta_grid, wavelengths, tmp_path=None) 
 
 def _write_cube(output_file: str, teff_grid, logg_grid, meta_grid, wavelengths, flux_cube: np.ndarray,
                 usable_ram: int) -> None:
+    """Write the cube (Teff, log g, [M/H], wavelength; in RAM or memory-mapped) as MESA reads it, a part of
+    wavelengths at a time: each part is one copy of about usable_ram / 2 bytes."""
     nt, nl, nm, nw = len(teff_grid), len(logg_grid), len(meta_grid), len(wavelengths)
     tlm = nt * nl * nm
     w_chunk = max(1, usable_ram // (tlm * 2 * 8))
@@ -192,11 +194,9 @@ def _write_cube(output_file: str, teff_grid, logg_grid, meta_grid, wavelengths, 
         write_header(f, teff_grid, logg_grid, meta_grid, wavelengths)
         for ci in range(n_chunks):
             w0, w1 = ci * w_chunk, min((ci + 1) * w_chunk, nw)
-            chunk = np.array(flux_cube[:, :, :, w0:w1])
-            chunk_t = np.ascontiguousarray(np.transpose(chunk, (3, 2, 1, 0)))
-            del chunk
-            chunk_t.astype(np.float64).tofile(f)
-            del chunk_t
+            part = np.ascontiguousarray(flux_cube[:, :, :, w0:w1].transpose(3, 2, 1, 0), dtype=np.float64)
+            part.tofile(f)
+            del part
             if n_chunks > 1:
                 elapsed = time.time() - t0
                 eta = (n_chunks - ci - 1) / ((ci + 1) / elapsed) if elapsed > 0 else 0

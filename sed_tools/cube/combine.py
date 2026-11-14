@@ -12,15 +12,16 @@ back in: a grid whose lookup table has the ``source_model`` and ``original_file`
 import itertools
 import os
 import shutil
+import tempfile
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
+from .build import _write_cube as _write_cube_in_parts
 from .build import compute_common_wavelengths, resample_to_grid
 from .collision import _normalise_key, _value, discover_extra_axes
-from .fileio import write_header
 from .variants import _link_spectra, _remove_variants, _subdir_names
 from ..ui_utils import banner
 from ..grids.lookup import find_logg_column, find_metallicity_column, find_teff_column, write_lookup_csv
@@ -30,6 +31,9 @@ from ..grids.spectrum_io import read_text_spectrum
 # The lookup columns only save_combined_data writes, and the default output name.
 _COMBINED_COLUMNS = {"source_model", "original_file"}
 _DEFAULT_COMBINED_NAME = "combined_models"
+
+# A combined cube is built on disk and written in parts of about this many bytes, so memory stays small.
+_PART_BYTES = 256 * 2**20
 
 
 def find_stellar_models(base_dir=None):
@@ -210,21 +214,22 @@ def _rank(data):
     return 2 - len(data.get("unstated", ())) + data.get("variant_axes", 0)
 
 
-def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid):
-    """Build the combined flux cube from all spectral grids.
+def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, wavelength_grid, path):
+    """Build the combined flux cube from all spectral grids, on disk at ``path`` (a memory-mapped file of shape
+    (Teff, log g, [M/H], wavelength), one node's spectrum after another), so memory holds one spectrum at a time.
 
     Each spectrum keeps the absolute flux in its file (the cleaner ties it to the spectrum's own sigma T^4): no
     spectrum is scaled to another grid's. Each fills the nodes :func:`_placements` gives it; a node no spectrum
-    fills stays at zero, as in the cube builder. Raises ValueError, before anything is written, listing every
+    fills stays at zero, as in the cube builder. Raises ValueError, before the combination is written, listing every
     spectrum that cannot be read or has non-finite parameters.
     """
     n_teff, n_logg, n_meta, n_lambda = len(teff_grid), len(logg_grid), len(meta_grid), len(wavelength_grid)
 
-    flux_cube = np.zeros((n_teff, n_logg, n_meta, n_lambda))
+    flux_cube = np.memmap(path, dtype=np.float64, mode="w+", shape=(n_teff, n_logg, n_meta, n_lambda))
     source_map = np.full((n_teff, n_logg, n_meta), -1, dtype=int)
 
     print(f"\nBuilding flux cube: {flux_cube.shape}")
-    print(f"Memory: {flux_cube.nbytes / (1024**2):.1f} MB")
+    print(f"On disk: {flux_cube.nbytes / (1024**2):.1f} MB")
 
     placed, failed = _placements(all_models_data, teff_grid, logg_grid, meta_grid)
     failures = list(failed.values())
@@ -284,10 +289,9 @@ def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,
 
 
 def _write_cube(path, grids, wavelength_grid, flux_cube):
-    with open(path, "wb") as f:
-        write_header(f, *grids, wavelength_grid)
-        # Transpose to (wavelength, meta, logg, teff) for Fortran column-major order
-        flux_cube.transpose(3, 2, 1, 0).astype(np.float64).tofile(f)
+    """The cube as MESA reads it, written as the cube builder writes one: in parts of wavelengths of about
+    _PART_BYTES each."""
+    _write_cube_in_parts(path, *grids, wavelength_grid, flux_cube, _PART_BYTES)
     print(f"\nSaved flux cube: {path}")
 
 
@@ -436,19 +440,38 @@ def write_combined_grid(all_models_data, output_dir, visualization=True):
     its spectra and its flux_cube.bin, so no spectrum collides with or overwrites another variant's. Every cube is
     built before anything is written: a spectrum that cannot be read or placed stops the combine with nothing written.
     What an earlier combine wrote in output_dir is then replaced (:func:`_remove_previous_output`).
+
+    The cubes are built on disk, in a hidden folder beside output_dir that is removed at the end, and written in
+    parts, so memory holds about one spectrum and one part (_PART_BYTES) at a time, however large the cubes.
     """
     wavelength_grid = create_common_wavelength_grid(all_models_data)
-    built = []
-    for key, grids in _variants(all_models_data):
-        if key:
-            print("\nVariant " + ", ".join(f"{column} = {value}" for column, value in key))
-        axes = create_unified_grid(grids)
-        flux_cube, source_map = build_combined_flux_cube(grids, *axes, wavelength_grid)
-        built.append((key, grids, axes, flux_cube, source_map))
+    parent = os.path.dirname(os.path.abspath(output_dir))
+    os.makedirs(parent, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=".combine-", dir=parent) as work:
+        built = []
+        for number, (key, grids) in enumerate(_variants(all_models_data)):
+            if key:
+                print("\nVariant " + ", ".join(f"{column} = {value}" for column, value in key))
+            axes = create_unified_grid(grids)
+            path = os.path.join(work, f"{number}.cube")
+            flux_cube, source_map = build_combined_flux_cube(grids, *axes, wavelength_grid, path)
+            flux_cube.flush()
+            del flux_cube  # unmapped until it is written
+            built.append((key, grids, axes, path, source_map))
+        _remove_previous_output(output_dir)
+        _write_combination(built, all_models_data, output_dir, wavelength_grid, visualization)
 
-    _remove_previous_output(output_dir)
+
+def _built_cube(path, axes, wavelength_grid):
+    """A cube build_combined_flux_cube left on disk, mapped again for reading."""
+    return np.memmap(path, dtype=np.float64, mode="r", shape=(*map(len, axes), len(wavelength_grid)))
+
+
+def _write_combination(built, all_models_data, output_dir, wavelength_grid, visualization):
+    """Write the cubes built on disk (see :func:`write_combined_grid`), each removed from there once written."""
     if len(built) == 1:
-        _, grids, axes, flux_cube, source_map = built[0]
+        _, grids, axes, path, source_map = built[0]
+        flux_cube = _built_cube(path, axes, wavelength_grid)
         save_combined_data(output_dir, *axes, wavelength_grid, flux_cube, grids)
         if visualization:
             visualize_parameter_space(*axes, source_map, grids, output_dir, wavelength_grid=wavelength_grid,
@@ -459,7 +482,8 @@ def write_combined_grid(all_models_data, output_dir, visualization=True):
     names = _copy_names(all_models_data)
     subdirs = _subdir_names(os.path.basename(os.path.abspath(output_dir)), [key for key, *_ in built])
     tables, index = [], []
-    for key, grids, axes, flux_cube, source_map in built:
+    for key, grids, axes, path, source_map in built:
+        flux_cube = _built_cube(path, axes, wavelength_grid)
         name = subdirs[key]
         subdir = os.path.join(output_dir, name)
         os.makedirs(subdir, exist_ok=True)
@@ -471,6 +495,8 @@ def write_combined_grid(all_models_data, output_dir, visualization=True):
         if visualization:
             visualize_parameter_space(*axes, source_map, grids, subdir, wavelength_grid=wavelength_grid,
                                       flux_cube=flux_cube)
+        del flux_cube
+        os.remove(path)  # written as the variant's cube
         tables.append(table)
         index.append({"variant_name": name, **dict(key), "n_spectra": table["file_name"].nunique(), "path": name})
     table = pd.concat(tables, ignore_index=True)

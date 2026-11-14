@@ -672,6 +672,32 @@ def mesa_prepare_counts_and_copies_each_spectrum_of_a_combined_variant_once(t):
 
 
 @row
+def combine_builds_its_cubes_on_disk_and_writes_them_in_parts(t):
+    # combine held every cube of a combination in memory, and a copy of each as it was written: about 28 GB for
+    # notebook 06's three grids once the axis is every grid's wavelengths. Each cube is now built on disk and written
+    # in parts (here of 1 MiB), the same bytes; the golden combine_models shows they are the same.
+    import tracemalloc
+
+    import sed_tools.cube.combine as combine
+    from sed_tools.grids.pipeline import _build_combined_grid
+
+    t.mp.setattr(combine, "_PART_BYTES", 1 << 20)
+    _planck_grid(t, "stars", [(5000.0, logg, 0.0) for logg in np.linspace(3.0, 5.0, 20)])
+    _planck_grid(t, "bb", [(teff,) for teff in np.linspace(3010.0, 9010.0, 100)], columns=("teff",))
+    models = t.tmp / "models"
+    tracemalloc.start()
+    try:
+        _build_combined_grid([(name, str(models / name)) for name in ("stars", "bb")], str(models / "combined"),
+                             visualization=False)
+        peak = tracemalloc.get_traced_memory()[1]
+    finally:
+        tracemalloc.stop()
+    size = (models / "combined" / "flux_cube.bin").stat().st_size
+    assert size > 32e6 and peak < size / 4, (size, peak)
+    assert not [p for p in models.iterdir() if p.name.startswith(".")]  # its working folder is gone
+
+
+@row
 def combine_places_a_grid_without_log_g_at_every_log_g(t):
     # A grid without log g or [M/H] (a blackbody) used to be placed at log g 0 and [M/H] 0, as stars of that log g.
     # It holds the same spectrum at every log g, so it fills every value the other grids give the axis, except
