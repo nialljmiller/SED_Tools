@@ -26,7 +26,7 @@ from sed_tools import api, ml
 from sed_tools.api import SED, Filters, MLGenerator, SpectralGrid, SpectralGridInfo, Spectrum
 from sed_tools.cube.collision import CollisionConfig
 from sed_tools.cube.model import SED as GridFinder
-from sed_tools.ml.completer import SEDCompleter, SEDCompleterNetwork
+from sed_tools.ml.completer import SEDCompleter
 from sed_tools.ml.generator import SEDGenerator
 from sed_tools.photometry import AB_ZERO_FLUX
 
@@ -492,13 +492,6 @@ def the_041_completer_api_loads_and_describes_a_model(t):
     assert repr(ml.Completer(str(second))) == f"<Completer(trained @ {second})>"
     assert ml.Completer().load(str(first)).model_path == str(first)
     assert sorted(m["name"] for m in ml.Completer.available_models(str(t.tmp / "models"))) == ["a", "b"]
-
-
-@row
-def the_completer_network_moves_to_a_device(t):
-    torch = cpu_torch(t)
-    network = SEDCompleterNetwork(input_dim=4, output_dim=3, hidden_layers=[2])
-    assert network.to(torch.device("cpu")) is network and network.device == torch.device("cpu")
 
 
 # ----------------------------------------------------------------------

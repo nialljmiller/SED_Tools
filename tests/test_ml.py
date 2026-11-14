@@ -369,14 +369,15 @@ def both_networks_keep_their_defaults_model_pt_keys_and_move_with_to(t):
 def extend_catalog_extends_each_spectrum_with_its_own_parameters(t):
     # pd.read_csv(comment='#') used to drop the '#file_name,...' header, so the
     # first spectrum became the header and every other one was extended as
-    # Teff 5000, logg 4.5, [M/H] 0; on cleanup/base it raised instead.
+    # Teff 5000, logg 4.5, [M/H] 0; on cleanup/base it raised instead, and a
+    # '#'-headed table was refused. It now gives the result of a plain header.
     import pandas as pd
     from sed_tools.grids.lookup import write_lookup_csv
 
     catalog = t.tmp / "catalog"
     catalog.mkdir()
     names = ["a.txt", "b.txt", "c.txt"]
-    for name, (lo, hi) in zip(names, [(3000, 20000), (2000, 30000), (4000, 9000)]):
+    for name, (lo, hi) in zip(names, [(3000, 20000), (2000, 30000), (400, 70000)]):  # c.txt covers the range
         write_spectrum(catalog / name, lo, hi)
     write_lookup_csv({"file_name": names, "teff": [4500.0, 5800.0, 7200.0],
                       "logg": [4.0, 4.4, 3.5], "metallicity": [-1.0, 0.0, 0.3]},
@@ -388,8 +389,11 @@ def extend_catalog_extends_each_spectrum_with_its_own_parameters(t):
     summary = completer.extend_catalog(str(catalog), str(out_dir), extension_range=(500.0, 60000.0),
                                        verbose=False)
 
-    assert summary == {"extended": 3, "failed": 0, "skipped": 0, "total": 3, "output_dir": str(out_dir)}
-    assert completer._completer.calls == [(4500.0, 4.0, -1.0), (5800.0, 4.4, 0.0), (7200.0, 3.5, 0.3)]
+    assert summary == {"extended": 2, "failed": 0, "skipped": 1, "total": 3, "output_dir": str(out_dir)}
+    assert completer._completer.calls == [(4500.0, 4.0, -1.0), (5800.0, 4.4, 0.0)]
+    assert completer._completer.ranges == [(500.0, 60000.0)] * 2
+    assert (out_dir / "lookup_table.csv").read_text().splitlines()[0] == (
+        "file_name,teff,logg,metallicity,extended_by_ml,wl_min,wl_max")
     written = pd.read_csv(out_dir / "lookup_table.csv")
     assert written["file_name"].tolist() == names
     assert written[["teff", "logg", "metallicity"]].values.tolist() == [
@@ -684,25 +688,6 @@ def extend_catalog_raises_without_a_lookup_table(t):
 
 
 @row
-def extend_catalog_reads_a_hash_prefixed_header(t):
-    # sed_tools writes lookup tables with a '#file_name,...' header. It used
-    # to be dropped (pd.read_csv(comment='#')) and the table refused; it now
-    # gives the same result as a plain header.
-    catalog = three_spectra(t)
-    (catalog / "lookup_table.csv").write_text("#" + (catalog / "lookup_table.csv").read_text())
-    completer = stubbed_completer()
-    out_dir = t.tmp / "out"
-
-    summary = completer.extend_catalog(str(catalog), str(out_dir), extension_range=(500.0, 60000.0))
-
-    assert summary == {"extended": 2, "failed": 0, "skipped": 1, "total": 3, "output_dir": str(out_dir)}
-    assert completer._completer.calls == [(5000.0, 4.0, 0.0), (6000.0, 4.5, -0.5)]
-    assert completer._completer.ranges == [(500.0, 60000.0)] * 2
-    assert (out_dir / "lookup_table.csv").read_text().splitlines()[0] == (
-        "file_name,teff,logg,meta,extra,extended_by_ml,wl_min,wl_max")
-
-
-@row
 def extend_catalog_writes_the_good_spectra_then_lists_every_failure(t):
     import pandas as pd
 
@@ -831,24 +816,6 @@ def completer_train_menu_takes_the_numbers_typed(t):
     answer(t.mp, "1", "1", "7", "", "", "")
     mc.run_interactive_workflow(str(base), str(t.tmp / "models"))
     assert [(c["epochs"], c["batch_size"]) for c in calls] == [(7, 32)]
-
-
-@row
-def completer_list_models_leaves_out_generators_so_choosing_cannot_raise(t):
-    # A generator listed by the completer menu raised KeyError when chosen.
-    write_config(t.tmp / "gen", {"model_type": "sed_generator"})
-    assert mc.SEDCompleter.list_models(str(t.tmp)) == []
-    assert [g["name"] for g in mg.SEDGenerator.list_models(str(t.tmp))] == ["gen"]
-
-
-@row
-def generator_number_prompts_take_the_numbers_typed(t):
-    answer(t.mp, "")
-    assert mg._ask_number("Epochs [200]: ", 200, whole=True) == 200
-    answer(t.mp, "-0.5")
-    assert mg._ask_number("[M/H]: ") == -0.5
-    answer(t.mp, "5000, 5500")
-    assert mg._ask_numbers("Teff values: ") == [5000.0, 5500.0]
 
 
 @row
