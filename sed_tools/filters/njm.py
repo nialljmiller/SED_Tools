@@ -13,7 +13,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from .manifest import InstrumentManifest, archived_bands, index_names
-from .curve_metadata import SOURCE_ASSUMED, SVOMetadataClient, migrate_filter_file, tag_filter_file
+from .curve_metadata import SOURCE_ASSUMED, SVOMetadataClient, migrate_filter_file, read_filter_header, tag_filter_file
 from ..njm_mirror import (BASE_URL, NJM_CONNECT_TIMEOUT, NJM_PAUSE, USER_AGENT, _STATE, _body, _status, _write_atomic,
                          cache_root, pause, paused, plain_reason, skip_ssl_verification)
 
@@ -527,7 +527,8 @@ class NJMFilterGrabber:
         if manifest is None:
             return 0
         output_dir.mkdir(parents=True, exist_ok=True)
-        (output_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+        (output_dir / "manifest.json").write_text(
+            json.dumps(_with_installed_records(output_dir, manifest), indent=2, sort_keys=True) + "\n")
 
         listed = [rel for entries in manifest.get("components", {}).values() for rel in entries.values()]
         # Alternative curves (e.g. QE per detector epoch) are fetched too, so
@@ -629,6 +630,28 @@ def _update_atmosphere_manifest(site_dir: Path, served: str) -> None:
         logger.warning("Updated the %s atmosphere's manifest to NJM's, but kept the installed description of %s, "
                        "which NJM describes otherwise (remove those files to fetch NJM's)",
                        site_dir.name, ", ".join(kept))
+
+
+def _with_installed_records(directory: Path, served: Dict) -> Dict:
+    """NJM's manifest of the set in ``directory`` (``served``), keeping what only the installed manifest records.
+
+    That is the user's detector corrections, while the curve still carries one, and the copies archived beside
+    the set, of bands NJM does not list; every other field takes NJM's value.
+    """
+    path = directory / "manifest.json"
+    if not path.is_file():
+        return served
+    installed, merged = json.loads(path.read_text(encoding="utf-8")), dict(served)
+    corrected = {band for band, source in (installed.get("detector_type_sources") or {}).items()
+                 if source == "user" and (directory / f"{band}.dat").is_file()
+                 and read_filter_header(directory / f"{band}.dat").get("DetectorTypeSource") == "user"}
+    for key in ("detector_types", "detector_type_sources"):
+        if kept := {band: value for band, value in (installed.get(key) or {}).items() if band in corrected}:
+            merged[key] = {**(served.get(key) or {}), **kept}
+    if archived := {band: entry for band, entry in archived_bands(directory).items()
+                    if band not in (served.get("bands") or [])}:
+        merged["archived_bands"] = {**archived, **(served.get("archived_bands") or {})}
+    return merged
 
 
 def drop_unlisted_bands(directory, listed):

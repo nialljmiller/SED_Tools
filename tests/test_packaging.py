@@ -30,8 +30,21 @@ def _deps(*extras):
     return project["dependencies"] + [d for name in extras for d in optional[name]]
 
 
+def _undocumented():
+    """The public modules of each subpackage the API page documents (one section per module) that have no section."""
+    import pkgutil
+    import re
+
+    documented = set(re.findall(r"automodule:: (\S+)", (ROOT / "docs" / "source" / "sed_tools.rst").read_text()))
+    folders = {name: ROOT / name.replace(".", "/") for name in documented if name.count(".") == 1}
+    return sorted(f"{package}.{module.name}" for package, folder in folders.items() if folder.is_dir()
+                  for module in pkgutil.iter_modules([str(folder)])
+                  if not module.name.startswith("_") and f"{package}.{module.name}" not in documented)
+
+
 #: name: (what is read, what it must be). Both versions are written by hand at release time; a checkout
-#: must agree with itself and with the installed metadata.
+#: must agree with itself and with the installed metadata. Every public module of a documented subpackage
+#: has its section on the API page.
 FACTS = {
     "version_matches_pyproject": (lambda: _project()["version"], sed_tools.__version__),
     "version_matches_distribution_metadata": (lambda: version("sed-tools"), sed_tools.__version__),
@@ -41,6 +54,7 @@ FACTS = {
     "scipy_is_in_the_full_extra": (lambda: any(d.startswith("scipy") for d in _deps("full")), True),
     "optuna_is_the_ml_tune_extra": (lambda: _project()["optional-dependencies"]["ml-tune"], ["optuna>=3"]),
     "optuna_is_neither_a_dependency_nor_in_full": (lambda: [d for d in _deps("full") if "optuna" in d], []),
+    "every_public_module_of_a_documented_subpackage_has_an_api_section": (_undocumented, []),
 }
 
 _IMPORT_ALL = """

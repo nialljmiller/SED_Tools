@@ -3,62 +3,62 @@
   "AB": {
    "B": {
     "filter_name": "B",
-    "flux_density": 5.623692691978215e-05,
-    "magnitude": -37.97498832905561,
+    "flux_density": 5.4810604805243375e-05,
+    "magnitude": -37.947095863473464,
     "system": "AB"
    },
    "H": {
     "filter_name": "H",
-    "flux_density": 9.471902819565851e-05,
-    "magnitude": -38.5410274617163,
+    "flux_density": 9.470200048486405e-05,
+    "magnitude": -38.54083226055756,
     "system": "AB"
    },
    "I": {
     "filter_name": "I",
-    "flux_density": 0.0001104613785634565,
-    "magnitude": -38.70796052506289,
+    "flux_density": 0.00011036657984393687,
+    "magnitude": -38.7070283386766,
     "system": "AB"
    },
    "J": {
     "filter_name": "J",
-    "flux_density": 0.00010686553376621657,
-    "magnitude": -38.67202852594314,
+    "flux_density": 0.00010682972169463502,
+    "magnitude": -38.671664620221755,
     "system": "AB"
    },
    "Ks": {
     "filter_name": "Ks",
-    "flux_density": 6.317058414884901e-05,
-    "magnitude": -38.10122160998253,
+    "flux_density": 6.313178702744733e-05,
+    "magnitude": -38.10055458464835,
     "system": "AB"
    },
    "M": {
     "filter_name": "M",
-    "flux_density": 1.4297360018349578e-05,
-    "magnitude": -36.48807401066209,
+    "flux_density": 1.4303119757645857e-05,
+    "magnitude": -36.488511315044214,
     "system": "AB"
    },
    "R": {
     "filter_name": "R",
-    "flux_density": 0.00010331873181423966,
-    "magnitude": -38.63538204468385,
+    "flux_density": 0.00010324675654564881,
+    "magnitude": -38.63462542111871,
     "system": "AB"
    },
    "U": {
     "filter_name": "U",
-    "flux_density": 2.1756749467164622e-05,
-    "magnitude": -36.943919404694434,
+    "flux_density": 2.1167744458617974e-05,
+    "magnitude": -36.91412083767379,
     "system": "AB"
    },
    "V": {
     "filter_name": "V",
-    "flux_density": 8.561796782514388e-05,
-    "magnitude": -38.431346666409766,
+    "flux_density": 8.665369604173247e-05,
+    "magnitude": -38.444402106257094,
     "system": "AB"
    },
    "g": {
     "filter_name": "g",
-    "flux_density": 6.853473283577751e-05,
-    "magnitude": -38.18971118805392,
+    "flux_density": 6.853467865565726e-05,
+    "magnitude": -38.189710329725024,
     "system": "AB"
    },
    "g_filter": {
@@ -69,8 +69,8 @@
    },
    "i": {
     "filter_name": "i",
-    "flux_density": 0.00010953780539213436,
-    "magnitude": -38.69884446651496,
+    "flux_density": 0.00010953780539210989,
+    "magnitude": -38.69884446651472,
     "system": "AB"
    },
    "i_filter": {
@@ -81,8 +81,8 @@
    },
    "r": {
     "filter_name": "r",
-    "flux_density": 0.00010092773808855031,
-    "magnitude": -38.60996072847525,
+    "flux_density": 0.00010092775489599362,
+    "magnitude": -38.609960909282314,
     "system": "AB"
    },
    "r_filter": {
@@ -131,128 +131,128 @@
   "Vega": {
    "B": {
     "filter_name": "B",
-    "flux_density": 8747254.467607198,
-    "magnitude": -37.786372201158784,
+    "flux_density": 8530925.581124516,
+    "magnitude": -37.827141656635604,
     "system": "Vega"
    },
    "H": {
     "filter_name": "H",
-    "flux_density": 1048407.2209123941,
-    "magnitude": -39.92840800799393,
+    "flux_density": 1048301.3685837614,
+    "magnitude": -39.92866681688108,
     "system": "Vega"
    },
    "I": {
     "filter_name": "I",
-    "flux_density": 4418266.823841106,
-    "magnitude": -39.20290674013735,
+    "flux_density": 4415640.047519348,
+    "magnitude": -39.1988084080955,
     "system": "Vega"
    },
    "J": {
     "filter_name": "J",
-    "flux_density": 2097759.4828412407,
-    "magnitude": -39.57931786720766,
+    "flux_density": 2097088.9906233968,
+    "magnitude": -39.58022995122718,
     "system": "Vega"
    },
    "Ks": {
     "filter_name": "Ks",
-    "flux_density": 405792.15788814897,
-    "magnitude": -39.96097341457336,
+    "flux_density": 405547.7953265277,
+    "magnitude": -39.960907353873786,
     "system": "Vega"
    },
    "M": {
     "filter_name": "M",
-    "flux_density": 17318.36482206525,
-    "magnitude": -39.96073117379365,
+    "flux_density": 17328.821902169435,
+    "magnitude": -39.964005436351925,
     "system": "Vega"
    },
    "R": {
     "filter_name": "R",
-    "flux_density": 6661190.342359807,
-    "magnitude": -38.87277331490114,
+    "flux_density": 6659520.920649771,
+    "magnitude": -38.87498836561975,
     "system": "Vega"
    },
    "U": {
     "filter_name": "U",
-    "flux_density": 5288517.121714461,
-    "magnitude": -37.95310562697421,
+    "flux_density": 5147387.644686563,
+    "magnitude": -37.835221651358324,
     "system": "Vega"
    },
    "V": {
     "filter_name": "V",
-    "flux_density": 8480837.455427524,
-    "magnitude": -38.43526219569536,
+    "flux_density": 8589147.45331801,
+    "magnitude": -38.45114975877618,
     "system": "Vega"
    },
    "g": {
     "filter_name": "g",
-    "flux_density": 8979237.533962727,
-    "magnitude": -38.08198765744416,
+    "flux_density": 8979230.434314962,
+    "magnitude": -38.08198623736225,
     "system": "Vega"
    },
    "g_filter": {
     "filter_name": "g_filter",
     "flux_density": 8900582.240246596,
-    "magnitude": -38.059932388749274,
+    "magnitude": -38.05993441386684,
     "system": "Vega"
    },
    "i": {
     "filter_name": "i",
-    "flux_density": 5305433.401286704,
-    "magnitude": -39.123247135063615,
+    "flux_density": 5305433.4012856055,
+    "magnitude": -39.123247390532946,
     "system": "Vega"
    },
    "i_filter": {
     "filter_name": "i_filter",
     "flux_density": 5748200.760887562,
-    "magnitude": -39.0626826301415,
+    "magnitude": -39.06268271279588,
     "system": "Vega"
    },
    "r": {
     "filter_name": "r",
-    "flux_density": 7347726.498059318,
-    "magnitude": -38.79207566015593,
+    "flux_density": 7347727.726016918,
+    "magnitude": -38.79207595221562,
     "system": "Vega"
    },
    "r_filter": {
     "filter_name": "r_filter",
     "flux_density": 7683120.763810774,
-    "magnitude": -38.727792912446226,
+    "magnitude": -38.727792971254445,
     "system": "Vega"
    },
    "u": {
     "filter_name": "u",
     "flux_density": 5619060.787816161,
-    "magnitude": -37.72529991561298,
+    "magnitude": -37.72531188612956,
     "system": "Vega"
    },
    "u_filter": {
     "filter_name": "u_filter",
     "flux_density": 5301577.784528596,
-    "magnitude": -37.78037888202666,
+    "magnitude": -37.780389621938596,
     "system": "Vega"
    },
    "y": {
     "filter_name": "y",
     "flux_density": 3523590.3361591795,
-    "magnitude": -39.277115647355004,
+    "magnitude": -39.27711627295509,
     "system": "Vega"
    },
    "y_filter": {
     "filter_name": "y_filter",
     "flux_density": 3251118.7546344544,
-    "magnitude": -39.319461499177294,
+    "magnitude": -39.31946163710377,
     "system": "Vega"
    },
    "z": {
     "filter_name": "z",
     "flux_density": 4387438.557281963,
-    "magnitude": -39.22626308088634,
+    "magnitude": -39.22626219015783,
     "system": "Vega"
    },
    "z_filter": {
     "filter_name": "z_filter",
     "flux_density": 4372109.127160308,
-    "magnitude": -39.22597109746148,
+    "magnitude": -39.22597017839117,
     "system": "Vega"
    }
   }
@@ -261,62 +261,62 @@
   "AB": {
    "B": {
     "filter_name": "B",
-    "flux_density": 6.817128661052322e-05,
-    "magnitude": -38.183938104226954,
+    "flux_density": 6.627224768628017e-05,
+    "magnitude": -38.1532636285955,
     "system": "AB"
    },
    "H": {
     "filter_name": "H",
-    "flux_density": 9.983214168405165e-05,
-    "magnitude": -38.59811034788729,
+    "flux_density": 9.98083462388501e-05,
+    "magnitude": -38.59785152687604,
     "system": "AB"
    },
    "I": {
     "filter_name": "I",
-    "flux_density": 0.0001246648561099023,
-    "magnitude": -38.83929447796015,
+    "flux_density": 0.0001245535096625117,
+    "magnitude": -38.83832430165013,
     "system": "AB"
    },
    "J": {
     "filter_name": "J",
-    "flux_density": 0.00011666384679851396,
-    "magnitude": -38.76727510890905,
+    "flux_density": 0.00011661511337809894,
+    "magnitude": -38.76682147485944,
     "system": "AB"
    },
    "Ks": {
     "filter_name": "Ks",
-    "flux_density": 6.62628048604198e-05,
-    "magnitude": -38.153108916046136,
+    "flux_density": 6.62145845557745e-05,
+    "magnitude": -38.15231852406905,
     "system": "AB"
    },
    "M": {
     "filter_name": "M",
-    "flux_density": 1.4889000127473714e-05,
-    "magnitude": -36.532098211805874,
+    "flux_density": 1.4893430487784484e-05,
+    "magnitude": -36.53242123464354,
     "system": "AB"
    },
    "R": {
     "filter_name": "R",
-    "flux_density": 0.00011976056594017491,
-    "magnitude": -38.79571897681917,
+    "flux_density": 0.0001196719747697234,
+    "magnitude": -38.79491552173921,
     "system": "AB"
    },
    "U": {
     "filter_name": "U",
-    "flux_density": 2.6437299754962034e-05,
-    "magnitude": -37.155477115813966,
+    "flux_density": 2.5644011138105612e-05,
+    "magnitude": -37.12239926982094,
     "system": "AB"
    },
    "V": {
     "filter_name": "V",
-    "flux_density": 0.00010118882646754235,
-    "magnitude": -38.6127657757905,
+    "flux_density": 0.0001026268112130525,
+    "magnitude": -38.62808646486095,
     "system": "AB"
    },
    "g": {
     "filter_name": "g",
-    "flux_density": 8.23999874300302e-05,
-    "magnitude": -38.38975224133347,
+    "flux_density": 8.23999224938742e-05,
+    "magnitude": -38.38975138570757,
     "system": "AB"
    },
    "g_filter": {
@@ -327,8 +327,8 @@
    },
    "i": {
     "filter_name": "i",
-    "flux_density": 0.00012478858693100138,
-    "magnitude": -38.84037154501917,
+    "flux_density": 0.00012478858693096433,
+    "magnitude": -38.84037154501884,
     "system": "AB"
    },
    "i_filter": {
@@ -339,8 +339,8 @@
    },
    "r": {
     "filter_name": "r",
-    "flux_density": 0.0001177770442367206,
-    "magnitude": -38.77758600510112,
+    "flux_density": 0.00011777706920184211,
+    "magnitude": -38.77758623524388,
     "system": "AB"
    },
    "r_filter": {
@@ -389,128 +389,128 @@
   "Vega": {
    "B": {
     "filter_name": "B",
-    "flux_density": 10603559.334190233,
-    "magnitude": -37.99532197633013,
+    "flux_density": 10314858.13948586,
+    "magnitude": -38.03330942175763,
     "system": "Vega"
    },
    "H": {
     "filter_name": "H",
-    "flux_density": 1105002.2388796671,
-    "magnitude": -39.985490894164926,
+    "flux_density": 1104825.932108911,
+    "magnitude": -39.98568608319956,
     "system": "Vega"
    },
    "I": {
     "filter_name": "I",
-    "flux_density": 4986381.7110782135,
-    "magnitude": -39.33424069303461,
+    "flux_density": 4983242.8086706605,
+    "magnitude": -39.33010437106903,
     "system": "Vega"
    },
    "J": {
     "filter_name": "J",
-    "flux_density": 2290099.3641383727,
-    "magnitude": -39.67456445017357,
+    "flux_density": 2289178.2036514645,
+    "magnitude": -39.67538680586487,
     "system": "Vega"
    },
    "Ks": {
     "filter_name": "Ks",
-    "flux_density": 425655.81645837927,
-    "magnitude": -40.012860720636965,
+    "flux_density": 425351.15905053576,
+    "magnitude": -40.01267129329449,
     "system": "Vega"
    },
    "M": {
     "filter_name": "M",
-    "flux_density": 18035.017353723404,
-    "magnitude": -40.00475537493743,
+    "flux_density": 18044.007797473405,
+    "magnitude": -40.007915355951255,
     "system": "Vega"
    },
    "R": {
     "filter_name": "R",
-    "flux_density": 7721232.260869565,
-    "magnitude": -39.033110247036454,
+    "flux_density": 7718964.219879227,
+    "magnitude": -39.03527846624024,
     "system": "Vega"
    },
    "U": {
     "filter_name": "U",
-    "flux_density": 6426240.859969558,
-    "magnitude": -38.16466333809374,
+    "flux_density": 6235887.170243531,
+    "magnitude": -38.04350008350547,
     "system": "Vega"
    },
    "V": {
     "filter_name": "V",
-    "flux_density": 10023199.701834863,
-    "magnitude": -38.6166813050761,
+    "flux_density": 10172408.730819955,
+    "magnitude": -38.63483411738003,
     "system": "Vega"
    },
    "g": {
     "filter_name": "g",
-    "flux_density": 10795826.135380166,
-    "magnitude": -38.282028710723715,
+    "flux_density": 10795817.626280133,
+    "magnitude": -38.2820272933448,
     "system": "Vega"
    },
    "g_filter": {
     "filter_name": "g_filter",
     "flux_density": 10697885.503682759,
-    "magnitude": -38.259631208968585,
+    "magnitude": -38.25963323408616,
     "system": "Vega"
    },
    "i": {
     "filter_name": "i",
-    "flux_density": 6044100.800020637,
-    "magnitude": -39.26477421356781,
+    "flux_density": 6044100.800018941,
+    "magnitude": -39.264774469037064,
     "system": "Vega"
    },
    "i_filter": {
     "filter_name": "i_filter",
     "flux_density": 6582044.642726017,
-    "magnitude": -39.20975486947502,
+    "magnitude": -39.209754952129394,
     "system": "Vega"
    },
    "r": {
     "filter_name": "r",
-    "flux_density": 8574387.23180333,
-    "magnitude": -38.95970093678181,
+    "flux_density": 8574389.054380331,
+    "magnitude": -38.959701278177185,
     "system": "Vega"
    },
    "r_filter": {
     "filter_name": "r_filter",
     "flux_density": 8999829.456359377,
-    "magnitude": -38.8995344631364,
+    "magnitude": -38.89953452194461,
     "system": "Vega"
    },
    "u": {
     "filter_name": "u",
     "flux_density": 6721768.309397999,
-    "magnitude": -37.91984943672539,
+    "magnitude": -37.919861407241974,
     "system": "Vega"
    },
    "u_filter": {
     "filter_name": "u_filter",
     "flux_density": 6395978.037051121,
-    "magnitude": -37.98413344709155,
+    "magnitude": -37.98414418700348,
     "system": "Vega"
    },
    "y": {
     "filter_name": "y",
     "flux_density": 3930568.7207937487,
-    "magnitude": -39.395790606174856,
+    "magnitude": -39.39579123177494,
     "system": "Vega"
    },
    "y_filter": {
     "filter_name": "y_filter",
     "flux_density": 3613756.289387603,
-    "magnitude": -39.43427656700132,
+    "magnitude": -39.434276704927804,
     "system": "Vega"
    },
    "z": {
     "filter_name": "z",
     "flux_density": 4938962.8275858285,
-    "magnitude": -39.35482485579216,
+    "magnitude": -39.35482396506365,
     "system": "Vega"
    },
    "z_filter": {
     "filter_name": "z_filter",
     "flux_density": 4920949.4961217875,
-    "magnitude": -39.3543658838166,
+    "magnitude": -39.35436496474629,
     "system": "Vega"
    }
   }
@@ -519,62 +519,62 @@
   "AB": {
    "B": {
     "filter_name": "B",
-    "flux_density": 8.428715068053103e-05,
-    "magnitude": -38.414337809716265,
+    "flux_density": 8.197490085078839e-05,
+    "magnitude": -38.384136627866596,
     "system": "AB"
    },
    "H": {
     "filter_name": "H",
-    "flux_density": 0.00010246292227195031,
-    "magnitude": -38.62635122251832,
+    "flux_density": 0.00010245194508960418,
+    "magnitude": -38.62623489787615,
     "system": "AB"
    },
    "I": {
     "filter_name": "I",
-    "flux_density": 0.00013316871306436615,
-    "magnitude": -38.91093988463187,
+    "flux_density": 0.00013303277446946138,
+    "magnitude": -38.90983099926606,
     "system": "AB"
    },
    "J": {
     "filter_name": "J",
-    "flux_density": 0.00012189613699951406,
-    "magnitude": -38.81490923433185,
+    "flux_density": 0.00012184817026221825,
+    "magnitude": -38.81448190764215,
     "system": "AB"
    },
    "Ks": {
     "filter_name": "Ks",
-    "flux_density": 6.774160943113936e-05,
-    "magnitude": -38.17707315413292,
+    "flux_density": 6.769223100731663e-05,
+    "magnitude": -38.17628144735299,
     "system": "AB"
    },
    "M": {
     "filter_name": "M",
-    "flux_density": 1.5498693171519796e-05,
-    "magnitude": -36.57567207922019,
+    "flux_density": 1.5496094415799864e-05,
+    "magnitude": -36.575490012272894,
     "system": "AB"
    },
    "R": {
     "filter_name": "R",
-    "flux_density": 0.00012989089850442653,
-    "magnitude": -38.88388118019276,
+    "flux_density": 0.00012971426296227477,
+    "magnitude": -38.882403708545645,
     "system": "AB"
    },
    "U": {
     "filter_name": "U",
-    "flux_density": 3.6368685998630806e-05,
-    "magnitude": -37.50175340339189,
+    "flux_density": 3.579199949942758e-05,
+    "magnitude": -37.48439927941449,
     "system": "AB"
    },
    "V": {
     "filter_name": "V",
-    "flux_density": 0.0001142265352124135,
-    "magnitude": -38.74435188700373,
+    "flux_density": 0.00011524461354598379,
+    "magnitude": -38.75398596749402,
     "system": "AB"
    },
    "g": {
     "filter_name": "g",
-    "flux_density": 9.693856596765573e-05,
-    "magnitude": -38.566175854782195,
+    "flux_density": 9.693852457466735e-05,
+    "magnitude": -38.56617539117026,
     "system": "AB"
    },
    "g_filter": {
@@ -585,8 +585,8 @@
    },
    "i": {
     "filter_name": "i",
-    "flux_density": 0.00013390579149977357,
-    "magnitude": -38.91693277995654,
+    "flux_density": 0.000133905791499729,
+    "magnitude": -38.91693277995618,
     "system": "AB"
    },
    "i_filter": {
@@ -597,8 +597,8 @@
    },
    "r": {
     "filter_name": "r",
-    "flux_density": 0.000128117193959564,
-    "magnitude": -38.86895292301367,
+    "flux_density": 0.00012811720640071983,
+    "magnitude": -38.86895302844693,
     "system": "AB"
    },
    "r_filter": {
@@ -647,128 +647,128 @@
   "Vega": {
    "B": {
     "filter_name": "B",
-    "flux_density": 13110267.500993317,
-    "magnitude": -38.22572168181944,
+    "flux_density": 12758877.249448575,
+    "magnitude": -38.264182421028735,
     "system": "Vega"
    },
    "H": {
     "filter_name": "H",
-    "flux_density": 1134121.3020450082,
-    "magnitude": -40.01373176879596,
+    "flux_density": 1134089.1818717804,
+    "magnitude": -40.01406945419967,
     "system": "Vega"
    },
    "I": {
     "filter_name": "I",
-    "flux_density": 5326521.491562793,
-    "magnitude": -39.40588609970633,
+    "flux_density": 5322488.450857202,
+    "magnitude": -39.401611068684964,
     "system": "Vega"
    },
    "J": {
     "filter_name": "J",
-    "flux_density": 2392808.684901576,
-    "magnitude": -39.72219857559638,
+    "flux_density": 2391904.166098147,
+    "magnitude": -39.723047238647574,
     "system": "Vega"
    },
    "Ks": {
     "filter_name": "Ks",
-    "flux_density": 435155.2900809938,
-    "magnitude": -40.03682495872375,
+    "flux_density": 434843.3069669957,
+    "magnitude": -40.03663421657842,
     "system": "Vega"
    },
    "M": {
     "filter_name": "M",
-    "flux_density": 18773.537370895385,
-    "magnitude": -40.04832924235175,
+    "flux_density": 18774.16010357136,
+    "magnitude": -40.0509841335806,
     "system": "Vega"
    },
    "R": {
     "filter_name": "R",
-    "flux_density": 8374357.519542027,
-    "magnitude": -39.121272450410046,
+    "flux_density": 8366702.033123962,
+    "magnitude": -39.12276665304668,
     "system": "Vega"
    },
    "U": {
     "filter_name": "U",
-    "flux_density": 8840310.400608828,
-    "magnitude": -38.51093962567166,
+    "flux_density": 8703586.5518007,
+    "magnitude": -38.40550009309902,
     "system": "Vega"
    },
    "V": {
     "filter_name": "V",
-    "flux_density": 11314642.27475688,
-    "magnitude": -38.74826741628933,
+    "flux_density": 11423090.118053257,
+    "magnitude": -38.7607336200131,
     "system": "Vega"
    },
    "g": {
     "filter_name": "g",
-    "flux_density": 12700631.840369547,
-    "magnitude": -38.45845232417244,
+    "flux_density": 12700626.415596265,
+    "magnitude": -38.45845129880749,
     "system": "Vega"
    },
    "g_filter": {
     "filter_name": "g_filter",
     "flux_density": 12642298.38166782,
-    "magnitude": -38.440951435991735,
+    "magnitude": -38.4409534611093,
     "system": "Vega"
    },
    "i": {
     "filter_name": "i",
-    "flux_density": 6485690.089420451,
-    "magnitude": -39.34133544850519,
+    "flux_density": 6485690.089418398,
+    "magnitude": -39.34133570397441,
     "system": "Vega"
    },
    "i_filter": {
     "filter_name": "i_filter",
     "flux_density": 7074650.002400506,
-    "magnitude": -39.288115208745936,
+    "magnitude": -39.28811529140032,
     "system": "Vega"
    },
    "r": {
     "filter_name": "r",
-    "flux_density": 9327169.306893313,
-    "magnitude": -39.05106785469436,
+    "flux_density": 9327170.218147492,
+    "magnitude": -39.051068071380236,
     "system": "Vega"
    },
    "r_filter": {
     "filter_name": "r_filter",
     "flux_density": 9829769.554192618,
-    "magnitude": -38.995307104911646,
+    "magnitude": -38.99530716371986,
     "system": "Vega"
    },
    "u": {
     "filter_name": "u",
     "flux_density": 9493180.574002024,
-    "magnitude": -38.2946699443105,
+    "magnitude": -38.29468191482708,
     "system": "Vega"
    },
    "u_filter": {
     "filter_name": "u_filter",
     "flux_density": 8981060.410721269,
-    "magnitude": -38.35268508183122,
+    "magnitude": -38.35269582174315,
     "system": "Vega"
    },
    "y": {
     "filter_name": "y",
     "flux_density": 4169168.6729447744,
-    "magnitude": -39.45977578638368,
+    "magnitude": -39.45977641198377,
     "system": "Vega"
    },
    "y_filter": {
     "filter_name": "y_filter",
     "flux_density": 3824884.1822181316,
-    "magnitude": -39.49592513873331,
+    "magnitude": -39.49592527665979,
     "system": "Vega"
    },
    "z": {
     "filter_name": "z",
     "flux_density": 5278224.1668475745,
-    "magnitude": -39.42695503904264,
+    "magnitude": -39.42695414831413,
     "system": "Vega"
    },
    "z_filter": {
     "filter_name": "z_filter",
     "flux_density": 5258085.194491828,
-    "magnitude": -39.42631266040807,
+    "magnitude": -39.42631174133777,
     "system": "Vega"
    }
   }

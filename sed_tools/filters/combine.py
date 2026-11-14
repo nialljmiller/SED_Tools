@@ -7,8 +7,10 @@ import os
 from pathlib import Path
 from typing import List, Optional, Sequence, Union
 
+import numpy as np
+
 from .manifest import COMPONENTS_DIR, archived_bands, index_listing, is_auxiliary_path, write_filter_index
-from .curve_metadata import copy_filter_file, migrate_filter_file
+from .curve_metadata import _read_curve, copy_filter_file, migrate_filter_file
 from ..cube.model import FILTER_DIR_DEFAULT
 
 PathLike = Union[str, os.PathLike[str]]
@@ -91,8 +93,9 @@ def _set_curves(directory: Path) -> List[Path]:
     return [path for path in current if path.name in listed]
 
 
-def unique_filter_target(output_dir: Path, source_file: Path) -> Path:
-    """Choose a non-conflicting output name for a duplicate filter file."""
+def unique_filter_target(output_dir: Path, source_file: Path, written: Sequence[str] = ()) -> Path:
+    """The output name of a curve whose own name is taken: ``<facility>_<instrument>_<band>``, then ``..._2``, ...,
+    the first no other curve holds (:func:`_taken`)."""
     parent_names = [parent.name for parent in source_file.parents[:2] if parent.name]
     prefix = "_".join(reversed(parent_names))
     stem = f"{prefix}_{source_file.stem}" if prefix else source_file.stem
@@ -103,10 +106,18 @@ def unique_filter_target(output_dir: Path, source_file: Path) -> Path:
     target = output_dir / f"{stem}{source_file.suffix}"
 
     counter = 2
-    while target.exists():
+    while _taken(target, source_file, written):
         target = output_dir / f"{stem}_{counter}{source_file.suffix}"
         counter += 1
     return target
+
+
+def _taken(target: Path, source_file: Path, written: Sequence[str]) -> bool:
+    """Whether ``target`` holds another curve than ``source_file``: one this run wrote (``written``), or other
+    samples.  A file an earlier run left with the same samples is ``source_file``'s own copy, used again."""
+    if not target.exists() or target.resolve() == source_file.resolve():
+        return False
+    return target.name in written or not all(map(np.array_equal, _read_curve(target), _read_curve(source_file)))
 
 
 def combine_filter_sets(
@@ -121,7 +132,9 @@ def combine_filter_sets(
     """Combine filter files or filter-set directories into one filter set.
 
     A directory gives the curves its MESA index file lists (every ``*.dat``
-    without one), less its manifest's ``archived_bands``.
+    without one), less its manifest's ``archived_bands``.  A curve whose name
+    another curve holds is renamed, overwrites it or stops (``on_conflict``);
+    run again, each curve finds its own earlier copy and adds nothing.
     """
     mode = on_conflict.lower()
     root = Path(filter_root) if filter_root is not None else FILTER_DIR_DEFAULT
@@ -132,11 +145,11 @@ def combine_filter_sets(
     for source in inputs:
         for source_file in resolve_filter_sources(source, root):
             target = output_dir / source_file.name
-            if target.exists() and target.resolve() != source_file.resolve():
+            if _taken(target, source_file, copied):
                 if mode not in ("rename", "overwrite"):  # "error", or a mode that is neither
                     raise FileExistsError(f"Filter name conflict while combining: {source_file.name}")
                 if mode == "rename":
-                    target = unique_filter_target(output_dir, source_file)
+                    target = unique_filter_target(output_dir, source_file, copied)
 
             if target.resolve() != source_file.resolve():
                 copy_filter_file(source_file, target)

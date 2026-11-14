@@ -152,6 +152,19 @@ def run_filter_combine_flow_wizard(t):
     assert "Combined 2 filters" in t.capsys.readouterr().out
 
 
+@row
+def filter_combine_wizard_names_the_folder_and_index_it_writes(t):
+    (t.tmp / "GAIA" / "GAIA").mkdir(parents=True)
+    (t.tmp / "GAIA" / "GAIA" / "G.dat").write_text("Wavelength,Transmission\n1,1\n")
+    out = t.tmp / "elsewhere" / "Mine"
+    # the base dir given, the set, an absolute output, the default facility, an instrument name, conflicts, proceed
+    answer(t.mp, "", "1", str(out), "", "MyIndex", "", "")
+    cli.run_filter_combine_flow(base_dir=str(t.tmp))
+    printed = t.capsys.readouterr().out
+    assert f"Folder    : {out}\n" in printed and (out / "Mine").is_file()  # an absolute output keeps its name
+    assert f"Wrote MESA index file: {out / 'Mine'}\n" in printed
+
+
 # ----------------------------------------------------------------------
 # Failures exit non-zero or say so: filters-info, coverage, the spectra and filter flows, rebuild, densify
 # ----------------------------------------------------------------------

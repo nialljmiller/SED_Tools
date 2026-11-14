@@ -288,6 +288,9 @@ def combine_renamed_band_has_no_dot_before_dat(t):
     assert all("." not in name[: -len(".dat")] for name in names)
     assert (out / "Sony").read_text().splitlines() == names
     assert (out / "Old_SonypA200_V.dat").read_text() == "Wavelength,Transmission\n3,1\n"
+    # Run again, each curve finds its own earlier copy: no band is added twice.
+    Filters.combine("Combined/Sony", t.tmp / "Cameras/Sony.A200", t.tmp / "Old/Sony.A200", filter_root=t.tmp)
+    assert sorted(p.name for p in out.glob("*.dat")) == names and (out / "Sony").read_text().splitlines() == names
 
 
 @row
@@ -997,6 +1000,17 @@ def edit_refuses_unknown_bands_types_and_untagged_conversions(t):
 
 
 @row
+def a_set_with_an_unreadable_curve_is_not_converted_at_all(t):
+    inst = sdss(spectra_cached(t))
+    with open(inst / "r.dat", "a") as fh:
+        fh.write("8000.0,abc\n")
+    before = {p.name: p.read_bytes() for p in inst.iterdir() if p.is_file()}
+    with pytest.raises(ValueError, match=r"r\.dat, line"):
+        Filters.convert_detector_type(inst, "energy")
+    assert {p.name: p.read_bytes() for p in inst.iterdir() if p.is_file()} == before  # g.dat is not converted
+
+
+@row
 def retagging_keeps_edited_types(t):
     inst = sdss(spectra_cached(t))
     Filters.convert_detector_type(inst, "energy", bands=["g"])
@@ -1433,6 +1447,19 @@ def vega_quantities_need_coverage_where_the_filter_transmits(t):
 
 
 @row
+def a_coarse_curve_sees_the_spectrum_between_its_samples(t):
+    from sed_tools.photometry import FilterCurve, band_average_flux_lambda
+
+    # A flat band tabulated at three points, and a flat spectrum with a line between them (height 11 at 4500 Å):
+    # (2000 + 1000) / 2000 = 1.5, where the curve's own samples see 1.0.
+    curve = FilterCurve("c", np.array([4000.0, 5000.0, 6000.0]), np.ones(3), {}, detector_type=ENERGY)
+    spectrum = np.array([3000.0, 4400.0, 4500.0, 4600.0, 7000.0]), np.array([1.0, 1.0, 11.0, 1.0, 1.0])
+    assert band_average_flux_lambda(*spectrum, curve) == pytest.approx(1.5, rel=1e-12)
+    p = filter_properties(curve.wavelength, curve.transmission, ENERGY, vega=spectrum, sun=spectrum)
+    assert p["ZeroPointVega_flam"] == pytest.approx(1.5, rel=1e-12) and p["Fsun"] == pytest.approx(1.5, rel=1e-12)
+
+
+@row
 def rejects_unusable_curves(t):
     with pytest.raises(ValueError):
         filter_properties([5000.0], [1.0])
@@ -1774,6 +1801,21 @@ def njm_downloads_variant_files(t):
     assert (t.tmp / "F/I/components/qe/qe_a.dat").exists()
 
 
+@row
+def njm_components_keep_the_users_correction_and_the_archived_bands(t):
+    inst = sdss(spectra_cached(t), manifest=False)
+    InstrumentManifest.from_published(inst).save(inst)
+    served = (inst / "manifest.json").read_text()  # NJM's manifest of the set: SVO's photon g, nothing archived
+    put(inst, {"g_old.dat": (inst / "g.dat").read_text()})
+    (inst / "manifest.json").write_text(json.dumps({**json.loads(served), "archived_bands": {"g_old": {}}}))
+    Filters.correct_detector_type(inst, "energy", bands=["g"])
+    njm_filters(t, inst.parents[1], {"filters/SLOAN/SDSS/manifest.json": served}).download_components("SLOAN", "SDSS")
+    saved = InstrumentManifest.load(inst)
+    assert (saved.detector_types["g"], saved.detector_type_sources["g"]) == (ENERGY, "user")
+    assert saved.archived_bands == {"g_old": {}} and set_problems(inst) == []
+    assert read_filter_header(build_product(inst, ["filter"], bands=["g"]) / "g.dat")["DetectorType"] == ENERGY
+
+
 # ======================================================================
 # Failures are raised or warned about, never passed over silently (test_filters_failures)
 # ======================================================================
@@ -1825,12 +1867,20 @@ def unreadable_installed_catalogue_file_is_refused(t):
 
 
 @default_svo_row
-def unknown_components_header_is_reported(t):
+def unknown_components_header_stops_the_description(t):
     headers = {"g": {"Components": "filter+warp"}, "r": {"Components": "filter"}}
-    with t.caplog.at_level(logging.WARNING):
-        manifest = InstrumentManifest.from_headers("Fac", "Cam", headers)
-    assert manifest.published_bands == {"r": "filter"}
-    assert "Fac/Cam band g" in t.caplog.text and "'warp'" in t.caplog.text
+    with pytest.raises(ComponentError, match=r"Fac/Cam band g: .*'warp'.* in its Components header"):
+        InstrumentManifest.from_headers("Fac", "Cam", headers)
+
+
+@default_svo_row
+def label_check_refuses_a_tree_to_compare_with_that_is_not_there(t):
+    from sed_tools.filters import label_check
+
+    (t.tmp / "new").mkdir()
+    with pytest.raises(SystemExit) as stop:
+        label_check.main([str(t.tmp / "new"), "--against", str(t.tmp / "old")])
+    assert stop.value.code == 2 and f"{t.tmp / 'old'} is not a directory" in t.capsys.readouterr().err
 
 
 # filters/njm.py, on a stand-in session
@@ -2922,6 +2972,10 @@ def set_problems_names_each_way_a_sets_records_drift(t):
         a_set("Broken", {"Broken": "b.dat\n", "manifest.json": "{"}): "Broken/manifest.json cannot be read",
         a_set("Stale", {"Stale": "b.dat\n", "manifest.json": named}): (
             "Stale/manifest.json declares c, which its index does not list (an incomplete set, or a stale manifest)"),
+        a_set("Old", {"Old": "b.dat\nb_old.dat\n", "b_old.dat": FILTER_CURVE, "manifest.json": json.dumps(
+            {"facility": "Fac", "instrument": "Old", "bands": ["b"], "archived_bands": {"b_old": {}}})}): (
+            "Fac/Old/Old lists b_old.dat, which its manifest archives: MESA would load the superseded copy"),
+        a_set("Twice", {"Twice": "b.dat\nb.dat\n"}): "Fac/Twice/Twice lists b.dat more than once",
     }
     write_set(t.tmp / "Fac" / "Good", ["b"])
     found = check_sets(t.tmp)
@@ -3404,9 +3458,13 @@ def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
 
     from sed_tools.filters import label_check
 
-    def curve(path, detector=PHOTON, source=SOURCE_SVO, wl=(4000.0, 5000.0, 6000.0), tr=(0.5, 1.0, 0.5), **extra):
+    def curve(path, detector=PHOTON, source=SOURCE_SVO, wl=(4000.0, 5000.0, 6000.0), tr=(0.5, 1.0, 0.5),
+              unit="Angstrom", **extra):
+        if "Components" in extra:
+            extra.setdefault("ComponentsSource", SOURCE_SVO)
         path.parent.mkdir(parents=True, exist_ok=True)
-        write_filter_file(path, wl, tr, detector_type=detector, source=source, extra=extra or None)
+        write_filter_file(path, wl, tr, detector_type=detector, source=source, wavelength_unit=unit,
+                          extra=extra or None)
 
     new, old = t.tmp / "new", t.tmp / "old"
     ins = new / "Fac" / "Ins"
@@ -3416,12 +3474,14 @@ def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
     curve(ins / "components/qe/flat.dat", source="component", tr=(0.0, 0.0, 0.0))
     curve(ins / "r.dat", detector="both", wl=(4500.0, 5500.0), tr=(1.0, 1.0))   # rule 1; the filter's wings
     curve(ins / "i.dat", source="manual")                                         # rule 1: a word no one ranks
+    curve(ins / "k.dat", Components=FILTER, ComponentsSource="eso-original")      # rule 1, for Components too
+    curve(ins / "h.dat", unit=None)                                               # rule 9: read by a guess
     curve(ins / "z.dat", source="original", Components="filter+lens")             # rule 2
     curve(ins / "u.dat", source="user")
     curve(ins / "y.dat")                                                          # SVO reclassified it
     curve(ins / "w.dat")                                                          # rule 6: the ingest's credit
     (ins / "w.dat").write_text((ins / "w.dat").read_text().replace("\n", f";Sources={quote(INGESTED)}\n", 1))
-    (ins / "bad.dat").write_text("Wavelength,Transmission\n4000,-1\n5000,1\n")
+    (ins / "bad.dat").write_text("Wavelength,Transmission,WavelengthUnit=Angstrom\n4000,-1\n5000,1\n")
     (ins / "manifest.json").write_text(json.dumps({"components": {
         FILTER: {"g": "components/filter/g.dat"}, QE: {"*": "components/qe/flat.dat"},
         "filter+qe": {"g": "g.dat"}}}))
@@ -3440,7 +3500,8 @@ def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
     found = {(path.name, message.split(" ")[0]) for path, message in label_check.problems(new, old)}
     assert found == {("r.dat", "DetectorType"), ("i.dat", "DetectorTypeSource"), ("z.dat", "Components"),
                      ("g_filter.dat", "named"), ("g_filter.dat", "is"), ("bad.dat", str(ins / "bad.dat") + ":"),
-                     ("g.dat", "DetectorType"), ("y.dat", "DetectorType"), ("w.dat", "Sources")}, found
+                     ("g.dat", "DetectorType"), ("y.dat", "DetectorType"), ("w.dat", "Sources"),
+                     ("k.dat", "ComponentsSource"), ("h.dat", "WavelengthUnit")}, found
     messages = [m for _, m in label_check.problems(new, old)]
     assert "DetectorType energy (manual) became photon (svo), which does not outrank it" in messages
     assert "DetectorType energy (svo) became photon (svo), which does not outrank it" in messages
@@ -3467,7 +3528,8 @@ def label_check_finds_the_same_curve_served_with_two_detector_types(t):
             ("LBT/MODS/g.dat", tr, PHOTON, SOURCE_SVO),                     # the same tag: no clash
             ("Misc/APASS/r.dat", tr[::-1], ENERGY, SOURCE_SVO)):            # another curve
         (t.tmp / rel).parent.mkdir(parents=True, exist_ok=True)
-        write_filter_file(t.tmp / rel, wl, [float(v) for v in transmission], detector_type=detector, source=source)
+        write_filter_file(t.tmp / rel, wl, [float(v) for v in transmission], detector_type=detector, source=source,
+                          wavelength_unit="Angstrom")
     component = t.tmp / "Misc" / "APASS" / "components" / "filter" / "g.dat"   # components keep their own labels
     component.parent.mkdir(parents=True)
     write_filter_file(component, wl, tr, detector_type=ENERGY, source="component")
@@ -3494,7 +3556,7 @@ def label_check_makes_a_weaker_label_follow_the_same_curve(t):
         shift = 0.0 if "SDSS" in rel or "APASS" in rel else 1000.0 if "LCO" in rel else 2000.0
         (t.tmp / rel).parent.mkdir(parents=True, exist_ok=True)
         write_filter_file(t.tmp / rel, [w + shift for w in wl], tr, detector_type=PHOTON, source=SOURCE_SVO,
-                          extra={"Components": components, "ComponentsSource": source})
+                          wavelength_unit="Angstrom", extra={"Components": components, "ComponentsSource": source})
     [(path, message)] = label_check.problems(t.tmp)
     assert path.name == "sdss_g.dat" and message == ("labelled Components=filter (assumed), but the same curve "
                                                      "SLOAN/SDSS/g.dat is filter+instrument+atmosphere (svo)"), message

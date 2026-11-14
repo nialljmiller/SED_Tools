@@ -740,7 +740,7 @@ def _set_curve_count(directory: Path) -> int:
 
 def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
     """Interactive wizard for combining local filter sets."""
-    from ..filters.combine import combine_filter_sets, find_filter_sets
+    from ..filters.combine import combine_filter_sets, find_filter_sets, resolve_output_path
 
     print("\nCombine photometric filter sets")
     print("This creates one MESA-compatible filter folder and index file")
@@ -768,13 +768,13 @@ def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
     default_name = "_".join(path.name for path in selected_paths[:3]) or "CombinedFilters"
     output = input(f"Combined instrument name [{default_name}]: ").strip() or default_name
     facility = input("Output facility label [Combined]: ").strip() or None
-    instrument = input(f"Output index/instrument name [{output}]: ").strip() or None
+    instrument = input(f"Output instrument folder name [{output}]: ").strip() or None
 
     conflict = input("Duplicate band names: rename, overwrite, or error? [rename]: ").strip().lower() or "rename"
 
+    folder = resolve_output_path(output, chosen_base, facility=facility, instrument=instrument)
     print("\nAbout to create a combined filter set:")
-    for name, value in (("Base", chosen_base), ("Output", output), ("Facility", facility or "Combined"),
-                        ("Instrument", instrument or output), ("Conflicts", conflict)):
+    for name, value in (("Base", chosen_base), ("Folder", folder), ("Conflicts", conflict)):
         print(f"  {name:<10}: {value}")
     confirm = input("Proceed? [Y/n] ").strip().lower()
     if confirm and not confirm.startswith("y"):
@@ -784,7 +784,7 @@ def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
     out = combine_filter_sets(output, selected_paths, filter_root=chosen_base, facility=facility,
                               instrument=instrument, on_conflict=conflict)
     print(f"\n[filters] Combined {len(list(out.glob('*.dat')))} filters into {out}")
-    print(f"[filters] Wrote MESA index file: {out / (instrument or out.name)}")
+    print(f"[filters] Wrote MESA index file: {out / out.name}")  # MESA opens the index named after the folder
     print("Use this path as the MESA instrument/filter-set directory.")
 
 

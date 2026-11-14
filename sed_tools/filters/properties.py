@@ -3,8 +3,10 @@
 Wavelengths are in Angstrom.  ``T`` is the tabulated transmission and ``W`` the
 synthetic-photometry weight used everywhere in SED_Tools (:func:`filter_weight`:
 ``T`` for energy-counting curves, ``T·λ`` for photon-counting ones; Bessell &
-Murphy 2012, PASP 124, 140).  Integrals use the trapezoidal rule on the curve's
-own samples, and a reference spectrum is interpolated onto them.
+Murphy 2012, PASP 124, 140).  Integrals use the trapezoidal rule: on the curve's
+own samples, and with a reference spectrum (Vega, the Sun) on the curve's samples
+and the spectrum's within its range, as photometry integrates
+(:func:`sed_tools.photometry.on_band_grid`).
 
 =================  ==============================================================
 WavelengthMean     ∫ λ T dλ / ∫ T dλ
@@ -62,7 +64,8 @@ from typing import Dict, Optional, Tuple, Union
 import numpy as np
 
 from .curve_metadata import read_filter_header
-from ..photometry import SPEED_OF_LIGHT_ANG_PER_S, filter_weight, load_filter_curve, load_spectrum
+from ..photometry import (SPEED_OF_LIGHT_ANG_PER_S, band_average_flux_lambda_from_arrays, filter_weight,
+                          load_filter_curve, load_spectrum, on_band_grid)
 
 AB_JY = 3631.0
 ST_FLAM = 3.631e-9  # erg/s/cm²/Å
@@ -172,14 +175,16 @@ def extinction_law() -> dict:
     return law
 
 
-def _on_curve(spectrum: Optional[Spectrum], lam: np.ndarray, lo: float, hi: float) -> Optional[np.ndarray]:
-    """A reference spectrum on the curve's samples (zero outside its range, as photometry has it), or None."""
+def _on_band(spectrum: Optional[Spectrum], lam: np.ndarray, t: np.ndarray, lo: float,
+             hi: float) -> Optional[Tuple[np.ndarray, np.ndarray, np.ndarray]]:
+    """A reference spectrum and the curve as photometry integrates them (:func:`on_band_grid`), or None without
+    the spectrum or when it does not cover ``lo``..``hi``, where the curve transmits."""
     if spectrum is None:
         return None
     sl, sf = (np.asarray(a, dtype=float) for a in spectrum)
     if sl[0] > lo or sl[-1] < hi:
         return None
-    return np.interp(lam, sl, sf, left=0.0, right=0.0)
+    return on_band_grid(sl, sf, lam, t)
 
 
 def filter_properties(
@@ -233,21 +238,23 @@ def filter_properties(
         "AfAv": extinction_ratio(pivot),
     }
     lo, hi = props["WavelengthMin"], props["WavelengthMax"]
-    f = _on_curve(vega, lam, lo, hi)
-    if f is not None:
-        flam = float(np.trapezoid(f * w, lam) / area_w)
+    on_vega = _on_band(vega, lam, t, lo, hi)
+    if on_vega is not None:
+        grid, tv, f = on_vega
+        flam = band_average_flux_lambda_from_arrays(grid, f, tv, detector_type)
         props.update({
-            "WavelengthEff": float(np.trapezoid(lam * t * f, lam) / np.trapezoid(t * f, lam)),
-            "WavelengthPhot": float(np.trapezoid(lam**2 * t * f, lam) / np.trapezoid(lam * t * f, lam)),
+            "WavelengthEff": float(np.trapezoid(grid * tv * f, grid) / np.trapezoid(tv * f, grid)),
+            "WavelengthPhot": float(np.trapezoid(grid**2 * tv * f, grid) / np.trapezoid(grid * tv * f, grid)),
             "ZeroPointVega_flam": flam,
             "ZeroPointVega_Jy": flam * nu_factor / JY,
         })
         if flam > 0:
             props["ABminusVega"] = -2.5 * math.log10(flam * nu_factor / JY / AB_JY)
             props["STminusVega"] = -2.5 * math.log10(flam / ST_FLAM)
-    solar = _on_curve(sun, lam, lo, hi)
-    if solar is not None:
-        props["Fsun"] = float(np.trapezoid(solar * w, lam) / area_w)
+    on_sun = _on_band(sun, lam, t, lo, hi)
+    if on_sun is not None:
+        grid, ts, solar = on_sun
+        props["Fsun"] = band_average_flux_lambda_from_arrays(grid, solar, ts, detector_type)
     return props
 
 

@@ -1,7 +1,7 @@
 """Composing filter curves: an instrument's own components multiplied into products.
 
 A published passband is a product of throughputs (Gaia DR3: filter + CCD + instrument) that cannot be divided
-back, so components exist only where the team published them; the folder model is :mod:`.manifest`, re-exported here.
+back, so components exist only where the team published them; the folder model is :mod:`.manifest`.
 """
 
 from __future__ import annotations
