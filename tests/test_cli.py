@@ -486,6 +486,8 @@ def _in_its_folder(t):
 #: Each module with a main(), and its help's description.
 HELP = {
     "cube.tool": "Inspect and interpolate a flux cube",
+    "filters.label_check": "The rules a served filter tree's labels must keep; NJM checks them on every refresh, "
+                           "a MESA build against its last tree.",
 }
 
 

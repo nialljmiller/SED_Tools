@@ -3400,8 +3400,6 @@ def _sources(t, found, written):
 
 @row
 def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
-    import runpy
-
     from sed_tools.filters import label_check
 
     def curve(path, detector=PHOTON, source=SOURCE_SVO, wl=(4000.0, 5000.0, 6000.0), tr=(0.5, 1.0, 0.5), **extra):
@@ -3449,10 +3447,6 @@ def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
     assert label_check.main([str(clean)]) == 0 and "keep every rule" in t.capsys.readouterr().out
     with pytest.raises(SystemExit):
         label_check.main([str(t.tmp / "missing")])
-    t.mp.setattr(sys, "argv", ["label_check", str(clean)])
-    with pytest.raises(SystemExit) as stop:
-        runpy.run_module("sed_tools.filters.label_check", run_name="__main__")
-    assert stop.value.code == 0
 
 
 @row
