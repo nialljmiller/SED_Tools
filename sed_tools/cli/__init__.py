@@ -419,23 +419,25 @@ def _cmd_filters_inventory(args, parser):
 
 
 def _cmd_filters_build_components(args, parser):
-    if args.source == "all":
-        return _build_all_component_sources(args.base, args.sites)
     options = (("raw", args.raw), ("instrument", args.instrument), ("sites", args.sites),
                ("airmasses", args.airmass), ("pwvs", args.pwv), ("archive_dir", args.archive))
     kwargs = {key: value for key, value in options if value}
-    print(f"[filters] Built {get_builder(args.source)(args.base, **kwargs)}")
-    return 0
+    if args.source != "all":
+        print(f"[filters] Built {get_builder(args.source)(args.base, **kwargs)}")
+        return 0
+    if kwargs:
+        parser.error("'all' runs every builder with its own defaults; give --raw, --instrument, --sites, "
+                     "--airmass, --pwv or --archive with one named source")
+    return _build_all_component_sources(args.base)
 
 
-def _build_all_component_sources(base: str, sites: Optional[List[str]]) -> int:
-    """Run every automatic builder; report each failure and return 1 if any failed."""
+def _build_all_component_sources(base: str) -> int:
+    """Run every automatic builder with its own defaults; report each failure and return 1 if any failed."""
     failed = []
     for name in AUTOMATIC_BUILDERS:
-        kw = {"sites": sites or ["paranal", "lasilla"]} if name == "skycalc" else {}
         print(f"[filters] === {name} ===")
         try:
-            get_builder(name)(base, **kw)
+            get_builder(name)(base)
         except (ValueError, RequestException, OSError, RuntimeError) as exc:
             failed.append(f"{name}: {exc}")
     return _failure_status("filters", failed)

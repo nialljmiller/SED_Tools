@@ -21,9 +21,10 @@ SkyCalc is reached through ESO's JSON API (the host ``skycalc_cli`` and
 ``skycalc_ipy`` use) or, when that host does not answer, through the SkyCalc
 web form at ``www.eso.org``, which runs the same calculator.
 
-Run where the data is curated; it is resumable (existing files are kept)::
+Run where the data is curated; it is resumable (existing files are kept), and builds
+``paranal`` and ``lasilla`` unless given ``--sites``::
 
-    sed-tools filters-build-components skycalc --sites paranal lasilla
+    sed-tools filters-build-components skycalc
 """
 
 from __future__ import annotations
@@ -483,7 +484,7 @@ def build(
     filter_root: Union[str, Path],
     *,
     atmosphere_root: Union[str, Path, None] = None,
-    sites: Sequence[str] = ("paranal",),
+    sites: Sequence[str] = ("paranal", "lasilla"),
     airmasses: Iterable[float] = DEFAULT_AIRMASSES,
     pwvs: Iterable[float] = DEFAULT_PWVS,
     fetch_resolution: float = 200000,

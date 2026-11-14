@@ -11,6 +11,7 @@ from __future__ import annotations
 import contextlib
 import importlib
 import importlib.util
+import inspect
 import re
 import shutil
 import subprocess
@@ -534,13 +535,19 @@ def building_all_components_runs_every_builder_and_lists_the_failures(t):
     t.mp.setattr(cli, "AUTOMATIC_BUILDERS", ("first", "skycalc", "bad"))
     t.mp.setattr(cli, "get_builder", builder)
     assert run_cli(t.mp, "filters-build-components", "all", "--base", str(t.tmp)) == 1
-    assert built == [("first", str(t.tmp), {}), ("skycalc", str(t.tmp), {"sites": ["paranal", "lasilla"]})]
+    # Each with its own defaults: 'all' used to give skycalc the sites paranal and lasilla by name.
+    assert built == [("first", str(t.tmp), {}), ("skycalc", str(t.tmp), {})]
     out = t.capsys.readouterr().out
     assert "[filters] === bad ===" in out and out.endswith("[filters] FAILED bad: source did not answer\n")
     built.clear()
-    t.mp.setattr(cli, "AUTOMATIC_BUILDERS", ("skycalc",))
-    assert run_cli(t.mp, "filters-build-components", "all", "--base", str(t.tmp), "--sites", "lapalma") == 0
-    assert built == [("skycalc", str(t.tmp), {"sites": ["lapalma"]})]
+    # An option is one source's input: 'all' refuses it, rather than give it to skycalc alone or ignore it.
+    with pytest.raises(SystemExit) as stop:
+        run_cli(t.mp, "filters-build-components", "all", "--base", str(t.tmp), "--sites", "lapalma")
+    assert stop.value.code == 2 and built == []
+    assert "'all' runs every builder with its own defaults" in t.capsys.readouterr().err
+    from sed_tools.component_sources import skycalc
+
+    assert inspect.signature(skycalc.build).parameters["sites"].default == ("paranal", "lasilla")  # NJM's two
 
 
 @main_row
