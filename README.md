@@ -603,6 +603,8 @@ sed-tools combine --non-interactive
 sed-tools combine --grids Kurucz2003all bt-settl --output my_combined_grid
 ```
 
+The combined cube's wavelengths are the union of the grids' own, so it keeps each grid's whole coverage and grows with the number of distinct wavelengths. Each spectrum keeps its own flux, and a node no spectrum fills stays at zero. A combination whose extra axes vary is split into one subgrid per variant, and the command then names the subgrid folders to give MESA. Combining again into the same output folder replaces the earlier combination; the output may not be one of the grids combined.
+
 **Use cases:**
 
 - Extend temperature coverage by combining hot and cool stellar spectral grids
@@ -733,7 +735,7 @@ sed-tools coverage --grids Kurucz2003all --no-plot
 
 ### `sed-tools mesa_prepare`
 
-Export one extra-axis variant (e.g. one alpha-enhancement, microturbulence or mixing-length combination) of a spectral grid as a clean, self-contained MESA-ready folder holding only that variant's flux cube and lookup table. `sed-tools rebuild` splits a grid whose extra axes vary into one subgrid per variant (`<grid>/<variant path>/`, each with its own `flux_cube.bin` and `lookup_table.csv`) and lists them in `<grid>/variants_index.csv`; `mesa_prepare` reads that file first. A uniform grid with its `flux_cube.bin` is already MESA-ready, and the command says so. The provenance columns of combined and ML-extended grids are not variant axes.
+Export one extra-axis variant (e.g. one alpha-enhancement, microturbulence or mixing-length combination) of a spectral grid as a clean, self-contained MESA-ready folder holding only that variant's flux cube and lookup table. `sed-tools rebuild` splits a grid whose extra axes vary into one subgrid per variant (`<grid>/<variant path>/`, each with its own `flux_cube.bin` and `lookup_table.csv`) and lists them in `<grid>/variants_index.csv`; `mesa_prepare` reads that file first. A uniform grid with its `flux_cube.bin` is already MESA-ready, and the command says so. A lookup column is a variant axis when it tells apart spectra at one (Teff, log g, [M/H]) node; the columns SED_Tools writes to describe a file (units, source, the provenance of combined and ML-extended grids) never are, and a column that varies only between nodes (`hres`'s model atmosphere code) labels the spectra and splits nothing.
 
 ```bash
 # Interactive spectral grid and variant selection

@@ -800,7 +800,8 @@ class SED:
         (alpha, [alpha/Fe], C/O, ...) vary is split into one subgrid per
         variant, as ``sed-tools rebuild`` splits one grid; it then has no
         flux cube of its own, and the SED returned holds its spectral grid
-        only (load a variant with ``SED.local("<output>/<variant>")``).
+        only (load a variant with ``SED.local("<output>/<variant>")``). An
+        earlier combination in the ``output`` folder is replaced.
 
         Parameters
         ----------
