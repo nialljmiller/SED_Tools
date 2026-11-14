@@ -11,9 +11,11 @@ that did nothing or that only the tests used. It adds checks that a served
 filter tree and a grid are consistent with what MESA reads (PR #66), drops the
 checks that only reworded a user's mistake (PR #67), reads MSG grids as MSG
 defines them, stops combine from scaling one grid's spectra to another's and
-from placing or overwriting spectra wrongly, and fixes four other defects.
-Valid use of the current API, and the files MESA reads, are unchanged except
-where a bullet below says otherwise.
+from placing or overwriting spectra wrongly, and fixes four other defects and
+those a review of the release found (band averages on coarsely sampled curves,
+combine's wavelength axis and empty nodes, split grids from NJM, and the
+others below). Valid use of the current API, and the files MESA reads, are
+unchanged except where a bullet below says otherwise.
 
 Removed: the old import paths
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -156,6 +158,17 @@ Removed: aliases, command lines, parameters and functions
   of grids split by SED_Tools before 0.5.0; ``sed-tools rebuild`` writes the
   current one (``variants_index.csv`` and one subgrid per variant).
 
+Added
+~~~~~
+
+- **NJM's Vega spectrum for MESA.** ``sed-tools vega [--out DIR]`` and
+  ``Filters.fetch_vega(out_dir=None, *, filter_root=None, refresh=False)``
+  download NJM's ``vega/vega_flam.csv`` (Å, f_λ in erg/s/cm²/Å), the file
+  MESA's colors module needs for Vega magnitudes, to ``vega/`` in the data
+  directory (or the folder given) and return or print its path, with the
+  ``vega_sed`` inlist line. They use the catalogue's cached download, as the
+  Vega-based properties and ``Filters.plot(vega=True)`` do.
+
 Changed behaviour
 ~~~~~~~~~~~~~~~~~
 
@@ -209,10 +222,12 @@ Changed behaviour
   grid does not state, the node's. A spectrum that fills no node (one
   overwritten by a later grid) is neither listed nor copied.
 - Golden ``combine_models``: the golden pair (alpha 0 and alpha 0.4) is now
-  two variant subgrids. The alpha 0.4 cube is the one combine wrote with its
-  scaling removed (each node 0.24–0.47 % above the scaled one), and the
-  alpha 0 cube holds Kurucz2003all's own spectra, which were overwritten
-  before.
+  two variant subgrids. The alpha 0 cube holds Kurucz2003all's own spectra,
+  which were overwritten before, and each cube is byte-identical to the cube
+  builder's cube of its source grid, on the golden Kurucz grids' own 1199
+  wavelengths (147-1,600,000 Å) instead of 439 steps over 3010-24950 Å.
+  Golden ``densify_grid`` gains ``lookup_table.csv``, a copy of the input's;
+  its cube is unchanged.
 - **ML lookup columns are found as everywhere else.**
   ``Completer.extend_catalog`` (and ``MLCompleter.extend`` and the extend
   menu) finds a lookup table's file, Teff, logg and [M/H] columns with
@@ -227,6 +242,127 @@ Changed behaviour
   recipe, without the facility.
 - KPNO/Mosaic's k1044 band is ``Us`` (``Us.dat``), NOIRLab's name for it, not
   ``U``.
+- A filter curve whose ``Components`` header names an unknown component now
+  stops the description of its set with an error naming the set, the band and
+  the component (``InstrumentManifest.from_headers``). Before, it was logged
+  and the set described as of unknown contents. For an installed set,
+  ``Filters.available``, composing and describing it stop; for NJM's or SVO's
+  description, ``Filters.available`` records the error as that source's
+  failure and asks the next source.
+- ``python -m sed_tools.filters.label_check`` stops with a usage error (exit 2)
+  when the ``--against`` tree is not a directory, as for ``FILTERS_DIR``.
+  Before, a mistyped ``--against`` path compared against nothing and passed.
+- **combine leaves a node no spectrum fills at zero.** It used to fill every
+  empty node with the nearest filled node's spectrum, unscaled, so a 3500 K
+  node at log g 4.5 could hold a 900 K star's spectrum; the 1 % guard checks
+  only the nodes the lookup table lists and never saw them. Such a node now
+  stays at zero, as in the cube builder, and combine no longer needs scipy.
+- **combine's wavelength axis is the union of the grids' own.** It was at most
+  5000 even steps over 3000-25000 Å, set by spectra drawn at random, so MESA's
+  UV and mid-IR bands read zero in every combined cube (a 30,000 K star 2.4 mag
+  too faint in its bolometric magnitude) and two runs could write different
+  cubes. Each grid's wavelengths are now taken as the cube builder takes them,
+  and their union is the axis: deterministic, and every grid's whole coverage
+  is kept. The cube grows with the number of distinct wavelengths, so combine
+  now builds each cube on disk (a hidden folder beside the output, removed at
+  the end) and writes it in parts of wavelengths: memory holds about one
+  spectrum and one part (128 MiB) at a time, where it held every variant's
+  cube and a copy of each. The files are byte-identical. The cube builder's
+  writer makes one copy per part instead of three.
+- **combine compares axis values exactly**, as the cube builder does. It
+  merged Teff values within 1 K and log g and [M/H] values within 0.01, so
+  MSG's OSTAR2002 (Z/Z☉ 0, 0.001 and 0.01) lost two spectra per node.
+- **Combining or building again into a folder replaces what the earlier run
+  wrote there.** combine removes the earlier combination's copies, cube and
+  variants before it writes, and copies every spectrum (a rerun used to keep
+  a copy under a reused name holding another star's spectrum). A cube build
+  that writes one cube as the grid's own removes an earlier split, which would
+  otherwise be read as the grid's cubes.
+- **A grid split into variants has no flux cube of its own.** MESA reads a
+  variant's folder (``stellar_atm = '.../<grid>/<variant>/'``). A split removes
+  a top-level ``flux_cube.bin`` an earlier build left, and the NJM client
+  removes NJM's top-level copy of the default variant's cube and no longer
+  downloads it. ``SED.local("<grid>")`` and ``SED().model("<grid>")`` on a
+  split grid stop with ``FileNotFoundError`` naming its variants,
+  ``<grid>/<variant>``, which they load. The README's examples point at a
+  Kurucz2003all variant.
+- **A split grid from NJM comes with its variant folders.** The NJM client
+  downloads each variant folder's cube and lookup table of a whole split grid
+  and links its spectra, so neither ``SED.fetch`` nor ``sed-tools grids``
+  rebuilds it. ``sed-tools grids`` keeps a downloaded cube that holds every
+  spectrum beside it, as it keeps such an HDF5 bundle; it rebuilt the cube
+  after every download.
+- ``sed-tools mesa_prepare --variant NAME`` exports the variant whose subgrid
+  folder is NAME (as ``variants_index.csv`` lists it) without asking; a name
+  the grid has none of exits with status 1 and lists the names.
+- **SED.combine refuses an output that is one of its grids**, as
+  ``sed-tools combine`` did: it used to overwrite that grid's lookup table and
+  cube. One rule in ``grids.pipeline._build_combined_grid`` serves both, and
+  compares the folders.
+- **Which lookup columns are extra axes: one generic rule.** Bookkeeping is
+  what SED_Tools itself writes to describe a file (the cleaner's units and
+  source, the MSG and MAST grabbers' provenance, combine's and
+  ``extend_catalog``'s columns). Every other column states something about the
+  model: it is an extra axis where it tells apart rows at one (Teff, log g,
+  [M/H]) node, or where it has one value (it names the variants); a column that
+  varies only between nodes labels the spectra and splits nothing (``hres``'s
+  model atmosphere code). BOSZ's ``am``, ``cm``, ``vturb`` and ``atmos`` were
+  bookkeeping by name, so a node's BOSZ variants were averaged (cube builder)
+  or overwritten (combine); they now split the grid. A column that varies only
+  between nodes, which used to split a grid when it was not on the
+  bookkeeping list (alpha tied to [M/H], for example), now leaves it one cube.
+  The extra axes of NJM's eight served grids and of MSG's 25 are unchanged.
+- **A parameter column under any name ``grids.lookup`` accepts is no extra
+  axis.** A Teff column named ``temperature``, or [M/H] named ``Z/Zo``, was
+  read as its axis and also split on, one subgrid per value.
+- **Split grids are listed by their variants.** ``SED.query`` (local),
+  ``SED().available_grids()``, ``find_grids``, ``find_model``,
+  ``sed_tools.find_grids`` and ``find_atm`` list each variant of a grid split
+  into variants as ``<grid>/<variant>``, the name ``SED.local`` takes; they
+  left such grids out.
+- ``sed-tools combine`` names the variant folders to give MESA when the
+  combination is split; it used to print ``stellar_atm = '<output>/'``, a
+  folder with no flux cube.
+- **densify** leaves a Teff beside an empty node empty (it wrote an unscaled
+  blackbody there), and copies the source grid's ``lookup_table.csv``, which
+  MESA requires, beside the dense cube.
+- ``sed-tools mesa_prepare`` counts and copies each spectrum file of a variant
+  once; a combined grid lists a spectrum at every node it fills.
+- **A reversed range raises ``ValueError``, in one place.**
+  ``ui_utils.ordered_range`` is the one rule for a range typed at a menu
+  prompt, given as a CLI flag or given to the API: a range whose first end is above its
+  second raises ``ValueError``; equal ends are a range of one value. The completer's extend
+  menu asks for the range once (it asked again after a reversed one). The
+  grids menu's axis-cut prompt raises on ``8000,3500`` (it swapped the two
+  values). ``SEDCompleter.complete_sed``, ``ml.Completer.extend`` and
+  ``extend_catalog`` (and ``api.MLCompleter.extend`` through it) raise before
+  anything is read or written; before, ``complete_sed`` returned a spectrum
+  whose wavelengths were out of order, and ``extend_catalog`` copied every
+  spectrum unchanged and reported it as already covering the range. The same
+  rule now covers ``sed-tools grids --teff/--logg/--meta/--wavelength``
+  (passed on as given), ``SED.fetch``'s bounds (raises before anything is
+  made or downloaded), ``SpectralGrid.filter`` (returned an empty grid),
+  ``find_grids`` and ``find_model`` (swapped), and the MAST grabber's cuts
+  (swapped).
+- **Selection prompts ask once.** ``sed-tools combine``'s grid selection
+  raises ``ValueError`` on an answer it cannot use, and the flux cube tool's
+  filter-system, Vega-spectrum and flux-cube prompts raise ``KeyError`` for an
+  unlisted number (``FileNotFoundError`` for a path with no cube); each asked
+  again before. A blank answer to the flux-cube prompt stops like ``q``.
+- **``filters-build-components all`` runs every builder with its own
+  defaults.** SkyCalc's own default sites are now ``paranal`` and ``lasilla``,
+  the two that ``all`` gave it by name, so ``all`` builds what it built
+  before; ``filters-build-components skycalc`` without ``--sites`` now builds
+  both sites (it built ``paranal`` only). An option given with ``all``
+  (``--raw``, ``--instrument``, ``--sites``, ``--airmass``, ``--pwv``,
+  ``--archive``) is refused with exit status 2; before, ``--sites`` reached
+  SkyCalc alone and the others were ignored.
+- ``MLGenerator.list_models()`` takes a relative ``models_dir`` (the default
+  ``"models"``) under the stellar-model folder, as
+  ``SED.ml_generator(models_dir=...)`` does, so it lists the models
+  ``SED.ml_generator().train()`` saves. It read ``./models`` in the current
+  working directory, which listed none of them. An absolute path is used as
+  given.
 
 Fixed
 ~~~~~
@@ -271,7 +407,10 @@ Fixed
   downloaded: an unknown unit raises ``KeyError`` with nothing downloaded and
   no folder made.
 - Builders download each URL once per build: VISTA reused a download across
-  builds in one process, and DECam fetched the DES table six times per build.
+  builds in one process, DECam fetched the DES table six times per build, and
+  PAN-STARRS/PS1 downloaded ``table3.dat`` a second time for its team site
+  (``haleakala_ps1``). A builder's ``Fetcher`` now shares one cache with the
+  sites it writes.
 - ``sed-tools rebuild``, ``SpectralGrid.write()`` and ``SED.import_grid()``
   no longer write the HDF5 bundle over an MSG grid's downloaded ``<grid>.h5``:
   a file there that is not a bundle is left alone and the bundle is
@@ -294,10 +433,72 @@ Fixed
 - An NJM download with a wavelength range no longer first asks NJM for a
   server-side cut, which it never made; the spectra are trimmed after
   download, as before.
+- **A component fetch from NJM keeps the installed set's own records.** It
+  saved NJM's ``manifest.json`` over the installed one, so a user's detector
+  correction was undone (products composed afterwards, e.g. after a
+  ``Filters.compose`` of a recipe NJM cannot build, took the old type while
+  the curves kept the new one) and the ``archived_bands`` record of copies
+  kept beside the set was lost. NJM's manifest now replaces the installed one
+  except for the bands whose ``DetectorTypeSource`` is ``user`` (while the
+  curve still says so) and the archived copies of bands NJM does not list.
+- **Converting a set's detector type is all or nothing.** One unreadable curve
+  left the earlier curves converted and the rest not, with ``info.json`` and
+  ``properties.json`` not updated, while the menu said "Not changed". Every
+  curve is now read before any is written.
+- **Running the same filter combine again adds no band twice.** In the
+  default ``rename`` mode a file the previous run left counted as a name
+  clash, so a rerun added ``SLOAN_SDSS_g`` beside ``g`` (and ``_2`` copies for
+  inputs sharing band names). A file an earlier run left with the same samples
+  is now the curve's own copy and is written again. A first run, name clashes
+  included, is unchanged.
+- The filter-combine wizard shows the folder it will write and prints the
+  index file it wrote, named after the folder as MESA opens it. Before, with
+  an absolute output and an instrument name typed, it named an index file
+  that does not exist. ``sed-tools filters-combine --instrument`` is described
+  as the output folder's name, which an absolute output path ignores.
+- The README's MESA inlist example sets ``instrument`` and ``stellar_atm`` in
+  ``&colors`` (it said ``&controls``) and points ``stellar_atm`` at a split
+  grid's variant subfolder, as the download advises.
+- Published curves fetched from SVO by an original-source builder
+  (``ensure_published``) cite SVO's record at its own address in ``Sources``,
+  whichever FPS endpoint ``SED_SVO_FPS_URL`` pointed at, so ``set_problems``
+  recognises them as copies of SVO's record. Nothing changes with the default
+  endpoint.
+- **Band averages see the whole spectrum in the band.** Synthetic photometry
+  (``band_average_flux_lambda``, ``band_average_flux_nu``, so
+  ``EvaluatedSED.photometry`` and the flux-cube tool) and the Vega and Sun
+  quantities of ``filter_properties`` interpolated the spectrum onto the
+  filter curve's own samples, so a coarsely tabulated curve saw it at a few
+  points: Generic/Johnson U (13 rows) was 0.19 mag off for a 3750 K star, and
+  its Vega zero point 0.09 mag. They now integrate on the curve's samples and
+  the spectrum's within the band (``sed_tools.photometry.on_band_grid``), as
+  MESA does; Johnson U, B and V now agree with MESA to 0.006 mag. Curves
+  sampled every 5 Å or finer change by less than 0.001 mag (99.9 % of NJM's).
+  The detector weighting is unchanged. NJM's served ``properties.json``
+  values were computed the old way.
+- **A split grid is checked by its variants.** NJM serves Kurucz2003all and
+  Husfeld split, with a top-level ``flux_cube.bin`` that copies the default
+  variant's cube. The client compared that copy with every variant's rows, so
+  ``SED.fetch("Kurucz2003all")`` rebuilt the grid on every call, and it passed
+  Husfeld although its variant cubes had not been downloaded
+  (``mesa_prepare`` then failed). ``variants_index.csv`` now decides, and the
+  client downloads the variant folders (above).
+- **Variants are told apart by value** ("0" and "0.0" are one variant) and get
+  folders of their own: an axis's values are written with two decimals, or as
+  many more as keep them apart (0.001 and 0.004). Two variants used to share a
+  folder, the second overwriting the first.
+- **Every downloaded or rewritten spectrum is written whole or not at all**
+  (``grids.spectrum_io.write_atomically``): SVO's and NJM's downloads, MSG's
+  extraction and HDF5 download, MAST's spectra and the cleaner's rewrite. An
+  MSG extraction stopped part way used to be reused as complete; a failed
+  rewrite in the cleaner now leaves the file unchanged.
+- ``scripts/audit_pipeline.py`` audits a split grid variant by variant; it
+  read the removed ``fluxcube_library/`` layout and reported every such grid's
+  ``flux_cube.bin`` missing. Notebooks 06 and 12 describe the current code,
+  and their outputs of removed behaviour are cleared.
 
 Checks and guards
 ~~~~~~~~~~~~~~~~~
-
 - ``sed-tools coverage --filters ...`` (and ``SED.coverage(filters=...)``)
   lists the bands a grid's wavelengths do not sample
   (``sed_tools.photometry.band_sampling``), and exits 1 if there are any. A
@@ -314,7 +515,8 @@ Checks and guards
   checks the label rules every served filter tree must keep, and exits 1 on
   any problem:
 
-  - detector types and their sources use SED_Tools' words;
+  - detector types and their sources, and components and their sources
+    (``ComponentsSource``), use SED_Tools' words;
   - components use known roles;
   - an SVO filter-only curve is labelled ``filter``;
   - a curve equal to a registered component carries that component's role;
@@ -327,7 +529,12 @@ Checks and guards
     the strongest ``ComponentsSource`` among them gives one ``Components``, a
     curve with a weaker source gives it too, so APASS's copy of SDSS g cannot
     be ``filter (assumed)`` while SDSS's is ``filter+instrument+atmosphere
-    (svo)``. When the strongest sources disagree, nothing is reported.
+    (svo)``. When the strongest sources disagree, nothing is reported;
+  - every curve declares its ``WavelengthUnit``, since a curve without one is
+    read by a guess. On NJM's filters of 13 Nov 2026 this rule and the
+    ``ComponentsSource`` words flagged 63 curves (29 under
+    ``ComponentsSource=eso-original``, 34 without a unit); NJM's data was
+    fixed before this release, and its tree now passes.
 
   With ``--against``, it also checks that a changed ``DetectorType`` rests on
   stronger evidence than the old one, or on ``user``. A rebuild then cannot
@@ -359,8 +566,10 @@ Checks and guards
   source's record (its ``Sources`` cite SVO, or it has none) unless the set is
   named after that source (``copied_from_source``): NJM's ingests had filed
   SVO's NOT/NOT filter list in NOT/ALFOSC. A publisher's curve may name an
-  unclaimed source in its ``FilterID`` as a cross-reference. NJM runs it on
-  every refresh; on NJM's filters of 13 Nov 2026 it finds nothing in 809 sets.
+  unclaimed source in its ``FilterID`` as a cross-reference. It also reports
+  an index that lists a band its manifest archives (MESA would load the
+  superseded copy) or lists a curve twice. NJM runs it on every refresh; on
+  NJM's filters of 13 Nov 2026 it finds nothing in 809 sets.
 - The bundled instrument catalogue (``sed_tools/instrument_catalogue.json``)
   is regenerated from NJM's index of 13 Nov 2026: 809 instruments in 221
   facilities, with the 16 folders NJM's misfiled curves moved to, KPNO/Mosaic's
@@ -383,6 +592,15 @@ Packaging and scripts
 - ``build(..., raw=...)`` for PANIC, INGRID, NSFCam and IO:O reads the saved
   research inventory from ``round3/ground-1`` and ``round3/ground-2``, the
   folders' new names.
+- The API documentation has sections for ``sed_tools.filters.detector_edit``
+  and ``sed_tools.filters.label_check``.
+- ``sed_tools.ml.tuning`` imports optuna when the search runs, as the package
+  imports its other optional packages, so every module imports without
+  optuna. ``from sed_tools.ml.tuning import *`` no longer gives the name
+  ``optuna``.
+- The suite's packaging rows import every module of the package (they
+  imported 51 of 90), and every builder row checks that each URL is
+  downloaded once (PS1 was exempt by name).
 
 Version 0.6.0 (November 2026)
 -----------------------------
