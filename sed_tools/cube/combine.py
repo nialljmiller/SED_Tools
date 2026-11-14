@@ -26,8 +26,6 @@ from ..ui_utils import banner
 from ..grids.lookup import find_logg_column, find_metallicity_column, find_teff_column, write_lookup_csv
 from ..grids.spectrum_io import read_text_spectrum
 
-# scipy is only in the [full] extra: the functions that need it import it, so `import sed_tools` works without it.
-
 
 # The lookup columns only save_combined_data writes, and the default output name.
 _COMBINED_COLUMNS = {"source_model", "original_file"}
@@ -254,13 +252,13 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
     """Build the combined flux cube from all spectral grids.
 
     Each spectrum keeps the absolute flux in its file (the cleaner ties it to the spectrum's own sigma T^4): no
-    spectrum is scaled to another grid's. Each fills the nodes :func:`_placements` gives it. Raises ValueError,
-    before anything is written, listing every spectrum that cannot be read or has non-finite parameters.
+    spectrum is scaled to another grid's. Each fills the nodes :func:`_placements` gives it; a node no spectrum
+    fills stays at zero, as in the cube builder. Raises ValueError, before anything is written, listing every
+    spectrum that cannot be read or has non-finite parameters.
     """
     n_teff, n_logg, n_meta, n_lambda = len(teff_grid), len(logg_grid), len(meta_grid), len(wavelength_grid)
 
     flux_cube = np.zeros((n_teff, n_logg, n_meta, n_lambda))
-    filled_map = np.zeros((n_teff, n_logg, n_meta), dtype=bool)
     source_map = np.full((n_teff, n_logg, n_meta), -1, dtype=int)
 
     print(f"\nBuilding flux cube: {flux_cube.shape}")
@@ -289,7 +287,6 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
                 resampled = resample_to_grid(wl, fl, wavelength_grid)
                 for node in nodes:
                     flux_cube[node] = resampled
-                    filled_map[node] = True
                     source_map[node] = model_idx
 
     if failures:
@@ -298,34 +295,11 @@ def build_combined_flux_cube(all_models_data, teff_grid, logg_grid, meta_grid, w
             "Fix them or remove their rows from the lookup table:\n  " + "\n  ".join(failures)
         )
 
-    empty_count = np.sum(~filled_map)
+    empty_count = int(np.sum(source_map < 0))
     if empty_count > 0:
-        print(f"\nFilling {empty_count} empty grid points...")
-        _fill_gaps(flux_cube, filled_map, source_map, teff_grid, logg_grid, meta_grid)
+        print(f"\n{empty_count} grid points hold no spectrum and stay at zero, as the cube builder leaves them.")
 
     return flux_cube, source_map
-
-
-def _fill_gaps(flux_cube, filled_map, source_map, teff_grid, logg_grid, meta_grid):
-    """Fill each empty grid point with its nearest filled point's spectrum, in axes scaled to [0, 1]."""
-    def norm(grid):
-        r = grid.max() - grid.min()
-        return (grid - grid.min()) / r if r > 0 else np.zeros_like(grid)
-
-    teff_norm, logg_norm, meta_norm = norm(teff_grid), norm(logg_grid), norm(meta_grid)
-    filled_indices = np.where(filled_map)
-    filled_points = np.column_stack([teff_norm[filled_indices[0]], logg_norm[filled_indices[1]],
-                                     meta_norm[filled_indices[2]]])
-    from scipy.spatial import KDTree
-
-    tree = KDTree(filled_points)
-
-    for i_t, i_g, i_m in np.ndindex(filled_map.shape):
-        if not filled_map[i_t, i_g, i_m]:
-            _, idx = tree.query([teff_norm[i_t], logg_norm[i_g], meta_norm[i_m]])
-            src = (filled_indices[0][idx], filled_indices[1][idx], filled_indices[2][idx])
-            flux_cube[i_t, i_g, i_m, :] = flux_cube[src]
-            source_map[i_t, i_g, i_m] = source_map[src]
 
 
 def save_combined_data(output_dir, teff_grid, logg_grid, meta_grid,

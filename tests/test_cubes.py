@@ -535,6 +535,19 @@ def combined_cube_nodes_hold_their_own_spectra(t):
 
 
 @row
+def combine_leaves_a_node_no_spectrum_fills_at_zero(t):
+    # Every empty node used to hold its nearest filled node's spectrum, unscaled: (3500 K, log g 4.5) held the
+    # 900 K star's and (800 K, log g 5.0) the 3500 K star's, which the 1 % guard cannot see (it checks listed nodes).
+    from sed_tools.cube import fileio
+
+    _planck_grid(t, "cool", [(800.0, 4.5, 0.0), (900.0, 4.5, 0.0)])
+    _planck_grid(t, "warm", [(3500.0, 5.0, 0.0), (3600.0, 5.0, 0.0)])
+    _combined_cubes(t, ["cool", "warm"])
+    *_, flux = fileio.load(t.tmp / "models" / "combined" / "flux_cube.bin")
+    assert flux.any(axis=0)[0].tolist() == [[True, True, False, False], [False, False, True, True]]  # [log g][Teff]
+
+
+@row
 def combine_places_a_grid_without_log_g_at_every_log_g(t):
     # A grid without log g or [M/H] (a blackbody) used to be placed at log g 0 and [M/H] 0, as stars of that log g.
     # It holds the same spectrum at every log g, so it fills every value the other grids give the axis, except
