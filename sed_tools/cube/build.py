@@ -35,7 +35,6 @@ SPLIT_THRESHOLD = 25
 _FLUX_FLOOR = 1e-300
 
 
-# Quoted annotations keep the signature help() has always shown for resample_to_grid.
 def resample_to_grid(
     wl_src:  "np.ndarray",
     fl_src:  "np.ndarray",

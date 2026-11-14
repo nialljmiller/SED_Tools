@@ -131,7 +131,7 @@ def _write_dense_flux(f, flux_orig, source_rows, teff_dense, teff_orig, logg_gri
     print()
 
 
-# --- densify_grid, the interactive flow and the command line ---
+# --- densify_grid and the interactive flow ---
 
 def densify_grid(
     src: str,
