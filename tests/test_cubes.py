@@ -653,6 +653,20 @@ def combine_names_the_variant_folders_mesa_can_read(t):
 
 
 @row
+def mesa_prepare_counts_and_copies_each_spectrum_of_a_combined_variant_once(t):
+    # A combined grid lists a spectrum at every node it fills (a blackbody at every log g), and mesa_prepare counted
+    # those rows as spectra: 4 for these 3 files, and "Copied 4 spectrum files", one file twice.
+    _planck_grid(t, "stars", [(5000.0, logg, 0.0, alpha) for alpha in (0.0, 0.4) for logg in (4.0, 4.5)],
+                 columns=("teff", "logg", "meta", "alpha"))
+    _planck_grid(t, "bb", [(7000.0,)], columns=("teff",))
+    _combined_cubes(t, ["stars", "bb"])
+    variants = list_variants(t.tmp / "models" / "combined")
+    assert [(len(v.lookup_rows), v.n_spectra) for v in variants] == [(4, 3), (4, 3)]
+    mesa_export.export_variant(variants[0], t.tmp / "export")
+    assert "Copied 3 spectrum files." in t.capsys.readouterr().out
+
+
+@row
 def combine_places_a_grid_without_log_g_at_every_log_g(t):
     # A grid without log g or [M/H] (a blackbody) used to be placed at log g 0 and [M/H] 0, as stars of that log g.
     # It holds the same spectrum at every log g, so it fills every value the other grids give the axis, except

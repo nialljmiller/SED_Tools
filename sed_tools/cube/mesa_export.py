@@ -1,7 +1,7 @@
 """Export one variant of a spectral grid (e.g. one alpha-enhancement or microturbulence value) as a clean
 MESA-ready folder: list_variants, print_variant_table, export_variant, and the interactive flow behind
 ``sed-tools mesa_prepare [--grid NAME] [--output DIR]``. list_variants reads the subgrids cube/variants.py
-writes, and the layout of earlier versions.
+writes.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from typing import Dict, List
 import numpy as np
 import pandas as pd
 
-from ..grids.lookup import find_logg_column, find_metallicity_column, find_teff_column
+from ..grids.lookup import find_file_column, find_logg_column, find_metallicity_column, find_teff_column
 from .collision import discover_extra_axes
 from .model import STELLAR_DIR_DEFAULT, _read_flux_cube_header
 
@@ -26,7 +26,7 @@ class VariantInfo:
 
     label: str                          # e.g. "alpha_0.4__lh_1.25__vtur_2"
     extra_axes: Dict[str, str]          # e.g. {"alpha": "0.4", "lh": "1.25", "vtur": "2"}
-    n_spectra: int
+    n_spectra: int                      # distinct spectrum files (a combined grid lists one at several nodes)
     teff_min: float
     teff_max: float
     teff_n: int
@@ -158,13 +158,18 @@ def _variant_from_rows(rows: pd.DataFrame, axes: Dict[str, str], cube_path: Path
     return VariantInfo(
         label=label,
         extra_axes=axes,
-        n_spectra=len(rows),
+        n_spectra=rows[_file_column(rows)].nunique(),
         teff_min=teff_min, teff_max=teff_max, teff_n=teff_n,
         logg_min=logg_min, logg_max=logg_max, logg_n=logg_n,
         meta_min=meta_min, meta_max=meta_max, meta_n=meta_n,
         wavelength_min=wave_min, wavelength_max=wave_max, wavelength_n=wave_n,
         flux_cube_path=cube_path, source_model_dir=model_dir, lookup_rows=rows,
     )
+
+
+def _file_column(rows: pd.DataFrame) -> str:
+    """The lookup table's file column (find_file_column's, else the first, as MESA reads it)."""
+    return find_file_column(rows.columns) or rows.columns[0]
 
 
 def _fmt_range(lo: float, hi: float, n: int, decimals: int) -> str:
@@ -265,7 +270,8 @@ def export_variant(variant: VariantInfo, output_dir: str | os.PathLike, *, overw
     if file_col is None:
         raise KeyError("lookup_rows has no 'file_name' column — cannot locate spectra.")
 
-    filenames = variant.lookup_rows[file_col].dropna().tolist()
+    # Each file once: a combined grid lists a spectrum at every node it fills
+    filenames = list(dict.fromkeys(variant.lookup_rows[file_col].dropna()))
     missing = [fname for fname in filenames if not (src / fname).exists()]
     if missing:
         raise FileNotFoundError(
