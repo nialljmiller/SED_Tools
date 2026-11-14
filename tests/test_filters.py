@@ -3445,9 +3445,13 @@ def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
 
     from sed_tools.filters import label_check
 
-    def curve(path, detector=PHOTON, source=SOURCE_SVO, wl=(4000.0, 5000.0, 6000.0), tr=(0.5, 1.0, 0.5), **extra):
+    def curve(path, detector=PHOTON, source=SOURCE_SVO, wl=(4000.0, 5000.0, 6000.0), tr=(0.5, 1.0, 0.5),
+              unit="Angstrom", **extra):
+        if "Components" in extra:
+            extra.setdefault("ComponentsSource", SOURCE_SVO)
         path.parent.mkdir(parents=True, exist_ok=True)
-        write_filter_file(path, wl, tr, detector_type=detector, source=source, extra=extra or None)
+        write_filter_file(path, wl, tr, detector_type=detector, source=source, wavelength_unit=unit,
+                          extra=extra or None)
 
     new, old = t.tmp / "new", t.tmp / "old"
     ins = new / "Fac" / "Ins"
@@ -3457,12 +3461,14 @@ def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
     curve(ins / "components/qe/flat.dat", source="component", tr=(0.0, 0.0, 0.0))
     curve(ins / "r.dat", detector="both", wl=(4500.0, 5500.0), tr=(1.0, 1.0))   # rule 1; the filter's wings
     curve(ins / "i.dat", source="manual")                                         # rule 1: a word no one ranks
+    curve(ins / "k.dat", Components=FILTER, ComponentsSource="eso-original")      # rule 1, for Components too
+    curve(ins / "h.dat", unit=None)                                               # rule 9: read by a guess
     curve(ins / "z.dat", source="original", Components="filter+lens")             # rule 2
     curve(ins / "u.dat", source="user")
     curve(ins / "y.dat")                                                          # SVO reclassified it
     curve(ins / "w.dat")                                                          # rule 6: the ingest's credit
     (ins / "w.dat").write_text((ins / "w.dat").read_text().replace("\n", f";Sources={quote(INGESTED)}\n", 1))
-    (ins / "bad.dat").write_text("Wavelength,Transmission\n4000,-1\n5000,1\n")
+    (ins / "bad.dat").write_text("Wavelength,Transmission,WavelengthUnit=Angstrom\n4000,-1\n5000,1\n")
     (ins / "manifest.json").write_text(json.dumps({"components": {
         FILTER: {"g": "components/filter/g.dat"}, QE: {"*": "components/qe/flat.dat"},
         "filter+qe": {"g": "g.dat"}}}))
@@ -3481,7 +3487,8 @@ def label_check_finds_every_broken_rule_and_a_rebuild_undoing_a_correction(t):
     found = {(path.name, message.split(" ")[0]) for path, message in label_check.problems(new, old)}
     assert found == {("r.dat", "DetectorType"), ("i.dat", "DetectorTypeSource"), ("z.dat", "Components"),
                      ("g_filter.dat", "named"), ("g_filter.dat", "is"), ("bad.dat", str(ins / "bad.dat") + ":"),
-                     ("g.dat", "DetectorType"), ("y.dat", "DetectorType"), ("w.dat", "Sources")}, found
+                     ("g.dat", "DetectorType"), ("y.dat", "DetectorType"), ("w.dat", "Sources"),
+                     ("k.dat", "ComponentsSource"), ("h.dat", "WavelengthUnit")}, found
     messages = [m for _, m in label_check.problems(new, old)]
     assert "DetectorType energy (manual) became photon (svo), which does not outrank it" in messages
     assert "DetectorType energy (svo) became photon (svo), which does not outrank it" in messages
@@ -3508,7 +3515,8 @@ def label_check_finds_the_same_curve_served_with_two_detector_types(t):
             ("LBT/MODS/g.dat", tr, PHOTON, SOURCE_SVO),                     # the same tag: no clash
             ("Misc/APASS/r.dat", tr[::-1], ENERGY, SOURCE_SVO)):            # another curve
         (t.tmp / rel).parent.mkdir(parents=True, exist_ok=True)
-        write_filter_file(t.tmp / rel, wl, [float(v) for v in transmission], detector_type=detector, source=source)
+        write_filter_file(t.tmp / rel, wl, [float(v) for v in transmission], detector_type=detector, source=source,
+                          wavelength_unit="Angstrom")
     component = t.tmp / "Misc" / "APASS" / "components" / "filter" / "g.dat"   # components keep their own labels
     component.parent.mkdir(parents=True)
     write_filter_file(component, wl, tr, detector_type=ENERGY, source="component")
@@ -3535,7 +3543,7 @@ def label_check_makes_a_weaker_label_follow_the_same_curve(t):
         shift = 0.0 if "SDSS" in rel or "APASS" in rel else 1000.0 if "LCO" in rel else 2000.0
         (t.tmp / rel).parent.mkdir(parents=True, exist_ok=True)
         write_filter_file(t.tmp / rel, [w + shift for w in wl], tr, detector_type=PHOTON, source=SOURCE_SVO,
-                          extra={"Components": components, "ComponentsSource": source})
+                          wavelength_unit="Angstrom", extra={"Components": components, "ComponentsSource": source})
     [(path, message)] = label_check.problems(t.tmp)
     assert path.name == "sdss_g.dat" and message == ("labelled Components=filter (assumed), but the same curve "
                                                      "SLOAN/SDSS/g.dat is filter+instrument+atmosphere (svo)"), message

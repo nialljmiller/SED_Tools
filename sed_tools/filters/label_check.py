@@ -3,7 +3,8 @@
 ``python -m sed_tools.filters.label_check FILTERS_DIR [--against OLD_FILTERS_DIR]`` prints every
 violation and exits 1, or prints a one-line summary and exits 0.  Each rule holds for every instrument:
 
-1. ``DetectorType`` is ``energy`` or ``photon``, and ``DetectorTypeSource`` is a word SED_Tools ranks
+1. ``DetectorType`` is ``energy`` or ``photon``.  Each label states its source (``DetectorType`` in
+   ``DetectorTypeSource``, ``Components`` in ``ComponentsSource``) as a word SED_Tools ranks
    (:data:`DETECTOR_SOURCE_PRECEDENCE`) or sets itself (``user``, ``composed``, ``component``).  A label
    set downstream under another word, such as ``manual``, cannot be ranked against SVO's.
 2. ``Components`` names known roles only.
@@ -25,6 +26,7 @@ violation and exits 1, or prints a one-line summary and exits 0.  Each rule hold
    with a weaker source gives it too (SVO's ``instrument`` read as optics+qe).  APASS's copy of SDSS's
    g response cannot be ``filter (assumed)`` while SDSS's says ``filter+instrument+atmosphere (svo)``.
    When the strongest sources disagree with each other, no rule can choose, and nothing is reported.
+9. Every curve declares its ``WavelengthUnit``: without one, its wavelengths are read by a guess.
 """
 
 from __future__ import annotations
@@ -43,7 +45,7 @@ from .curve_metadata import (DETECTOR_SOURCE_PRECEDENCE, SOURCE_ASSUMED, PathLik
 from .manifest import (FILTER, INSTRUMENT, MANIFEST_NAME, OPTICS, QE, ComponentError, filter_sibling_base,
                        parse_components)
 
-#: Every ``DetectorTypeSource`` SED_Tools writes.
+#: Every source SED_Tools writes for a label (``DetectorTypeSource``, ``ComponentsSource``).
 DETECTOR_SOURCES = DETECTOR_SOURCE_PRECEDENCE + ("user", "composed", "component")
 #: A curve is a component when it follows it to SAME_CURVE of the component's peak on its own wavelengths and
 #: leaves out only wings below WING of that peak (copies are often trimmed there).
@@ -85,9 +87,12 @@ def _label_problems(folder: Path, headers) -> Iterator[Problem]:
         path = folder / f"{band}.dat"
         if header.get("DetectorType") and not normalize_detector_type(header["DetectorType"]):
             yield path, f"DetectorType {header['DetectorType']!r} is neither energy nor photon"
-        source = header.get("DetectorTypeSource")
-        if header.get("DetectorType") and source not in DETECTOR_SOURCES:
-            yield path, f"DetectorTypeSource {source!r} is not one of {', '.join(DETECTOR_SOURCES)}"
+        for label in ("DetectorType", "Components"):
+            source = header.get(f"{label}Source")
+            if (header.get(label) or source) and source not in DETECTOR_SOURCES:
+                yield path, f"{label}Source {source!r} is not one of {', '.join(DETECTOR_SOURCES)}"
+        if not header.get("WavelengthUnit"):
+            yield path, "WavelengthUnit is not declared, so its wavelengths are read by a guess"
         try:
             parse_components(header.get("Components"))
         except ComponentError as exc:
