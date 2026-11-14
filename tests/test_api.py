@@ -467,9 +467,12 @@ def ml_completer_trains_and_loads_a_model(t):
 @row
 def ml_generator_trains_lists_and_loads_a_model(t):
     _tiny_training(t)
-    generator = SED.ml_generator(model_root=t.tmp)
+    t.mp.setattr(SED, "_model_root", t.tmp)
+    generator = SED.ml_generator()
     assert generator.train("lib", epochs=1, batch_size=3) is generator
-    [listed] = MLGenerator.list_models(str(t.tmp / "models"))
+    # list_models() read ./models, not the <model_root>/models that train() saves to and load() reads.
+    assert MLGenerator.list_models() == generator.list_models() == MLGenerator.list_models(str(t.tmp / "models"))
+    [listed] = MLGenerator.list_models()
     assert listed["name"] == "sed_generator_lib"
     assert listed["parameter_ranges"] == {"teff": [4000.0, 6000.0], "logg": [4.0, 4.5], "meta": [-0.5, 0.0]}
     loaded = SED.ml_generator(model_root=t.tmp).load("sed_generator_lib")

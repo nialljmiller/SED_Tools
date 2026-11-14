@@ -1164,7 +1164,10 @@ class MLGenerator:
         Parameters
         ----------
         models_dir : str
-            Directory containing trained models
+            Directory containing trained models. A relative path is taken
+            under the stellar-model folder, as ``SED.ml_generator(models_dir=...)``
+            takes it, so the default lists the models ``SED.ml_generator()``
+            trains; an absolute path is used as it is.
 
         Returns
         -------
@@ -1173,7 +1176,7 @@ class MLGenerator:
             'parameter_ranges', and 'architecture' keys
         """
         from ..ml.generator import SEDGenerator
-        return SEDGenerator.list_models(models_dir)
+        return SEDGenerator.list_models(str(Path(SED._model_root) / models_dir))
 
 
 # ------------ Module-level aliases ------------
