@@ -997,6 +997,17 @@ def edit_refuses_unknown_bands_types_and_untagged_conversions(t):
 
 
 @row
+def a_set_with_an_unreadable_curve_is_not_converted_at_all(t):
+    inst = sdss(spectra_cached(t))
+    with open(inst / "r.dat", "a") as fh:
+        fh.write("8000.0,abc\n")
+    before = {p.name: p.read_bytes() for p in inst.iterdir() if p.is_file()}
+    with pytest.raises(ValueError, match=r"r\.dat, line"):
+        Filters.convert_detector_type(inst, "energy")
+    assert {p.name: p.read_bytes() for p in inst.iterdir() if p.is_file()} == before  # g.dat is not converted
+
+
+@row
 def retagging_keeps_edited_types(t):
     inst = sdss(spectra_cached(t))
     Filters.convert_detector_type(inst, "energy", bands=["g"])
