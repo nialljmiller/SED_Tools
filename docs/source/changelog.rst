@@ -2,8 +2,8 @@
 Changelog
 =========
 
-Version 0.7.0 (unreleased)
---------------------------
+Version 0.7.0 (November 2026)
+-----------------------------
 
 0.7.0 removes what nothing needs any more: the 36 old import paths, the last
 0.4.1 aliases, the modules' own command lines, and parameters and functions
