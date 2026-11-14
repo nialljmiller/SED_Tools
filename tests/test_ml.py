@@ -733,7 +733,7 @@ def extend_catalog_writes_the_good_spectra_then_lists_every_failure(t):
 
 
 # ======================================================================
-# Ranges: the completer keeps every original sample; menus ask again after a bad answer
+# Ranges: the completer keeps every original sample; a reversed range raises wherever it is given
 # ======================================================================
 @row
 def extend_catalog_keeps_every_sample_of_the_kurucz_grid(t):
@@ -793,12 +793,32 @@ def extend_menu_defaults_to_the_models_own_range(t):
 
 
 @row
-def extend_menu_asks_for_the_range_again_on_a_bad_answer(t):
+def extend_menu_takes_the_range_typed(t):
     # The menu used to extend to 100 Å-1e5 Å whatever the grid or model.
-    ranges = extend_menu(t, "2", "1", "1", "50", "40", "50", "3e6", "")
-    out = t.capsys.readouterr().out
-    assert ranges == [(50.0, 3e6)]
-    assert "50 Å is not below 40 Å; try again." in out
+    assert extend_menu(t, "2", "1", "1", "50", "3e6", "") == [(50.0, 3e6)]
+
+
+@row
+def a_reversed_range_raises_in_the_menus_and_the_api(t):
+    # One rule (ui_utils.ordered_range): the extend menu asked again; complete_sed returned wavelengths out of
+    # order; extend_catalog copied every spectrum as already covering the range; the axis-cut prompt swapped them.
+    from sed_tools.ui_utils import ask_range
+
+    wl = np.logspace(np.log10(3000.0), np.log10(20000.0), 50)
+    with pytest.raises(ValueError, match="reversed"):
+        mc.SEDCompleter().complete_sed(wl, mc.planck_function(wl, 5800.0), 5800.0, 4.4, 0.0,
+                                       extension_range=(60000.0, 500.0))
+    completer = stubbed_completer()
+    with pytest.raises(ValueError, match="reversed"):
+        completer.extend_catalog(str(three_spectra(t)), str(t.tmp / "out"), extension_range=(60000.0, 500.0))
+    assert completer._completer.calls == [] and not (t.tmp / "out").exists()
+    with pytest.raises(ValueError, match="reversed"):
+        extend_menu(t, "2", "1", "1", "50", "40")  # asked once; extend_catalog is never reached
+    answer(t.mp, "8000,3500")
+    with pytest.raises(ValueError, match="reversed"):
+        ask_range("Teff range: ")
+    answer(t.mp, "5000,5000")
+    assert ask_range("Teff range: ") == (5000.0, 5000.0)  # one value is a range, not a reversed one
 
 
 @row
