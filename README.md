@@ -142,6 +142,10 @@ sed-tools coverage --grids Kurucz2003all
 # vega_sed in the colors inlist (Python: Filters.fetch_vega())
 sed-tools vega
 
+# Print the MESA colors inlist line(s), stellar_atm or instrument, for a local grid or filter set; every download
+# prints them too (Python: sed_tools.mesa_inlist_lines(path))
+sed-tools mesa-path data/stellar_models/Kurucz2003all
+
 # Show or set the data directory
 sed-tools config
 sed-tools config --set /path/to/data --move

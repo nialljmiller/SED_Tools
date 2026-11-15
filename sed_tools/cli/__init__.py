@@ -22,6 +22,7 @@ from ..filters.manifest import ComponentError
 from ..filters.njm_catalogue import CatalogueError
 from ..grids.units import FLUX_UNITS
 from ..grids.pipeline import local_grids
+from ..mesa_inlist import _print_mesa_inlist, mesa_inlist_lines
 from ..terminal_plots import terminal_color_enabled
 from ..ui_utils import _ansi, missing_package_error, ordered_range, refused_without
 from .filters import (
@@ -292,6 +293,11 @@ def _add_grid_tool_parsers(sub) -> None:
                          "Kurucz2003all_alpha_0p40_lh_1p25_vtur_2_km_s); prompted if omitted")
     pp.add_argument("--output", default=None, help="Output directory for the exported variant; prompted if omitted")
 
+    mpp = sub.add_parser("mesa-path", help="Print the MESA colors inlist line(s) for a local spectral grid or "
+                                           "filter set")
+    mpp.add_argument("path", help="The grid's folder (e.g. data/stellar_models/Kurucz2003all) or the filter set's "
+                                  "(e.g. data/filters/Generic/Johnson)")
+
     cfg_p = sub.add_parser("config", help="Show or set the data directory")
     cfg_p.add_argument("--set", metavar="PATH", default=None, help="Set data directory to PATH")
     cfg_p.add_argument("--move", action="store_true", help="With --set: move existing data to the new path")
@@ -370,6 +376,7 @@ def _cmd_filters_combine(args, parser):
     out = combine_filter_sets(args.output, args.inputs, filter_root=args.base, facility=args.facility,
                               instrument=args.instrument, on_conflict=args.on_conflict)
     print(f"[filters] Combined filter set written to {out}")
+    _print_mesa_inlist(out)
     return 0
 
 
@@ -505,6 +512,12 @@ def _cmd_mesa_prepare(args, parser):
     return 0
 
 
+def _cmd_mesa_path(args, parser):
+    mesa_inlist_lines(args.path)  # a folder MESA cannot read: ValueError, so exit status 1 and the reason
+    _print_mesa_inlist(args.path)
+    return 0
+
+
 def _cmd_config(args, parser):
     if args.set:
         set_data_dir(args.set, move=args.move or None)
@@ -558,6 +571,7 @@ _COMMANDS = {
     "ml_generator": _cmd_ml_generator,
     "densify": _cmd_densify,
     "mesa_prepare": _cmd_mesa_prepare,
+    "mesa-path": _cmd_mesa_path,
     "config": _cmd_config,
     "coverage": _cmd_coverage,
     "import": _cmd_import,

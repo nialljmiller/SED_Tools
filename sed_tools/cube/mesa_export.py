@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 
 from ..grids.lookup import find_file_column, find_logg_column, find_metallicity_column, find_teff_column
+from ..mesa_inlist import _print_mesa_inlist
 from .collision import discover_extra_axes
 from .model import STELLAR_DIR_DEFAULT, _read_flux_cube_header
 
@@ -301,8 +302,7 @@ def export_variant(variant: VariantInfo, output_dir: str | os.PathLike, *, overw
 
     print(f"\n  Done. MESA-ready folder: {out}")
     print(f"    {len(filenames)} spectra  |  lookup_table.csv  |  flux_cube.bin")
-    print("\n  To use in MESA:")
-    print(f"    stellar_atm = '{out}/'")
+    _print_mesa_inlist(out)
 
     return out
 
@@ -377,6 +377,7 @@ def run_interactive(base_dir: str = None, model=None, output=None, variant=None)
                              "Nothing was exported.")
         print(f"{model_dir} has one flux_cube.bin for all its spectra and no variants to choose "
               "between, so it is already MESA-ready. Nothing to export.")
+        _print_mesa_inlist(model_dir)
         return
 
     print_variant_table(variants, model_name=model)

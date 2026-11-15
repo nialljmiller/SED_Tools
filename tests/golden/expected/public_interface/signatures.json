@@ -147,6 +147,7 @@
  "load_txt_spectrum": "(path: 'PathLike') -> 'tuple[np.ndarray, np.ndarray]'",
  "local": "(*args, **kwargs) -> 'SED'",
  "menu": "() -> str",
+ "mesa_inlist_lines": "(path: 'Union[str, os.PathLike]') -> 'List[str]'",
  "precompute_flux_cube": "(model_dir: str, output_file: str, root_dir: str | None = None, override_dict: Dict[str, Any] | None = None) -> None",
  "query": "(*args, **kwargs) -> 'List[SpectralGridInfo]'",
  "regenerate_lookup_table": "(model: str | None = None, files: Iterable[str] | None = None, output_dir: str | None = None)",

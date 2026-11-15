@@ -2892,6 +2892,20 @@ def a_set_installed_under_an_old_spelling_is_used_as_it_is(t):
 
 
 @row
+def fetch_and_compose_print_the_mesa_instrument_line(t):
+    # Nill, 14 Nov 2026: a download says its MESA colors inlist line. MESA opens <instrument>/<its last name>, so the
+    # folder is given with no trailing slash.
+    root, _ = legacy_sources(t)
+    installed = put(root / "Gemini" / "GMOS-N", {"b.dat": FILTER_CURVE, "GMOS-N": "b.dat\n"})
+    filters_library.InstrumentManifest.from_published(installed).save(installed)
+    t.capsys.readouterr()
+    assert Filters.fetch("Gemini", "GMOS-N", filter_root=root) == installed
+    assert t.capsys.readouterr().out == f"\nThe MESA colors inlist path for this is:\n    instrument = '{installed}'\n"
+    product = Filters.compose("Gemini/GMOS-N", "filter", filter_root=root)
+    assert t.capsys.readouterr().out.endswith(f"\nThe MESA colors inlist path for this is:\n    instrument = '{product}'\n")
+
+
+@row
 def query_keeps_svo_spelling_beside_the_download_key(t):
     root, _ = legacy_sources(t)
     t.mp.setattr(filters_library, "SVOFilterBrowser", lambda **kwargs: SimpleNamespace(

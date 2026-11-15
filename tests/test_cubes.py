@@ -480,8 +480,14 @@ def a_split_grid_from_njm_comes_with_its_variant_folders_and_is_not_rebuilt(t):
     builds = []
     t.mp.setattr(build, "precompute_flux_cube", lambda *args, **kwargs: builds.append(args))
     API.fetch(GRID, source="njm", model_root=t.tmp / "api")
+    printed = [t.capsys.readouterr().out]
     assert run_cli(t.mp, "grids", "--source", "njm", "--grids", GRID, "--base", str(t.tmp / "cli")) == 0
-    for folder in (t.tmp / "api" / GRID, t.tmp / "cli" / GRID):
+    printed.append(t.capsys.readouterr().out)
+    for folder, out in zip((t.tmp / "api" / GRID, t.tmp / "cli" / GRID), printed):
+        # Each route says the MESA colors inlist line of each variant: MESA cannot read the grid's own folder.
+        assert ("The MESA colors inlist path for this is:\n" + "".join(
+            f"    stellar_atm = '{folder / f'{GRID}_alpha_{alpha}_lh_1p25_vtur_2_km_s'}'\n" for alpha in ("0p00", "0p40"))
+            + "  (one line per variant: MESA reads one, so use one of these 2; variants_index.csv lists them)\n") in out
         assert not (folder / "flux_cube.bin").exists() and _flux_cube_shortfall(folder) is None
         assert (folder / variant / "flux_cube.bin").read_bytes() == (served / variant / "flux_cube.bin").read_bytes()
         assert [v.label for v in list_variants(folder)] == ["alpha_0", "alpha_0.4"]
@@ -696,9 +702,10 @@ def combine_names_the_variant_folders_mesa_can_read(t):
     _planck_grid(t, "a", [(5000.0, 4.5, 0.0, 0.0), (5000.0, 4.5, 0.0, 0.4)], columns=("teff", "logg", "meta", "alpha"))
     _planck_grid(t, "b", [(6000.0, 4.5, 0.0)])
     run_combine_flow(str(t.tmp / "models"), output_name="ab", interactive=False, models=["a", "b"])
-    out = t.capsys.readouterr().out
-    assert "stellar_atm" not in out and "Point MESA Colors to one of the above subdirectories." in out
-    assert f"  -> {t.tmp / 'models' / 'ab' / 'ab_alpha_0p40'}/" in out
+    out, ab = t.capsys.readouterr().out, t.tmp / "models" / "ab"
+    assert f"stellar_atm = '{ab}'" not in out and f"stellar_atm = '{ab}/'" not in out
+    assert (f"The MESA colors inlist path for this is:\n    stellar_atm = '{ab / 'ab_alpha_0p00'}'\n"
+            f"    stellar_atm = '{ab / 'ab_alpha_0p40'}'\n") in out
 
 
 @row
@@ -1179,6 +1186,7 @@ def mesa_prepare_exports_the_variant_named_without_asking(t):
     assert run_cli(t.mp, "mesa_prepare", "--base", base, "--grid", "KuruczAlpha", "--variant", variant,
                    "--output", str(out)) == 0
     assert (out / "flux_cube.bin").read_bytes() == (split_grid / variant / "flux_cube.bin").read_bytes()
+    assert t.capsys.readouterr().out.endswith(f"The MESA colors inlist path for this is:\n    stellar_atm = '{out}'\n")
     with pytest.raises(SystemExit, match="KuruczAlpha has no variant 'alpha_0.4'; its variants are "
                                          f"KuruczAlpha_alpha_0p00_lh_1p25_vtur_2_km_s, {variant}. Nothing was exported"):
         run_cli(t.mp, "mesa_prepare", "--base", base, "--grid", "KuruczAlpha", "--variant", "alpha_0.4",

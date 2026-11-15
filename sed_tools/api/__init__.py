@@ -37,6 +37,7 @@ from ..grids.pipeline import (  # noqa: F401  (_build_combined_grid and _paramet
     spectra_grabber,
 )
 from .filters import Filters, _listing_failures  # noqa: F401  (re-exported)
+from ..mesa_inlist import _print_mesa_inlist
 
 logger = logging.getLogger(__name__)
 
@@ -491,6 +492,9 @@ class SED:
         The cube's and lookup table's contents decide this, not file times.
         Bounds that no spectrum meets leave no new folder behind.
 
+        The MESA colors inlist line(s) for the grid's folder
+        (:func:`sed_tools.mesa_inlist_lines`) are printed.
+
         Returns
         -------
         SED
@@ -548,6 +552,7 @@ class SED:
                 _build_data_products(catalog, str(model_dir), used_source, True, True)
 
         cat = cls._load_catalog_from_dir(model_dir, catalog, used_source)
+        _print_mesa_inlist(model_dir)
         if cuts:
             cat = cat.filter(teff_min=teff_min, teff_max=teff_max, logg_min=logg_min, logg_max=logg_max,
                              metallicity_min=metallicity_min, metallicity_max=metallicity_max)

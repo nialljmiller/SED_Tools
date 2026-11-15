@@ -16,9 +16,10 @@ from ..grids.units import FLUX_GUESS_WHY, FLUX_UNITS, undeclared_flux_unit
 from ..grids.clean import clean_model_dir
 from ..grids.lookup import regenerate_lookup_table
 from ..grids.pipeline import (_build_combined_grid, _build_data_products, _build_flux_cube, _directory_state,
-                              _download_count, _import_sources, _print_subgrids, build_h5_bundle_from_txt,
+                              _download_count, _import_sources, build_h5_bundle_from_txt,
                               download_from_first_source, local_grids, rebuildable_grids, spectra_grabber)
 from ..grids.spectrum_io import _bundle_path
+from ..mesa_inlist import _print_mesa_inlist
 from ..ui_utils import ask_range, parse_multi_selection, prompt_choice, wrap
 
 logger = logging.getLogger("sed_tools.cli")
@@ -185,6 +186,7 @@ def _rebuild_grid(model_dir: str, model_name: str, rebuild_h5: bool, rebuild_flu
 
     if rebuild_flux_cube:
         _build_flux_cube(model_dir)
+    _print_mesa_inlist(model_dir)
     return []
 
 
@@ -416,7 +418,9 @@ def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_di
         print("\n  No spectra remaining after cleaning")
         return ["no spectra remaining after cleaning"]
 
-    return _build_data_products(name, model_dir, src, force_bundle_h5, build_flux_cube)
+    problems = _build_data_products(name, model_dir, src, force_bundle_h5, build_flux_cube)
+    _print_mesa_inlist(model_dir)
+    return problems
 
 
 def run_ml_generator_flow(
@@ -500,11 +504,7 @@ def run_combine_flow(
 
     print(f"\nSuccessfully combined {len(selected_models)} stellar spectral grids!")
     print(f"Output saved to: {output_dir}")
-    if (Path(output_dir) / "variants_index.csv").is_file():
-        _print_subgrids(output_dir, Path(output_dir) / "variants_index.csv")
-        return
-    print("You can now use this combined spectral grid in MESA by setting:")
-    print(f"stellar_atm = '{output_dir}/'")
+    _print_mesa_inlist(output_dir)
 
 
 def _combined_grid_name(output_name: str, interactive: bool) -> str:

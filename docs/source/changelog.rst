@@ -168,6 +168,17 @@ Added
   directory (or the folder given) and return or print its path, with the
   ``vega_sed`` inlist line. They use the catalogue's cached download, as the
   Vega-based properties and ``Filters.plot(vega=True)`` do.
+- **MESA colors inlist paths.** Every download (``sed-tools grids``,
+  ``sed-tools filters``, ``SED.fetch``, ``Filters.fetch`` and
+  ``Filters.compose``) ends with "The MESA colors inlist path for this is:"
+  and the line to put in the ``&colors`` inlist: ``stellar_atm = '<folder>'``
+  for a grid, one line per variant folder for a split grid (MESA cannot read
+  its top folder; of four or more variants, the first two, "…" and the last),
+  and ``instrument = '<folder>'`` for a filter set, each absolute and without
+  a trailing slash. ``sed-tools mesa-path PATH`` prints the same for any local
+  grid or filter set, and ``sed_tools.mesa_inlist_lines(path)`` returns the
+  lines. ``sed-tools rebuild``, ``combine``, ``filters-combine`` and
+  ``mesa_prepare`` print the same lines in place of their own advice.
 
 Changed behaviour
 ~~~~~~~~~~~~~~~~~

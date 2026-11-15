@@ -13,6 +13,7 @@ import pandas as pd
 from requests import RequestException
 
 from ..cube.model import FILTER_DIR_DEFAULT
+from ..mesa_inlist import _print_mesa_inlist
 from ..filters.njm_catalogue import (CatalogueError, FilterCatalogue, collect_citations, format_bibtex,
                                      format_citations, parse_target)
 from ..njm_mirror import NJM_NOT_LISTED, _write_atomic
@@ -117,6 +118,8 @@ class Filters:
         published curves (the one MESA reads).  Otherwise the published
         curves are downloaded, the instrument's components fetched, and a
         product built under ``products/<recipe>/``, whose path is returned.
+        The MESA colors inlist line for that directory
+        (:func:`sed_tools.mesa_inlist_lines`) is printed.
         While NJM is unreachable, a product of NJM's that SVO holds only some
         bands of is installed with those bands and a warning naming the
         others; :meth:`available` then shows it incomplete, and fetching it
@@ -150,6 +153,7 @@ class Filters:
         instrument_dir = cls._fetch_published(facility, instrument, filter_root=filter_root)
         if (components is None and atmosphere is None and detector_type is None and bands is None
                 and not variants):
+            _print_mesa_inlist(instrument_dir)
             return instrument_dir
         return cls.compose(instrument_dir, components or ["published"], atmosphere=atmosphere,
                            filter_root=filter_root, bands=bands, detector_type=detector_type,
@@ -358,7 +362,7 @@ class Filters:
         allow_heavy: bool = False,
         variants: Optional[Dict[str, str]] = None,
     ) -> Path:
-        """Build ``products/<recipe>/`` for a local instrument directory.
+        """Build ``products/<recipe>/`` for a local instrument directory, and print its MESA colors inlist line.
 
         ``instrument`` is a path or ``"Facility/Instrument"`` under the filter
         root.  Raises :class:`sed_tools.filters.manifest.ComponentError` with
@@ -373,6 +377,7 @@ class Filters:
             detector_type=detector_type, allow_heavy=allow_heavy, allow_partial=allow_partial,
             variants=variants)
         print(f"[filters] Built {out}")
+        _print_mesa_inlist(out)
         return out
 
     @classmethod
