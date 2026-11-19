@@ -8,8 +8,9 @@ A grid (data/stellar_models/<grid>/) is listed only if all nine checks pass (des
                 re-read (no 999.9 placeholders, no lost minus signs, no missing columns)
   4 cube        each flux_cube.bin (or variant cube in variants_index.csv) has a header that agrees with its
                 axes and size, is filled at exactly its lookup's nodes, and holds its spectra; the .h5 bundle
-                holds the same spectra. A grid split into variants has no top-level flux_cube.bin: MESA and
-                clients read a variant's folder. A grid without a cube passes with a warning: clients build one
+                holds the same spectra. A grid split into variants holds at its top the all-axes flux_cube.bin,
+                byte for byte the cube SED_Tools assembles from its variant cubes (MESA reads a variant's folder).
+                A grid without a cube passes with a warning: clients build one
   5 physics     (a) integral of F_lambda over each sampled spectrum and every filled cube node is within
                 0.5-2 of that of pi*B_lambda(Teff) on the same wavelengths (warning outside 0.9-1.1);
                 (b) shape: archived raw upstream files (source_evidence/grids/<grid>/raw/) equal their spectra
@@ -35,6 +36,7 @@ Reads only; never writes in DATA_DIR. Needs numpy and sed_tools; h5py for the .h
 import argparse
 import contextlib
 import csv
+import filecmp
 import hashlib
 import io
 import json
@@ -45,6 +47,7 @@ import stat
 import struct
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -522,11 +525,40 @@ def variant_paths(index):
     return [r["path"] for r in rows if r.get("path")]
 
 
+def all_axes_cube_problem(grid):
+    """Why a split grid's top-level flux_cube.bin is not its all-axes cube, or None. The all-axes cube (Nill, 19 Nov
+    2026, D1) is the one SED_Tools' sed_tools.cube.variants.write_all_axes_cube assembles from the variant cubes: it
+    is assembled again in a temporary folder whose variant cubes link to the grid's, and compared byte for byte."""
+    from sed_tools.cube.fileio import is_all_axes
+    from sed_tools.cube.variants import write_all_axes_cube
+
+    top, vindex = grid / "flux_cube.bin", grid / "variants_index.csv"
+    if not top.is_file():
+        return "no all-axes flux_cube.bin beside variants_index.csv"
+    if not is_all_axes(top):
+        return "flux_cube.bin beside variants_index.csv is a 3-axis cube, not the all-axes cube of the variants"
+    with tempfile.TemporaryDirectory(prefix="all-axes-") as tmp:
+        tmp = Path(tmp)
+        (tmp / "variants_index.csv").symlink_to(vindex.resolve())
+        for rel in variant_paths(vindex):
+            if (grid / rel / "flux_cube.bin").is_file():
+                (tmp / rel).mkdir(parents=True, exist_ok=True)
+                (tmp / rel / "flux_cube.bin").symlink_to((grid / rel / "flux_cube.bin").resolve())
+        try:
+            with contextlib.redirect_stdout(io.StringIO()):
+                write_all_axes_cube(str(tmp))
+        except (OSError, ValueError) as exc:
+            return f"the all-axes cube cannot be assembled from the variant cubes ({exc})"
+        if not filecmp.cmp(tmp / "flux_cube.bin", top, shallow=False):
+            return "flux_cube.bin beside variants_index.csv differs from the all-axes cube of its variant cubes"
+    return None
+
+
 def check_cubes(grid, cols, rows, read, record=None):
     """Check 4 for the top-level cube or every variant cube; returns the scans for check 5.
 
-    A split grid has no top-level flux_cube.bin (Nill, 14 Nov 2026): MESA and clients read a variant's folder, and
-    grid_info.publish removes one (SED_Tools' split does). record is no longer read here."""
+    A split grid's top-level flux_cube.bin is its all-axes cube (all_axes_cube_problem); grid_info.publish builds
+    it. MESA and clients read a variant's folder. record is no longer read here."""
     errors, warnings, details, scans = [], [], [], []
     top, vindex = grid / "flux_cube.bin", grid / "variants_index.csv"
     if top.is_file() and not vindex.is_file():
@@ -536,9 +568,9 @@ def check_cubes(grid, cols, rows, read, record=None):
         warnings += res["warnings"]
         if scan:
             scans.append((top, scan))
-    if vindex.is_file() and top.is_file():
-        errors.append("flux_cube.bin beside variants_index.csv: a split grid has no top-level cube (MESA reads a "
-                      "variant's folder); grid_info.publish removes it")
+    problem = all_axes_cube_problem(grid) if vindex.is_file() else None
+    if problem:
+        errors.append(f"{problem}; grid_info.publish builds it")
     if vindex.is_file():
         covered = set()
         for rel in variant_paths(vindex):
@@ -585,8 +617,8 @@ def check_cubes(grid, cols, rows, read, record=None):
             warnings.append(f"{h5.name} not checked (no h5py)")
         except (OSError, KeyError, ValueError) as exc:
             errors.append(f"{h5.name} unreadable ({exc})")
-    allowed = {"lookup_table.csv", f"{grid.name}.h5"} | ({"variants_index.csv", "lookup_table_full.csv"}
-                                                        if vindex.is_file() else {"flux_cube.bin"})
+    allowed = {"lookup_table.csv", f"{grid.name}.h5", "flux_cube.bin"} | (
+        {"variants_index.csv", "lookup_table_full.csv"} if vindex.is_file() else set())
     stray = sorted(p.name for p in grid.iterdir() if p.is_file() and p.suffix.lower() in SERVED_SUFFIXES[1:]
                    and p.name not in allowed)
     if stray:

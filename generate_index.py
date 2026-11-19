@@ -101,7 +101,8 @@ def scan_stellar_models(base_path: Path, keep=()):
         if not listed:
             print(f"  kept listed, as index.json lists it already: {model_name} ({why})")
 
-        # Check for key files. A grid split into variants has no cube of its own: each variant's folder has one.
+        # Check for key files. A grid split into variants: each variant's folder has a cube (the grid's own
+        # flux_cube.bin is the all-axes cube, which check 4 compares with them).
         flux_cube = model_dir / "flux_cube.bin"
         lookup_table = model_dir / "lookup_table.csv"
         h5_file = model_dir / f"{model_name}.h5"

@@ -1,10 +1,13 @@
 """Write a stellar grid's manifest.json, properties.json and info.json from the guard: the publish step (design §4).
 
 For each grid it first builds the flux cubes with SED_Tools' cube builder when they need it (build_cubes): none yet,
-one lacking a spectrum beside it, a top-level cube beside variants_index.csv, or a layout other than SED_Tools'
-split rule gives (sed_tools.cube.collision.discover_extra_axes: a grid whose extra axes tell apart spectra at one node
-is split into one variant folder per value, each with its cube, lookup table and links to the spectra; a split
-grid has no top-level cube). Cube files it replaces or removes are first copied to backups/<UTC>-grid-publish/.
+one lacking a spectrum beside it, or a layout other than SED_Tools' split rule gives (sed_tools.cube.collision.
+discover_extra_axes: a grid whose extra axes tell apart spectra at one node is split into one variant folder per
+value, each with its cube, lookup table and links to the spectra, and the grid's top-level flux_cube.bin is then
+the all-axes cube of every variant). A split grid whose variant cubes need nothing but whose top-level flux_cube.bin
+is not its all-axes cube (a 3-axis copy of a variant, or none) gets only that cube, assembled from the variant cubes
+(sed_tools.cube.variants.write_all_axes_cube). Cube files it replaces are first copied to
+backups/<UTC>-grid-publish/.
 Then it runs grid_info.check_grids on data/stellar_models/<grid>/ and writes beside the spectra:
   manifest.json    the files clients download (and the variant cubes), with size, modification time and SHA-256,
                    plus the SHA-256 of each spectrum's data lines; axes, variants, cube layout, the archived
@@ -33,7 +36,7 @@ from pathlib import Path
 
 import numpy as np
 
-from grid_info.check_grids import (CURATED, DEFAULT_CACHE, ROOT, SCHEMA, HashCache, _jsonable,
+from grid_info.check_grids import (CURATED, DEFAULT_CACHE, ROOT, SCHEMA, HashCache, _jsonable, all_axes_cube_problem,
                                    check_grid, other_hashes, previous_manifest, read_lookup, served_paths,
                                    variant_links, variant_paths)
 
@@ -122,6 +125,8 @@ def file_records(grid, cache):
             rec["data_sha256"] = hit["data_sha256"]
         if p.name == "variants_index.csv":
             rec["role"] = "variants"
+        elif rel == "flux_cube.bin" and (grid / "variants_index.csv").is_file():
+            rec["role"] = "cube (all axes: every variant; MESA reads a variant's)"
         elif p.name == "lookup_table_full.csv":
             rec["role"] = "lookup (whole grid, all variants)"
         out[rel] = rec
@@ -214,9 +219,7 @@ def cube_build_needed(grid):
 
     if not (grid / "lookup_table.csv").is_file() or not any(grid.glob("*.txt")):
         return None   # check 3 reports it; nothing to build from
-    vindex, top = grid / "variants_index.csv", grid / "flux_cube.bin"
-    if vindex.is_file() and top.is_file():
-        return "a top-level flux_cube.bin beside variants_index.csv (a split grid has no cube of its own)"
+    vindex = grid / "variants_index.csv"
     cube = _flux_cube_file(grid)
     if cube is None:
         return "no flux cube"
@@ -242,12 +245,15 @@ def _cube_files(grid):
 
 
 def build_cubes(grid, stamp, dry_run=False):
-    """Build the grid's cubes with SED_Tools' builder when cube_build_needed says why; returns that reason, or
-    None. RuntimeError from the builder (more variants than it splits without asking) is returned as the reason
-    with "not built: "; the check then holds the grid."""
+    """Build the grid's cubes with SED_Tools' builder when cube_build_needed says why, or else only a split grid's
+    all-axes cube when all_axes_cube_problem says why; returns that reason, or None. RuntimeError from the builder
+    (more variants than it splits without asking) is returned as the reason with "not built: "; the check then holds
+    the grid."""
     why = cube_build_needed(grid)
-    if why is None or dry_run:
-        return why
+    top_only = why is None and (grid / "variants_index.csv").is_file() and all_axes_cube_problem(grid)
+    if not (why or top_only) or dry_run:
+        return why or top_only or None
+    from sed_tools.cube.variants import write_all_axes_cube
     from sed_tools.grids.pipeline import _build_flux_cube
 
     backup = ROOT / "backups" / f"{stamp}-grid-publish" / grid.relative_to(ROOT)
@@ -255,8 +261,11 @@ def build_cubes(grid, stamp, dry_run=False):
         target = backup / path.relative_to(grid)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(path, target)
+    if top_only:
+        write_all_axes_cube(str(grid))
+        return top_only
     try:
-        _build_flux_cube(grid)
+        _build_flux_cube(grid)  # a split writes the all-axes cube too
     except RuntimeError as exc:
         return f"not built: {exc}"
     return why
