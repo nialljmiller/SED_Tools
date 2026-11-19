@@ -2254,7 +2254,7 @@ def subaru_and_odi_tables(t):
     session = Session({obs.ODI + fn: fx("odi_NB_422.txt") for fn, _, _ in obs.ODI_FILES.values()})
     with pytest.raises(ValueError, match="scale"):   # u/r/NB695 are fractions; this scan is percent
         obs.odi(Fetcher(session))
-    wl = np.array([4000.0, 9000.0, 11000.0, 12000.0])
+    wl = np.array([4000.0, 9000.0, 10500.0, 12000.0])  # T is linear between samples: 0 from 10500 on
     assert obs.odi_leak(wl, np.array([1.0, 1.0, 0.0, 0.0])) == 0.0
     assert 0.5 < obs.odi_leak(wl, np.array([0.0, 0.0, 1.0, 1.0])) < 1.0
 
