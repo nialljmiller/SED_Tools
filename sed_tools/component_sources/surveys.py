@@ -18,6 +18,7 @@ import zipfile
 import numpy as np
 
 from ..filters.curve_metadata import PHOTON
+from ..photometry import band_grid, band_integral
 from ._original import Component, Fetcher, Instrument, make_band, make_builder, tar_members
 from .team_atmospheres import HALEAKALA_PS1
 
@@ -59,8 +60,8 @@ def atlas(fetch: Fetcher, expected_rows: int = 57) -> Instrument:
         b = make_band(name, a[:, 0], a[:, 1], unit="nm", detector_type=PHOTON,
                       components="filter+optics+qe+atmosphere",
                       sources=f"{ATLAS_URL} (atlas_defn.tex Table 2) | {ATLAS_PAPER}")
-        l, tr = b.wavelength, b.transmission
-        stat = float(np.trapezoid(tr, l) / np.trapezoid(tr / l, l))
+        l, tr = band_grid(b.wavelength, b.transmission)
+        stat = band_integral(l, tr) / band_integral(l, tr, None, -1)
         if abs(stat / (ATLAS_TABLE3[name] * 10) - 1) > 0.005:
             raise ValueError(f"ATLAS {name}: Table-3 statistic {stat:.1f} vs Table 3 {ATLAS_TABLE3[name]} nm")
         bands.append(b)
@@ -105,10 +106,9 @@ def ps1(fetch: Fetcher) -> Instrument:
     bands = [make_band(name, wl, tr, unit="nm", detector_type=PHOTON,
                        components="filter+optics+qe+atmosphere", sources=f"{PS1_URL} | {PS1_PAPER}")
              for name, tr in cols.items()]
-    t = np.trapezoid
     for b in bands:
-        l, a = b.wavelength, b.transmission
-        lm = float(np.exp(t(a * np.log(l) / l, l) / t(a / l, l)))
+        l, a = band_grid(b.wavelength, b.transmission)
+        lm = float(np.exp(band_integral(l, a, np.log(l), -1) / band_integral(l, a, None, -1)))
         if abs(lm / logmean[b.name] - 1) > 0.005:
             raise ValueError(f"PS1 {b.name}: log-mean {lm:.1f} vs table4 {logmean[b.name]}")
     note = ("Tonry et al. (2012) PS1 system capture cross-sections, CDS J/ApJ/750/99 table3, 1 nm "

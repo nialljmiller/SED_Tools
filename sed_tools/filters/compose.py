@@ -109,12 +109,13 @@ def multiply_curves(
     for other, rule, tol in zip(curves[1:], rules[1:], tols[1:], strict=True):
         o_lo, o_hi = float(other.wavelength[0]), float(other.wavelength[-1])
         if rule == "error" and tol is not None:
-            total = float(np.trapezoid(product, grid))
-            beyond = float(np.trapezoid(np.where((grid < o_lo) | (grid > o_hi), product, 0.0), grid))
-            if total <= 0 or beyond > tol * total:
+            from ..photometry import band_share
+
+            beyond = band_share(grid, product, lambda x: (x < o_lo) | (x > o_hi))
+            if not beyond <= tol:  # NaN: the band integrates to zero
                 raise ComponentCoverageError(
                     f"{other.path.name if other.path else 'component'} covers {o_lo:.0f}-{o_hi:.0f} A but "
-                    f"{beyond / total if total > 0 else 1:.2%} of the band lies beyond it (tolerance {tol:g})"
+                    f"{beyond if beyond <= 1 else 1:.2%} of the band lies beyond it (tolerance {tol:g})"
                 )
             rule = "edge"
         if rule == "edge":

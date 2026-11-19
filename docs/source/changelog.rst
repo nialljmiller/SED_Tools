@@ -487,6 +487,25 @@ Fixed
   sampled every 5 Å or finer change by less than 0.001 mag (99.9 % of NJM's).
   The detector weighting is unchanged. NJM's served ``properties.json``
   values were computed the old way.
+- **One rule for every band quantity.** The pivot wavelength, and with it
+  ``ZeroPointAB_flam``, ``ZeroPointVega_Jy``, ``ABminusVega`` and ``AfAv``,
+  still integrated on the curve's own samples, while band averages used the
+  combined grid above, so m_AB - m_Vega and f_nu / f_lambda disagreed by up
+  to 0.18 mag on curves with long steps between samples (ESO/ESO/0539: one
+  sample at 3000 A, one at 12000 A). Every band integral (band averages,
+  zero points, pivot, mean, effective and photon wavelengths, the shares of a
+  band beyond a grid, the coverage tolerance of composing, the display order)
+  is now ``sed_tools.photometry.band_integral`` on ``band_grid``: the curve
+  linear between its samples, a spectrum linear between its own, and the
+  integral of their product exact (steps split to lambda/100, so the
+  lambda^-2 of the pivot is exact to 1e-9). ``band_average_flux_nu`` is the
+  band-averaged f_lambda times pivot^2 / c for every spectrum. Over NJM's
+  10,982 curves the pivot moves by less than 1e-4 mag (as the AB zero point)
+  for 91.5 % and by more than 0.01 mag for 52; Vega zero points (f_lambda)
+  move by at most 0.011 mag from the combined grid above. MESA's own
+  compiled routines give the same Vega zero points to a median 2e-5 mag
+  over 10,998 curves. SVO's pivots follow the trapezoid on the curve's own
+  samples, and so differ on those 52 curves.
 - **A split grid is checked by its variants.** NJM serves Kurucz2003all and
   Husfeld split, with a top-level ``flux_cube.bin`` that copies the default
   variant's cube. The client compared that copy with every variant's rows, so

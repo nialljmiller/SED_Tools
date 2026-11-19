@@ -17,6 +17,7 @@ import re
 import numpy as np
 
 from ..filters.curve_metadata import PHOTON
+from ..photometry import band_share
 from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, tar_members
 
 
@@ -607,9 +608,7 @@ ODI_FILES = {"u": ("odi_u.dat", "Angstrom", 1.0), "r": ("odi_r.txt", "Angstrom",
 
 def odi_leak(wl, tr) -> float:
     """Fraction of the photon-weighted response above 10500 A (past the CCD cutoff)."""
-    w = np.clip(tr, 0, None) * wl
-    m = wl > 10500
-    return float(np.trapezoid(w[m], wl[m]) / np.trapezoid(w, wl))
+    return band_share(wl, tr, lambda x: x > 10500, PHOTON)
 
 
 def odi(fetch: Fetcher) -> Instrument:
