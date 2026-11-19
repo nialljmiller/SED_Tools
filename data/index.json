@@ -1,12 +1,12 @@
 {
   "version": "1.0",
-  "generated": "2026-11-14T17:07:14.826885",
+  "generated": "2026-11-19T20:53:16.942649",
   "statistics": {
     "total_models": 8,
     "complete_models": 7,
     "total_spectra": 24625,
-    "total_size_bytes": 110716776982,
-    "total_size_human": "103.11 GB",
+    "total_size_bytes": 110802150203,
+    "total_size_human": "103.19 GB",
     "total_facilities": 221,
     "total_filters": 12235
   },
@@ -36,8 +36,8 @@
       "has_lookup_table": true,
       "has_h5_bundle": true,
       "spectra_count": 448,
-      "size_bytes": 63516022,
-      "size_human": "60.57 MB",
+      "size_bytes": 68699961,
+      "size_human": "65.52 MB",
       "manifest_passes": true
     },
     "Kurucz": {
@@ -61,8 +61,8 @@
       "has_lookup_table": true,
       "has_h5_bundle": true,
       "spectra_count": 8092,
-      "size_bytes": 920668355,
-      "size_human": "878.02 MB",
+      "size_bytes": 1000857637,
+      "size_human": "954.49 MB",
       "manifest_passes": true
     },
     "NextGen2": {
