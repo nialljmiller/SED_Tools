@@ -28,7 +28,6 @@ Output, in the working directory:
 
 import os
 import sys
-import struct
 import traceback
 from pathlib import Path
 import numpy as np
@@ -39,7 +38,7 @@ import matplotlib.ticker as mticker
 
 from sed_tools import STELLAR_DIR_DEFAULT
 from sed_tools._constants import SIGMA, planck_flam
-from sed_tools.cube.fileio import flux_offset, read_axes
+from sed_tools.cube.fileio import flux_offset, read_axes, read_dims
 from sed_tools.cube.variants import _variant_paths
 
 # ---------------------------------------------------------------------------
@@ -85,7 +84,7 @@ def read_cube(cube_path):
     """A flux_cube.bin's Teff, log g, [M/H] and wavelength axes, and its flux memory-mapped as stored:
     flux[:, i_m, i_l, i_t] is one node's spectrum."""
     with open(cube_path, "rb") as f:
-        shape = struct.unpack("4i", f.read(16))
+        shape = read_dims(f, cube_path)  # ValueError for a split grid's all-axes cube
         axes = read_axes(f, *shape)
     flux = np.memmap(cube_path, dtype=np.float64, mode="r", offset=flux_offset(*shape), shape=shape[::-1])
     return (*axes, flux)

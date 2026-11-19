@@ -836,8 +836,12 @@ sed.grid.write('/custom/output/path')
 
 ```python
 # Load an installed spectral grid. Kurucz2003all is split into variants ([alpha/M] 0 and 0.4), each with its own
-# flux cube, so a variant is loaded; SED.local('Kurucz2003all') names them. A grid that is not split loads by name.
+# flux cube; one variant loads by its folder. A grid that is not split loads by name.
 sed = SED.local('Kurucz2003all/Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s')
+
+# The split grid itself loads its all-axes cube: every variant on shared axes, each extra axis given by keyword
+# and interpolated (cubic Hermite, as Teff, log g and [M/H]); a text-valued axis is matched exactly.
+spectrum = SED.local('Kurucz2003all')(5800, 4.4, 0.0, alpha=0.2)
 
 # Check parameter coverage
 ranges = sed.parameter_ranges()
@@ -1093,7 +1097,7 @@ ln -s $(pwd)/data/stellar_models/Kurucz2003all $MESA_DIR/data/colors_data/stella
 
 ### MESA Inlist Configuration
 
-Kurucz2003all is split into variants ([alpha/M] 0 and 0.4), each a folder with its own `flux_cube.bin` and `lookup_table.csv`, and has no flux cube of its own. MESA reads one variant: point `stellar_atm` at its folder. A grid that is not split is read from its own folder.
+Kurucz2003all is split into variants ([alpha/M] 0 and 0.4), each a folder with its own `flux_cube.bin` and `lookup_table.csv`. MESA reads one variant: point `stellar_atm` at its folder. The grid's own folder holds the all-axes `flux_cube.bin` (every variant, with alpha as a fourth axis), which SED_Tools reads and MESA does not: pointed there, MESA says the header is invalid and loads the spectra one by one. A grid that is not split is read from its own folder.
 
 MESA reads these from the `&colors` namelist (as in MESA's `custom_colors` test case):
 
@@ -1137,7 +1141,8 @@ SED_Tools/
 
 ~/.sed_tools/data/          # Downloaded data (the default; see `sed-tools config`)
 ├── stellar_models/
-│   └── Kurucz2003all/      # split into variants: no flux_cube.bin of its own
+│   └── Kurucz2003all/      # split into variants
+│       ├── flux_cube.bin   # the all-axes cube (every variant; SED_Tools reads it, MESA does not)
 │       ├── lookup_table.csv
 │       ├── variants_index.csv
 │       ├── Kurucz2003all.h5
@@ -1304,7 +1309,7 @@ $MESA_DIR/data/colors_data/stellar_models/Kurucz2003all/Kurucz2003all_alpha_0p00
 └── lookup_table.csv    # Must exist
 ```
 
-A grid split into variants (it has `variants_index.csv`) has no `flux_cube.bin` of its own: point `stellar_atm` at one variant's folder, as above.
+A grid split into variants (it has `variants_index.csv`) holds at its top the all-axes `flux_cube.bin`, which MESA cannot read: point `stellar_atm` at one variant's folder, as above.
 
 
 **Filter set cannot be resolved**

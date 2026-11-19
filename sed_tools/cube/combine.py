@@ -22,7 +22,7 @@ from tqdm import tqdm
 from .build import _write_cube as _write_cube_in_parts
 from .build import compute_common_wavelengths, resample_to_grid
 from .collision import _normalise_key, _value, discover_extra_axes
-from .variants import _link_spectra, _remove_variants, _subdir_names
+from .variants import _link_spectra, _remove_variants, _subdir_names, write_all_axes_cube
 from ..ui_utils import banner
 from ..grids.lookup import find_logg_column, find_metallicity_column, find_teff_column, write_lookup_csv
 from ..grids.spectrum_io import read_text_spectrum
@@ -435,7 +435,7 @@ def write_combined_grid(all_models_data, output_dir, visualization=True):
     With no extra axis, or one value of each, output_dir holds the combined flux cube, a copy of every spectrum and
     the lookup table (:func:`save_combined_data`). Otherwise the combination is split as the cube builder splits one
     grid (:func:`_variants`): output_dir holds the copies, the lookup table of every variant's rows with their
-    extra-axis values, and variants_index.csv, and each variant is a subgrid folder with its lookup table, links to
+    extra-axis values, variants_index.csv and the all-axes flux_cube.bin of every variant, and each variant is a subgrid folder with its lookup table, links to
     its spectra and its flux_cube.bin, so no spectrum collides with or overwrites another variant's. Every cube is
     built before anything is written: a spectrum that cannot be read or placed stops the combine with nothing written.
     What an earlier combine wrote in output_dir is then replaced (:func:`_remove_previous_output`).
@@ -505,6 +505,7 @@ def _write_combination(built, all_models_data, output_dir, wavelength_grid, visu
     write_lookup_csv(index, index_path, columns=["variant_name", *(column for column, _ in built[0][0]), "n_spectra",
                                                  "path"])
     print(f"Variants index: {index_path}")
+    write_all_axes_cube(output_dir, _PART_BYTES)
     _raise_copy_failures(output_dir, copy_failures)
 
 

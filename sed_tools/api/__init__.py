@@ -655,8 +655,10 @@ class SED:
         filter_root: Optional[Union[str, Path]] = None,
         fill_gaps: bool = True,
     ) -> 'SED':
-        """Load a local stellar spectral grid (it needs its flux_cube.bin). A grid split into variants has
-        none of its own: load a variant, ``SED.local("<grid>/<variant>")``; FileNotFoundError names them.
+        """Load a local stellar spectral grid (it needs its flux_cube.bin). A grid split into variants loads its
+        all-axes cube, which takes each extra axis by keyword (``sed(5800, 4.4, 0.0, alpha=0.2)``); one variant
+        loads as ``SED.local("<grid>/<variant>")``. A split made before the all-axes cube existed has none:
+        FileNotFoundError names its variants.
 
         Parameters
         ----------
@@ -808,10 +810,11 @@ class SED:
         combine output; only discovery of "all" grids leaves those out
         (see :mod:`sed_tools.cube.combine`). A combination whose extra axes
         (alpha, [alpha/Fe], C/O, ...) vary is split into one subgrid per
-        variant, as ``sed-tools rebuild`` splits one grid; it then has no
-        flux cube of its own, and the SED returned holds its spectral grid
-        only (load a variant with ``SED.local("<output>/<variant>")``). An
-        earlier combination in the ``output`` folder is replaced.
+        variant, as ``sed-tools rebuild`` splits one grid; its own flux cube
+        is then the all-axes cube of every variant, which the SED returned
+        evaluates with each extra axis by keyword (a variant loads with
+        ``SED.local("<output>/<variant>")``). An earlier combination in the
+        ``output`` folder is replaced.
 
         Parameters
         ----------
@@ -877,6 +880,7 @@ class SED:
         teff: Number,
         logg: Number,
         metallicity: Number,
+        **extra: Union[Number, str],
     ) -> EvaluatedSED:
         """Interpolate a spectrum at the given stellar parameters.
 
@@ -888,13 +892,15 @@ class SED:
             Surface gravity (log g)
         metallicity : float
             Metallicity [M/H]
+        **extra : float or str
+            A split grid's all-axes cube only: a value for each of its extra axes (``alpha=0.2``); see SEDModel
 
         Returns
         -------
         EvaluatedSED
             Interpolated spectrum with wavelength and flux arrays
         """
-        return self._model(teff, logg, metallicity)
+        return self._model(teff, logg, metallicity, **extra)
     
     def model(self, name: Optional[str] = None) -> SEDModel:
         """Get or set the active SEDModel (None until SED.local() or a name sets one)."""

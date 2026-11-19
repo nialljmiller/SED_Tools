@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import math
 import os
-import struct
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple, Union
@@ -20,8 +19,9 @@ from ..photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterC
                           band_average_flux_lambda, band_average_flux_nu, get_metadata_float, load_filter_curve,
                           load_spectrum)
 from ..ui_utils import ordered_range
-from .fileio import read_axes
-from .fluxcube import FluxCube
+from .collision import _normalise_key
+from .fileio import read_header
+from .fluxcube import AllAxesCube, FluxCube
 from .variants import _variant_paths
 
 Number = Union[int, float, np.floating]
@@ -166,6 +166,12 @@ class SEDModel:
     With ``fill_gaps=True`` (the default) a requested Teff, logg or [M/H]
     outside the grid is clamped to the nearest grid edge; with ``False`` it
     raises ValueError.
+
+    A split grid's all-axes cube (its top-level flux_cube.bin) also has the
+    grid's extra axes (``extra_axes``, e.g. alpha): each is given by keyword,
+    ``model(5800, 4.4, 0.0, alpha=0.2)``, the name matched ignoring case and
+    punctuation (``alpha_fe`` finds ``[alpha/Fe]``). A numeric extra axis is
+    interpolated and clamped as Teff is; a text one is matched exactly.
     """
 
     def __init__(
@@ -181,31 +187,64 @@ class SEDModel:
         self.filters_dir = Path(filters_dir) if filters_dir is not None else None
         self.fill_gaps = fill_gaps
 
-        metadata = _read_flux_cube_header(self.flux_cube_path)
-        self.teff_grid = metadata["teff"]
-        self.logg_grid = metadata["logg"]
-        self.meta_grid = metadata["meta"]
-        self.wavelengths = metadata["wavelengths"]
+        self._header = read_header(self.flux_cube_path)
+        self.teff_grid, self.logg_grid, self.meta_grid = self._header.axes[:3]
+        self.wavelengths = self._header.wavelengths
+        self.extra_axes = {name: self._header.labels.get(k, axis)
+                           for k, (name, axis) in enumerate(zip(self._header.names, self._header.axes)) if k >= 3}
 
-        self._cube: Optional[FluxCube] = None
+        self._cube: Union[None, FluxCube, AllAxesCube] = None
         self._filter_cache: Dict[str, FilterCurve] = {}
         self._filter_index: Optional[Dict[str, List[Path]]] = None
 
     # --- Flux cube loading & interpolation ---
 
-    def _load_cube(self) -> FluxCube:
+    def _load_cube(self) -> Union[FluxCube, AllAxesCube]:
         if self._cube is None:
-            self._cube = FluxCube.from_file(str(self.flux_cube_path))
+            self._cube = (AllAxesCube.from_header(self.flux_cube_path, self._header) if self._header.all_axes
+                          else FluxCube.from_file(str(self.flux_cube_path)))
         return self._cube
 
-    def __call__(self, teff: Number, logg: Number, metallicity: Number) -> EvaluatedSED:
+    def __call__(self, teff: Number, logg: Number, metallicity: Number, **extra: Union[Number, str]) -> EvaluatedSED:
+        if extra and not self.extra_axes:
+            raise TypeError(f"Unexpected keyword arguments: {', '.join(sorted(extra))}")
         cube = self._load_cube()
         teff_val = self._prepare_value(float(teff), self.teff_grid, "Teff")
         logg_val = self._prepare_value(float(logg), self.logg_grid, "logg")
         meta_val = self._prepare_value(float(metallicity), self.meta_grid, "[M/H]")
-        wavelength, flux = cube.interpolate_spectrum(teff_val, logg_val, meta_val)
         metadata = {"teff": teff_val, "logg": logg_val, "metallicity": meta_val}
+        if not self.extra_axes:
+            wavelength, flux = cube.interpolate_spectrum(teff_val, logg_val, meta_val)
+        else:
+            positions = self._extra_positions(extra, metadata)
+            wavelength, flux = cube.interpolate_spectrum([teff_val, logg_val, meta_val, *positions])
         return EvaluatedSED(wavelength=wavelength, flux=flux, metadata=metadata, _model=self)
+
+    def _extra_positions(self, given: Mapping[str, Union[Number, str]], metadata: Dict) -> List[float]:
+        """Each extra axis's value from ``given`` (keywords matched by collision._normalise_key): a number, clamped
+        as Teff is, or a label's index; each is added to ``metadata`` under the axis's name. ValueError naming the
+        axes for a missing or unknown keyword or a label the axis lacks."""
+        by_key = {_normalise_key(name): name for name in given}
+        unknown = set(by_key) - {_normalise_key(name) for name in self.extra_axes}
+        missing = [name for name in self.extra_axes if _normalise_key(name) not in by_key]
+        if unknown or missing:
+            axes = "; ".join(f"{name} ({', '.join(values)})" if isinstance(values, list)
+                             else f"{name} ({values[0]:g} to {values[-1]:g})" for name, values in self.extra_axes.items())
+            not_axes = f". Not axes: {', '.join(sorted(by_key[k] for k in unknown))}" if unknown else ""
+            raise ValueError(f"{self.name} needs a value for each of its extra axes, by keyword: {axes}{not_axes}")
+        positions = []
+        for name, values in self.extra_axes.items():
+            value = given[by_key[_normalise_key(name)]]
+            if isinstance(values, list):  # a text axis
+                matches = [i for i, label in enumerate(values) if label.lower() == str(value).strip().lower()]
+                if not matches:
+                    raise ValueError(f"{name}={value!r} is not one of {name}'s values: {', '.join(values)}")
+                positions.append(float(matches[0]))
+                metadata[name] = values[matches[0]]
+            else:
+                positions.append(self._prepare_value(float(value), values, name))
+                metadata[name] = positions[-1]
+        return positions
 
     def parameter_ranges(self) -> Dict[str, Tuple[float, float]]:
         grids = {"teff": self.teff_grid, "logg": self.logg_grid, "metallicity": self.meta_grid}
@@ -320,10 +359,11 @@ class SEDModel:
 
 
 def _refuse_split_grid(directory: Path, name: str) -> None:
-    """FileNotFoundError naming the variants when ``directory`` is a grid split into variants (variants_index.csv):
-    such a grid has no cube of its own, and photometry and MESA read one variant's folder."""
+    """FileNotFoundError naming the variants when ``directory`` is a grid split into variants (variants_index.csv)
+    without its all-axes cube (a split made before SED_Tools built one): photometry then reads one variant's
+    folder."""
     index = Path(directory) / "variants_index.csv"
-    if index.is_file():
+    if index.is_file() and not (Path(directory) / "flux_cube.bin").is_file():
         variants = [f"{name}/{path}" for path in _variant_paths(index)]
         raise FileNotFoundError(f"{name} is split into variants, each with its own flux cube; name one of them: "
                                 + ", ".join(variants))
@@ -356,7 +396,7 @@ class SED:
     def available_grids(self) -> List[str]:
         """The locally installed spectral grids with a flux cube, by name. A grid split into variants
         (variants_index.csv) is listed as each variant whose cube is there, ``<grid>/<variant>``, the name
-        ``model()`` and ``sed_tools.SED.local`` take; a split grid has no cube of its own."""
+        ``model()`` and ``sed_tools.SED.local`` take; the split grid's own all-axes cube is opened by its name."""
         if not self.model_root.exists():
             return []
         names = []
@@ -474,9 +514,7 @@ class SED:
                 if key in aliases:
                     metallicity = aliases.pop(key)
                     break
-        if aliases:
-            raise TypeError(f"Unexpected keyword arguments: {', '.join(sorted(aliases.keys()))}")
-        return self._active_model(teff, logg, metallicity)
+        return self._active_model(teff, logg, metallicity, **aliases)
 
     # --- Helpers ---
 
@@ -515,12 +553,10 @@ class SED:
 
 
 def _read_flux_cube_header(path: Path) -> Dict[str, np.ndarray]:
-    with open(path, "rb") as fh:
-        header = fh.read(16)
-        if len(header) != 16:
-            raise ValueError(f"Flux cube header truncated in {path}")
-        teff, logg, meta, wavelengths = read_axes(fh, *struct.unpack("4i", header))
-    return {"teff": teff, "logg": logg, "meta": meta, "wavelengths": wavelengths}
+    """The Teff, log g, [M/H] and wavelength axes of a flux cube in either format (an all-axes cube's are the union
+    of its variants')."""
+    header = read_header(path)
+    return dict(zip(("teff", "logg", "meta"), header.axes[:3]), wavelengths=header.wavelengths)
 
 
 def _contains_point(teff: float, logg: float, meta: float, metadata: Mapping[str, np.ndarray]) -> bool:

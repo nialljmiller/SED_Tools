@@ -91,14 +91,15 @@ def build_h5_bundle_from_txt(model_dir: str, out_h5: str) -> None:
 
 def _build_flux_cube(model_dir: Path) -> Path:
     """Run precompute_flux_cube on ``model_dir``; returns ``flux_cube.bin``, or ``variants_index.csv``
-    for a grid split into one cube per variant. RuntimeError when this call wrote neither (it said why)."""
+    for a grid split into one cube per variant (whose flux_cube.bin is then the all-axes cube). RuntimeError when
+    this call wrote neither (it said why)."""
     from ..cube.build import precompute_flux_cube  # at call time, so a patched builder is the one run
 
     model_dir = Path(model_dir)
     outputs = (model_dir / "flux_cube.bin", model_dir / "variants_index.csv")
     before = {path: path.stat().st_mtime_ns for path in outputs if path.exists()}
     precompute_flux_cube(str(model_dir), str(outputs[0]))
-    for path in outputs:
+    for path in reversed(outputs):  # a split writes both
         if path.exists() and path.stat().st_mtime_ns != before.get(path):
             return path
     raise RuntimeError(f"No flux cube was built in {model_dir}; see the flux cube messages above")
