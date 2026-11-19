@@ -44,6 +44,7 @@ from .grids.njm import NJMSpectraGrabber
 from .grids.clean import clean_model_dir
 from .grids.lookup import regenerate_lookup_table
 from .grids.svo import SVOSpectraGrabber
+from .mesa_inlist import mesa_inlist_lines
 
 __version__ = "0.6.0"
 
@@ -109,6 +110,7 @@ __all__ = [
     "load_txt_spectrum",
     "local",
     "menu",
+    "mesa_inlist_lines",
     "precompute_flux_cube",
     "query",
     "regenerate_lookup_table",

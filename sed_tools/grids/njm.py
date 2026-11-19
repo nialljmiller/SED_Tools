@@ -522,7 +522,7 @@ class NJMSpectraGrabber:
             if has_param_cuts:
                 csv_files = []
         split = "variants_index.csv" in csv_files and not (has_param_cuts or wl_range)
-        if split:  # its cubes are its variants' (below); a split grid has no cube of its own
+        if split:  # its cubes are its variants' (below), and its all-axes cube is built from them here
             bin_files = [f for f in bin_files if f != "flux_cube.bin"]
             if os.path.isfile(os.path.join(model_dir, "flux_cube.bin")):
                 os.remove(os.path.join(model_dir, "flux_cube.bin"))
@@ -533,6 +533,9 @@ class NJMSpectraGrabber:
         counts, failures = self._download_files(model_dir, model_url, txt_files, aux_files)
         if split and os.path.isfile(os.path.join(model_dir, "variants_index.csv")):
             failures += self._download_variants(model_dir, model_url, counts)
+            if not failures:  # built here from the variant cubes, whatever NJM's top-level cube is
+                from ..cube.variants import write_all_axes_cube
+                write_all_axes_cube(model_dir)
         
         print(f"[njm] {model_name}: {counts['ok']} downloaded, {counts['skip']} skipped, {counts['fail']} failed")
         

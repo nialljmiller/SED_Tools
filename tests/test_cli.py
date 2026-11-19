@@ -341,7 +341,10 @@ def _filter_browser(t, listing_errors=None):
         if (facility, instrument) == ("B", "Cam2"):
             raise requests.ConnectionError("SVO down")
         fetched.append(f"{facility}/{instrument}")
-        return t.tmp / facility / instrument
+        directory = t.tmp / facility / instrument
+        directory.mkdir(parents=True, exist_ok=True)
+        (directory / instrument).touch()  # its MESA index, listing no curve
+        return directory
 
     t.mp.setattr(FilterLibrary, "published", fetch)  # the browser downloads with its own library
     t.mp.setattr(cli.filters, "_offer_composition", lambda directory: None)
@@ -362,6 +365,7 @@ def filter_batch_downloads_the_rest_then_lists_failures(t):
     assert cli.run_filters_flow() == 1
     out = t.capsys.readouterr().out
     assert fetched == ["A/Cam1", "A/Cam2", "B/Cam1"]
+    assert f"The MESA colors inlist path for this is:\n    instrument = '{t.tmp / 'B' / 'Cam1'}'\n" in out
     assert "B/Cam2: SVO down" in out
     assert "A: instrument list incomplete: SVO A: timed out" in out
     assert "Cannot fetch: SVO down" in out
@@ -533,7 +537,39 @@ def filters_combine_command_writes_the_combined_set(t):
     _johnson(t, "V", "5000,0\n5500,1\n6000,0\n")
     assert run_cli(t.mp, "filters-combine", "Mine/Set", "Generic/Johnson", "--base", str(t.tmp)) == 0
     assert (t.tmp / "Mine" / "Set" / "Set").read_text().split() == ["V.dat"]
-    assert t.capsys.readouterr().out == f"[filters] Combined filter set written to {t.tmp / 'Mine' / 'Set'}\n"
+    assert t.capsys.readouterr().out == (f"[filters] Combined filter set written to {t.tmp / 'Mine' / 'Set'}\n\n"
+                                         f"The MESA colors inlist path for this is:\n"
+                                         f"    instrument = '{t.tmp / 'Mine' / 'Set'}'\n")
+
+
+@main_row
+def mesa_path_prints_the_inlist_lines_of_a_grid_or_a_filter_set(t):
+    # Nill, 14 Nov 2026: a download says its MESA colors inlist path; of many variants, the first two, "…" and the
+    # last. MESA reads a relative path from MESA_DIR and opens <instrument>/<its last name>: absolute, no slash.
+    from sed_tools import mesa_inlist_lines
+
+    split = t.tmp / "models" / "G"
+    split.mkdir(parents=True)
+    variants = [f"G_alpha_{alpha}" for alpha in ("0p00", "0p10", "0p20", "0p30", "0p40")]
+    (split / "variants_index.csv").write_text("variant_name,alpha,n_spectra,path\n"
+                                              + "".join(f"{v},0.{i},1,{v}\n" for i, v in enumerate(variants)))
+    (t.tmp / "models" / "U").mkdir()
+    (t.tmp / "models" / "U" / "lookup_table.csv").write_text("#file_name,teff\na.txt,5000\n")
+    _johnson(t, "V", "5000,0\n5500,1\n6000,0\n")
+    (t.tmp / "Generic" / "Johnson" / "Johnson").write_text("V.dat\n")
+    assert mesa_inlist_lines("models/G") == [f"stellar_atm = '{split / v}'" for v in variants]
+    printed = {"models/G": [*(f"stellar_atm = '{split / v}'" for v in variants[:2]), "…",
+                            f"stellar_atm = '{split / variants[-1]}'"],
+               "models/U/": [f"stellar_atm = '{t.tmp / 'models' / 'U'}'"],
+               "Generic/Johnson/": [f"instrument = '{t.tmp / 'Generic' / 'Johnson'}'"]}
+    for path, lines in printed.items():
+        assert run_cli(t.mp, "mesa-path", path) == 0
+        out = t.capsys.readouterr().out.splitlines()
+        assert out[1:] == ["The MESA colors inlist path for this is:", *(f"    {line}" for line in lines),
+                           *(["  (one line per variant: MESA reads one, so use one of these 5; variants_index.csv "
+                              "lists them)"] if path == "models/G" else [])]
+    assert run_cli(t.mp, "mesa-path", "Generic") == 1
+    assert f"{t.tmp / 'Generic'} is neither a spectral grid" in t.capsys.readouterr().err
 
 
 @main_row

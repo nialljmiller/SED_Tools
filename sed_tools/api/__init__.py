@@ -37,6 +37,7 @@ from ..grids.pipeline import (  # noqa: F401  (_build_combined_grid and _paramet
     spectra_grabber,
 )
 from .filters import Filters, _listing_failures  # noqa: F401  (re-exported)
+from ..mesa_inlist import _print_mesa_inlist
 
 logger = logging.getLogger(__name__)
 
@@ -491,6 +492,9 @@ class SED:
         The cube's and lookup table's contents decide this, not file times.
         Bounds that no spectrum meets leave no new folder behind.
 
+        The MESA colors inlist line(s) for the grid's folder
+        (:func:`sed_tools.mesa_inlist_lines`) are printed.
+
         Returns
         -------
         SED
@@ -548,6 +552,7 @@ class SED:
                 _build_data_products(catalog, str(model_dir), used_source, True, True)
 
         cat = cls._load_catalog_from_dir(model_dir, catalog, used_source)
+        _print_mesa_inlist(model_dir)
         if cuts:
             cat = cat.filter(teff_min=teff_min, teff_max=teff_max, logg_min=logg_min, logg_max=logg_max,
                              metallicity_min=metallicity_min, metallicity_max=metallicity_max)
@@ -650,8 +655,10 @@ class SED:
         filter_root: Optional[Union[str, Path]] = None,
         fill_gaps: bool = True,
     ) -> 'SED':
-        """Load a local stellar spectral grid (it needs its flux_cube.bin). A grid split into variants has
-        none of its own: load a variant, ``SED.local("<grid>/<variant>")``; FileNotFoundError names them.
+        """Load a local stellar spectral grid (it needs its flux_cube.bin). A grid split into variants loads its
+        all-axes cube, which takes each extra axis by keyword (``sed(5800, 4.4, 0.0, alpha=0.2)``); one variant
+        loads as ``SED.local("<grid>/<variant>")``. A split made before the all-axes cube existed has none:
+        FileNotFoundError names its variants.
 
         Parameters
         ----------
@@ -803,10 +810,11 @@ class SED:
         combine output; only discovery of "all" grids leaves those out
         (see :mod:`sed_tools.cube.combine`). A combination whose extra axes
         (alpha, [alpha/Fe], C/O, ...) vary is split into one subgrid per
-        variant, as ``sed-tools rebuild`` splits one grid; it then has no
-        flux cube of its own, and the SED returned holds its spectral grid
-        only (load a variant with ``SED.local("<output>/<variant>")``). An
-        earlier combination in the ``output`` folder is replaced.
+        variant, as ``sed-tools rebuild`` splits one grid; its own flux cube
+        is then the all-axes cube of every variant, which the SED returned
+        evaluates with each extra axis by keyword (a variant loads with
+        ``SED.local("<output>/<variant>")``). An earlier combination in the
+        ``output`` folder is replaced.
 
         Parameters
         ----------
@@ -872,6 +880,7 @@ class SED:
         teff: Number,
         logg: Number,
         metallicity: Number,
+        **extra: Union[Number, str],
     ) -> EvaluatedSED:
         """Interpolate a spectrum at the given stellar parameters.
 
@@ -883,13 +892,15 @@ class SED:
             Surface gravity (log g)
         metallicity : float
             Metallicity [M/H]
+        **extra : float or str
+            A split grid's all-axes cube only: a value for each of its extra axes (``alpha=0.2``); see SEDModel
 
         Returns
         -------
         EvaluatedSED
             Interpolated spectrum with wavelength and flux arrays
         """
-        return self._model(teff, logg, metallicity)
+        return self._model(teff, logg, metallicity, **extra)
     
     def model(self, name: Optional[str] = None) -> SEDModel:
         """Get or set the active SEDModel (None until SED.local() or a name sets one)."""

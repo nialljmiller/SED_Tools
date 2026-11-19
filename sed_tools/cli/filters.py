@@ -15,6 +15,7 @@ from ..filters.manifest import ComponentError, archived_bands, index_listing, pa
 from ..filters.curve_metadata import normalize_detector_type, other_detector_type, read_filter_header
 from ..filters.detector_edit import FORMULAS, curve_files
 from ..filters.njm_catalogue import CatalogueError
+from ..mesa_inlist import _print_mesa_inlist
 from ..terminal_plots import terminal_width
 from ..ui_utils import (NO_DEFAULT as _NO_DEFAULT, ask_number as _ask_number, ask_option, ask_yes, cut, prompt_choice,
                         wrap)
@@ -712,6 +713,7 @@ def _fetch_instrument(library, facility: str, instrument: str, failures: List[st
         print(f"Cannot fetch: {exc}")
         failures.append(f"{facility}/{instrument}: {exc}")
         return
+    _print_mesa_inlist(directory)
     if not offer:
         return
     try:
@@ -785,7 +787,7 @@ def run_filter_combine_flow(base_dir: str = str(FILTER_DIR_DEFAULT)) -> None:
                               instrument=instrument, on_conflict=conflict)
     print(f"\n[filters] Combined {len(list(out.glob('*.dat')))} filters into {out}")
     print(f"[filters] Wrote MESA index file: {out / out.name}")  # MESA opens the index named after the folder
-    print("Use this path as the MESA instrument/filter-set directory.")
+    _print_mesa_inlist(out)
 
 
 def _availability_errors(info: dict) -> List[str]:

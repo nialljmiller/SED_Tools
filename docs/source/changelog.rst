@@ -168,6 +168,38 @@ Added
   directory (or the folder given) and return or print its path, with the
   ``vega_sed`` inlist line. They use the catalogue's cached download, as the
   Vega-based properties and ``Filters.plot(vega=True)`` do.
+- **MESA colors inlist paths.** Every download (``sed-tools grids``,
+  ``sed-tools filters``, ``SED.fetch``, ``Filters.fetch`` and
+  ``Filters.compose``) ends with "The MESA colors inlist path for this is:"
+  and the line to put in the ``&colors`` inlist: ``stellar_atm = '<folder>'``
+  for a grid, one line per variant folder for a split grid (MESA cannot read
+  its top folder; of four or more variants, the first two, "…" and the last),
+  and ``instrument = '<folder>'`` for a filter set, each absolute and without
+  a trailing slash. ``sed-tools mesa-path PATH`` prints the same for any local
+  grid or filter set, and ``sed_tools.mesa_inlist_lines(path)`` returns the
+  lines. ``sed-tools rebuild``, ``combine``, ``filters-combine`` and
+  ``mesa_prepare`` print the same lines in place of their own advice.
+- **The all-axes flux cube of a split grid.** A split (``sed-tools
+  rebuild``, a split combination, or a whole split grid from NJM) now also
+  writes ``flux_cube.bin`` at the grid's top: every variant on shared axes,
+  Teff, log g and [M/H] (the union of the variants') and then each
+  ``variants_index.csv`` column whose value differs between the variants
+  (a column with one value, such as Kurucz's ``lh`` and ``vtur``, is no
+  axis). It is assembled from the variant cubes in parts of wavelengths, reads
+  no spectrum, and equals each variant cube at that variant's nodes; a node no
+  variant fills is zero. Its first int32 is -1, then ``FLUXCUBE`` and a
+  version, so every reader tells it from a 3-axis cube (the format is in
+  ``sed_tools/cube/fileio.py``). ``SED.local("<grid>")`` and
+  ``SED().model("<grid>")`` open it, and take each extra axis by keyword,
+  ``sed(5800, 4.4, 0.0, alpha=0.2)``: cubic Hermite on every numeric axis, as
+  the 3-axis cube, with empty nodes blended in as zeros and values beyond an
+  axis clamped; a text-valued axis is matched exactly. The variant cubes, and
+  what MESA reads from the variant folders, are unchanged. MESA cannot read
+  the all-axes cube: pointed at the grid's top folder it says the header is
+  invalid and loads the spectra one by one. The flux cube tool, the
+  densifier, the ML trainers and the cube checks read only 3-axis cubes and
+  leave it alone; ``spectra_not_in_cube``, ``FluxCube.from_file`` and
+  ``cube.fileio.load`` stop with ``ValueError`` on it.
 
 Changed behaviour
 ~~~~~~~~~~~~~~~~~
@@ -214,8 +246,8 @@ Changed behaviour
   folder keeps the spectra and every variant's rows. A grid without an extra
   axis is in every variant of it, as for log g. Values match as numbers
   (``0`` and ``0.0`` agree); axes match by name, so ``alpha`` and
-  ``[alpha/Fe]`` are two axes. A split combination has no flux cube of its
-  own, and ``SED.combine`` then returns its spectral grid without a model. A
+  ``[alpha/Fe]`` are two axes. A split combination's own flux cube is its
+  all-axes cube (Added), which ``SED.combine`` returns as the model. A
   combination with no varying extra axis is written as before.
 - **A combined grid's lookup table lists what its cube holds:** one row per
   node a spectrum fills, at the spectrum's own values and, for an axis its
@@ -278,12 +310,14 @@ Changed behaviour
   a copy under a reused name holding another star's spectrum). A cube build
   that writes one cube as the grid's own removes an earlier split, which would
   otherwise be read as the grid's cubes.
-- **A grid split into variants has no flux cube of its own.** MESA reads a
-  variant's folder (``stellar_atm = '.../<grid>/<variant>/'``). A split removes
-  a top-level ``flux_cube.bin`` an earlier build left, and the NJM client
-  removes NJM's top-level copy of the default variant's cube and no longer
-  downloads it. ``SED.local("<grid>")`` and ``SED().model("<grid>")`` on a
-  split grid stop with ``FileNotFoundError`` naming its variants,
+- **A grid split into variants is read by MESA from a variant's folder.**
+  MESA reads a variant's folder (``stellar_atm = '.../<grid>/<variant>/'``).
+  A split replaces a top-level ``flux_cube.bin`` an earlier build left with
+  the all-axes cube (Added), and the NJM client no longer downloads NJM's
+  top-level copy of the default variant's cube; it builds the all-axes cube
+  from the variant cubes. ``SED.local("<grid>")`` and
+  ``SED().model("<grid>")`` on a split grid without an all-axes cube (split
+  by an earlier version) stop with ``FileNotFoundError`` naming its variants,
   ``<grid>/<variant>``, which they load. The README's examples point at a
   Kurucz2003all variant.
 - **A split grid from NJM comes with its variant folders.** The NJM client

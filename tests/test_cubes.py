@@ -21,7 +21,7 @@ import pytest
 
 from sed_tools import _constants
 from sed_tools.api import _build_flux_cube, _flux_cube_shortfall
-from sed_tools.cube import mesa_export, tool
+from sed_tools.cube import fileio, mesa_export, tool
 from sed_tools.cube.build import resample_to_grid, spectra_not_in_cube
 from sed_tools.cube.collision import CollisionConfig, copy_global_config_to_model, load_config, match_filter_value
 from sed_tools.cube.densify import densify_grid
@@ -104,7 +104,7 @@ def flat_filter(name="V"):
 
 def _kurucz_alpha(folder, build=False):
     """Both golden Kurucz grids ([alpha/M] 0 and 0.4) as one grid; lh and vtur are the same throughout. Built,
-    it is split into one subgrid per alpha, listed in variants_index.csv."""
+    it is split into one subgrid per alpha, listed in variants_index.csv, and its own cube is the all-axes one."""
     import pandas as pd
 
     folder.mkdir(parents=True)
@@ -115,7 +115,7 @@ def _kurucz_alpha(folder, build=False):
     assert sorted(set(pd.read_csv(folder / "lookup_table.csv", dtype=str)[" vtur"])) == ["2 km/s"]  # a ' ' and '/'
     if build:
         assert _build_flux_cube(folder).name == "variants_index.csv"
-        assert not (folder / "flux_cube.bin").exists()
+        assert fileio.is_all_axes(folder / "flux_cube.bin")
     return folder
 
 
@@ -174,6 +174,14 @@ def trailing_bytes_emit_warning_but_do_not_raise(t):
     np.testing.assert_allclose(fc.flux[0, 0, 0, :], cube.expected(cube.teff[0], cube.logg[0], cube.meta[0]),
                                rtol=1e-10)
     assert "trailing data" in t.capsys.readouterr().out.lower()
+
+
+@row
+def an_all_axes_cube_of_the_wrong_size_is_refused(t):
+    grid = _build(_two_variant_grid(t.tmp / "G"))
+    (t.tmp / "short.bin").write_bytes((grid / "flux_cube.bin").read_bytes()[:-8])
+    with pytest.raises(ValueError, match="short.bin: .* bytes, but its all-axes header gives"):
+        SEDModel("short", t.tmp / "short.bin")
 
 
 # ----------------------------------------------------------------------
@@ -445,9 +453,10 @@ def a_parameter_column_under_any_name_lookup_accepts_is_no_extra_axis(t):
 
 
 @row
-def a_split_grid_has_no_cube_of_its_own_and_photometry_names_its_variants(t):
+def a_split_grid_cube_of_its_own_is_its_all_axes_cube_and_photometry_opens_it(t):
     # A rebuild that split a grid left the cube of an earlier single build at the top, which MESA pointed at the
-    # grid's folder read, and SED.local and SED().model() used. Only a variant's folder has a cube now.
+    # grid's folder read, and SED.local and SED().model() used. The split now writes the all-axes cube there, which
+    # they open; a split without one (made before it existed), or with a 3-axis cube there, still names its variants.
     from sed_tools.api import SED as API
 
     grid = _write_grid(t.tmp / "G", [("a0.txt", 5000.0, 4.0, 0.0, "0.0"), ("b0.txt", 6000.0, 4.0, 0.0, "0.0")],
@@ -455,11 +464,122 @@ def a_split_grid_has_no_cube_of_its_own_and_photometry_names_its_variants(t):
     _build(grid)
     _two_variant_grid(grid)
     _build(grid)
-    assert not (grid / "flux_cube.bin").exists()
-    for load in (lambda: API.local("G", model_root=t.tmp), lambda: SED(model_root=t.tmp).model("G")):
-        with pytest.raises(FileNotFoundError, match="G is split into variants.*G/G_alpha_0p00, G/G_alpha_0p40"):
-            load()
+    assert fileio.is_all_axes(grid / "flux_cube.bin")
+    for load in (lambda: API.local("G", model_root=t.tmp).model(), lambda: SED(model_root=t.tmp).model("G")):
+        assert list(load().extra_axes) == ["alpha"]
+    (grid / "flux_cube.bin").rename(t.tmp / "aside.bin")
+    for top in (None, grid / "G_alpha_0p00" / "flux_cube.bin"):  # none, or a 3-axis copy of a variant (NJM's)
+        if top:
+            shutil.copy2(top, grid / "flux_cube.bin")
+        for load in (lambda: API.local("G", model_root=t.tmp), lambda: SED(model_root=t.tmp).model("G")):
+            with pytest.raises(FileNotFoundError, match="G is split into variants.*G/G_alpha_0p00, G/G_alpha_0p40, "
+                                                        "or rebuild G to get its all-axes cube"):
+                load()
     assert API.local("G/G_alpha_0p40", model_root=t.tmp).model().flux_cube_path.is_file()
+
+
+@row
+def the_all_axes_cube_equals_each_variant_cube_at_that_variants_nodes(t):
+    # D1, D4: the golden Kurucz pair split by alpha; lh and vtur are constant, so they are no axes. Each variant's
+    # flux is stored unchanged in its block of the all-axes cube, and evaluated at its nodes the two agree exactly.
+    from sed_tools.cube.variants import _variant_rows
+
+    folder = _kurucz_alpha(t.tmp / "K", build=True)
+    header = fileio.read_header(folder / "flux_cube.bin")
+    assert header.names == ["teff", "logg", "meta", "alpha"] and header.labels == {}
+    stored = np.memmap(folder / "flux_cube.bin", dtype="<f8", mode="r", offset=header.offset, shape=header.shape)
+    model = SEDModel("K", folder / "flux_cube.bin")
+    for row in _variant_rows(folder / "variants_index.csv")[1]:
+        variant = FluxCube.from_file(str(folder / row["path"] / "flux_cube.bin"))
+        at = [np.searchsorted(header.axes[k], axis) for k, axis in
+              enumerate((variant.teff_grid, variant.logg_grid, variant.meta_grid))]
+        block = stored[list(header.axes[3]).index(float(row["alpha"]))]
+        assert np.array_equal(block[np.ix_(range(len(header.wavelengths)), *at[::-1])],
+                              variant.flux.transpose(3, 2, 1, 0))
+        for teff in variant.teff_grid:
+            for logg in variant.logg_grid:
+                for meta in variant.meta_grid:
+                    assert np.array_equal(model(teff, logg, meta, alpha=float(row["alpha"])).flux,
+                                          variant.interpolate_spectrum(teff, logg, meta)[1])
+
+
+@row
+def the_all_axes_cube_holds_text_axes_as_labels_and_zeros_where_no_variant_is(t):
+    # D2, D3: atm is text (matched exactly, ignoring case), lh constant (no axis); (alpha 0.4, MS) has no variant,
+    # so its block is zero.
+    grid = _write_grid(t.tmp / "G", [(f"{alpha}{atm}{teff}.txt", teff, 4.0, 0.0, alpha, atm, 1.25)
+                                     for alpha, atm in (("0.0", "ap"), ("0.0", "MS"), ("0.4", "ap"))
+                                     for teff in (5000.0, 6000.0)], (*COLUMNS, "alpha", "atm", "lh"))
+    _build(grid)
+    model = SEDModel("G", grid / "flux_cube.bin")
+    assert model.extra_axes["atm"] == ["ap", "MS"] and model.extra_axes["alpha"].tolist() == [0.0, 0.4]
+    assert not model(5000, 4.0, 0.0, alpha=0.4, atm="ms").flux.any()
+    assert model(5000, 4.0, 0.0, alpha=0.4, ATM="AP").flux.all()
+    with pytest.raises(ValueError, match="atm='xx' is not one of atm's values: ap, MS"):
+        model(5000, 4.0, 0.0, alpha=0.0, atm="xx")
+    with pytest.raises(ValueError, match=r"extra axes, by keyword: alpha \(0 to 0.4\); atm \(ap, MS\)"):
+        model(5000, 4.0, 0.0, alpha=0.0)
+
+
+@row
+def the_all_axes_cube_interpolates_every_numeric_axis_as_the_3_axis_cube_does(t):
+    # D3: cubic Hermite on every axis, FluxCube's; D2: the empty node (6000 K, alpha 0.3) is blended in as zero;
+    # beyond an axis the value is clamped, as for Teff.
+    rng = np.random.default_rng(0)
+    nodes = [(teff, alpha) for teff in (4000.0, 5000.0, 6000.0, 7000.0, 8000.0) for alpha in ("0.0", "0.1", "0.3", "0.6")
+             if (teff, alpha) != (6000.0, "0.3")]
+    grid = _write_grid(t.tmp / "G", [(f"s{i}.txt", teff, 4.0, 0.0, alpha) for i, (teff, alpha) in enumerate(nodes)],
+                       (*COLUMNS, "alpha"))
+    for i in range(len(nodes)):
+        wl = np.linspace(1000.0, 1e4, 20)
+        np.savetxt(grid / f"s{i}.txt", np.column_stack([wl, rng.uniform(1, 2) * 1e-10 * (1 + wl / 1e4)]))
+    _build(grid)
+    header = fileio.read_header(grid / "flux_cube.bin")
+    stored = np.fromfile(grid / "flux_cube.bin", dtype="<f8", offset=header.offset).reshape(header.shape)
+    assert not stored[2, :, 0, 0, 2].any()  # alpha 0.3, Teff 6000
+    model, hermite = SEDModel("G", grid / "flux_cube.bin"), FluxCube(*header.axes[:3], header.wavelengths, None)
+    for point in ((5500.0, 4.0, 0.0, 0.2), (7999.0, 4.0, 0.0, 0.05), (6000.0, 4.0, 0.0, 0.3)):
+        expected = stored.transpose(4, 3, 2, 0, 1)
+        for axis, x in zip(header.axes, point):
+            expected = hermite._hermite_interp_axis(expected, axis, x, axis=0)
+        np.testing.assert_allclose(model(*point[:3], alpha=point[3]).flux, expected, rtol=1e-12, atol=0)
+    assert np.array_equal(model(9000, 4.0, 0.0, alpha=0.9).flux, model(8000, 4.0, 0.0, alpha=0.6).flux)
+
+
+@row
+def three_axis_readers_leave_the_all_axes_cube_alone(t):
+    # Every reader of flux_cube.bin either reads the all-axes cube (its Teff, log g, [M/H] and wavelength axes) or
+    # does not take it for a 3-axis cube; MESA's inlist paths still name the variants.
+    from sed_tools.cube.model import _read_flux_cube_header
+    from sed_tools.mesa_inlist import mesa_inlist_lines
+    from sed_tools.ml.common import training_libraries
+
+    folder = _kurucz_alpha(t.tmp / "models" / "K", build=True)
+    top = folder / "flux_cube.bin"
+    variants = [folder / f"K_alpha_{alpha}_lh_1p25_vtur_2_km_s" for alpha in ("0p00", "0p40")]
+    for read in (lambda: FluxCube.from_file(str(top)), lambda: fileio.load(top),
+                 lambda: spectra_not_in_cube(top, folder / "lookup_table.csv"),
+                 lambda: densify_grid(str(top), str(t.tmp / "dense.bin"), teff_spacing=125.0)):
+        with pytest.raises(ValueError, match="is the all-axes flux cube of a split grid, not a 3-axis"):
+            read()
+    found = tool.discover_flux_cube_files([folder])  # also searches the working directory
+    assert top.resolve() not in found and all(v.resolve() / "flux_cube.bin" in found for v in variants)
+    assert training_libraries(str(t.tmp / "models")) == []
+    assert fileio.load_axes(top)[0].tolist() == _read_flux_cube_header(top)["teff"].tolist() == [5750.0, 6000.0, 6250.0]
+    assert SED(model_root=t.tmp / "models").available_grids() == [f"K/{v.name}" for v in variants]
+    assert mesa_inlist_lines(folder) == [f"stellar_atm = '{v}'" for v in variants]
+
+
+@row
+def variant_cubes_on_different_wavelengths_get_no_all_axes_cube(t):
+    from sed_tools.cube.variants import write_all_axes_cube
+
+    grid = _build(_two_variant_grid(t.tmp / "G"))
+    before = (grid / "flux_cube.bin").read_bytes()
+    _small_cube(grid / "G_alpha_0p40" / "flux_cube.bin")
+    with pytest.raises(ValueError, match="have different wavelengths.*rebuild the grid"):
+        write_all_axes_cube(str(grid))
+    assert (grid / "flux_cube.bin").read_bytes() == before and not (grid / "flux_cube.bin.tmp").exists()
 
 
 @row
@@ -480,9 +600,16 @@ def a_split_grid_from_njm_comes_with_its_variant_folders_and_is_not_rebuilt(t):
     builds = []
     t.mp.setattr(build, "precompute_flux_cube", lambda *args, **kwargs: builds.append(args))
     API.fetch(GRID, source="njm", model_root=t.tmp / "api")
+    printed = [t.capsys.readouterr().out]
     assert run_cli(t.mp, "grids", "--source", "njm", "--grids", GRID, "--base", str(t.tmp / "cli")) == 0
-    for folder in (t.tmp / "api" / GRID, t.tmp / "cli" / GRID):
-        assert not (folder / "flux_cube.bin").exists() and _flux_cube_shortfall(folder) is None
+    printed.append(t.capsys.readouterr().out)
+    for folder, out in zip((t.tmp / "api" / GRID, t.tmp / "cli" / GRID), printed):
+        # Each route says the MESA colors inlist line of each variant: MESA cannot read the grid's own folder.
+        assert ("The MESA colors inlist path for this is:\n" + "".join(
+            f"    stellar_atm = '{folder / f'{GRID}_alpha_{alpha}_lh_1p25_vtur_2_km_s'}'\n" for alpha in ("0p00", "0p40"))
+            + "  (one line per variant: MESA reads one, so use one of these 2; variants_index.csv lists them)\n") in out
+        # NJM's top-level copy of a variant is not taken; the all-axes cube is built here from the variant cubes
+        assert fileio.is_all_axes(folder / "flux_cube.bin") and _flux_cube_shortfall(folder) is None
         assert (folder / variant / "flux_cube.bin").read_bytes() == (served / variant / "flux_cube.bin").read_bytes()
         assert [v.label for v in list_variants(folder)] == ["alpha_0", "alpha_0.4"]
     assert builds == []
@@ -607,7 +734,8 @@ def _combined_cubes(t, grids):
 
     SED.combine(grids, output="combined", model_root=t.tmp / "models", visualization=False)
     cubes = {}
-    for folder in (p.parent for p in sorted((t.tmp / "models" / "combined").rglob("flux_cube.bin"))):
+    for folder in (p.parent for p in sorted((t.tmp / "models" / "combined").rglob("flux_cube.bin"))
+                   if not fileio.is_all_axes(p)):
         teff, logg, meta, wl, flux = fileio.load(folder / "flux_cube.bin")
         rows = [line.split(",") for line in (folder / "lookup_table.csv").read_text().splitlines()[1:]]
         nodes = [(float(r[1]), float(r[2]), float(r[3])) for r in rows]
@@ -682,7 +810,7 @@ def combining_again_into_a_folder_replaces_the_earlier_combination(t):
     assert _flux_cube_shortfall(combined) is None  # no stale copies
     _combined_cubes(t, ["a", "al"])
     assert sorted(p.name for p in combined.iterdir() if not p.name.endswith(".txt")) == [
-        "combined_alpha_0p00", "combined_alpha_0p40", "lookup_table.csv", "variants_index.csv"]
+        "combined_alpha_0p00", "combined_alpha_0p40", "flux_cube.bin", "lookup_table.csv", "variants_index.csv"]
 
 
 @row
@@ -696,9 +824,10 @@ def combine_names_the_variant_folders_mesa_can_read(t):
     _planck_grid(t, "a", [(5000.0, 4.5, 0.0, 0.0), (5000.0, 4.5, 0.0, 0.4)], columns=("teff", "logg", "meta", "alpha"))
     _planck_grid(t, "b", [(6000.0, 4.5, 0.0)])
     run_combine_flow(str(t.tmp / "models"), output_name="ab", interactive=False, models=["a", "b"])
-    out = t.capsys.readouterr().out
-    assert "stellar_atm" not in out and "Point MESA Colors to one of the above subdirectories." in out
-    assert f"  -> {t.tmp / 'models' / 'ab' / 'ab_alpha_0p40'}/" in out
+    out, ab = t.capsys.readouterr().out, t.tmp / "models" / "ab"
+    assert f"stellar_atm = '{ab}'" not in out and f"stellar_atm = '{ab}/'" not in out
+    assert (f"The MESA colors inlist path for this is:\n    stellar_atm = '{ab / 'ab_alpha_0p00'}'\n"
+            f"    stellar_atm = '{ab / 'ab_alpha_0p40'}'\n") in out
 
 
 @row
@@ -1179,6 +1308,7 @@ def mesa_prepare_exports_the_variant_named_without_asking(t):
     assert run_cli(t.mp, "mesa_prepare", "--base", base, "--grid", "KuruczAlpha", "--variant", variant,
                    "--output", str(out)) == 0
     assert (out / "flux_cube.bin").read_bytes() == (split_grid / variant / "flux_cube.bin").read_bytes()
+    assert t.capsys.readouterr().out.endswith(f"The MESA colors inlist path for this is:\n    stellar_atm = '{out}'\n")
     with pytest.raises(SystemExit, match="KuruczAlpha has no variant 'alpha_0.4'; its variants are "
                                          f"KuruczAlpha_alpha_0p00_lh_1p25_vtur_2_km_s, {variant}. Nothing was exported"):
         run_cli(t.mp, "mesa_prepare", "--base", base, "--grid", "KuruczAlpha", "--variant", "alpha_0.4",
@@ -1299,7 +1429,7 @@ def combine_keeps_every_variant_of_an_extra_axis(t):
         assert (combined / variant / "lookup_table.csv").read_text().splitlines() == [
             "#file_name,teff,logg,meta,alpha,source_model,original_file", own,
             f"plain_000002.txt,6000.0,4.5,0.0,{own.split(',')[4]},plain,s0.txt"]
-    assert not (combined / "flux_cube.bin").exists()  # as the cube builder leaves a split grid's folder
+    assert fileio.is_all_axes(combined / "flux_cube.bin")  # as the cube builder leaves a split grid's folder
     assert [v.label for v in list_variants(combined)] == ["alpha_0.0", "alpha_0.4"]
 
 

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import os
 import shutil
-import struct
+import struct  # noqa: F401  (kept: older code star-imports this module)
 import time
 from typing import Optional
 
@@ -17,14 +17,14 @@ import numpy as np
 from .._constants import available_memory_bytes as _available_ram_bytes
 from .._constants import planck_flam as _blackbody
 from .build import resample_to_grid
-from .fileio import flux_offset, read_axes, write_header
+from .fileio import flux_offset, is_all_axes, read_axes, read_dims, write_header
 from ..ui_utils import banner
 
 
 def _read_cube_header(path):
     """The four axis lengths and the four axes (Teff, log g, [M/H], wavelength); the flux is not read."""
     with open(path, "rb") as f:
-        sizes = struct.unpack("4i", f.read(16))
+        sizes = read_dims(f, path)
         return (*sizes, *read_axes(f, *sizes))
 
 
@@ -212,7 +212,8 @@ def run_interactive_workflow(base_dir: str = None) -> Optional[int]:
 
     banner("GRID DENSIFIER")
 
-    cubes = sorted(glob.glob(os.path.join(base_dir, "*", "flux_cube.bin")))
+    # a split grid's top-level cube is its all-axes cube; its variants are one folder further down
+    cubes = sorted(c for c in glob.glob(os.path.join(base_dir, "*", "flux_cube.bin")) if not is_all_axes(c))
     if not cubes:
         print(f"No flux_cube.bin files found under {base_dir}")
         return

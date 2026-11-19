@@ -7,7 +7,7 @@ import csv
 import logging
 import math
 import os
-import struct
+import struct  # noqa: F401  (kept: older code star-imports this module)
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -19,7 +19,7 @@ from ..grids.lookup import (
     find_file_column, find_logg_column, find_metallicity_column, find_teff_column,
 )
 from .collision import copy_global_config_to_model, discover_extra_axes, load_config
-from .fileio import flux_offset, write_header
+from .fileio import flux_offset, read_dims, write_header
 from .variants import (_build_filtered_cube, _build_mean_cube, _group_by_extra_axes, _parameter_arrays, _print_summary,
                        _remove_variants, _split_into_subgrids, _warn_averaged_rows)
 from ..grids.spectrum_io import read_text_spectrum
@@ -229,10 +229,7 @@ def spectra_not_in_cube(cube_path: str, lookup_file: str) -> Tuple[List[str], Li
         return [], []
     teff, logg, meta = _parse_axes(lookup, lookup_file, file_col)
     with open(cube_path, "rb") as fh:
-        header = fh.read(16)
-        if len(header) != 16:
-            raise ValueError(f"{cube_path}: the header is truncated")
-        nt, nl, nm, nw = struct.unpack("4i", header)
+        nt, nl, nm, nw = read_dims(fh, cube_path)
         # A negative count would make np.fromfile read the whole file; a short file fails in _filled_points.
         if min(nt, nl, nm, nw) < 1:
             raise ValueError(f"{cube_path}: the header gives dimensions {nt}, {nl}, {nm}, {nw}")
