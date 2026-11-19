@@ -20,7 +20,7 @@ from ..photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterC
                           load_spectrum)
 from ..ui_utils import ordered_range
 from .collision import _normalise_key
-from .fileio import read_header
+from .fileio import is_all_axes, read_header
 from .fluxcube import AllAxesCube, FluxCube
 from .variants import _variant_paths
 
@@ -360,13 +360,13 @@ class SEDModel:
 
 def _refuse_split_grid(directory: Path, name: str) -> None:
     """FileNotFoundError naming the variants when ``directory`` is a grid split into variants (variants_index.csv)
-    without its all-axes cube (a split made before SED_Tools built one): photometry then reads one variant's
-    folder."""
-    index = Path(directory) / "variants_index.csv"
-    if index.is_file() and not (Path(directory) / "flux_cube.bin").is_file():
+    whose top-level flux_cube.bin is not its all-axes cube: none, or a 3-axis cube an earlier version or download
+    left there (one variant's, not the grid's). Photometry then reads one variant's folder."""
+    index, top = Path(directory) / "variants_index.csv", Path(directory) / "flux_cube.bin"
+    if index.is_file() and not (top.is_file() and is_all_axes(top)):
         variants = [f"{name}/{path}" for path in _variant_paths(index)]
         raise FileNotFoundError(f"{name} is split into variants, each with its own flux cube; name one of them: "
-                                + ", ".join(variants))
+                                + ", ".join(variants) + f", or rebuild {name} to get its all-axes cube")
 
 
 class SED:

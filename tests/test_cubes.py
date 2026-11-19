@@ -456,7 +456,7 @@ def a_parameter_column_under_any_name_lookup_accepts_is_no_extra_axis(t):
 def a_split_grid_cube_of_its_own_is_its_all_axes_cube_and_photometry_opens_it(t):
     # A rebuild that split a grid left the cube of an earlier single build at the top, which MESA pointed at the
     # grid's folder read, and SED.local and SED().model() used. The split now writes the all-axes cube there, which
-    # they open; a split without one (made before it existed) still names its variants.
+    # they open; a split without one (made before it existed), or with a 3-axis cube there, still names its variants.
     from sed_tools.api import SED as API
 
     grid = _write_grid(t.tmp / "G", [("a0.txt", 5000.0, 4.0, 0.0, "0.0"), ("b0.txt", 6000.0, 4.0, 0.0, "0.0")],
@@ -468,9 +468,13 @@ def a_split_grid_cube_of_its_own_is_its_all_axes_cube_and_photometry_opens_it(t)
     for load in (lambda: API.local("G", model_root=t.tmp).model(), lambda: SED(model_root=t.tmp).model("G")):
         assert list(load().extra_axes) == ["alpha"]
     (grid / "flux_cube.bin").rename(t.tmp / "aside.bin")
-    for load in (lambda: API.local("G", model_root=t.tmp), lambda: SED(model_root=t.tmp).model("G")):
-        with pytest.raises(FileNotFoundError, match="G is split into variants.*G/G_alpha_0p00, G/G_alpha_0p40"):
-            load()
+    for top in (None, grid / "G_alpha_0p00" / "flux_cube.bin"):  # none, or a 3-axis copy of a variant (NJM's)
+        if top:
+            shutil.copy2(top, grid / "flux_cube.bin")
+        for load in (lambda: API.local("G", model_root=t.tmp), lambda: SED(model_root=t.tmp).model("G")):
+            with pytest.raises(FileNotFoundError, match="G is split into variants.*G/G_alpha_0p00, G/G_alpha_0p40, "
+                                                        "or rebuild G to get its all-axes cube"):
+                load()
     assert API.local("G/G_alpha_0p40", model_root=t.tmp).model().flux_cube_path.is_file()
 
 
