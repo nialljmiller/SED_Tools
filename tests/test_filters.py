@@ -698,6 +698,10 @@ def vega_is_downloaded_from_njm_where_mesa_can_read_it(t):
     assert written.read_text() == served
     assert t.capsys.readouterr().out.endswith(f"MESA colors inlist: vega_sed = '{written}'\n")
     assert len(njm.fetched("vega/vega_flam.csv")) == 1  # the second copy came from the catalogue's cache
+    njm.fail = True  # NJM down, nothing cached: the error named index.json, not the Vega file
+    down = t.tmp / "down" / "filters"
+    with pytest.raises(CatalogueError, match="^vega/vega_flam.csv is not cached and NJM is unreachable$"):
+        FilterCatalogue(down, mirror=grabber_for(down, njm)).vega()
 
 
 # ======================================================================
