@@ -4,6 +4,13 @@
 # wavelength_unit = angstrom
 # flux_unit = erg/cm2/s/A
 # units_standardized = True
+# alpha = 0
+# conversion_confidence = 999.9
+# lh = 1.25
+# original_flux_unit = 999.9
+# original_wavelength_unit = 999.9
+# source = 999.9
+# vtur = 2
 147.200000 4.34664000e-24
 151.000000 4.13062000e-24
 155.200000 7.76809000e-89

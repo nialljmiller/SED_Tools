@@ -178,6 +178,38 @@ def grid_write_lists_in_its_lookup_table_the_files_it_writes(t):
 
 
 @row
+def grid_write_keeps_a_split_grids_variants_and_leaves_out_an_unknown_axis(t):
+    # write() kept only Teff, log g and [M/H]: a split grid's variants were averaged onto one cube and its variant
+    # folders removed, and a grid without log g (bbody) could not be written (review 24 Nov 2026, api.md 1).
+    wl = np.linspace(1000.0, 1e4, 20)
+    for name, rows in (("split", [(teff, alpha) for teff in (5000.0, 6000.0) for alpha in ("0.0", "0.4")]),
+                       ("bb", [(5000.0, None), (6000.0, None)])):
+        (t.tmp / name).mkdir()
+        lines = ["file_name,teff" + (",logg,metallicity,alpha" if name == "split" else "")]
+        for i, (teff, alpha) in enumerate(rows):  # flat, each at its own height
+            height = teff + 100 * float(alpha or 0)
+            np.savetxt(t.tmp / name / f"s{i}.txt", np.column_stack([wl, np.full(wl.size, height)]))
+            lines.append(f"s{i}.txt,{teff}" + (f",4.0,0.0,{alpha}" if alpha else ""))
+        (t.tmp / name / "lookup_table.csv").write_text("\n".join(lines) + "\n")
+        sed_tools.precompute_flux_cube(str(t.tmp / name), str(t.tmp / name / "flux_cube.bin"))
+    out = SED.local("split", model_root=t.tmp).grid.write(t.tmp / "out", build_h5=False)
+    variants = sed_tools.mesa_inlist_lines(out)
+    assert len(variants) == 2
+    for line in variants:
+        variant = SED.local(line.split("'")[1], model_root=t.tmp)
+        alpha = float(variant.grid.spectra[0].extra["alpha"])
+        assert np.allclose(variant(5000.0, 4.0, 0.0).flux, 5000.0 + 100 * alpha, rtol=1e-12)
+    one = SpectralGrid(name="one", source="local", spectra=[s for s in SED.local("split", model_root=t.tmp).grid
+                                                             if s.extra["alpha"] == "0.4"])
+    with pytest.raises(ValueError, match="holds a grid split into variants"):
+        one.write(out, build_h5=False)  # its one cube would have replaced the variant folders
+    assert sed_tools.mesa_inlist_lines(out) == variants
+    bb = SED.local("bb", model_root=t.tmp).grid.write(t.tmp / "bb_out", build_h5=False)
+    assert (bb / "lookup_table.csv").read_text().splitlines()[0] == "file_name,teff"
+    assert np.allclose(SED.local("bb_out", model_root=t.tmp)(5500.0, 0.0, 0.0).flux, 5500.0, rtol=1e-12)
+
+
+@row
 def import_dry_run_counts_spectra_lacking_a_parameter(t):
     src = t.tmp / "src"
     src.mkdir()
