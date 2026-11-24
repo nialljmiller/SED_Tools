@@ -277,7 +277,7 @@ def _ask_recipe(info: dict) -> List[str]:
 
 
 def review_detector_types(directory: Path, filter_root: Path, what: str = "This filter set") -> None:
-    """Say which detector type the curves at ``directory`` are known to be used with; on request, correct the
+    """Say which detector type the curves at ``directory`` are labelled for; on request, correct the
     label or convert the curves, in place."""
     by_type: Dict[Optional[str], Tuple[List[str], set]] = {}
     for curve in curve_files(directory) if Path(directory).is_dir() else ():
@@ -291,7 +291,7 @@ def review_detector_types(directory: Path, filter_root: Path, what: str = "This 
         (f"{dtype}-counting detectors ({', '.join(sorted(sources))})" if dtype else "no stated detector type")
         + (f" for {', '.join(bands)}" if len(by_type) > 1 else "")
         for dtype, (bands, sources) in by_type.items())
-    if not ask_yes(f"{what} is known to be used with {known}. Do you wish to edit/correct this? [y/N] "):
+    if not ask_yes(f"{what} is labelled for {known}. Do you wish to edit/correct this? [y/N] "):
         return
     action = ask_option("Correct the label only, or convert the curves? [correct/convert]: ", ["correct", "convert"])
     current = next(iter(by_type))

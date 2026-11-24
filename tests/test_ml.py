@@ -804,7 +804,9 @@ def extend_menu(t, *answers):
 def extend_menu_defaults_to_the_models_own_range(t):
     ranges = extend_menu(t, "2", "1", "1", "", "", "")
     assert ranges == [(100.0, 100000.0)]
-    assert "the model covers 100-100000 Å" in t.capsys.readouterr().out
+    out = t.capsys.readouterr().out
+    assert "the model covers 100-100000 Å" in out
+    assert "\nAvailable trained completer models:\n" in out  # it said "spectral grids"
 
 
 @row

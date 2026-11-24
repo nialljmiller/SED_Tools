@@ -846,7 +846,7 @@ def skycalc_build_writes_grid_and_resumes(t):
 G, R, I = gauss(4800.0, 300.0) * 0.9, gauss(5300.0, 300.0) * 0.7, gauss(5600.0, 200.0) * 0.8  # noqa: E741
 REFERENCE = Path(__file__).parent / "golden" / "inputs" / "reference"  # NJM's vega_flam.csv and sun_flam.csv
 SPECTRA = {"vega_spectrum": "vega/vega_flam.csv", "sun_spectrum": "sun/sun_flam.csv"}
-QUESTION = ("This filter set is known to be used with photon-counting detectors (svo). "
+QUESTION = ("This filter set is labelled for photon-counting detectors (svo). "
             "Do you wish to edit/correct this? [y/N] ")
 
 
@@ -1101,7 +1101,7 @@ def review_of_a_mixed_set_asks_for_the_type(t):
     inst = sdss(root := spectra_cached(t), energy_band=True)
     prompts = answer(t.mp, "y", "convert", "energy")
     review_detector_types(inst, root, "This product")
-    assert prompts[0] == ("This product is known to be used with photon-counting detectors (svo) for g, r and "
+    assert prompts[0] == ("This product is labelled for photon-counting detectors (svo) for g, r and "
                           "energy-counting detectors (svo) for i. Do you wish to edit/correct this? [y/N] ")
     assert prompts[2] == "Change them to energy or photon: "
     assert {b: read_filter_header(inst / f"{b}.dat")["DetectorType"] for b in "gri"} == dict.fromkeys("gri", ENERGY)
@@ -2193,6 +2193,12 @@ def published_carries_every_source_reason(t):
                                "SVO: SVO Filter Profile Service unreachable")
     assert ("The original source cannot provide Fac/Cam (the builder left an incomplete set); trying SVO"
             in t.caplog.text)
+    # Its connection failure in plain words, as NJM's (it was urllib3's whole text)
+    t.mp.setattr(filters_library, "get_builder", lambda name: raising(requests.ConnectionError(
+        "HTTPSConnectionPool(host='cdsarc.cds.unistra.fr', port=443): Max retries exceeded with url: /ReadMe "
+        "(Caused by NewConnectionError('Failed to establish a new connection: [Errno 61] Connection refused'))")))
+    with pytest.raises(ComponentError, match="; original source: connection refused; SVO: "):
+        library.published("Fac", "Cam")
 
 
 @default_svo_row
@@ -2786,6 +2792,7 @@ def a_silent_outage_is_checked_and_reported_once_per_process(t):
     assert [g.is_available() for g in grabbers] == [False, False, False]
     assert session.calls == [("HEAD", "https://data.nialljmiller.com/sed_tools", True)]  # one 5 s wait, not three
     assert t.caplog.text.count("is unavailable (timed out)") == 1
+    assert "this run continues without it for 5 minutes" in t.caplog.text  # it is asked again by the next run
     with pytest.raises(requests.ConnectionError, match="not asked again for 5 minutes"):
         grabbers[2]._get("https://data.nialljmiller.com/sed_tools/index.json")
     assert len(session.calls) == 1

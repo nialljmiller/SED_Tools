@@ -29,7 +29,7 @@ from .manifest import (
 )
 from .curve_metadata import SVOUnreachableError, migrate_filter_tree, svo_components_header
 from .njm import NJMFilterGrabber, curve_file
-from ..njm_mirror import NJM_NOT_LISTED, _status, cache_root
+from ..njm_mirror import NJM_NOT_LISTED, _status, cache_root, plain_reason
 from .names import (
     _adopt_claimed_svo, _drop_svo_duplicates, _instrument_metadata, _merge, _picker_entries, load_instrument_catalogue,
 )
@@ -292,7 +292,9 @@ class FilterLibrary:
         """Build the set from its original source; ``None`` once it is complete, else why it is not."""
         try:
             get_builder(ref.name)(self.root, **dict(ref.kwargs))
-        except (RequestException, OSError, RuntimeError, ValueError) as exc:
+        except RequestException as exc:
+            return plain_reason(exc)
+        except (OSError, RuntimeError, ValueError) as exc:
             return str(exc)
         return None if self.published_complete(directory) else "the builder left an incomplete set"
 

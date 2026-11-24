@@ -1052,7 +1052,7 @@ def _extend_menu(base_dir: str, models_dir: str) -> None:
         print("Train a model first (option 1)")
         return
 
-    print("\nAvailable trained spectral grids:")
+    print("\nAvailable trained completer models:")
     print("-" * 60)
     for i, model in enumerate(trained_models, 1):
         arch = model.get('architecture', {})
