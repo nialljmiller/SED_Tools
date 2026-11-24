@@ -524,9 +524,8 @@ class NJMSpectraGrabber:
         split = "variants_index.csv" in csv_files and not (has_param_cuts or wl_range)
         if split:  # its cubes are its variants' (below); its all-axes cube is built from them here, not downloaded
             from ..cube.fileio import ALL_AXES_NAME
-            from ..cube.variants import ensure_all_axes_cube, move_aside_top_cube, write_all_axes_cube
+            from ..cube.variants import ensure_all_axes_cube, write_all_axes_cube
             bin_files = [f for f in bin_files if f not in ("flux_cube.bin", ALL_AXES_NAME)]
-            move_aside_top_cube(model_dir)
         aux_files = bin_files + h5_files + csv_files
         
         print(f"[njm] Downloading {len(txt_files)} spectra + {len(aux_files)} auxiliary for {model_name}...")

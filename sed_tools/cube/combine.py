@@ -22,7 +22,7 @@ from tqdm import tqdm
 from .build import _write_cube as _write_cube_in_parts
 from .build import compute_common_wavelengths, resample_to_grid
 from .collision import _normalise_key, _value, discover_extra_axes
-from .variants import _link_spectra, _remove_variants, _subdir_names, write_all_axes_cube
+from .variants import _end_split, _link_spectra, _subdir_names, write_all_axes_cube
 from ..ui_utils import banner
 from ..grids.lookup import find_logg_column, find_metallicity_column, find_teff_column, write_lookup_csv
 from ..grids.spectrum_io import read_text_spectrum
@@ -340,9 +340,10 @@ def _copy_spectra(output_dir, all_models_data, names, listed):
 
 
 def _remove_previous_output(output_dir):
-    """Remove what an earlier combine wrote in output_dir, so none of it is left beside the new combination or read
-    in its place: the spectra its lookup table lists, its flux_cube.bin, and its variants (variants_index.csv and
-    the subgrids it lists). A folder whose lookup table is not a combine's is left alone."""
+    """Remove the spectra an earlier combine copied into output_dir (those its lookup table lists), so no stale copy is
+    left beside the new combination, and its variants_index.csv (variants._end_split). Its cubes and variant folders
+    stay (Nill, 24 Nov 2026): a cube the new combination writes replaces one of the same name. A folder whose lookup
+    table is not a combine's is left alone."""
     lookup = os.path.join(output_dir, "lookup_table.csv")
     if not os.path.isfile(lookup) or not _is_combined_output(None, lookup):
         return
@@ -351,9 +352,7 @@ def _remove_previous_output(output_dir):
         path = os.path.join(output_dir, name)
         if os.path.basename(name) == name and os.path.isfile(path):
             os.remove(path)
-    _remove_variants(output_dir)
-    if os.path.isfile(os.path.join(output_dir, "flux_cube.bin")):
-        os.remove(os.path.join(output_dir, "flux_cube.bin"))
+    _end_split(output_dir)
 
 
 def _row_ids(model_data):
@@ -435,10 +434,11 @@ def write_combined_grid(all_models_data, output_dir, visualization=True):
     With no extra axis, or one value of each, output_dir holds the combined flux cube, a copy of every spectrum and
     the lookup table (:func:`save_combined_data`). Otherwise the combination is split as the cube builder splits one
     grid (:func:`_variants`): output_dir holds the copies, the lookup table of every variant's rows with their
-    extra-axis values, variants_index.csv and the all-axes flux_cube_nd.bin of every variant, and each variant is a subgrid folder with its
-    lookup table, links to its spectra and its flux_cube.bin, so no spectrum collides with or overwrites another variant's. Every cube is
-    built before anything is written: a spectrum that cannot be read or placed stops the combine with nothing written.
-    What an earlier combine wrote in output_dir is then replaced (:func:`_remove_previous_output`).
+    extra-axis values, variants_index.csv and the all-axes flux_cube_nd.bin of every variant, and each variant is a
+    subgrid folder with its lookup table, links to its spectra and its flux_cube.bin, so no spectrum collides with or
+    overwrites another variant's. Every cube is built before anything is written: a spectrum that cannot be read or
+    placed stops the combine with nothing written. The copies and variants index an earlier combine wrote in
+    output_dir are then replaced (:func:`_remove_previous_output`).
 
     The cubes are built on disk, in a hidden folder beside output_dir that is removed at the end, and written in
     parts, so memory holds about one spectrum and one part (_PART_BYTES) at a time, however large the cubes.

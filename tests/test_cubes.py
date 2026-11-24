@@ -438,16 +438,19 @@ def a_split_grid_is_checked_by_its_variants_not_by_a_top_level_copy(t):
 
 
 @row
-def a_grid_built_as_one_cube_after_a_split_drops_the_split(t):
-    # A rebuild that no longer split the grid left the earlier variants_index.csv and subgrids, read as its cubes.
+def a_grid_built_as_one_cube_after_a_split_keeps_the_split_folders_beside_it(t):
+    # A rebuild that no longer split the grid left the earlier variants_index.csv, read as its cubes; it then
+    # deleted the subgrids too. The index goes, and the subgrids and flux_cube_nd.bin stay (Nill, 24 Nov 2026).
     grid = _two_variant_grid(t.tmp / "G")
     _build(grid)
+    split = {p: p.read_bytes() for p in [grid / ND, *grid.glob("*/flux_cube.bin")]}
     for name in ("a4.txt", "b4.txt"):
         (grid / name).unlink()
     _write_grid(grid, [("a0.txt", 5000.0, 4.0, 0.0, "0.0"), ("b0.txt", 6000.0, 4.0, 0.0, "0.0")], (*COLUMNS, "alpha"))
     _build(grid)
-    assert [variant.label for variant in list_variants(grid)] == ["full_grid"] and not (grid / ND).exists()
-    assert not [p for p in grid.iterdir() if p.is_dir()] and _flux_cube_shortfall(grid) is None
+    assert [variant.label for variant in list_variants(grid)] == ["full_grid"] and _flux_cube_shortfall(grid) is None
+    assert {p: p.read_bytes() for p in split} == split and not (grid / "variants_index.csv").exists()
+    assert FluxCube.from_file(str(grid / "flux_cube.bin")).teff_grid.tolist() == [5000.0, 6000.0]
 
 
 @row
@@ -479,11 +482,12 @@ def a_parameter_column_under_any_name_lookup_accepts_is_no_extra_axis(t):
 
 
 @row
-def a_split_grid_opens_by_its_all_axes_cube_and_holds_no_flux_cube_bin_at_its_top(t):
+def a_split_grid_opens_by_its_all_axes_cube_and_refuses_a_flux_cube_bin_at_its_top(t):
     # A rebuild that split a grid left the cube of an earlier single build at the top, which MESA pointed at the
     # grid's folder read, and SED.local and SED().model() used. Then (19-24 Nov 2026) the all-axes cube was written
-    # there as flux_cube.bin, which MESA 25.12.1 spins on. The split now writes flux_cube_nd.bin, which they open, and
-    # moves a top flux_cube.bin aside (never deleted); a split without flux_cube_nd.bin names its variants.
+    # there as flux_cube.bin, which MESA 25.12.1 spins on. The split now writes flux_cube_nd.bin, which they open; a
+    # flux_cube.bin left at the top is kept (Nill, 24 Nov 2026) and refused, and a split without flux_cube_nd.bin
+    # names its variants.
     from sed_tools.api import SED as API
 
     grid = _write_grid(t.tmp / "G", [("a0.txt", 5000.0, 4.0, 0.0, "0.0"), ("b0.txt", 6000.0, 4.0, 0.0, "0.0")],
@@ -492,24 +496,30 @@ def a_split_grid_opens_by_its_all_axes_cube_and_holds_no_flux_cube_bin_at_its_to
     single = (grid / "flux_cube.bin").read_bytes()
     _two_variant_grid(grid)
     _build(grid)
-    assert fileio.is_all_axes(grid / ND) and not (grid / "flux_cube.bin").exists()
-    assert (grid / "flux_cube.bin.old").read_bytes() == single
+    assert fileio.is_all_axes(grid / ND) and (grid / "flux_cube.bin").read_bytes() == single
+    variants = "G is split into variants.*G/G_alpha_0p00, G/G_alpha_0p40, or "
+    loads = (lambda: API.local("G", model_root=t.tmp), lambda: SED(model_root=t.tmp).model("G"))
+    for load in loads:
+        with pytest.raises(FileNotFoundError, match=variants + f"remove or rename {grid / 'flux_cube.bin'}, which is "
+                                                               "not its cube$"):
+            load()
+    (grid / "flux_cube.bin").rename(t.tmp / "single.bin")
     for load in (lambda: API.local("G", model_root=t.tmp).model(), lambda: SED(model_root=t.tmp).model("G")):
         assert list(load().extra_axes) == ["alpha"] and load().flux_cube_path == grid / ND
     (grid / ND).rename(t.tmp / "nd.bin")
-    # none, a 3-axis copy of a variant (NJM's until 19 Nov), or the all-axes cube under its old name
-    for top in (None, grid / "G_alpha_0p00" / "flux_cube.bin", t.tmp / "nd.bin"):
+    # no all-axes cube: alone, or beside a 3-axis copy of a variant (NJM's until 19 Nov) or the all-axes cube under
+    # its old name
+    for top, more in ((None, ""), (grid / "G_alpha_0p00" / "flux_cube.bin", "remove or rename .* and "),
+                      (t.tmp / "nd.bin", "remove or rename .* and ")):
         if top:
             shutil.copy2(top, grid / "flux_cube.bin")
-        for load in (lambda: API.local("G", model_root=t.tmp), lambda: SED(model_root=t.tmp).model("G")):
-            with pytest.raises(FileNotFoundError, match="G is split into variants.*G/G_alpha_0p00, G/G_alpha_0p40, "
-                                                        "or rebuild G to get its all-axes cube"):
+        for load in loads:
+            with pytest.raises(FileNotFoundError, match=variants + more + "rebuild G to get its all-axes cube$"):
                 load()
     assert API.local("G/G_alpha_0p40", model_root=t.tmp).model().flux_cube_path.is_file()
-    _build_flux_cube(grid)  # the rebuild writes flux_cube_nd.bin and keeps the earlier aside copy
-    assert (grid / ND).read_bytes() == (t.tmp / "nd.bin").read_bytes() and not (grid / "flux_cube.bin").exists()
-    assert (grid / "flux_cube.bin.old").read_bytes() == single
-    assert (grid / "flux_cube.bin.old2").read_bytes() == (t.tmp / "nd.bin").read_bytes()
+    _build_flux_cube(grid)  # the rebuild writes flux_cube_nd.bin and leaves the flux_cube.bin there as it is
+    assert (grid / ND).read_bytes() == (t.tmp / "nd.bin").read_bytes()
+    assert (grid / "flux_cube.bin").read_bytes() == (t.tmp / "nd.bin").read_bytes()
 
 
 @row
@@ -689,27 +699,32 @@ def a_split_grid_from_njm_comes_with_its_variant_folders_and_is_not_rebuilt(t):
         assert ("The MESA colors inlist path for this is:\n" + "".join(
             f"    stellar_atm = '{folder / f'{GRID}_alpha_{alpha}_lh_1p25_vtur_2_km_s'}'\n" for alpha in ("0p00", "0p40"))
             + "  (one line per variant: MESA reads one, so use one of these 2; variants_index.csv lists them)\n") in out
-        assert (folder / ND).read_bytes() == (served / ND).read_bytes() and not (folder / "flux_cube.bin").exists()
+        assert (folder / ND).read_bytes() == (served / ND).read_bytes()
+        assert (folder / "flux_cube.bin").exists() == (folder.parent.name == "cli")
         assert _flux_cube_shortfall(folder) is None
         assert (folder / variant / "flux_cube.bin").read_bytes() == (served / variant / "flux_cube.bin").read_bytes()
         assert [v.label for v in list_variants(folder)] == ["alpha_0", "alpha_0.4"]
-    assert (t.tmp / "cli" / GRID / "flux_cube.bin.old").read_bytes() == (served / ND).read_bytes()
+    # The cli folder's earlier flux_cube.bin is kept (Nill, 24 Nov 2026), and the grid's loaders refuse it
+    assert (t.tmp / "cli" / GRID / "flux_cube.bin").read_bytes() == (served / ND).read_bytes()
+    with pytest.raises(FileNotFoundError, match=rf"_km_s, or remove or rename {t.tmp / 'cli' / GRID / 'flux_cube.bin'}"
+                                                r", which is not its cube$"):
+        API.local(GRID, model_root=t.tmp / "cli")
     own = FluxCube.from_file(str(served / variant / "flux_cube.bin"))
     node = (own.teff_grid[0], own.logg_grid[0], own.meta_grid[0])
     assert np.array_equal(sed(*node, alpha=0.0).flux, own.interpolate_spectrum(*node)[1])
     API.fetch(GRID, source="njm", model_root=t.tmp / "api")  # complete: its all-axes cube is not written again
     assert builds == [] and written == [str(t.tmp / "api" / GRID), str(t.tmp / "cli" / GRID)]
-    # A cut re-fetch of a split grid an earlier version installed (the all-axes cube as flux_cube.bin) writes it
-    cut = ("--source", "njm", "--grids", GRID, "--teff", "5700", "6300", "--base", str(t.tmp / "cli"))
-    for folder, fetch in ((t.tmp / "api" / GRID, lambda: API.fetch(GRID, source="njm", model_root=t.tmp / "api",
-                                                                   teff_min=5700, teff_max=6300)),
-                          (t.tmp / "cli" / GRID, lambda: run_cli(t.mp, "grids", *cut))):
-        (folder / ND).rename(folder / "flux_cube.bin")
-        fetch()
-        assert written[-1] == str(folder) and (folder / ND).read_bytes() == (served / ND).read_bytes()
-        aside = folder / sorted(p.name for p in folder.glob("flux_cube.bin.old*"))[-1]
-        assert aside.read_bytes() == (served / ND).read_bytes()
-        assert not (folder / "flux_cube.bin").exists() and builds == []
+    # A cut re-fetch of a split grid an earlier version installed (its all-axes cube only as flux_cube.bin) writes
+    # flux_cube_nd.bin and leaves flux_cube.bin as it is, so the loaders still refuse the grid
+    (t.tmp / "api" / GRID / ND).rename(t.tmp / "api" / GRID / "flux_cube.bin")
+    (t.tmp / "cli" / GRID / ND).rename(t.tmp / "cli_nd.bin")  # its flux_cube.bin is already there
+    with pytest.raises(FileNotFoundError, match="remove or rename"):
+        API.fetch(GRID, source="njm", model_root=t.tmp / "api", teff_min=5700, teff_max=6300)
+    assert run_cli(t.mp, "grids", "--source", "njm", "--grids", GRID, "--teff", "5700", "6300",
+                   "--base", str(t.tmp / "cli")) == 0
+    assert written[2:] == [str(t.tmp / "api" / GRID), str(t.tmp / "cli" / GRID)] and builds == []
+    for folder in (t.tmp / "api" / GRID, t.tmp / "cli" / GRID):
+        assert (folder / ND).read_bytes() == (folder / "flux_cube.bin").read_bytes() == (served / ND).read_bytes()
 
 
 @row
@@ -895,8 +910,10 @@ def combine_refuses_to_write_into_one_of_its_grids(t):
 @row
 def combining_again_into_a_folder_replaces_the_earlier_combination(t):
     # A rerun kept what the earlier one wrote: combining [a, b] then [b, a] left a_000002.txt, listed at 4000 K,
-    # holding a's 6000 K spectrum, with four stale copies beside it; and an earlier single cube stayed beside a later
-    # split, so SED.combine returned the earlier combination.
+    # holding a's 6000 K spectrum, with four stale copies beside it. An earlier combination's cubes and variant
+    # folders are kept (Nill, 24 Nov 2026): a single cube left beside a later split is refused, not read as it.
+    from sed_tools.api import SED as API
+
     _planck_grid(t, "a", [(4000.0, 4.5, 0.0), (5000.0, 4.5, 0.0), (6000.0, 4.5, 0.0)])
     _planck_grid(t, "b", [(7000.0, 4.5, 0.0), (8000.0, 4.5, 0.0)])
     _planck_grid(t, "al", [(4000.0, 4.5, 0.0, 0.0), (4000.0, 4.5, 0.0, 0.4)], columns=("teff", "logg", "meta", "alpha"))
@@ -904,12 +921,18 @@ def combining_again_into_a_folder_replaces_the_earlier_combination(t):
     _combined_cubes(t, ["a", "b"])
     _combined_cubes(t, ["b", "a"])  # each listed copy holds its own node's spectrum
     assert _flux_cube_shortfall(combined) is None  # no stale copies
-    _combined_cubes(t, ["a", "al"])
+    single = (combined / "flux_cube.bin").read_bytes()
+    with pytest.raises(FileNotFoundError, match=f"remove or rename {combined / 'flux_cube.bin'}, which is not its"):
+        API.combine(["a", "al"], output="combined", model_root=t.tmp / "models", visualization=False)
     assert sorted(p.name for p in combined.iterdir() if not p.name.endswith(".txt")) == [
-        "combined_alpha_0p00", "combined_alpha_0p40", ND, "lookup_table.csv", "variants_index.csv"]
-    _combined_cubes(t, ["a", "b"])  # and a single cube after a split leaves no all-axes cube
+        "combined_alpha_0p00", "combined_alpha_0p40", "flux_cube.bin", ND, "lookup_table.csv", "variants_index.csv"]
+    assert (combined / "flux_cube.bin").read_bytes() == single and _flux_cube_shortfall(combined) is None
+    nd = (combined / ND).read_bytes()
+    # A single cube after a split: the split's folders and cube stay (the copies their lookup tables list do not)
+    assert API.combine(["a", "b"], output="combined", model_root=t.tmp / "models", visualization=False).model()
     assert sorted(p.name for p in combined.iterdir() if not p.name.endswith(".txt")) == [
-        "flux_cube.bin", "lookup_table.csv"]
+        "combined_alpha_0p00", "combined_alpha_0p40", "flux_cube.bin", ND, "lookup_table.csv"]
+    assert (combined / ND).read_bytes() == nd and _flux_cube_shortfall(combined) is None
 
 
 @row

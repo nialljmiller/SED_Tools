@@ -361,15 +361,18 @@ class SEDModel:
 def grid_cube(directory: Path, name: str) -> Path:
     """The cube a grid folder is opened by: a grid split into variants (variants_index.csv) by its all-axes
     flux_cube_nd.bin, any other by its flux_cube.bin. FileNotFoundError naming the variants for a split grid without
-    flux_cube_nd.bin (split before it existed, or by a version that wrote the all-axes cube as flux_cube.bin):
-    photometry then reads one variant's folder."""
-    index = Path(directory) / "variants_index.csv"
+    flux_cube_nd.bin (split before it existed), or with a flux_cube.bin at its top (an earlier version's or download's,
+    which MESA would read there and is not the grid's cube; it says to remove or rename it): photometry then reads
+    one variant's folder."""
+    index, top = Path(directory) / "variants_index.csv", Path(directory) / "flux_cube.bin"
     if not index.is_file():
-        return Path(directory) / "flux_cube.bin"
-    if not (Path(directory) / ALL_AXES_NAME).is_file():
+        return top
+    if top.exists() or not (Path(directory) / ALL_AXES_NAME).is_file():
         variants = [f"{name}/{path}" for path in _variant_paths(index)]
+        fixes = ([f"remove or rename {top}, which is not its cube"] if top.exists() else []) + (
+            [] if (Path(directory) / ALL_AXES_NAME).is_file() else [f"rebuild {name} to get its all-axes cube"])
         raise FileNotFoundError(f"{name} is split into variants, each with its own flux cube; name one of them: "
-                                + ", ".join(variants) + f", or rebuild {name} to get its all-axes cube")
+                                + ", ".join(variants) + ", or " + " and ".join(fixes))
     return Path(directory) / ALL_AXES_NAME
 
 

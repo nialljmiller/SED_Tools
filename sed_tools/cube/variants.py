@@ -161,28 +161,13 @@ def _extra_axes(fields: List[str], rows: List[Dict[str, str]]) -> List[Tuple[str
     return axes
 
 
-def move_aside_top_cube(model_dir: str) -> None:
-    """A split grid's top folder holds no flux_cube.bin (MESA would read one there): one an earlier version or
-    download left (the all-axes cube under its old name, or a variant's 3-axis copy) is renamed to
-    flux_cube.bin.old, or .old2, .old3, ... when that is taken; nothing is deleted."""
-    top = os.path.join(model_dir, "flux_cube.bin")
-    if not os.path.lexists(top):
-        return
-    n = 1
-    while os.path.lexists(aside := top + (".old" if n == 1 else f".old{n}")):
-        n += 1
-    os.replace(top, aside)
-    print(f"Moved {top} aside to {aside}: a split grid's top folder holds no flux_cube.bin")
-
-
 def write_all_axes_cube(model_dir: str, part_bytes: int = 256 * 2**20) -> str:
     """The all-axes flux_cube_nd.bin of a split grid (format in cube/fileio.py), assembled from its variant cubes; no
     spectrum is read. Its Teff, log g and [M/H] axes are the union of the variants', its extra axes the
     variants_index.csv columns that vary; each variant is placed at its own values, zeros fill the rest, so the cube
     equals each variant cube at that variant's nodes. A text axis stores its values as labels. Written a part of
-    wavelengths at a time (about part_bytes), to flux_cube_nd.bin.tmp and then renamed over model_dir/flux_cube_nd.bin;
-    a top-level flux_cube.bin is moved aside (:func:`move_aside_top_cube`). ValueError, before anything is written,
-    when the variants' wavelengths differ."""
+    wavelengths at a time (about part_bytes), to flux_cube_nd.bin.tmp and then renamed over model_dir/flux_cube_nd.bin.
+    ValueError, before anything is written, when the variants' wavelengths differ."""
     fields, rows = _variant_rows(os.path.join(model_dir, "variants_index.csv"))
     extra = _extra_axes(fields, rows)
     cubes = [os.path.join(model_dir, row["path"], "flux_cube.bin") for row in rows]
@@ -204,7 +189,6 @@ def write_all_axes_cube(model_dir: str, part_bytes: int = 256 * 2**20) -> str:
     nt, nl, nm, nw = (*map(len, shared), len(wavelengths))
     step = max(1, part_bytes // (8 * nt * nl * nm))
     target = os.path.join(model_dir, ALL_AXES_NAME)
-    move_aside_top_cube(model_dir)
     with open(target + ".tmp", "wb") as fh:
         write_all_axes_header(fh, ["teff", "logg", "meta", *(col for col, *_ in extra)], axes, labels, wavelengths)
         for slow_first in itertools.product(*(range(len(values)) for _, values, *_ in reversed(extra))):
@@ -225,27 +209,19 @@ def write_all_axes_cube(model_dir: str, part_bytes: int = 256 * 2**20) -> str:
 
 
 def ensure_all_axes_cube(model_dir: str) -> None:
-    """Write a split grid's all-axes cube when it has none, or still has a flux_cube.bin at its top (an earlier
-    version's); a grid that is not split, or is complete, is left as it is."""
-    if os.path.isfile(os.path.join(model_dir, "variants_index.csv")) and (
-            not os.path.isfile(os.path.join(model_dir, ALL_AXES_NAME))
-            or os.path.lexists(os.path.join(model_dir, "flux_cube.bin"))):
+    """Write a split grid's all-axes cube when it has none (split by an earlier version); any other grid is left as
+    it is."""
+    if (os.path.isfile(os.path.join(model_dir, "variants_index.csv"))
+            and not os.path.isfile(os.path.join(model_dir, ALL_AXES_NAME))):
         write_all_axes_cube(model_dir)
 
 
-def _remove_variants(folder: str) -> None:
-    """Remove an earlier split from *folder*: the subgrid folders its variants_index.csv lists, its all-axes cube,
-    then the index."""
+def _end_split(folder: str) -> None:
+    """*folder* is no longer split: its variants_index.csv, which would make it read as its variants, goes. The
+    variant folders and flux_cube_nd.bin an earlier split wrote stay beside the new grid (Nill, 24 Nov 2026)."""
     index = os.path.join(folder, "variants_index.csv")
-    if not os.path.isfile(index):
-        return
-    for path in _variant_paths(index):
-        subgrid = os.path.join(folder, path)
-        if os.path.dirname(os.path.normpath(subgrid)) == os.path.normpath(folder) and os.path.isdir(subgrid):
-            shutil.rmtree(subgrid)
-    if os.path.isfile(os.path.join(folder, ALL_AXES_NAME)):
-        os.remove(os.path.join(folder, ALL_AXES_NAME))
-    os.remove(index)
+    if os.path.isfile(index):
+        os.remove(index)
 
 
 def _link_spectra(subdir: str, file_names: List[str]) -> None:

@@ -21,7 +21,7 @@ from ..grids.lookup import (
 from .collision import copy_global_config_to_model, discover_extra_axes, load_config
 from .fileio import flux_offset, read_dims, write_header
 from .variants import (_build_filtered_cube, _build_mean_cube, _group_by_extra_axes, _parameter_arrays, _print_summary,
-                       _remove_variants, _split_into_subgrids, _warn_averaged_rows)
+                       _end_split, _split_into_subgrids, _warn_averaged_rows)
 from ..grids.spectrum_io import read_text_spectrum
 
 logger = logging.getLogger(__name__)
@@ -381,10 +381,10 @@ def _accumulate_spectra(
 # --- precompute_flux_cube ---
 
 def _remove_earlier_split(model_dir: str, output_file: str) -> None:
-    """Once one cube is written as the grid's own (model_dir/flux_cube.bin), remove an earlier split of the grid,
-    whose variants_index.csv would otherwise be read as the grid's cubes (cube/check.py)."""
+    """Once one cube is written as the grid's own (model_dir/flux_cube.bin), the grid is no longer split
+    (variants._end_split): its variants_index.csv would otherwise be read as the grid's cubes (cube/check.py)."""
     if os.path.abspath(output_file) == os.path.abspath(os.path.join(model_dir, "flux_cube.bin")):
-        _remove_variants(model_dir)
+        _end_split(model_dir)
 
 
 def precompute_flux_cube(
