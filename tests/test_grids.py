@@ -1480,10 +1480,19 @@ def mast_unreadable_download_script_raises(t):
 
 
 @row
-def mast_metallicity_prompt_takes_the_values_typed(t):
-    grabber = mast.MASTSpectraGrabber(base_dir=str(t.tmp), session=Routes({}))
-    t.mp.setattr("builtins.input", lambda prompt: "-1.0, +0.25,")
-    assert grabber.get_model_metadata("BOSZ-2024-r1000")["metals"] == ["m-1.00", "m+0.25"]
+def mast_asks_for_metallicities_only_at_a_terminal_and_without_meta_range(t):
+    # It asked in get_model_metadata, before the cuts: --meta did not stop it, and without a terminal the
+    # download failed on EOF, leaving an empty grid folder.
+    grabber = _bosz(t, {bosz_url(5750): bosz_resam(12)})
+    t.mp.setattr("sys.stdin", SimpleNamespace(isatty=lambda: True))
+    answer(t.mp)  # a question fails the row
+    info = grabber.get_model_metadata("BOSZ-2024-r1000")
+    assert grabber.download_model_spectra("BOSZ-2024-r1000", info, meta_range=(0.0, 0.0)) == 1
+    answer(t.mp, "-1.0, +0.25,")
+    assert mast._ask_metals(info["metals"]) == ["m-1.00", "m+0.25"]
+    t.mp.setattr("sys.stdin", SimpleNamespace(isatty=lambda: False))
+    answer(t.mp)
+    assert mast._ask_metals(info["metals"]) == info["metals"] == mast.METALS
 
 
 @row
