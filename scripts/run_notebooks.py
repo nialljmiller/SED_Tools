@@ -9,7 +9,7 @@ Needs nbclient, nbformat and ipykernel (``pip install nbclient ipykernel``) and 
 a dependency of SED_Tools. The notebooks download about 150 MB (bbody, Husfeld, part of Kurucz2003all, two filter
 sets and Vega) into the scratch HOME's data directory; nothing outside it is written. Each notebook runs with the
 scratch HOME as its home, ``sed_tools`` imported from this checkout, and ``sed-tools`` from this interpreter's
-folder. Every cell runs, also after an error; the run prints each failing cell and exits 1 if any failed.
+folder. A shell command (`!...`) that exits non-zero fails its cell. Every cell runs, also after an error; the run prints each failing cell and exits 1 if any failed.
 """
 
 from __future__ import annotations
@@ -24,9 +24,17 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 NOTEBOOKS = REPO / "jupyter_notebooks"
-PROBE = ("import os, sed_tools\n"
+# Checks the kernel imports this checkout and uses the scratch HOME, and makes a failing `!command` fail its cell.
+PROBE = ("import os, subprocess, sed_tools\n"
          "assert sed_tools.__file__.startswith({repo!r}), sed_tools.__file__\n"
-         "assert os.path.expanduser('~') == {home!r}, os.path.expanduser('~')")
+         "assert os.path.expanduser('~') == {home!r}, os.path.expanduser('~')\n"
+         "_shell = get_ipython()\n"
+         "_system = _shell.system\n"
+         "def _checked_system(cmd):\n"
+         "    _system(cmd)\n"
+         "    if _shell.user_ns.get('_exit_code'):\n"
+         "        raise subprocess.CalledProcessError(_shell.user_ns['_exit_code'], cmd)\n"
+         "_shell.system = _checked_system")
 
 
 def scratch_environment(home: Path) -> None:
@@ -102,7 +110,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("prefixes", nargs="*", help="run only notebooks whose names start with these")
     parser.add_argument("--home", type=Path, help="scratch HOME to use (default: a new folder, left in place)")
-    parser.add_argument("--timeout", type=int, default=1800, help="seconds per cell (default 1800)")
+    parser.add_argument("--timeout", type=int, default=600, help="seconds per cell (default 600)")
     parser.add_argument("--write-outputs", action="store_true",
                         help="store the outputs in each notebook that ran without an error")
     args = parser.parse_args(argv)
