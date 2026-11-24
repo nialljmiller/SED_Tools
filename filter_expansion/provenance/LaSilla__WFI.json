@@ -1,0 +1,12 @@
+{
+ "facility": "LaSilla",
+ "instrument": "WFI",
+ "bands": {
+  "ESO865_filter": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+  },
+  "OIII-2_filter": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+  }
+ }
+}

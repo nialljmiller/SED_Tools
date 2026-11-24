@@ -1,0 +1,24 @@
+{
+ "facility": "LaSilla",
+ "instrument": "SUSI2",
+ "bands": {
+  "NB880": {
+   "cleaning": "T = 0 samples added inside the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7355, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+  },
+  "NB881": {
+   "cleaning": "T = 0 samples added inside the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7900, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+  },
+  "NB882": {
+   "cleaning": "T = 0 samples added inside the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7945, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+  },
+  "NB883": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+  },
+  "NB884": {
+   "cleaning": "T = 0 samples added inside the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7990, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+  },
+  "NB885": {
+   "cleaning": "T = 0 samples added inside the 3 gap(s) next to the isolated ESO reading(s) at 3000, 7990 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+  }
+ }
+}

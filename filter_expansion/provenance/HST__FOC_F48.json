@@ -1,0 +1,30 @@
+{
+ "facility": "HST",
+ "instrument": "FOC_F48",
+ "bands": {
+  "F130LP": {
+   "cleaning": "Cut at 5940 A, where the shortest component table of this obsmode ends (foc/foc_48_f130lp_004_syn.fits): beyond it SVO's stsynphot curve held every component at its last value, with STScI's 30000 A placeholder (hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). 730 samples beyond it removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_f130lp_004_syn.fits"
+  },
+  "F180LP": {
+   "cleaning": "Cut at 5940 A, where the shortest component table of this obsmode ends (foc/foc_48_f180lp_004_syn.fits): beyond it SVO's stsynphot curve held every component at its last value, with STScI's 30000 A placeholder (hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). 730 samples beyond it removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_f180lp_004_syn.fits"
+  },
+  "F305LP": {
+   "cleaning": "Cut at 5990 A, where the shortest component table of this obsmode ends (foc/foc_48_f305lp_004_syn.fits): beyond it SVO's stsynphot curve held every component at its last value, with STScI's 30000 A placeholder (hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). 705 samples beyond it removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_f305lp_004_syn.fits"
+  },
+  "PRISM1": {
+   "cleaning": "Cut at 6500 A, where the shortest component table of this obsmode ends (foc/foc_48_m1m2_003_syn.fits): beyond it SVO's stsynphot curve held every component at its last value, with STScI's 30000 A placeholder (hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). 450 samples beyond it removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_m1m2_003_syn.fits"
+  },
+  "PRISM2": {
+   "cleaning": "Cut at 5940 A, where the shortest component table of this obsmode ends (foc/foc_48_prism2_004_syn.fits): beyond it SVO's stsynphot curve held every component at its last value, with STScI's 30000 A placeholder (hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). 730 samples beyond it removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_prism2_004_syn.fits"
+  },
+  "PRISM3": {
+   "cleaning": "Cut at 5990 A, where the shortest component table of this obsmode ends (foc/foc_48_prism3_004_syn.fits): beyond it SVO's stsynphot curve held every component at its last value, with STScI's 30000 A placeholder (hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). 705 samples beyond it removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_prism3_004_syn.fits"
+  }
+ }
+}

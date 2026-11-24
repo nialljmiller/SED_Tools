@@ -1,0 +1,501 @@
+{
+ "facility": "ESO",
+ "instrument": "ESO",
+ "bands": {
+  "0046": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0002.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0047": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0003.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0175": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0004.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0218": {
+   "cleaning": "T = 0 samples added inside the 1 gap(s) next to the isolated ESO reading(s) at 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0016.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0219": {
+   "cleaning": "T = 0 samples added inside the 1 gap(s) next to the isolated ESO reading(s) at 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0017.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0220": {
+   "cleaning": "T = 0 samples added inside the 1 gap(s) next to the isolated ESO reading(s) at 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0018.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0221": {
+   "cleaning": "T = 0 samples added inside the 1 gap(s) next to the isolated ESO reading(s) at 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0019.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0222": {
+   "cleaning": "T = 0 samples added inside the 1 gap(s) next to the isolated ESO reading(s) at 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0020.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0230": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0025.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0270": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0043.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0311": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0064.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0314": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0066.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0315": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0067.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0320": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0072.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0329": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0075.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0332": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0078.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0335": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0080.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0338": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0082.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0354": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0096.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0355": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0097.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0356": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0098.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0357": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0099.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0359": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0101.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0360": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0102.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0361": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0103.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0362": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0104.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0363": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0105.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0364": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0106.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0365": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0107.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0366": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0108.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0367": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0109.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0368": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0110.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0370": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0112.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0371": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0113.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0372": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0114.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0373": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0115.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0374": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0116.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0375": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0117.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0376": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0118.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0377": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0119.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0380": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0122.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0381": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0123.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0384": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0126.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0427": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0163.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0430": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0165.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0432": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0166.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0433": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0167.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0434": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0168.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0435": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0169.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0436": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0170.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0439": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0173.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0441": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0175.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0442": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0176.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0443": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0177.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0509": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0198.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0512": {
+   "cleaning": "T = 0 samples added inside the 3 gap(s) next to the isolated ESO reading(s) at 3000, 7996 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0201.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0513": {
+   "cleaning": "T = 0 samples added inside the 1 gap(s) next to the isolated ESO reading(s) at 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0202.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0514": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0203.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0516": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0205.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0535": {
+   "cleaning": "T = 0 samples added inside the 1 gap(s) next to the isolated ESO reading(s) at 3000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0210.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept. The reading(s) at 12000 A stay with their gaps: ESO's RLEAK keyword declares a leak there (RLEAK '0.01 / 0.01')."
+  },
+  "0538": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0213.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0539": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0214.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0546": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0216.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0548": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0217.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0549": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0218.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0550": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0219.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0574": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0231.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0575": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0232.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0577": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0234.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0578": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0235.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0580": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0237.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0581": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0238.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0586": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0243.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0587": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0244.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0588": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0245.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0589": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0246.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0590": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0247.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0591": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0248.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0592": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0249.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0593": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0250.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0594": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0251.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0595": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0252.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0596": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0253.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0598": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0255.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0599": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0256.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0600": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0257.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0601": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0258.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0625": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0279.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0626": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0280.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0647": {
+   "cleaning": "T = 0 samples added inside the 1 gap(s) next to the isolated ESO reading(s) at 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0301.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0648": {
+   "cleaning": "T = 0 samples added inside the 1 gap(s) next to the isolated ESO reading(s) at 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0302.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0649": {
+   "cleaning": "T = 0 samples added inside the 1 gap(s) next to the isolated ESO reading(s) at 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0303.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0650": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0304.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0651": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0305.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0652": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0306.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0653": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0307.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0654": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0308.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0655": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0309.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0673": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0315.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0676": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0318.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0677": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0319.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0678": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0320.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0679": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0321.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0680": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0322.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0681": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0323.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0682": {
+   "cleaning": "T = 0 samples added inside the 3 gap(s) next to the isolated ESO reading(s) at 3000, 7990 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0324.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0683": {
+   "cleaning": "T = 0 samples added inside the 3 gap(s) next to the isolated ESO reading(s) at 3000, 7993 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0325.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0684": {
+   "cleaning": "T = 0 samples added inside the 3 gap(s) next to the isolated ESO reading(s) at 2997, 7992 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0326.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0685": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0327.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0686": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0328.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0687": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0329.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0688": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0330.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0689": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0331.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0690": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0332.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0691": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0333.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0692": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0334.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0693": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0335.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0696": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0337.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0697": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0338.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0698": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0339.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0699": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0340.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0700": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0341.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0701": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0342.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0702": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0343.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0707": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0346.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0719": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0357.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0720": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0358.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0722": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0360.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0723": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0361.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0725": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0363.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0726": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0364.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0727": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0365.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0728": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0366.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0729": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0367.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0730": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0368.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0731": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0369.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0742": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0373.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0743": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0374.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0744": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0375.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0745": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0376.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0746": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0377.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0747": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0378.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0748": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0379.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0749": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0380.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0751": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0382.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0752": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0383.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0753": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0384.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0754": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0385.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0755": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0386.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0761": {
+   "cleaning": "T = 0 samples added inside the 3 gap(s) next to the isolated ESO reading(s) at 3000, 7992 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0392.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0762": {
+   "cleaning": "T = 0 samples added inside the 3 gap(s) next to the isolated ESO reading(s) at 3000, 7993 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0393.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0764": {
+   "cleaning": "T = 0 samples added inside the 3 gap(s) next to the isolated ESO reading(s) at 3000, 7995 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0395.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0765": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0396.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0770": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0401.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0771": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0402.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0779": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0410.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0788": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0419.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0789": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0420.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "0865": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+  },
+  "0880": {
+   "cleaning": "T = 0 samples added inside the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7355, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+  },
+  "0881": {
+   "cleaning": "T = 0 samples added inside the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7900, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+  },
+  "0882": {
+   "cleaning": "T = 0 samples added inside the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7945, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+  },
+  "0883": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+  },
+  "0884": {
+   "cleaning": "T = 0 samples added inside the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7990, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+  },
+  "0885": {
+   "cleaning": "T = 0 samples added inside the 3 gap(s) next to the isolated ESO reading(s) at 3000, 7990 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+  }
+ }
+}

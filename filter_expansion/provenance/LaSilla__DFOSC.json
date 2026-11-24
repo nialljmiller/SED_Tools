@@ -1,0 +1,24 @@
+{
+ "facility": "LaSilla",
+ "instrument": "DFOSC",
+ "bands": {
+  "Halpha700_filter": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0335.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "Halpha_r_filter": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0338.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "Hbeta_C_filter": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0380.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "Hbeta_filter": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0379.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "OIII_filter": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0332.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  },
+  "SII_filter": {
+   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; ESO-MIDAS XFilter eso0342.mt, in source_evidence/far-samples/eso/calib_src.tar.gz). ESO's readings are kept."
+  }
+ }
+}
