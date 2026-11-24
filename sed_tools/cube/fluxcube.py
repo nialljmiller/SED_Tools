@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import struct  # noqa: F401  (kept: older code star-imports this module)
 from dataclasses import dataclass
-from typing import List, Sequence, Tuple
+from typing import Sequence, Tuple
 
 import numpy as np
 
