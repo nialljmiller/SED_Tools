@@ -194,7 +194,6 @@ class SEDModel:
                            for k, (name, axis) in enumerate(zip(self._header.names, self._header.axes)) if k >= 3}
 
         self._cube: Union[None, FluxCube, AllAxesCube] = None
-        self._filter_cache: Dict[str, FilterCurve] = {}
         self._filter_index: Optional[Dict[str, List[Path]]] = None
 
     # --- Flux cube loading & interpolation ---
@@ -253,35 +252,27 @@ class SEDModel:
     # --- Filter handling ---
 
     def _resolve_filters(self, filters: Sequence[FilterSpec]) -> Dict[str, FilterCurve]:
-        entries = _normalize_filter_sequence(filters)
-        resolved: Dict[str, FilterCurve] = {}
-
-        for item in entries:
+        """Each curve by its name. Curves of different files that share a name (J of Generic/Johnson and of
+        2MASS/2MASS) are named with their folder, "Johnson/J" and "2MASS/J", so no result replaces another; a file
+        asked for twice is one curve. Curves are read at each call, so one edited on disk
+        (Filters.correct_detector_type) is the one used. ValueError if two curves would still share a name."""
+        found: Dict[Tuple, Tuple[str, FilterCurve, Optional[Path]]] = {}
+        for item in _normalize_filter_sequence(filters):
             if isinstance(item, FilterCurve):
-                resolved[item.name] = item
-            elif isinstance(item, tuple):
-                custom_name, source = item
-                curve = self._load_filter(source, custom_name=custom_name)
-                resolved[curve.name] = curve
-            else:  # a name or path
-                resolved.update(self._load_filter_group(item))
+                found[item.name, id(item)] = (item.name, item, None)
+                continue
+            custom, spec = item if isinstance(item, tuple) else (None, item)
+            for path in [self._locate_filter_path(spec)] if custom else self._locate_filter_paths(spec):
+                curve = load_filter_curve(str(path), name=custom)
+                found[curve.name, Path(path).resolve()] = (curve.name, curve, Path(path))
+        names = [name for name, _, _ in found.values()]
+        resolved: Dict[str, FilterCurve] = {}
+        for name, curve, path in found.values():
+            key = f"{path.parent.name}/{name}" if path is not None and names.count(name) > 1 else name
+            if key in resolved:
+                raise ValueError(f"Two filters would both be reported as {key!r}; name one with a (name, path) pair")
+            resolved[key] = curve
         return resolved
-
-    def _load_filter_group(self, spec: Union[str, os.PathLike[str]]) -> Dict[str, FilterCurve]:
-        curves: Dict[str, FilterCurve] = {}
-        for path in self._locate_filter_paths(spec):
-            key = (os.fspath(path), "")
-            if key not in self._filter_cache:
-                self._filter_cache[key] = load_filter_curve(str(path))
-            curve = self._filter_cache[key]
-            curves[curve.name] = curve
-        return curves
-
-    def _load_filter(self, spec: Union[str, os.PathLike[str]], *, custom_name: Optional[str] = None) -> FilterCurve:
-        key = (os.fspath(spec), custom_name or "")
-        if key not in self._filter_cache:
-            self._filter_cache[key] = load_filter_curve(str(self._locate_filter_path(spec)), name=custom_name)
-        return self._filter_cache[key]
 
     def _locate_filter_paths(self, spec: Union[str, os.PathLike[str]]) -> List[Path]:
         path = Path(spec)

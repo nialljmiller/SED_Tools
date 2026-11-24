@@ -178,6 +178,68 @@ def grid_write_lists_in_its_lookup_table_the_files_it_writes(t):
 
 
 @row
+def grid_write_keeps_a_split_grids_variants_and_leaves_out_an_unknown_axis(t):
+    # write() kept only Teff, log g and [M/H]: a split grid's variants were averaged onto one cube and its variant
+    # folders removed, and a grid without log g (bbody) could not be written (review 24 Nov 2026, api.md 1).
+    wl = np.linspace(1000.0, 1e4, 20)
+    for name, rows in (("split", [(teff, alpha) for teff in (5000.0, 6000.0) for alpha in ("0.0", "0.4")]),
+                       ("bb", [(5000.0, None), (6000.0, None)])):
+        (t.tmp / name).mkdir()
+        lines = ["file_name,teff" + (",logg,metallicity,Alpha" if name == "split" else "")]
+        for i, (teff, alpha) in enumerate(rows):  # flat, each at its own height
+            height = teff + 100 * float(alpha or 0)
+            np.savetxt(t.tmp / name / f"s{i}.txt", np.column_stack([wl, np.full(wl.size, height)]))
+            lines.append(f"s{i}.txt,{teff}" + (f",4.0,0.0,{alpha}" if alpha else ""))
+        (t.tmp / name / "lookup_table.csv").write_text("\n".join(lines) + "\n")
+        sed_tools.precompute_flux_cube(str(t.tmp / name), str(t.tmp / name / "flux_cube.bin"))
+    out = SED.local("split", model_root=t.tmp).grid.write(t.tmp / "out", build_h5=False)
+    variants = sed_tools.mesa_inlist_lines(out)
+    assert len(variants) == 2
+    for line in variants:
+        variant = SED.local(line.split("'")[1], model_root=t.tmp)
+        alpha = float(variant.grid.spectra[0].extra["Alpha"])  # as the lookup spells it
+        assert np.allclose(variant(5000.0, 4.0, 0.0).flux, 5000.0 + 100 * alpha, rtol=1e-12)
+    one = SpectralGrid(name="one", source="local", spectra=[s for s in SED.local("split", model_root=t.tmp).grid
+                                                             if s.extra["Alpha"] == "0.4"])
+    with pytest.raises(ValueError, match="holds a grid split into variants"):
+        one.write(out, build_h5=False)  # its one cube would have replaced the variant folders
+    assert sed_tools.mesa_inlist_lines(out) == variants
+    bb = SED.local("bb", model_root=t.tmp).grid.write(t.tmp / "bb_out", build_h5=False)
+    assert (bb / "lookup_table.csv").read_text().splitlines()[0] == "file_name,teff"
+    assert np.allclose(SED.local("bb_out", model_root=t.tmp)(5500.0, 0.0, 0.0).flux, 5500.0, rtol=1e-12)
+    assert SpectralGrid(name="none", source="local").write(t.tmp / "none").is_dir()  # no spectra: nothing to build
+
+
+@row
+def a_loaded_sed_reads_a_filter_curve_edited_on_disk(t):
+    # The curve was cached for the model's lifetime, so after Filters.correct_detector_type the loaded SED kept the
+    # old curve (review 24 Nov 2026, api.md 3). Also: a filter set by its instrument's name, a band by its name.
+    sed = _sloped_sed(t)
+    by_set = sed.photometry("Johnson")
+    assert sorted(by_set) == ["B", "V"] and sed.photometry("V")["V"].magnitude == by_set["V"].magnitude
+    _johnson_band(t, "V", 6000.0)
+    assert sed.photometry("V")["V"].magnitude == _sloped_sed(t).photometry("V")["V"].magnitude != by_set["V"].magnitude
+
+
+def _johnson_band(t, band, low):
+    folder = t.tmp / "filters" / "Generic" / "Johnson"
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / f"{band}.dat").write_text(f"Wavelength,Transmission\n{low - 100},0\n{low},1\n{low + 1000},1\n"
+                                        f"{low + 1100},0\n")
+
+
+def _sloped_sed(t):
+    """A spectrum falling as lambda^-2 at 5500 K, log g 4.25, [M/H] 0, with filters Generic/Johnson B and V."""
+    for band, low in (("B", 4000.0), ("V", 5000.0)):
+        if not (t.tmp / "filters" / "Generic" / "Johnson" / f"{band}.dat").exists():
+            _johnson_band(t, band, low)
+    wl = np.linspace(3000.0, 9000.0, 61)
+    write_flux_cube(t.tmp / "g" / "flux_cube.bin", [5000.0, 6000.0], [4.0, 4.5], [0.0], wl,
+                    np.ones((2, 2, 1, 1)) * (wl / 5000.0) ** -2)
+    return SED.local("g", model_root=t.tmp, filter_root=t.tmp / "filters")(5500.0, 4.25, 0.0)
+
+
+@row
 def import_dry_run_counts_spectra_lacking_a_parameter(t):
     src = t.tmp / "src"
     src.mkdir()
@@ -450,6 +512,15 @@ def coverage_reports_a_local_grid(t):
 
 
 @row
+def coverage_counts_the_nodes_of_a_grid_without_log_g_or_metallicity(t):
+    # A missing axis made every node "unknown": bbody reported 0 nodes and 0 % fill (review 24 Nov 2026, api.md 4).
+    (t.tmp / "bb").mkdir()
+    (t.tmp / "bb" / "lookup_table.csv").write_text("file_name,teff\na.txt,3000\nb.txt,4000\nc.txt,5000\n")
+    summary = SED.coverage("bb", model_root=t.tmp, plot=False)
+    assert (summary["n_distinct_nodes"], summary["full_product"], summary["fill_fraction"]) == (3, 3, 1.0)
+
+
+@row
 def a_reversed_range_raises_from_the_cli_flags_fetch_the_grid_finder_and_mast(t):
     # One rule (ui_utils.ordered_range), as in the menus and the ML completer. The CLI flags passed a reversed
     # cut on, SED.fetch looked for spectra within it, and find_grids/find_model and the MAST cuts swapped its ends.
@@ -522,6 +593,25 @@ def the_041_completer_api_loads_and_describes_a_model(t):
     assert repr(ml.Completer(str(second))) == f"<Completer(trained @ {second})>"
     assert ml.Completer().load(str(first)).model_path == str(first)
     assert sorted(m["name"] for m in ml.Completer.available_models(str(t.tmp / "models"))) == ["a", "b"]
+
+
+@row
+def ml_completer_extends_a_grid_and_the_041_functions_complete_and_list(t):
+    # MLCompleter.extend, ml.complete_sed and ml.list_models were public and run by no row (review 24 Nov 2026).
+    _tiny_training(t)
+    completer = SED.ml_completer(model_root=t.tmp).train("lib", epochs=1, batch_size=3)
+    shutil.copytree(KURUCZ, t.tmp / GRID)
+    extended = completer.extend(GRID, wavelength_range=(500.0, 60000.0))
+    assert len(extended) == 12  # every spectrum of the grid
+    assert all(s.wavelength.min() <= 500.0 and s.wavelength.max() >= 60000.0 for s in extended)
+    assert all(np.isfinite(s.flux).all() for s in extended)
+    assert [m["name"] for m in ml.list_models(str(t.tmp / "models"))] == ["lib_completer"]
+    spectrum = extended[0]
+    inside = (spectrum.wavelength > 3000.0) & (spectrum.wavelength < 9000.0)
+    wl, flux = ml.complete_sed(ml.load_completer(str(t.tmp / "models" / "lib_completer")), spectrum.wavelength[inside],
+                               spectrum.flux[inside], teff=spectrum.teff, logg=spectrum.logg,
+                               meta=spectrum.metallicity, extension_range=(1000.0, 20000.0))
+    assert wl.shape == flux.shape and wl.min() <= 1000.0 and wl.max() >= 20000.0 and np.isfinite(flux).all()
 
 
 # ----------------------------------------------------------------------

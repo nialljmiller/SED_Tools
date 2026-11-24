@@ -389,6 +389,22 @@ def non_numeric_vega_zero_point_in_a_filter_file_raises(t):
         sed.photometry(band, system="Vega", vega_spectrum=vega)
 
 
+@row
+def a_curves_vega_zero_point_wins_over_a_vega_spectrum(t):
+    # Photometry that used the Vega spectrum although the curve states zp_vega passed every row, by both routes:
+    # EvaluatedSED.photometry and photometry._band_magnitude (review 24 Nov 2026, tests.md R3).
+    from sed_tools.photometry import _band_magnitude, load_filter_curve, load_spectrum
+
+    model = _build(_simple_grid(t.tmp / "grid"))  # flat 1e-10
+    sed = SEDModel(name="grid", flux_cube_path=model / "flux_cube.bin")(5500.0, 4.25, 0.0)
+    band = str(_box_filter(t.tmp / "Band.dat", "# zp_vega = 2e-10", ANGSTROM))
+    vega = str(_box_filter(t.tmp / "vega.dat", ANGSTROM))  # a zero point of about 1
+    expected = -2.5 * math.log10(0.5)
+    assert sed.photometry(band, system="Vega", vega_spectrum=vega)["Band"].magnitude == pytest.approx(expected)
+    assert _band_magnitude(sed.wavelength, sed.flux, load_filter_curve(band), "Vega",
+                           lambda: load_spectrum(vega))[2] == pytest.approx(expected)
+
+
 def _run_tool(tmp, mp, filters_dir):
     model = _build(_simple_grid(tmp / "grid"))
     mp.setattr("builtins.input", lambda *args: "")  # no distance scaling
@@ -651,6 +667,35 @@ def _extra_axes(t, columns, values, labels):
         given = {col: (value if 3 + c in labels else float(value))
                  for c, (col, value) in enumerate(zip(columns, row[4:]))}
         np.testing.assert_allclose(model(row[1], 4.0, 0.0, **given).flux, own, rtol=1e-12, err_msg=row[0])
+
+
+@row
+def the_3_axis_cube_puts_each_spectrum_where_mesa_reads_it(t):
+    # Read as MESA's colors module reads flux_cube.bin, not through fileio: four integers, the Teff, log g, [M/H] and
+    # wavelength axes, then the flux with Teff varying fastest, then log g, [M/H] and wavelength. A writer that
+    # swapped log g and [M/H] in the flux passed every row but golden, which CI does not run (review 24 Nov 2026).
+    nodes = [(te, lg, mh) for te in (5000.0, 6000.0, 7000.0) for lg in (4.0, 4.5) for mh in (-1.0, 0.0, 0.5)]
+    folder = _write_grid(t.tmp / "g", [(f"s{i}.txt", *node) for i, node in enumerate(nodes)])
+    for i in range(len(nodes)):  # a flat spectrum of its own height
+        (folder / f"s{i}.txt").write_text("".join(f"{w:.1f} {i + 1:.6e}\n" for w in np.linspace(1000.0, 1e4, 20)))
+    raw = (_build(folder) / "flux_cube.bin").read_bytes()
+    nt, nl, nm, nw = struct.unpack("<4i", raw[:16])
+    values = np.frombuffer(raw[16:], dtype="<f8")
+    teff, logg, meta, _ = np.split(values[:nt + nl + nm + nw], np.cumsum([nt, nl, nm]))
+    flux = values[nt + nl + nm + nw:]
+    assert (nt, nl, nm, nw, flux.size) == (3, 2, 3, 20, 3 * 2 * 3 * 20)
+    for i, (te, lg, mh) in enumerate(nodes):
+        it, il, im = (int(np.flatnonzero(axis == v)[0]) for axis, v in ((teff, te), (logg, lg), (meta, mh)))
+        assert np.allclose(flux[it + nt * (il + nl * (im + nm * np.arange(nw)))], i + 1, rtol=1e-12)
+
+
+@row
+def an_inlist_path_with_an_apostrophe_is_doubled(t):
+    # MESA's namelist read failed on stellar_atm = '/x/O'Brien/...' (review 24 Nov 2026, code.md B2).
+    from sed_tools.mesa_inlist import mesa_inlist_lines
+
+    grid = _simple_grid(t.tmp / "O'Brien grids" / "G")
+    assert mesa_inlist_lines(grid) == [f"stellar_atm = '{t.tmp}/O''Brien grids/G'"]
 
 
 @row
@@ -1564,6 +1609,17 @@ def combine_keeps_every_variant_of_an_extra_axis(t):
     assert list(again.model().extra_axes) == ["alpha"]
 
 
+@row
+def combine_takes_a_column_with_one_value_throughout_for_no_axis(t):
+    # NJM's bbody states conversion = "F_lambda = pi*B_lambda" on every row; combined with Husfeld (split by yhe) it
+    # named every variant folder and was written on Husfeld's rows (review 24 Nov 2026, api.md 6).
+    _planck_grid(t, "alpha", [(5000.0, 4.5, 0.0, 0.0), (5000.0, 4.5, 0.0, 0.4)],
+                 columns=("teff", "logg", "metallicity", "alpha"))
+    _planck_grid(t, "bb", [(6000.0, "pi")], columns=("teff", "conversion"))
+    assert sorted(_combined_cubes(t, ["alpha", "bb"])) == ["combined_alpha_0p00", "combined_alpha_0p40"]
+    assert "conversion" not in (t.tmp / "models" / "combined" / "lookup_table.csv").read_text()
+
+
 # ----------------------------------------------------------------------
 # photometry() takes a (name, path) tuple as one filter, several such tuples, and plain paths as before
 # ----------------------------------------------------------------------
@@ -1602,6 +1658,19 @@ def photometry_takes_several_name_path_tuples(t):
     expected = {"V": plain["johnson_v"], "B": plain["johnson_b"]}
     assert magnitudes(evaluated.photometry(("V", v), ("B", b))) == expected
     assert magnitudes(evaluated.photometry((("V", v), ("B", b)))) == expected  # one tuple of specs
+
+
+@row
+def photometry_keeps_apart_the_bands_of_two_sets_that_share_a_name(t):
+    # photometry("Johnson", "2MASS") gave one J, 2MASS's having replaced Johnson's (notebooks review, 24 Nov 2026).
+    evaluated = _evaluated(t)
+    one, two = (_box_filter(t.tmp / name / "J.dat", ANGSTROM, edges=(lo - 100, lo, lo + 1000, lo + 1100))
+                for name, lo in (("One", 4000.0), ("Two", 6000.0)) if (t.tmp / name).mkdir() is None)
+    both = magnitudes(evaluated.photometry(one.parent, two.parent))
+    alone = [magnitudes(evaluated.photometry(curve))["J"] for curve in (one, two)]
+    assert both == {"One/J": alone[0], "Two/J": alone[1]}
+    assert both["One/J"] != both["Two/J"]
+    assert list(evaluated.photometry(one, one.parent)) == ["J"]  # one file asked for twice is one curve
 
 
 @row

@@ -386,7 +386,8 @@ def _variants(all_models_data):
     builder names one grid's variants, and grids each grid's rows in that variant (all of them, () with no extra
     axis). A variant is a value of every extra axis: the values one grid's rows give together, with every value the
     grids give an axis that grid does not state. A row is in every variant that agrees with the extra-axis values its
-    grid states, so a grid without an axis is in every variant of it ("any value", as for log g and [M/H])."""
+    grid states, so a grid without an axis is in every variant of it ("any value", as for log g and [M/H]). A column
+    with one value across every grid is no axis."""
     columns, texts, row_keys = {}, {}, []
     for data in all_models_data:
         axes = {_normalise_key(col): col for col in data.get("extra", {})}
@@ -401,11 +402,15 @@ def _variants(all_models_data):
                 texts.setdefault((axis, key[axis]), text)
             keys.append(key)
         row_keys.append(keys)
+    values = {axis: [value for a, value in texts if a == axis] for axis in columns}
+    # A column with one value throughout (bbody's conversion note) is no axis: it neither names the variants nor is
+    # given to the rows of grids that lack it.
+    varying = {axis for axis in columns if len(values[axis]) > 1}
+    columns = {axis: col for axis, col in columns.items() if axis in varying}
+    row_keys = [[{a: v for a, v in key.items() if a in varying} for key in keys] for keys in row_keys]
     if not columns:
         return [((), all_models_data)]
 
-    values = {axis: [value for a, value in texts if a == axis] for axis in columns}
-    varying = {axis for axis in columns if len(values[axis]) > 1}
     full = set()
     for keys in row_keys:
         for partial in {tuple(key.items()) for key in keys if key}:

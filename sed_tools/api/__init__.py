@@ -30,6 +30,7 @@ from ..cube.model import (
     _read_flux_cube_header,
     grid_cube,
 )
+from ..cube.collision import _value, discover_extra_axes
 from ..cube.check import _bundle_shortfall, _flux_cube_file, _flux_cube_shortfall  # noqa: F401
 from ..cube.variants import ensure_all_axes_cube
 from ..grids.pipeline import (  # noqa: F401  (_build_combined_grid and _parameter_cuts are re-exported)
@@ -114,7 +115,8 @@ class SpectralGridInfo:
 
 @dataclass
 class Spectrum:
-    """An individual model spectrum with wavelength, flux and parameters."""
+    """An individual model spectrum with wavelength, flux and parameters; ``extra`` holds its lookup row's other
+    columns ({column: value as text}: alpha, yhe, its source, ...), which a split into variants reads."""
     
     wavelength: np.ndarray  # Angstroms
     flux: np.ndarray        # erg/cm²/s/Å
@@ -123,18 +125,28 @@ class Spectrum:
     metallicity: float
     filename: Optional[str] = None
     source_catalog: Optional[str] = None
+    extra: Dict[str, str] = field(default_factory=dict)
     
     def to_dict(self) -> Dict[str, Any]:
         return {name: getattr(self, name) for name in ('wavelength', 'flux', 'teff', 'logg', 'metallicity', 'filename')}
     
     def save(self, path: Union[str, Path]) -> None:
-        """Save spectrum to file."""
+        """Save spectrum to file: a header line per parameter (one that is NaN, unknown, is left out), the units and
+        each ``extra`` column, then the wavelengths and fluxes."""
+        params = {"teff": self.teff, "logg": self.logg, "metallicity": self.metallicity}
+        units = {"wavelength_unit": "angstrom", "flux_unit": "erg/cm2/s/A", "units_standardized": True}
+        header = {**{k: v for k, v in params.items() if not np.isnan(v)}, **units,
+                  **{k: v for k, v in self.extra.items() if k not in params and k not in units}}
         with open(Path(path), 'w') as f:
-            for line in (f"teff = {self.teff}", f"logg = {self.logg}", f"metallicity = {self.metallicity}",
-                         "wavelength_unit = angstrom", "flux_unit = erg/cm2/s/A", "units_standardized = True"):
-                f.write(f"# {line}\n")
+            for key, value in header.items():
+                f.write(f"# {key} = {value}\n")
             for w, fl in zip(self.wavelength, self.flux):
                 f.write(f"{w:.6f} {fl:.8e}\n")
+
+
+def _file_name(spec: Spectrum) -> str:
+    """The spectrum's file name, or one made from its parameters."""
+    return spec.filename or f"teff{spec.teff:.0f}_logg{spec.logg:.2f}_meta{spec.metallicity:.2f}.txt"
 
 
 def _not_outside(value: float, low: Optional[float], high: Optional[float]) -> bool:
@@ -154,13 +166,11 @@ class SpectralGrid:
     
     @property
     def parameters(self) -> pd.DataFrame:
-        """Return a DataFrame of all spectrum parameters."""
+        """Return a DataFrame of all spectrum parameters, and the other columns of their lookup rows."""
         if self._parameters_df is None:
             self._parameters_df = pd.DataFrame([
-                {'file_name': spec.filename
-                 or f"teff{spec.teff:.0f}_logg{spec.logg:.2f}_meta{spec.metallicity:.2f}.txt",
-                 'teff': spec.teff, 'logg': spec.logg, 'metallicity': spec.metallicity}
-                for spec in self.spectra])
+                {'file_name': _file_name(spec), 'teff': spec.teff, 'logg': spec.logg, 'metallicity': spec.metallicity,
+                 **spec.extra} for spec in self.spectra])
         return self._parameters_df
     
     @property
@@ -211,6 +221,11 @@ class SpectralGrid:
     ) -> Path:
         """Write the spectral grid to disk in the standard SED_Tools structure.
 
+        The spectra and the lookup table keep the other columns of the lookup rows they were read from (alpha,
+        yhe, ...), so a grid split into variants is written split, as the cube builder splits one: a folder per
+        variant with its flux cube, and ``variants_index.csv``. A parameter that is NaN for every spectrum (log g
+        of a blackbody) is left out, as the cube builder reads a missing one as 0.
+
         Parameters
         ----------
         path : str or Path, optional
@@ -224,15 +239,26 @@ class SpectralGrid:
         -------
         Path
             The output directory path
+
+        Raises
+        ------
+        ValueError
+            Before anything is written, for a ``path`` holding a grid split into variants (``variants_index.csv``)
+            when these spectra are of one variant: their one flux cube would replace the variant folders.
         """
         path = self._base_dir / self.name if path is None else Path(path)
+        table = self.parameters
+        table = table.drop(columns=[c for c in ("logg", "metallicity") if c in table and table[c].isna().all()])
+        if (path / "variants_index.csv").is_file() and not _splits(table):
+            raise ValueError(f"{path} holds a grid split into variants (variants_index.csv), and these spectra are "
+                             "of one variant, so their flux cube would replace its variant folders; nothing was "
+                             "written. Write them to another folder.")
         path.mkdir(parents=True, exist_ok=True)
         
         for spec in self.spectra:
-            fname = spec.filename or f"teff{spec.teff:.0f}_logg{spec.logg:.2f}_meta{spec.metallicity:.2f}.txt"
-            spec.save(path / fname)
+            spec.save(path / _file_name(spec))
         
-        self.parameters.to_csv(path / "lookup_table.csv", index=False)
+        table.to_csv(path / "lookup_table.csv", index=False)
         print(f"[write] Wrote {len(self.spectra)} spectra to {path}")
 
         if build_flux_cube and len(self.spectra) > 0:
@@ -256,14 +282,25 @@ Catalog = SpectralGrid
 CatalogInfo = SpectralGridInfo
 
 
+def _splits(table: pd.DataFrame) -> bool:
+    """Whether the cube builder splits the grid of this lookup ``table`` into variants: an extra axis
+    (collision.discover_extra_axes) has more than one value."""
+    nodes = list(zip(*(table[c] if c in table else [0.0] * len(table) for c in ("teff", "logg", "metallicity"))))
+    columns = {c: table[c].astype(str).tolist() for c in table.columns
+               if c not in ("file_name", "teff", "logg", "metallicity")}
+    return any(len({_value(v) for v in columns[axis]}) > 1 for axis in discover_extra_axes(columns, nodes))
+
+
 def _read_listed_spectra(lookup_path: Path, grid_name: str) -> List[Spectrum]:
-    """The spectra a lookup table lists whose file exists beside it; ValueError names one that cannot be read."""
+    """The spectra a lookup table lists whose file exists beside it, each with its row's other columns as ``extra``;
+    ValueError names one that cannot be read."""
     model_dir = lookup_path.parent
-    df = pd.read_csv(lookup_path)
-    df.columns = [c.lstrip('#').strip().lower() for c in df.columns]
+    df = pd.read_csv(lookup_path, dtype=str, keep_default_na=False)
+    df.columns = [c.lstrip('#').strip() for c in df.columns]  # extra columns keep their spelling
     file_col = find_file_column(df.columns)
     param_cols = {"teff": find_teff_column(df.columns), "logg": find_logg_column(df.columns),
                   "metallicity": find_metallicity_column(df.columns)}
+    extra_cols = [c for c in df.columns if c not in (file_col, *param_cols.values())]
 
     spectra = []
     for _, row in df.iterrows():
@@ -272,8 +309,9 @@ def _read_listed_spectra(lookup_path: Path, grid_name: str) -> List[Spectrum]:
             continue
         try:
             wl, fl = np.loadtxt(model_dir / filename, unpack=True, comments='#')
-            params = {name: float(row[col]) if col else np.nan for name, col in param_cols.items()}
-            spectra.append(Spectrum(wavelength=wl, flux=fl, **params, filename=filename, source_catalog=grid_name))
+            params = {name: float(row[col] or "nan") if col else np.nan for name, col in param_cols.items()}
+            spectra.append(Spectrum(wavelength=wl, flux=fl, **params, filename=filename, source_catalog=grid_name,
+                                    extra={col: row[col] for col in extra_cols}))
         except (OSError, ValueError) as exc:
             raise ValueError(f"Cannot read spectrum {model_dir / filename} listed in {lookup_path}: {exc}") from exc
     return spectra
@@ -300,9 +338,9 @@ class SED:
     --------
     >>> grids = SED.query(teff_min=5000)
     >>> sed = SED.fetch('Kurucz2003all', teff_min=4000, teff_max=8000)
-    >>> sed.grid.write()
-    >>> sed = SED.local('Kurucz2003all')
-    >>> spectrum = sed(5777, 4.44, 0.0)
+    >>> sed.grid.filter(logg_min=4.0).write('/path/to/my_selection')  # a folder of its own
+    >>> sed = SED.local('Kurucz2003all')  # split by alpha: each extra axis by keyword
+    >>> spectrum = sed(5777, 4.44, 0.0, alpha=0.0)
     """
     
     _model_root: Path = STELLAR_DIR_DEFAULT
@@ -477,13 +515,16 @@ class SED:
         Notes
         -----
         With any bound (a bound of 0 is a bound; a single bound leaves the
-        other side open), only the spectra within the bounds are downloaded,
-        as ``sed-tools grids --teff ... --logg ... --meta ...`` does, and the
-        lookup table, HDF5 bundle and flux cube in ``model_root/catalog`` are
-        built from them, so ``SED.local`` and MESA use that selection. NJM's
-        flux cube and HDF5 bundle of the whole grid are not downloaded. MSG
-        downloads its grid's HDF5 file whole and extracts the selection; SVO
-        cannot select, so the whole grid is downloaded, with a warning, then cut.
+        other side open), only the spectra within the bounds are downloaded
+        from NJM or MSG, as ``sed-tools grids --teff ... --logg ... --meta ...``
+        does, and the lookup table, HDF5 bundle and flux cube in
+        ``model_root/catalog`` are built from them, so ``SED.local`` and MESA
+        use that selection. NJM's flux cube and HDF5 bundle of the whole grid
+        are not downloaded. MSG downloads its grid's HDF5 file whole and
+        extracts the selection. SVO cannot select: the whole grid is
+        downloaded, with a warning, and only the returned ``sed.grid`` is cut;
+        nothing on disk is cut and no flux cube is built, from SVO with or
+        without bounds. Build one with ``sed-tools rebuild --grids NAME``.
 
         A folder that already holds every selected spectrum, with a flux cube
         holding every spectrum there, is cut as it stands: nothing is

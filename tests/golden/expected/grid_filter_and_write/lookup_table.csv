@@ -1,5 +1,5 @@
-file_name,teff,logg,metallicity
-Kurucz2003all_fid16527.txt,6000.0,4.5,-0.5
-Kurucz2003all_fid16537.txt,6250.0,4.5,-0.5
-Kurucz2003all_fid18907.txt,6000.0,4.5,0.0
-Kurucz2003all_fid18917.txt,6250.0,4.5,0.0
+file_name,teff,logg,metallicity,alpha,conversion_confidence,flux_unit,lh,original_flux_unit,original_wavelength_unit,source,units_standardized,vtur,wavelength_unit
+Kurucz2003all_fid16527.txt,6000.0,4.5,-0.5,0,999.9,2,1.25,999.9,999.9,999.9,999.9,2,999.9
+Kurucz2003all_fid16537.txt,6250.0,4.5,-0.5,0,999.9,2,1.25,999.9,999.9,999.9,999.9,2,999.9
+Kurucz2003all_fid18907.txt,6000.0,4.5,0.0,0,999.9,2,1.25,999.9,999.9,999.9,999.9,2,999.9
+Kurucz2003all_fid18917.txt,6250.0,4.5,0.0,0,999.9,2,1.25,999.9,999.9,999.9,999.9,2,999.9

@@ -502,6 +502,20 @@ def search_matches_names_in_the_index_before_fetching_properties(t):
 
 
 @row
+def search_leaves_out_the_bands_kept_beside_a_set(t):
+    # NJM's index.json also lists JWST/NIRCam's F200W_old, which its MESA index leaves out and a fetch does not
+    # install, so Filters.plot(Filters.search(...)) stopped on it (review 24 Nov 2026).
+    root, njm = njm_catalogue(t)
+    index, props = json.loads(njm.files["index.json"]), json.loads(njm.files["filters/Fac/Cam/properties.json"])
+    index["filters"]["facilities_detailed"]["Fac"]["instruments"]["Cam"]["filters"].append("g_old")
+    props["bands"]["g_old"] = props["bands"]["g"]
+    njm.files.update({"index.json": json.dumps(index), "filters/Fac/Cam/properties.json": json.dumps(props),
+                      "filters/Fac/Cam/Cam": "g.dat\nr.dat\ni.dat\n"})
+    assert list(Filters.search(pivot=(4000, 5000), filter_root=root)["band"]) == ["g"]
+    assert list(Filters.search("cam/g", properties=False, filter_root=root)["band"]) == ["g"]
+
+
+@row
 def search_by_wavelength_pivot_fwhm_detector_and_any_property(t):
     root, njm = njm_catalogue(t)
     covers = Filters.search(wavelength=6200, filter_root=root)
@@ -1201,6 +1215,21 @@ def cli_reports_kept_types(t):
     assert path.read_bytes() == before
 
 
+@row
+def cli_tags_an_installed_set_by_its_name(t):
+    # "filters-detector GAIA/GAIA --dry-run" took the name for a path and reported 0 files (notebooks review,
+    # 24 Nov 2026); --correct and --convert already took a set's name under the filter root.
+    wl, tr = [15000.0, 16000.0, 17000.0, 18000.0], [0.0, 0.9, 0.95, 0.0]
+    naco_h(t.tmp / "filters", wl, tr, PHOTON, SOURCE_INFERRED)
+    t.mp.setattr(Filters, "_filter_root", t.tmp / "filters")
+    t.mp.setattr("sed_tools.filters.curve_metadata.SVOMetadataClient", lambda *a, **k: SVOClient())
+    t.mp.chdir(t.tmp)
+    run_cli(t.mp, "filters-detector", "Paranal/NACO", "--dry-run")
+    assert "1 files, 0 would change" in t.capsys.readouterr().out
+    with pytest.raises(FileNotFoundError, match="No filter file or set at"):
+        Filters.tag_detector_types("Paranal/Nothing", dry_run=True)
+
+
 # ======================================================================
 # The filter library offline: compose, atmospheres, SVO, NJM's burst block
 # ======================================================================
@@ -1499,6 +1528,32 @@ def a_long_gap_between_samples_is_one_line_for_every_band_quantity(t):
     p = filter_properties(lam, tr, ENERGY, vega=spectra[0])
     assert p["WavelengthPivot"] == pytest.approx(pivot, rel=1e-8)
     assert p["ZeroPointVega_Jy"] == pytest.approx(band_average_flux_nu(*spectra[0], curve) / 1e-23, rel=1e-12)
+
+
+@row
+def a_spectrum_ending_inside_a_band_stops_there(t):
+    # Flux used to ramp down linearly from the spectrum's last sample to the next band-grid point, up to lambda/100
+    # beyond it: 2.5 % too high here (review 24 Nov 2026, code.md L1).
+    from sed_tools.photometry import FilterCurve, band_average_flux_lambda
+
+    curve = FilterCurve("box", np.array([4000.0, 6000.0]), np.array([1.0, 1.0]), {}, detector_type=ENERGY)
+    for sl in (np.linspace(3000.0, 5000.5, 2001), np.linspace(4999.5, 7000.0, 2001)):
+        assert band_average_flux_lambda(sl, np.ones_like(sl), curve) == pytest.approx(1000.5 / 2000.0, rel=1e-12)
+
+
+@row
+def ab_zero_points_from_first_principles(t):
+    # Computed here from the definitions, not by the package: a box curve's pivot is sqrt(a b), its AB zero point
+    # 3631 Jy c / pivot^2, and a flat 3631 Jy spectrum is AB magnitude 0. A 0.03 % error in 3631 Jy or 0.1 % in the
+    # zero point passed every row but golden, which CI does not run (review 24 Nov 2026, tests.md R2).
+    from sed_tools.photometry import FilterCurve, _band_magnitude
+
+    c, a, b = 2.99792458e18, 4000.0, 6000.0  # Å/s; the box's edges
+    lam, tr = np.array([a, a, b, b]), np.array([0.0, 1.0, 1.0, 0.0])
+    assert filter_properties(lam, tr, ENERGY)["ZeroPointAB_flam"] == pytest.approx(3631e-23 * c / (a * b), rel=1e-9)
+    wl = np.linspace(3000.0, 7000.0, 40001)
+    magnitude = _band_magnitude(wl, 3631e-23 * c / wl**2, FilterCurve("box", lam, tr, {}), "AB", None)[2]
+    assert magnitude == pytest.approx(0.0, abs=1e-6)
 
 
 @row

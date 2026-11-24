@@ -436,6 +436,21 @@ class FilterCatalogue:
                 entries[(entry["facility"], entry["instrument"])] = entry
         return rows, entries
 
+    def _in_served_set(self, frame: pd.DataFrame) -> pd.Series:
+        """Whether each row's band is part of its instrument's served set (see :meth:`_split_archived`): ``index.json``
+        also lists the bands NJM keeps beside a set (superseded copies), which a fetch does not install. The
+        instruments' MESA index files are fetched as :meth:`many` fetches, at most six at a time."""
+        groups = frame.groupby(["facility", "instrument"]).groups
+
+        def served(key):
+            bands = frame.loc[groups[key], "band"]
+            return bands.isin(list(self._split_archived(*key, {"bands": dict.fromkeys(bands)})["bands"]))
+
+        self._library  # made once, before the threads share it
+        with ThreadPoolExecutor(max_workers=self.max_workers) as pool:
+            kept = list(pool.map(served, groups))
+        return pd.concat(kept).reindex(frame.index) if kept else pd.Series(True, index=frame.index)
+
     def search(self, text: Optional[str] = None, *, facility: Optional[str] = None,
                instrument: Optional[str] = None, band: Optional[str] = None,
                wavelength: Any = None, pivot: Optional[Range] = None, fwhm: Optional[Range] = None,
@@ -464,6 +479,7 @@ class FilterCatalogue:
         for column, criterion in criteria.items():
             mask &= _apply(frame, column, criterion)
         frame = frame[mask]
+        frame = frame[self._in_served_set(frame)]
         leading = [c for c in LEADING_COLUMNS if c in frame.columns]
         rest = [c for c in frame.columns if c not in KEY_COLUMNS and c not in leading]
         frame = frame[KEY_COLUMNS + leading + rest]

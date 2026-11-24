@@ -756,6 +756,20 @@ def grids_no_cube_on_a_grid_copied_without_its_times_exits_0(t):
 
 
 @row
+def grids_keeps_a_bundle_that_holds_every_spectrum(t):
+    # Without --no-h5, sed-tools grids rewrote the bundle on every run, with everything present (notebooks review,
+    # 24 Nov 2026).
+    njm_grids(t)
+    bundle = t.tmp / GRID / f"{GRID}.h5"
+    assert run_cli(t.mp, "grids", "--source", "njm", "--grids", GRID, "--base", str(t.tmp)) == 0
+    before = (bundle.read_bytes(), bundle.stat().st_mtime_ns)
+    t.capsys.readouterr()
+    assert run_cli(t.mp, "grids", "--source", "njm", "--grids", GRID, "--base", str(t.tmp)) == 0
+    assert (bundle.read_bytes(), bundle.stat().st_mtime_ns) == before
+    assert f"HDF5 bundle   : {GRID}.h5 (exists)" in t.capsys.readouterr().out
+
+
+@row
 def a_selection_then_the_rest_is_rebuilt_whatever_the_file_times(t):
     njm_grids(t)
     SED.fetch(GRID, source="njm", model_root=t.tmp, teff_min=5900, teff_max=6100)
