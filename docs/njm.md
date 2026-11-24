@@ -75,7 +75,7 @@ those curves.
   to complete it.
 - `sed-tools grids` says that NJM's grids are not offered and lists the
   others. A grid from SVO is downloaded whole: `sed-tools grids` builds it;
-  after `SED.fetch` with bounds, run `sed-tools rebuild --grids NAME`.
+  after `SED.fetch`, run `sed-tools rebuild --grids NAME`.
 - `filters-info` says there is no catalogue description and uses the cached
   catalogue.
 - Atmospheres: team sites are rebuilt from their original files, and SkyCalc

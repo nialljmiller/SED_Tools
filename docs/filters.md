@@ -157,7 +157,8 @@ ax.figure.savefig("2mass.png")
 ```
 
 - **Search.** Name criteria are matched in NJM's `index.json` first; each
-  instrument's `properties.json` is then fetched only if it can still match.
+  instrument's `properties.json` is then fetched only if it can still match,
+  at most six requests at a time, retrying when NJM briefly blocks a burst.
   A single `wavelength` keeps bands whose span (`WavelengthMin` to
   `WavelengthMax`, where T is at least 1 % of its peak) covers it; a range
   keeps bands overlapping it. Astropy quantities are accepted. A band with a
@@ -377,6 +378,12 @@ remain the default, and photometry lookups by name skip `components/` and
   `unreviewed` and remain available as published curves.
 - A product is replaced only after every selected band is built, so a failed
   composition keeps the previous result.
+- Source failures remain visible in inventory and availability results.
+  Published downloads are checked against the bands expected from the
+  manifests and index files; older installations without a catalogue
+  declaration can only be checked against their existing contents.
+- Unknown contents and assumed detector types remain marked as such in the
+  metadata.
 
 ### Atmospheres
 
@@ -408,13 +415,17 @@ location are listed in `atmosphere_sites` or registered in
 and are chosen by name (`--atmosphere-site`). Some sources do not state their
 airmass (2MASS's PLEXUS models); those atmospheres are kept as published and
 selected with `airmass=None`, or `--airmass unstated`, and are never relabelled
-with an assumed airmass. Most team sites refuse composition when more than
-0.1 % of a band's throughput lies beyond the atmosphere's table.
+with an assumed airmass. A site may set its own `outside_range` and
+`coverage_tolerance`. Most team sites use `error` with a tolerance of 0.1 %:
+composition is refused when more than 0.1 % of a band's throughput lies beyond
+the atmosphere's table, and the edge values are held only over fainter leak
+wings.
 
 Installed atmosphere grids are used first, then NJM. During an NJM outage,
 team sites are rebuilt from their original files and SkyCalc sites generate
 the requested point (through ESO's API, or its web form when the API host does
-not answer); SkyCalc generation requires PWV. SED_Tools never substitutes
+not answer); SkyCalc generation requires PWV, and an existing grid with
+several PWV values requires an explicit choice. SED_Tools never substitutes
 another site's atmosphere or interpolates between grid points.
 
 | Site | Kind | Conditions | Model and source | Instruments |

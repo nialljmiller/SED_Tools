@@ -81,8 +81,8 @@ again for any installed grid or filter set, and `sed-tools vega` downloads the
 Vega spectrum MESA uses for Vega magnitudes. A grid split into variants
 (Kurucz2003all: [alpha/M] 0 and 0.4) is read by MESA one variant folder at a
 time; its top folder is for SED_Tools only. Do not copy a whole split grid into
-`$MESA_DIR/data/colors_data/stellar_models/`: it would replace MESA's own
-Kurucz2003all. See the
+`$MESA_DIR/data/colors_data/stellar_models/`: it mixes its files with MESA's own
+Kurucz2003all and replaces MESA's lookup table. See the
 [MESA guide](https://github.com/nialljmiller/SED_Tools/blob/main/docs/mesa.md).
 
 ## Documentation
