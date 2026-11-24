@@ -210,6 +210,35 @@ def grid_write_keeps_a_split_grids_variants_and_leaves_out_an_unknown_axis(t):
 
 
 @row
+def a_loaded_sed_reads_a_filter_curve_edited_on_disk(t):
+    # The curve was cached for the model's lifetime, so after Filters.correct_detector_type the loaded SED kept the
+    # old curve (review 24 Nov 2026, api.md 3). Also: a filter set by its instrument's name, a band by its name.
+    sed = _sloped_sed(t)
+    by_set = sed.photometry("Johnson")
+    assert sorted(by_set) == ["B", "V"] and sed.photometry("V")["V"].magnitude == by_set["V"].magnitude
+    _johnson_band(t, "V", 6000.0)
+    assert sed.photometry("V")["V"].magnitude == _sloped_sed(t).photometry("V")["V"].magnitude != by_set["V"].magnitude
+
+
+def _johnson_band(t, band, low):
+    folder = t.tmp / "filters" / "Generic" / "Johnson"
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / f"{band}.dat").write_text(f"Wavelength,Transmission\n{low - 100},0\n{low},1\n{low + 1000},1\n"
+                                        f"{low + 1100},0\n")
+
+
+def _sloped_sed(t):
+    """A spectrum falling as lambda^-2 at 5500 K, log g 4.25, [M/H] 0, with filters Generic/Johnson B and V."""
+    for band, low in (("B", 4000.0), ("V", 5000.0)):
+        if not (t.tmp / "filters" / "Generic" / "Johnson" / f"{band}.dat").exists():
+            _johnson_band(t, band, low)
+    wl = np.linspace(3000.0, 9000.0, 61)
+    write_flux_cube(t.tmp / "g" / "flux_cube.bin", [5000.0, 6000.0], [4.0, 4.5], [0.0], wl,
+                    np.ones((2, 2, 1, 1)) * (wl / 5000.0) ** -2)
+    return SED.local("g", model_root=t.tmp, filter_root=t.tmp / "filters")(5500.0, 4.25, 0.0)
+
+
+@row
 def import_dry_run_counts_spectra_lacking_a_parameter(t):
     src = t.tmp / "src"
     src.mkdir()

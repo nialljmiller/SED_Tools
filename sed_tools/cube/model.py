@@ -194,7 +194,6 @@ class SEDModel:
                            for k, (name, axis) in enumerate(zip(self._header.names, self._header.axes)) if k >= 3}
 
         self._cube: Union[None, FluxCube, AllAxesCube] = None
-        self._filter_cache: Dict[str, FilterCurve] = {}
         self._filter_index: Optional[Dict[str, List[Path]]] = None
 
     # --- Flux cube loading & interpolation ---
@@ -268,20 +267,12 @@ class SEDModel:
         return resolved
 
     def _load_filter_group(self, spec: Union[str, os.PathLike[str]]) -> Dict[str, FilterCurve]:
-        curves: Dict[str, FilterCurve] = {}
-        for path in self._locate_filter_paths(spec):
-            key = (os.fspath(path), "")
-            if key not in self._filter_cache:
-                self._filter_cache[key] = load_filter_curve(str(path))
-            curve = self._filter_cache[key]
-            curves[curve.name] = curve
-        return curves
+        # Read each time, not cached: a curve edited on disk (Filters.correct_detector_type) is the one used.
+        curves = [load_filter_curve(str(path)) for path in self._locate_filter_paths(spec)]
+        return {curve.name: curve for curve in curves}
 
     def _load_filter(self, spec: Union[str, os.PathLike[str]], *, custom_name: Optional[str] = None) -> FilterCurve:
-        key = (os.fspath(spec), custom_name or "")
-        if key not in self._filter_cache:
-            self._filter_cache[key] = load_filter_curve(str(self._locate_filter_path(spec)), name=custom_name)
-        return self._filter_cache[key]
+        return load_filter_curve(str(self._locate_filter_path(spec)), name=custom_name)
 
     def _locate_filter_paths(self, spec: Union[str, os.PathLike[str]]) -> List[Path]:
         path = Path(spec)
