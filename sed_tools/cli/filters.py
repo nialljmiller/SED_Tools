@@ -242,7 +242,7 @@ def _installed_availability(instrument_dir: Path) -> dict:
 
 def _has_parts(info: dict) -> bool:
     """Whether the instrument's own components, atmosphere site or original-source builder can build a curve."""
-    return bool(info["buildable"] or _atmosphere_sites(info)
+    return bool(info["recipes_by_band"] or _atmosphere_sites(info)
                 or info["component_availability"]["status"] == "supported")
 
 
@@ -265,11 +265,13 @@ def _compose_interactively(instrument_dir: Path, info: dict) -> None:
 
 
 def _ask_recipe(info: dict) -> List[str]:
-    """The recipe picked by its number, or typed as roles."""
-    numbered = {str(i): recipe.replace("+", ",") for i, recipe in enumerate([*info["buildable"], "published"], 1)}
+    """The recipe picked by its number, or typed as roles; one that only some bands have is listed with them."""
+    by_band = info["recipes_by_band"]
+    numbered = {str(i): recipe.replace("+", ",") for i, recipe in enumerate([*by_band, "published"], 1)}
     print("Recipes (or type your own, e.g. published,optics):")
-    for number, recipe in numbered.items():
-        print(f"  {number}. {recipe}")
+    for number, recipe in zip(numbered, [*by_band, "published"]):
+        only = f" (only {', '.join(by_band[recipe])})" if recipe in by_band and recipe not in info["buildable"] else ""
+        print(f"  {number}. {recipe.replace('+', ',')}{only}")
     pick = input("Choose a recipe [1]: ").strip() or "1"
     return list(parse_components(numbered.get(pick, pick)))
 

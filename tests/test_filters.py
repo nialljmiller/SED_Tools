@@ -2052,6 +2052,26 @@ def njm_component_failure_is_reported_before_the_original_source(t):
 
 
 @default_svo_row
+def a_recipe_some_bands_can_never_have_asks_no_source_and_names_the_bands_that_have_it(t):
+    # As SLOAN/SDSS: g has filter+optics+qe, gp is filter only. Composing every band re-downloaded NJM's
+    # components, re-ran the builder and blamed NJM ("the mirror does not have them").
+    inst = put(t.tmp / "Fac" / "Cam", {"g.dat": CURVE, "gp.dat": CURVE, "manifest.json": json.dumps({
+        "facility": "Fac", "instrument": "Cam", "bands": ["g", "gp"],
+        "published_bands": {"g": "filter+optics+qe", "gp": "filter"},
+        "components": {"filter": {"gp": "gp.dat"}, "filter+optics+qe": {"g": "components/g.dat"}}})})
+    put(inst / "components", {"g.dat": CURVE})
+    asked = []
+    library = library_with(t.tmp, SimpleNamespace(is_available=lambda: True,
+                                                  download_components=lambda f, i: asked.append("njm")))
+    t.mp.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam"), catalog.BuilderRef("test"))
+    t.mp.setattr(filters_library, "get_builder", lambda name: lambda root, **kwargs: asked.append("builder"))
+    with pytest.raises(ComponentError, match=r"'filter\+optics\+qe' for band 'gp' \(only for g; published curve"):
+        library.compose(inst, "filter+optics+qe")
+    assert asked == []
+    assert sorted(p.name for p in library.compose(inst, "filter+optics+qe", bands=["g"]).glob("*.dat")) == ["g.dat"]
+
+
+@default_svo_row
 def njm_atmosphere_failure_is_reported_before_its_source(t):
     library = library_with(t.tmp / "filters", SimpleNamespace(download_atmosphere=raising(
         requests.HTTPError("502 for atmospheres/paranal/manifest.json"))))

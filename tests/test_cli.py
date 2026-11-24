@@ -63,6 +63,7 @@ def availability(**extra):
             "atmosphere_sites": [], "platform": "ground", "detector_type": "", "detector_type_sources": {},
             "availability_source": "local", "variants": {}}
     info.update(extra)
+    info.setdefault("recipes_by_band", {recipe: info["bands"] for recipe in info["buildable"]})
     return info
 
 
@@ -407,7 +408,8 @@ def filters_command_without_a_target_fails_when_a_download_failed(t):
 def _paranal(t, atmospheres):
     """An instrument whose curve can be composed with Paranal's atmosphere, listed by ``atmospheres``."""
     filters = filters_api(t)
-    info = {"buildable": ["filter"], "atmosphere": True, "atmosphere_site": "paranal", "atmosphere_sites": None,
+    info = {"buildable": ["filter"], "recipes_by_band": {"filter": ["g"]}, "atmosphere": True,
+            "atmosphere_site": "paranal", "atmosphere_sites": None,
             "component_availability": {"status": "supported", "large_download": False}}
     t.mp.setattr(filters, "available", classmethod(lambda cls, *a, **k: info))
     t.mp.setattr(filters, "atmospheres", classmethod(atmospheres))
@@ -958,15 +960,18 @@ def _lsst(t, parts):
 
 @menu_row
 def menu_4_builds_a_curve_from_the_parts_of_a_picked_instrument(t):
-    parts = {"buildable": ["filter", "filter+optics+qe"], "components": ["filter", "optics", "qe"]}
+    # A recipe only some bands have is offered with those bands (the menu listed only recipes every band has)
+    parts = {"buildable": ["filter"], "recipes_by_band": {"filter": ["g", "u"], "filter+optics+qe": ["g"]},
+             "components": ["filter", "optics", "qe"]}
     composed = _lsst(t, parts)
     t.mp.setattr(cli.filters, "_installed_availability", lambda directory: availability(
         facility="LSST", instrument="LSST", **parts))
     prompts = answer(t.mp, "4", "1", "1", "2", "q")
     assert cli._run_menu() == 0
+    out = t.capsys.readouterr().out
     assert ("  3) Filter set information\n"
-            "  4) Build a filter curve from its parts (filter, optics, camera, atmosphere)\n"
-            ) in t.capsys.readouterr().out
+            "  4) Build a filter curve from its parts (filter, optics, camera, atmosphere)\n") in out
+    assert "  1. filter\n  2. filter,optics,qe (only g)\n  3. published\n" in out
     assert prompts[3:] == ["Choose a recipe [1]: ", "> "]  # no detector question before building
     assert composed == [((t.tmp / "LSST" / "LSST",), {"filter_root": t.tmp, "components": ["filter", "optics", "qe"],
                                                        "allow_heavy": False, "atmosphere": None})]

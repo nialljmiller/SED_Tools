@@ -255,10 +255,10 @@ def _composition_steps(instrument_dir: Path, band: str, roles: set, manifest: In
     if instrument_roles:
         pieces = manifest.cover(band, instrument_roles)
         if pieces is None:
-            can = ", ".join(manifest.buildable()) or "none"
+            can = [b for b in manifest.primary_bands() if manifest.cover(b, instrument_roles)]
             raise ComponentError(
                 f"{manifest.facility}/{manifest.instrument} cannot provide '{recipe_name(instrument_roles)}' "
-                f"for band '{band}' (buildable: {can}; published curve: "
+                f"for band '{band}' ({'only for ' + ', '.join(can) if can else 'for no band'}; published curve: "
                 f"{manifest.published_bands.get(band) or manifest.published.get('components') or 'unknown'})"
             )
         steps.extend(("+".join(contains), instrument_dir / rel) for contains, rel in pieces)
