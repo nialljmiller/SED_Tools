@@ -435,8 +435,8 @@ def write_combined_grid(all_models_data, output_dir, visualization=True):
     With no extra axis, or one value of each, output_dir holds the combined flux cube, a copy of every spectrum and
     the lookup table (:func:`save_combined_data`). Otherwise the combination is split as the cube builder splits one
     grid (:func:`_variants`): output_dir holds the copies, the lookup table of every variant's rows with their
-    extra-axis values, variants_index.csv and the all-axes flux_cube.bin of every variant, and each variant is a subgrid folder with its lookup table, links to
-    its spectra and its flux_cube.bin, so no spectrum collides with or overwrites another variant's. Every cube is
+    extra-axis values, variants_index.csv and the all-axes flux_cube_nd.bin of every variant, and each variant is a subgrid folder with its
+    lookup table, links to its spectra and its flux_cube.bin, so no spectrum collides with or overwrites another variant's. Every cube is
     built before anything is written: a spectrum that cannot be read or placed stops the combine with nothing written.
     What an earlier combine wrote in output_dir is then replaced (:func:`_remove_previous_output`).
 

@@ -735,6 +735,7 @@ def a_whole_grid_copied_without_its_times_is_cut_as_it_stands(t):
     sed = SED.fetch(GRID, source="njm", model_root=t.tmp / "b", teff_min=5900, teff_max=6100)
     assert digests(folder) == before  # no lookup table, bundle or cube rewritten
     assert server.spectra_requested() == [] and len(sed.grid) == 4
+    assert sed(6000.0, 4.0, 0.0).flux.any()  # SED.fetch's return used to have no model to call
     out = t.capsys.readouterr().out
     assert "[fetch] 4 already present, 0 downloaded" in out
     assert "nothing was downloaded or rewritten" in " ".join(out.split())

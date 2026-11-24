@@ -1,10 +1,11 @@
-"""flux_cube.bin in its two formats.
+"""The flux cube in its two formats: flux_cube.bin (3-axis) and flux_cube_nd.bin (all-axes).
 
-3-axis (every grid's cube, and each variant's of a split grid): four int32 axis lengths (Teff, log g, [M/H],
+3-axis, flux_cube.bin (every grid's cube, and each variant's of a split grid; MESA reads it): four int32 axis lengths (Teff, log g, [M/H],
 wavelength), the four float64 axes, then the float64 flux in (wavelength, [M/H], log g, Teff) order with Teff varying
 fastest, as MESA reads it.
 
-All-axes (the top folder of a split grid, one cube for every variant), little-endian: int32 -1 (where a 3-axis cube
+All-axes, flux_cube_nd.bin (the top folder of a split grid, one cube for every variant; MESA does not read it, and a
+split grid's top folder holds no flux_cube.bin), little-endian: int32 -1 (where a 3-axis cube
 holds its Teff count, at least 1), the magic ``FLUXCUBE``, int32 version 1, int32 P (parameter axes, wavelength not
 counted), int32 n_1..n_P and n_wavelength, int32 kind_1..kind_P (0 numeric, 1 text), the P names (32 bytes each,
 space-padded UTF-8), the labels of each text axis in axis order (32 bytes each), the float64 axes one after another
@@ -22,6 +23,7 @@ from typing import Dict, List
 
 import numpy as np
 
+ALL_AXES_NAME = "flux_cube_nd.bin"
 ALL_AXES_MARKER = -1
 MAGIC = b"FLUXCUBE"
 VERSION = 1

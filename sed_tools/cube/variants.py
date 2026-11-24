@@ -17,7 +17,7 @@ import numpy as np
 from ..grids.lookup import (find_file_column, find_logg_column, find_metallicity_column, find_teff_column,
                             write_lookup_csv)
 from .collision import _value
-from .fileio import read_header, write_all_axes_header
+from .fileio import ALL_AXES_NAME, read_header, write_all_axes_header
 
 logger = logging.getLogger(__name__)
 
@@ -160,13 +160,28 @@ def _extra_axes(fields: List[str], rows: List[Dict[str, str]]) -> List[Tuple[str
     return axes
 
 
+def move_aside_top_cube(model_dir: str) -> None:
+    """A split grid's top folder holds no flux_cube.bin (MESA would read one there): one an earlier version or
+    download left (the all-axes cube under its old name, or a variant's 3-axis copy) is renamed to
+    flux_cube.bin.old, or .old2, .old3, ... when that is taken; nothing is deleted."""
+    top = os.path.join(model_dir, "flux_cube.bin")
+    if not os.path.lexists(top):
+        return
+    n = 1
+    while os.path.lexists(aside := top + (".old" if n == 1 else f".old{n}")):
+        n += 1
+    os.replace(top, aside)
+    print(f"Moved {top} aside to {aside}: a split grid's top folder holds no flux_cube.bin")
+
+
 def write_all_axes_cube(model_dir: str, part_bytes: int = 256 * 2**20) -> str:
-    """The all-axes flux_cube.bin of a split grid (format in cube/fileio.py), assembled from its variant cubes; no
+    """The all-axes flux_cube_nd.bin of a split grid (format in cube/fileio.py), assembled from its variant cubes; no
     spectrum is read. Its Teff, log g and [M/H] axes are the union of the variants', its extra axes the
     variants_index.csv columns that vary; each variant is placed at its own values, zeros fill the rest, so the cube
     equals each variant cube at that variant's nodes. A text axis stores its values as labels. Written a part of
-    wavelengths at a time (about part_bytes), to flux_cube.bin.tmp and then renamed over model_dir/flux_cube.bin.
-    ValueError, before anything is written, when the variants' wavelengths differ."""
+    wavelengths at a time (about part_bytes), to flux_cube_nd.bin.tmp and then renamed over model_dir/flux_cube_nd.bin;
+    a top-level flux_cube.bin is moved aside (:func:`move_aside_top_cube`). ValueError, before anything is written,
+    when the variants' wavelengths differ."""
     fields, rows = _variant_rows(os.path.join(model_dir, "variants_index.csv"))
     extra = _extra_axes(fields, rows)
     cubes = [os.path.join(model_dir, row["path"], "flux_cube.bin") for row in rows]
@@ -183,15 +198,16 @@ def write_all_axes_cube(model_dir: str, part_bytes: int = 256 * 2**20) -> str:
               if not isinstance(values[0], float)}
     axes = [*shared, *(np.array(values if 3 + k not in labels else range(len(values)), dtype=float)
                        for k, (_, values, _) in enumerate(extra))]
-    block_of = {tuple(values.index(_value(row[col])) for col, values, _ in extra): (path, header)
+    block_of = {tuple(values.index(_value(row[col])) for col, values, *_ in extra): (path, header)
                 for row, path, header in zip(rows, cubes, headers)}
 
     nt, nl, nm, nw = (*map(len, shared), len(wavelengths))
     step = max(1, part_bytes // (8 * nt * nl * nm))
-    target = os.path.join(model_dir, "flux_cube.bin")
+    target = os.path.join(model_dir, ALL_AXES_NAME)
+    move_aside_top_cube(model_dir)
     with open(target + ".tmp", "wb") as fh:
-        write_all_axes_header(fh, ["teff", "logg", "meta", *(col for col, _, _ in extra)], axes, labels, wavelengths)
-        for slow_first in itertools.product(*(range(len(values)) for _, values, _ in reversed(extra))):
+        write_all_axes_header(fh, ["teff", "logg", "meta", *(col for col, *_ in extra)], axes, labels, wavelengths)
+        for slow_first in itertools.product(*(range(len(values)) for _, values, *_ in reversed(extra))):
             path, header = block_of.get(tuple(reversed(slow_first)), (None, None))
             flux = None if path is None else np.memmap(path, dtype=np.float64, mode="r", offset=header.offset,
                                                         shape=header.shape)
@@ -203,13 +219,23 @@ def write_all_axes_cube(model_dir: str, part_bytes: int = 256 * 2**20) -> str:
                 part.tofile(fh)
             del flux
     os.replace(target + ".tmp", target)
-    print(f"All-axes flux cube: {target} (Teff, log g, [M/H], {', '.join(col for col, _, _ in extra)}; "
-          f"{len(block_of)} of {int(np.prod([len(v) for _, v, _ in extra]))} combinations filled)")
+    print(f"All-axes flux cube: {target} (Teff, log g, [M/H], {', '.join(col for col, *_ in extra)}; "
+          f"{len(block_of)} of {int(np.prod([len(v) for _, v, *_ in extra]))} combinations filled)")
     return target
 
 
+def ensure_all_axes_cube(model_dir: str) -> None:
+    """Write a split grid's all-axes cube when it has none, or still has a flux_cube.bin at its top (an earlier
+    version's); a grid that is not split, or is complete, is left as it is."""
+    if os.path.isfile(os.path.join(model_dir, "variants_index.csv")) and (
+            not os.path.isfile(os.path.join(model_dir, ALL_AXES_NAME))
+            or os.path.lexists(os.path.join(model_dir, "flux_cube.bin"))):
+        write_all_axes_cube(model_dir)
+
+
 def _remove_variants(folder: str) -> None:
-    """Remove an earlier split from *folder*: the subgrid folders its variants_index.csv lists, then the index."""
+    """Remove an earlier split from *folder*: the subgrid folders its variants_index.csv lists, its all-axes cube,
+    then the index."""
     index = os.path.join(folder, "variants_index.csv")
     if not os.path.isfile(index):
         return
@@ -217,6 +243,8 @@ def _remove_variants(folder: str) -> None:
         subgrid = os.path.join(folder, path)
         if os.path.dirname(os.path.normpath(subgrid)) == os.path.normpath(folder) and os.path.isdir(subgrid):
             shutil.rmtree(subgrid)
+    if os.path.isfile(os.path.join(folder, ALL_AXES_NAME)):
+        os.remove(os.path.join(folder, ALL_AXES_NAME))
     os.remove(index)
 
 
@@ -298,7 +326,7 @@ def _split_into_subgrids(model_dir: str, groups: Dict, extra_cols: List[str], lo
                          write_cube, threshold: int) -> None:
     """Strategy 'split': one MESA-ready subgrid folder per variant (its lookup_table.csv, links to the parent's
     spectra, its flux_cube.bin), then variants_index.csv, and lookup_table_full.csv as the record of the full grid.
-    The parent's flux_cube.bin is then the all-axes cube of every variant (:func:`write_all_axes_cube`), which MESA
+    The parent's flux_cube_nd.bin is then the all-axes cube of every variant (:func:`write_all_axes_cube`), which MESA
     does not read: MESA reads a variant's folder. Above *threshold* variants it asks first."""
     names = _subdir_names(os.path.basename(os.path.abspath(model_dir)), list(groups))
     _print_split_announcement(groups, extra_cols, names, threshold)
@@ -337,7 +365,7 @@ def _split_into_subgrids(model_dir: str, groups: Dict, extra_cols: List[str], lo
         shutil.copy2(src_lookup, full_lookup)
         print("Full-grid lookup preserved: lookup_table_full.csv")
     write_all_axes_cube(model_dir)
-    print("\nDone. The parent directory is the source collection; its flux_cube.bin holds every variant on all axes.")
+    print("\nDone. The parent directory is the source collection; its flux_cube_nd.bin holds every variant on all axes.")
     print("Point MESA Colors to one of the subgrid directories listed above.")
 
 

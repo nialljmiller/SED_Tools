@@ -212,7 +212,8 @@ def run_interactive_workflow(base_dir: str = None) -> Optional[int]:
 
     banner("GRID DENSIFIER")
 
-    # a split grid's top-level cube is its all-axes cube; its variants are one folder further down
+    # a split grid's variants are one folder further down; skipped: an all-axes cube an earlier version named
+    # flux_cube.bin
     cubes = sorted(c for c in glob.glob(os.path.join(base_dir, "*", "flux_cube.bin")) if not is_all_axes(c))
     if not cubes:
         print(f"No flux_cube.bin files found under {base_dir}")

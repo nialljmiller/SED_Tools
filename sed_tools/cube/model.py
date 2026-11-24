@@ -20,7 +20,7 @@ from ..photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterC
                           load_spectrum)
 from ..ui_utils import ordered_range
 from .collision import _normalise_key
-from .fileio import is_all_axes, read_header
+from .fileio import ALL_AXES_NAME, read_header
 from .fluxcube import AllAxesCube, FluxCube
 from .variants import _variant_paths
 
@@ -167,7 +167,7 @@ class SEDModel:
     outside the grid is clamped to the nearest grid edge; with ``False`` it
     raises ValueError.
 
-    A split grid's all-axes cube (its top-level flux_cube.bin) also has the
+    A split grid's all-axes cube (its top-level flux_cube_nd.bin) also has the
     grid's extra axes (``extra_axes``, e.g. alpha): each is given by keyword,
     ``model(5800, 4.4, 0.0, alpha=0.2)``, the name matched ignoring case and
     punctuation (``alpha_fe`` finds ``[alpha/Fe]``). A numeric extra axis is
@@ -358,15 +358,19 @@ class SEDModel:
         return float(min(max(value, lower), upper))
 
 
-def _refuse_split_grid(directory: Path, name: str) -> None:
-    """FileNotFoundError naming the variants when ``directory`` is a grid split into variants (variants_index.csv)
-    whose top-level flux_cube.bin is not its all-axes cube: none, or a 3-axis cube an earlier version or download
-    left there (one variant's, not the grid's). Photometry then reads one variant's folder."""
-    index, top = Path(directory) / "variants_index.csv", Path(directory) / "flux_cube.bin"
-    if index.is_file() and not (top.is_file() and is_all_axes(top)):
+def grid_cube(directory: Path, name: str) -> Path:
+    """The cube a grid folder is opened by: a grid split into variants (variants_index.csv) by its all-axes
+    flux_cube_nd.bin, any other by its flux_cube.bin. FileNotFoundError naming the variants for a split grid without
+    flux_cube_nd.bin (split before it existed, or by a version that wrote the all-axes cube as flux_cube.bin):
+    photometry then reads one variant's folder."""
+    index = Path(directory) / "variants_index.csv"
+    if not index.is_file():
+        return Path(directory) / "flux_cube.bin"
+    if not (Path(directory) / ALL_AXES_NAME).is_file():
         variants = [f"{name}/{path}" for path in _variant_paths(index)]
         raise FileNotFoundError(f"{name} is split into variants, each with its own flux cube; name one of them: "
                                 + ", ".join(variants) + f", or rebuild {name} to get its all-axes cube")
+    return Path(directory) / ALL_AXES_NAME
 
 
 class SED:
@@ -532,9 +536,8 @@ class SED:
         if path.is_file() and path.suffix.lower() == ".bin":
             return path
         for directory in (path, self.model_root / path):
-            _refuse_split_grid(directory, str(model))
-            if directory.is_dir() and (directory / "flux_cube.bin").is_file():
-                return directory / "flux_cube.bin"
+            if directory.is_dir() and grid_cube(directory, str(model)).is_file():
+                return grid_cube(directory, str(model))
 
         candidate = self.model_root / f"{path}.bin"
         if candidate.is_file():

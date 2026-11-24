@@ -28,9 +28,10 @@ from ..cube.model import (
     SEDModel,
     SED as _SEDCore,
     _read_flux_cube_header,
-    _refuse_split_grid,
+    grid_cube,
 )
 from ..cube.check import _bundle_shortfall, _flux_cube_file, _flux_cube_shortfall  # noqa: F401
+from ..cube.variants import ensure_all_axes_cube
 from ..grids.pipeline import (  # noqa: F401  (_build_combined_grid and _parameter_cuts are re-exported)
     _build_combined_grid, _build_data_products, _build_flux_cube, _directory_state, _download_count,
     _import_sources, _parameter_cuts, _report_import_headers, download_from_first_source,
@@ -557,8 +558,9 @@ class SED:
             cat = cat.filter(teff_min=teff_min, teff_max=teff_max, logg_min=logg_min, logg_max=logg_max,
                              metallicity_min=metallicity_min, metallicity_max=metallicity_max)
             print(f"[fetch] Filtered to {len(cat)} spectra")
-        
-        return cls(catalog=cat, model_root=base_dir)
+        ensure_all_axes_cube(str(model_dir))  # a split grid an earlier version installed gets its all-axes cube
+        model = cls._grid_model(model_dir, catalog) if _flux_cube_file(model_dir) is not None else None
+        return cls(catalog=cat, model=model, model_root=base_dir)
 
     @staticmethod
     def _clean_fetched(model_dir: Path, flux_unit: Optional[str]) -> None:
@@ -656,9 +658,10 @@ class SED:
         fill_gaps: bool = True,
     ) -> 'SED':
         """Load a local stellar spectral grid (it needs its flux_cube.bin). A grid split into variants loads its
-        all-axes cube, which takes each extra axis by keyword (``sed(5800, 4.4, 0.0, alpha=0.2)``); one variant
-        loads as ``SED.local("<grid>/<variant>")``. A split made before the all-axes cube existed has none:
-        FileNotFoundError names its variants.
+        all-axes flux_cube_nd.bin, which takes each extra axis by keyword (``sed(5800, 4.4, 0.0, alpha=0.2)``); one
+        variant loads as ``SED.local("<grid>/<variant>")``. A split without flux_cube_nd.bin (made before it existed,
+        or with the all-axes cube still named flux_cube.bin) raises FileNotFoundError naming its variants; a rebuild
+        or a fetch writes it.
 
         Parameters
         ----------
@@ -678,11 +681,15 @@ class SED:
         """
         base_dir = Path(model_root) if model_root else cls._model_root
         model_dir = base_dir / catalog
-        _refuse_split_grid(model_dir, catalog)
-        sed_model = SEDModel(name=catalog, flux_cube_path=model_dir / "flux_cube.bin",
-                             filters_dir=filter_root or cls._filter_root, fill_gaps=fill_gaps)
+        model = cls._grid_model(model_dir, catalog, filter_root, fill_gaps)
         cat = cls._load_catalog_from_dir(model_dir, catalog, 'local')
-        return cls(catalog=cat, model=sed_model, model_root=base_dir, filter_root=filter_root)
+        return cls(catalog=cat, model=model, model_root=base_dir, filter_root=filter_root)
+
+    @classmethod
+    def _grid_model(cls, model_dir: Path, catalog: str, filter_root=None, fill_gaps: bool = True) -> SEDModel:
+        """The SEDModel of a grid folder's cube (cube.model.grid_cube: a split grid's all-axes cube)."""
+        return SEDModel(name=catalog, flux_cube_path=grid_cube(model_dir, catalog),
+                        filters_dir=filter_root or cls._filter_root, fill_gaps=fill_gaps)
 
     @classmethod
     def coverage(
@@ -811,7 +818,7 @@ class SED:
         (see :mod:`sed_tools.cube.combine`). A combination whose extra axes
         (alpha, [alpha/Fe], C/O, ...) vary is split into one subgrid per
         variant, as ``sed-tools rebuild`` splits one grid; its own flux cube
-        is then the all-axes cube of every variant, which the SED returned
+        is then the all-axes cube of every variant (flux_cube_nd.bin), which the SED returned
         evaluates with each extra axis by keyword (a variant loads with
         ``SED.local("<output>/<variant>")``). An earlier combination in the
         ``output`` folder is replaced.
@@ -849,7 +856,7 @@ class SED:
 
         print(f"\nSuccessfully combined {len(selected_models)} spectral grids!")
         print(f"Output: {output_dir}")
-        if (Path(output_dir) / "flux_cube.bin").exists():
+        if _flux_cube_file(Path(output_dir)) is not None:
             return cls.local(output, model_root=base_dir)
         return cls(catalog=cls._load_catalog_from_dir(Path(output_dir), output, 'local'), model_root=base_dir)
     

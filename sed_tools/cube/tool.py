@@ -342,7 +342,7 @@ def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = No
             continue
         try:
             for match in directory.rglob("flux_cube.bin"):
-                if match.is_file() and not is_all_axes(match):  # a split grid's all-axes cube: SEDModel reads it
+                if match.is_file() and not is_all_axes(match):  # an all-axes cube an earlier version named flux_cube.bin
                     found.add(match.resolve())
         except OSError as exc:
             logger.warning(

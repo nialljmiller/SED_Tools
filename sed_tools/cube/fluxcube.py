@@ -1,6 +1,6 @@
 """FluxCube: a 3-axis flux_cube.bin (the format is in cube/fileio.py) in memory, with cubic Hermite interpolation in
 Teff, log g and [M/H]. SEDModel (cube/model.py) and the flux cube tool (cube/tool.py, which re-exports it) use it.
-AllAxesCube: a split grid's all-axes flux_cube.bin, memory-mapped, with the same cubic Hermite on every numeric axis.
+AllAxesCube: a split grid's all-axes flux_cube_nd.bin, memory-mapped, with the same cubic Hermite on every numeric axis.
 """
 
 from __future__ import annotations
