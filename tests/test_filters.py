@@ -502,6 +502,20 @@ def search_matches_names_in_the_index_before_fetching_properties(t):
 
 
 @row
+def search_leaves_out_the_bands_kept_beside_a_set(t):
+    # NJM's index.json also lists JWST/NIRCam's F200W_old, which its MESA index leaves out and a fetch does not
+    # install, so Filters.plot(Filters.search(...)) stopped on it (review 24 Nov 2026).
+    root, njm = njm_catalogue(t)
+    index, props = json.loads(njm.files["index.json"]), json.loads(njm.files["filters/Fac/Cam/properties.json"])
+    index["filters"]["facilities_detailed"]["Fac"]["instruments"]["Cam"]["filters"].append("g_old")
+    props["bands"]["g_old"] = props["bands"]["g"]
+    njm.files.update({"index.json": json.dumps(index), "filters/Fac/Cam/properties.json": json.dumps(props),
+                      "filters/Fac/Cam/Cam": "g.dat\nr.dat\ni.dat\n"})
+    assert list(Filters.search(pivot=(4000, 5000), filter_root=root)["band"]) == ["g"]
+    assert list(Filters.search("cam/g", properties=False, filter_root=root)["band"]) == ["g"]
+
+
+@row
 def search_by_wavelength_pivot_fwhm_detector_and_any_property(t):
     root, njm = njm_catalogue(t)
     covers = Filters.search(wavelength=6200, filter_root=root)

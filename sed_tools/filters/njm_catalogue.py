@@ -436,6 +436,16 @@ class FilterCatalogue:
                 entries[(entry["facility"], entry["instrument"])] = entry
         return rows, entries
 
+    def _in_served_set(self, frame: pd.DataFrame) -> pd.Series:
+        """Whether each row's band is part of its instrument's served set (see :meth:`_split_archived`): ``index.json``
+        also lists the bands NJM keeps beside a set (superseded copies), which a fetch does not install."""
+        keep = pd.Series(True, index=frame.index)
+        for (facility, instrument), rows in frame.groupby(["facility", "instrument"]).groups.items():
+            bands = frame.loc[rows, "band"]
+            served = self._split_archived(facility, instrument, {"bands": dict.fromkeys(bands)})["bands"]
+            keep[rows] = bands.isin(list(served))
+        return keep
+
     def search(self, text: Optional[str] = None, *, facility: Optional[str] = None,
                instrument: Optional[str] = None, band: Optional[str] = None,
                wavelength: Any = None, pivot: Optional[Range] = None, fwhm: Optional[Range] = None,
@@ -464,6 +474,7 @@ class FilterCatalogue:
         for column, criterion in criteria.items():
             mask &= _apply(frame, column, criterion)
         frame = frame[mask]
+        frame = frame[self._in_served_set(frame)]
         leading = [c for c in LEADING_COLUMNS if c in frame.columns]
         rest = [c for c in frame.columns if c not in KEY_COLUMNS and c not in leading]
         frame = frame[KEY_COLUMNS + leading + rest]
