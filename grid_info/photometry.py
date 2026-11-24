@@ -5,11 +5,13 @@ per variant, the rectilinear node layout with its holes. For each grid and instr
 gives every spectrum's band-averaged surface flux as an ST magnitude, rounded to 1e-4 mag, with each band's AB and Vega
 offsets, so the AB, Vega and ST magnitudes and the bolometric corrections follow by addition (see DEFINITIONS).
 
-Band averages are SED_Tools' ``band_average_flux_lambda``: the spectrum interpolated onto the curve's own samples (zero
-outside its range), weighted by ``filter_weight`` (T, or T*lambda for photon counting) and integrated by the trapezoidal
-rule. That is linear in the spectrum, so it is written here as one sparse matrix per distinct wavelength grid among a
-grid's spectra; one product then applies every band to every spectrum. ``check`` asserts that the product equals
-``band_average_flux_lambda`` and ``_band_magnitude`` on random (spectrum, band) pairs before anything is written.
+Band averages are SED_Tools' ``band_average_flux_lambda``: SED_Tools' one band rule, ``band_integral`` on
+``band_grid`` with the spectrum's wavelengths (``on_band_grid``). That is linear in the spectrum, so for a wavelength
+grid shared by several spectra it is written as one sparse matrix: each row holds the coefficient of every spectrum
+sample, taken from SED_Tools' own per-step integrals (``_step_integrals``, called with flux 1 at one end of each step
+and 0 at the other); one product then applies every band to every spectrum. Other spectra call
+``band_average_flux_lambda`` itself. ``check`` asserts that the product equals ``band_average_flux_lambda`` and
+``_band_magnitude`` on random (spectrum, band) pairs before anything is written.
 
 Usage: python -m grid_info.photometry DATA_DIR OUT_DIR --grids G ... [--instruments Facility/Instrument ...]
        python -m grid_info.photometry DATA_DIR OUT_DIR --index-only     (rebuild OUT_DIR/index.json)
@@ -33,8 +35,9 @@ from scipy.sparse import csr_matrix
 
 from grid_info.check_grids import BOLO_FAIL, BOLO_WARN, COVERED, pi_b, trapz
 from sed_tools.filters.properties import ST_FLAM, filter_properties, load_vega
-from sed_tools.photometry import (AB_ZERO_FLUX, SPEED_OF_LIGHT_ANG_PER_S, Spectrum, _band_magnitude,
-                                  band_average_flux_lambda, filter_weight, integrate_flux, load_filter_curve)
+from sed_tools.photometry import (AB_ZERO_FLUX, SPEED_OF_LIGHT_ANG_PER_S, Spectrum, _band_magnitude, _step_integrals,
+                                  _weight_power, band_average_flux_lambda, band_grid, band_integral, integrate_flux,
+                                  load_filter_curve)
 
 SCHEMA = 1
 SIGMA_SB = 5.670374419e-5                      # erg s^-1 cm^-2 K^-4 (CODATA 2018, exact in SI)
@@ -58,8 +61,9 @@ DEFINITIONS = {
     "m_bol": "surface bolometric magnitude -2.5 log10(sigma Teff^4 / f0), f0 = L0 / (4 pi (10 pc)^2), "
              "L0 = 3.0128e35 erg/s (IAU 2015 B2, M_bol,sun = 4.74)",
     "BC": "BC_X = m_bol - m_X in system X (AB, Vega or ST): M_bol - M_X with the radius cancelled",
-    "outside": "fraction of the band's weight integral (trapezoidal, on the curve's samples) lying outside the "
-               "spectrum's tabulated wavelengths, where photometry counts zero flux; null when 0 for every point",
+    "outside": "1 - the band average of a spectrum of 1 over the spectrum's tabulated wavelengths (zero beyond them, "
+               "as photometry counts the flux there), by sed_tools.photometry.band_average_flux_lambda: the band's "
+               "weight lying outside the spectrum; null when 0 for every point",
     "fbol_ratio": "integral of the tabulated spectrum / (sigma Teff^4): the guard's flux-conservation check",
     "planck_cover": "integral of pi B_lambda(Teff) over the spectrum's tabulated wavelengths / (sigma Teff^4)",
     "fbol_flag": f"the grid guard's check 5a (grid_info.check_grids) per spectrum: 'partial' where planck_cover < "
@@ -174,7 +178,7 @@ class Grid:
 # ---------------------------------------------------------------------------------------------------- bands
 
 class Bands:
-    """Every band of the chosen instruments: curves, zero points, and the samples of the band operator."""
+    """Every band of the chosen instruments: curves and zero points; operator() and apply() give band averages."""
 
     def __init__(self, data_dir: Path, instruments, vega):
         self.instruments, self.curves, self.meta, self.errors = {}, [], [], {}
@@ -200,34 +204,42 @@ class Bands:
                     "Vega_minus_ST": 2.5 * math.log10(zp_vega / ST_FLAM) if zp_vega else None,
                     "zp_vega": zp_vega,
                 })
-        # The operator's samples: per curve sample, its band, wavelength and weight * trapezoid coefficient / norm.
-        rows, xs, cws = [], [], []
-        for b, c in enumerate(self.curves):
-            x = c.wavelength
-            w = filter_weight(x, c.transmission, c.detector_type)
-            coef = np.empty_like(x)
-            coef[0], coef[-1] = (x[1] - x[0]) / 2, (x[-1] - x[-2]) / 2
-            coef[1:-1] = (x[2:] - x[:-2]) / 2       # np.trapezoid(y, x) == coef @ y
-            rows.append(np.full(x.size, b))
-            xs.append(x)
-            cws.append(coef * w / np.trapezoid(w, x))
-        self.rows, self.x, self.cw = np.concatenate(rows), np.concatenate(xs), np.concatenate(cws)
         self.n = len(self.curves)
+        self.samples = sum(c.wavelength.size for c in self.curves)
 
     def operator(self, lam):
-        """Sparse A (bands x len(lam)): A @ flux is band_average_flux_lambda(lam, flux, curve) for every band."""
+        """Sparse A (bands x len(lam)): A @ flux is band_average_flux_lambda(lam, flux, curve) for every band.
+
+        On each band's band_grid with lam, SED_Tools' _step_integrals gives every step's integral for a flux of 1 at
+        one end and 0 at the other (the step integral is linear in the flux at its two ends); a grid point's
+        coefficient is the sum over its two steps, divided by band_integral of the weight. The flux at a grid point is
+        np.interp of lam (zero beyond it), as on_band_grid takes it."""
         n = lam.size
-        inside = (self.x >= lam[0]) & (self.x <= lam[-1])     # np.interp(..., left=0, right=0)
-        x, cw, rows = self.x[inside], self.cw[inside], self.rows[inside]
-        i = np.clip(np.searchsorted(lam, x, side="right") - 1, 0, n - 2)
-        t = (x - lam[i]) / (lam[i + 1] - lam[i])
-        return csr_matrix((np.concatenate([cw * (1 - t), cw * t]),
-                           (np.concatenate([rows, rows]), np.concatenate([i, i + 1]))), shape=(self.n, n))
+        rows, cols, vals = [], [], []
+        for b, c in enumerate(self.curves):
+            k = _weight_power(c.detector_type)
+            x, t = band_grid(c.wavelength, c.transmission, lam)
+            even = (np.arange(x.size) % 2 == 0).astype(float)
+            p, q = _step_integrals(x, t, even, k), _step_integrals(x, t, 1 - even, k)
+            steps = np.arange(x.size - 1)
+            left = np.where(steps % 2 == 0, p, q)     # each step's integral for flux 1 at its left end, 0 at its right
+            right = np.where(steps % 2 == 0, q, p)    # and for 0 at its left end, 1 at its right
+            coef = np.zeros(x.size)
+            coef[:-1] += left
+            coef[1:] += right
+            coef /= band_integral(x, t, None, k)
+            inside = (x >= lam[0]) & (x <= lam[-1])  # np.interp(..., left=0, right=0)
+            x, coef = x[inside], coef[inside]
+            i = np.clip(np.searchsorted(lam, x, side="right") - 1, 0, n - 2)
+            f = (x - lam[i]) / (lam[i + 1] - lam[i])
+            rows.append(np.full(2 * x.size, b))
+            cols += [i, i + 1]
+            vals += [coef * (1 - f), coef * f]
+        return csr_matrix((np.concatenate(vals), (np.concatenate(rows), np.concatenate(cols))), shape=(self.n, n))
 
     def apply(self, lam, flux):
-        """The same band averages for one spectrum without building the matrix: interpolate, weight, sum per band."""
-        return np.bincount(self.rows, weights=self.cw * np.interp(self.x, lam, flux, left=0.0, right=0.0),
-                           minlength=self.n)
+        """The same band averages for one spectrum, from band_average_flux_lambda itself."""
+        return np.array([band_average_flux_lambda(lam, flux, c) for c in self.curves])
 
 
 # ---------------------------------------------------------------------------------------------------- photometry
@@ -401,7 +413,7 @@ def main(argv=None):
     vega = load_vega(args.data_dir / "vega" / "vega_flam.csv")
     t0 = time.time()
     bands = Bands(args.data_dir, instruments, vega)
-    print(f"{bands.n} bands in {len(instruments)} instruments ({bands.x.size} curve samples), "
+    print(f"{bands.n} bands in {len(instruments)} instruments ({bands.samples} curve samples), "
           f"{len(bands.errors)} unusable, {time.time() - t0:.1f} s", flush=True)
     report = {}
     for name in args.grids:
