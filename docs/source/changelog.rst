@@ -676,8 +676,9 @@ Fixed
   as NJM's are.
 - ``scripts/audit_pipeline.py`` no longer fails an exact Planck grid: its
   expected blackbody flux is integrated on a logarithmic grid.
-- ``scripts/bump_version.py`` replaces a ``Version X.Y.Z (unreleased)``
-  heading with the release heading, instead of adding a second one above it.
+- ``scripts/bump_version.py`` replaces a ``Version X.Y.Z`` heading marked
+  unreleased with the release heading, instead of adding a second one above
+  it.
 
 Checks and guards
 ~~~~~~~~~~~~~~~~~
