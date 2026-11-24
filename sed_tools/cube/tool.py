@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from . import model as _model
+from .fileio import is_all_axes
 from .fluxcube import FluxCube
 from ..photometry import (
     FILTER_EXTENSIONS, PC_TO_M, RSUN_TO_M, FilterCurve, Spectrum, _band_magnitude, _warn_outside_sed,
@@ -303,7 +304,7 @@ def resolve_vega_spectrum_path(
 
 
 def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = None) -> List[Path]:
-    """Discover ``flux_cube.bin`` files from common locations and hints."""
+    """Discover 3-axis ``flux_cube.bin`` files from common locations and hints."""
     hints = list(hints or [])
     for variable in ("SED_FLUX_CUBE", "SED_FLUX_CUBE_DIR"):
         if os.environ.get(variable):
@@ -341,7 +342,7 @@ def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = No
             continue
         try:
             for match in directory.rglob("flux_cube.bin"):
-                if match.is_file():
+                if match.is_file() and not is_all_axes(match):  # a split grid's all-axes cube: SEDModel reads it
                     found.add(match.resolve())
         except OSError as exc:
             logger.warning(
@@ -358,7 +359,7 @@ def resolve_flux_cube_path(path: str) -> Path:
         return candidate
 
     if candidate.is_dir():
-        matches = sorted(p for p in candidate.rglob("flux_cube.bin") if p.is_file())
+        matches = sorted(p for p in candidate.rglob("flux_cube.bin") if p.is_file() and not is_all_axes(p))
         if not matches:
             raise FileNotFoundError(
                 f"No flux_cube.bin found under directory '{candidate}'. "
