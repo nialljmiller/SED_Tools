@@ -337,9 +337,9 @@ class SED:
     --------
     >>> grids = SED.query(teff_min=5000)
     >>> sed = SED.fetch('Kurucz2003all', teff_min=4000, teff_max=8000)
-    >>> sed.grid.write()
-    >>> sed = SED.local('Kurucz2003all')
-    >>> spectrum = sed(5777, 4.44, 0.0)
+    >>> sed.grid.filter(logg_min=4.0).write('/path/to/my_selection')  # a folder of its own
+    >>> sed = SED.local('Kurucz2003all')  # split by alpha: each extra axis by keyword
+    >>> spectrum = sed(5777, 4.44, 0.0, alpha=0.0)
     """
     
     _model_root: Path = STELLAR_DIR_DEFAULT
