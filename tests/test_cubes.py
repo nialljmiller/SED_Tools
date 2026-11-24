@@ -1530,6 +1530,19 @@ def photometry_takes_several_name_path_tuples(t):
 
 
 @row
+def photometry_keeps_apart_the_bands_of_two_sets_that_share_a_name(t):
+    # photometry("Johnson", "2MASS") gave one J, 2MASS's having replaced Johnson's (notebooks review, 24 Nov 2026).
+    evaluated = _evaluated(t)
+    one, two = (_box_filter(t.tmp / name / "J.dat", ANGSTROM, edges=(lo - 100, lo, lo + 1000, lo + 1100))
+                for name, lo in (("One", 4000.0), ("Two", 6000.0)) if (t.tmp / name).mkdir() is None)
+    both = magnitudes(evaluated.photometry(one.parent, two.parent))
+    alone = [magnitudes(evaluated.photometry(curve))["J"] for curve in (one, two)]
+    assert both == {"One/J": alone[0], "Two/J": alone[1]}
+    assert both["One/J"] != both["Two/J"]
+    assert list(evaluated.photometry(one, one.parent)) == ["J"]  # one file asked for twice is one curve
+
+
+@row
 def a_lone_pair_of_names_stays_two_filters(t):
     # ("V", "B") must not become filter "B" labelled "V": only a path makes a (name, path) spec.
     from sed_tools.cube.model import _normalize_filter_sequence
