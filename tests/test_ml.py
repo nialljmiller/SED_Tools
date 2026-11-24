@@ -505,6 +505,29 @@ def generate_check_bounds_prints_each_out_of_range_parameter(t):
     assert "Warning: [M/H]=0.60 outside range [-1.00, 0.50]" in out
 
 
+@row
+def a_constant_training_axis_is_ignored_and_non_finite_flux_is_refused(t):
+    # A grid with log g 0 throughout stored logg_std 1e-8, so log g 4.5 became 4.5e8 and the flux inf;
+    # densify and extend_catalog then wrote it and reported success.
+    from sed_tools.ml.common import param_scaler
+
+    torch = cpu_torch(t)
+    assert param_scaler(np.array([[5000.0, 0.0, 0.1], [6000.0, 0.0, 0.1]]))["logg_std"] == 0.0
+    generator = fixed_generator(torch)
+    generator.scaler_params.update(logg_mean=0.0, logg_std=1e-8)  # as a model saved before 0.7.0 holds it
+    flux = generator.generate(6000.0, 4.5, 0.0, check_bounds=False)[1]
+    np.testing.assert_array_equal(flux, generator.generate(6000.0, 0.0, 0.0, check_bounds=False)[1])
+    assert np.all(np.isfinite(flux))
+    generator.scaler_params["flux_log_std"] = 1e6  # a prediction that overflows
+    with pytest.raises(ValueError, match="flux at Teff=6000, logg=4.5, .M/H.=0 is not finite"):
+        generator.generate(6000.0, 4.5, 0.0, check_bounds=False)
+    completer = fixed_completer(torch)
+    completer.scaler_params["ext_log_std"] = 1e6
+    wl = np.logspace(np.log10(3000.0), np.log10(20000.0), 300)
+    with pytest.raises(ValueError, match="is not finite at"):
+        completer.complete_sed(wl, mc.planck_function(wl, 5800.0), 5800.0, 4.4, 0.1, extension_range=(500.0, 6e4))
+
+
 # ======================================================================
 # The interactive workflows (training and inference stubbed)
 # ======================================================================

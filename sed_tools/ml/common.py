@@ -133,6 +133,13 @@ def predict(model, row: np.ndarray, device) -> np.ndarray:
         return model(torch.from_numpy(row[None]).to(device)).cpu().numpy()[0]
 
 
+def require_finite(flux: np.ndarray, where: str) -> None:
+    """Raise ValueError when a network's flux is not finite everywhere: such a spectrum is never written."""
+    bad = int(np.count_nonzero(~np.isfinite(flux)))
+    if bad:
+        raise ValueError(f"the model's flux at {where} is not finite at {bad} of {flux.size} wavelengths")
+
+
 def write_spectrum(path, *columns, note: str = "") -> None:
     """An ML .txt spectrum: the header 'wavelength_A flux_erg/s/cm2/A' (then '# note'), the columns at %.6e."""
     header = "wavelength_A flux_erg/s/cm2/A" + (f"\n# {note}" if note else "")
@@ -185,11 +192,12 @@ def _warn_dropped(dropped: Counter, n_sampled: int, library_path: str) -> None:
 
 
 def param_scaler(params: np.ndarray, with_range: bool = False) -> Dict[str, float]:
-    """Mean and std (with_range: also min and max) of each (teff, logg, meta) column, keyed as config.json has them."""
+    """Mean and std (with_range: also min and max) of each (teff, logg, meta) column, keyed as config.json has them.
+    A column with one value throughout gets std 0: normalised_params then ignores that axis."""
     scaler = {}
     for i, name in enumerate(_PARAMS):
         scaler[f'{name}_mean'] = float(np.mean(params[:, i]))
-        scaler[f'{name}_std'] = float(np.std(params[:, i]) + 1e-8)
+        scaler[f'{name}_std'] = float(np.std(params[:, i]) + 1e-8) if np.ptp(params[:, i]) > 0 else 0.0
         if with_range:
             scaler[f'{name}_min'] = float(np.min(params[:, i]))
             scaler[f'{name}_max'] = float(np.max(params[:, i]))
@@ -197,12 +205,12 @@ def param_scaler(params: np.ndarray, with_range: bool = False) -> Dict[str, floa
 
 
 def normalised_params(scaler: Dict[str, float], teff, logg, meta) -> list:
-    """teff, logg and meta scaled as in training; each may be one value or a column of them."""
-    return [
-        (teff - scaler['teff_mean']) / scaler['teff_std'],
-        (logg - scaler['logg_mean']) / scaler['logg_std'],
-        (meta - scaler['meta_mean']) / scaler['meta_std'],
-    ]
+    """teff, logg and meta scaled as in training; each may be one value or a column of them. An axis that had one
+    value throughout training (std 0, or the 1e-8 that models saved before 0.7.0 hold) is 0 at any value: the
+    network never saw it vary, and dividing by that spread made any other value overflow."""
+    return [(value - scaler[f'{name}_mean']) / scaler[f'{name}_std'] if scaler[f'{name}_std'] > 1e-8
+            else 0.0 * (value - scaler[f'{name}_mean'])
+            for name, value in zip(_PARAMS, (teff, logg, meta))]
 
 
 # Training loop

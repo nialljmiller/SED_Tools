@@ -19,8 +19,8 @@ from ..cube.fileio import load as load_cube
 from ..ui_utils import (ask_number as _ask_number, banner as _banner, menu_choice as _menu_choice, ordered_range,
                         section as _section)
 from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, Engine, Network, action_menu, confirmed, data_loaders, fit,
-                     log_grid, model_configs, normalised_params, param_scaler, predict, print_libraries, resample,
-                     sample_spectra, training_libraries, write_spectrum)
+                     log_grid, model_configs, normalised_params, param_scaler, predict, print_libraries,
+                     require_finite, resample, sample_spectra, training_libraries, write_spectrum)
 
 logger = logging.getLogger(__name__)
 
@@ -576,6 +576,8 @@ class SEDCompleter(Engine):
             The added points below the SED, its own wavelengths, then the added points above it
         flux_extended : np.ndarray
             Flux at those wavelengths
+
+        Raises ValueError if any added flux is not finite (a model that cannot predict at these parameters).
         """
         low, high = ordered_range(*extension_range)
         self.model.eval()
@@ -601,6 +603,7 @@ class SEDCompleter(Engine):
         flux_high = _blend_with_blackbody(
             wl_high, np.log10(wl_high) - np.log10(wl_max), self.wavelength_grid[known_end:], y_pred_flux[known_end:],
             bb_flux[need_high])
+        require_finite(np.concatenate([flux_low, flux_high]), f"Teff={teff:g}, logg={logg:g}, [M/H]={meta:g}")
 
         wl_out = np.concatenate([wl_low, wavelength, wl_high])
         flux_out = np.concatenate([flux_low, flux, flux_high])
@@ -622,7 +625,8 @@ class SEDCompleter(Engine):
         X_input = np.concatenate([flux_known_norm, params_norm]).astype(np.float32)
         y_pred_norm = predict(self.model, X_input, self.device)
         y_pred_log = y_pred_norm * self.scaler_params['ext_log_std'] + self.scaler_params['ext_log_mean']
-        return 10 ** y_pred_log
+        with np.errstate(over='ignore'):  # an overflow is refused by extend (require_finite)
+            return 10 ** y_pred_log
 
     @staticmethod
     def list_models(models_dir: str = "models") -> List[Dict[str, Any]]:
