@@ -511,6 +511,15 @@ def coverage_reports_a_local_grid(t):
 
 
 @row
+def coverage_counts_the_nodes_of_a_grid_without_log_g_or_metallicity(t):
+    # A missing axis made every node "unknown": bbody reported 0 nodes and 0 % fill (review 24 Nov 2026, api.md 4).
+    (t.tmp / "bb").mkdir()
+    (t.tmp / "bb" / "lookup_table.csv").write_text("file_name,teff\na.txt,3000\nb.txt,4000\nc.txt,5000\n")
+    summary = SED.coverage("bb", model_root=t.tmp, plot=False)
+    assert (summary["n_distinct_nodes"], summary["full_product"], summary["fill_fraction"]) == (3, 3, 1.0)
+
+
+@row
 def a_reversed_range_raises_from_the_cli_flags_fetch_the_grid_finder_and_mast(t):
     # One rule (ui_utils.ordered_range), as in the menus and the ML completer. The CLI flags passed a reversed
     # cut on, SED.fetch looked for spectra within it, and find_grids/find_model and the MAST cuts swapped its ends.
