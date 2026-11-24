@@ -454,21 +454,29 @@ def _unknown_unit(t, how):
 def cli_import_asks_for_the_flux_unit_and_passes_it_on(t):
     src = _grid(t.tmp / "mine")
     calls = []
-    t.mp.setattr("sed_tools.api.SED.import_grid", lambda *a, **k: calls.append(k))
+    dest = t.tmp / "models" / "mine"
+    t.mp.setattr("sed_tools.api.SED.import_grid", lambda *a, **k: calls.append(k) or {"dest": str(dest)})
     _terminal(t, str(src), "", "n", "flam")
+    dest.mkdir(parents=True)
+    (dest / "lookup_table.csv").write_text("file_name,teff\n")
     cli.run_import_flow(base_dir=str(t.tmp / "models"))
     assert calls[0]["flux_unit"] == "flam"
+    assert f"stellar_atm = '{dest}'" in t.capsys.readouterr().out  # as every other build prints it
 
 
 @row
 def cli_import_command_asks_on_a_terminal_and_not_for_a_dry_run(t):
     src = _grid(t.tmp / "mine")
     calls = []
-    t.mp.setattr("sed_tools.api.SED.import_grid", lambda *a, **k: calls.append(k))
+    dest = t.tmp / "models" / "mine"
+    dest.mkdir(parents=True)
+    (dest / "lookup_table.csv").write_text("file_name,teff\n")
+    t.mp.setattr("sed_tools.api.SED.import_grid", lambda *a, **k: calls.append(k) or {"dest": str(dest)})
     prompts = _terminal(t, "fnu")
     for extra in ([], ["--dry-run"]):
         t.mp.setattr(sys, "argv", ["sed-tools", "import", "--path", str(src), "--base", str(t.tmp / "models")] + extra)
         assert cli.main() == 0
+        assert (f"stellar_atm = '{dest}'" in t.capsys.readouterr().out) == (not extra)  # the MESA path, once built
     assert [c["flux_unit"] for c in calls] == ["fnu", None]
     assert len(prompts) == 1
 

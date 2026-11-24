@@ -549,10 +549,13 @@ def _cmd_coverage(args, parser):
 
 def _cmd_import(args, parser):
     flux_unit = None if args.dry_run else _ask_import_flux_unit(args.path, args.name, args.flux_unit)
-    SED.import_grid(args.path, name=args.name, model_root=args.base, move=args.move, build_h5=not args.no_h5,
-                    build_cube=not args.no_cube, dry_run=args.dry_run, flux_unit=flux_unit)
+    result = SED.import_grid(args.path, name=args.name, model_root=args.base, move=args.move,
+                             build_h5=not args.no_h5, build_cube=not args.no_cube, dry_run=args.dry_run,
+                             flux_unit=flux_unit)
     if args.dry_run:
         _report_import_flux_unit(args.path, args.name, args.flux_unit)
+    elif not args.no_cube:
+        _print_mesa_inlist(result["dest"])
     return 0
 
 
