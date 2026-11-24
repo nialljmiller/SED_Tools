@@ -3,10 +3,10 @@
 Wavelengths are in Angstrom.  ``T`` is the tabulated transmission and ``W`` the
 synthetic-photometry weight used everywhere in SED_Tools (:func:`filter_weight`:
 ``T`` for energy-counting curves, ``T·λ`` for photon-counting ones; Bessell &
-Murphy 2012, PASP 124, 140).  Integrals use the trapezoidal rule: on the curve's
-own samples, and with a reference spectrum (Vega, the Sun) on the curve's samples
-and the spectrum's within its range, as photometry integrates
-(:func:`sed_tools.photometry.on_band_grid`).
+Murphy 2012, PASP 124, 140).  Every integral is photometry's one rule,
+:func:`sed_tools.photometry.band_integral`: the exact integral with the
+transmission linear between the curve's samples and a reference spectrum (Vega,
+the Sun) linear between its own.
 
 =================  ==============================================================
 WavelengthMean     ∫ λ T dλ / ∫ T dλ
@@ -64,8 +64,9 @@ from typing import Dict, Optional, Tuple, Union
 import numpy as np
 
 from .curve_metadata import read_filter_header
-from ..photometry import (SPEED_OF_LIGHT_ANG_PER_S, band_average_flux_lambda_from_arrays, filter_weight,
-                          load_filter_curve, load_spectrum, on_band_grid)
+from ..photometry import (SPEED_OF_LIGHT_ANG_PER_S, band_average_flux_lambda_from_arrays, band_grid,
+                          band_integral,
+                          load_filter_curve, load_spectrum, on_band_grid, pivot_wavelength)
 
 AB_JY = 3631.0
 ST_FLAM = 3.631e-9  # erg/s/cm²/Å
@@ -208,15 +209,15 @@ def filter_properties(
     if t.max() <= 0:
         raise ValueError("the filter curve has no positive transmission")
 
-    w = filter_weight(lam, t, detector_type)  # ValueError for an unknown detector type
-    area_t, area_w = np.trapezoid(t, lam), np.trapezoid(w, lam)
-    pivot = math.sqrt(area_w / np.trapezoid(w / lam**2, lam))
+    pivot = pivot_wavelength(lam, t, detector_type)  # ValueError for an unknown detector type
+    grid, tg = band_grid(lam, t)
+    area_t = band_integral(grid, tg)
     significant = np.flatnonzero(t >= 0.01 * t.max())
     blue, red = _half_maximum_points(lam, t)
     nu_factor = pivot**2 / SPEED_OF_LIGHT_ANG_PER_S  # band-averaged f_ν = f_λ · λp² / c
 
     props: Dict[str, Optional[float]] = {
-        "WavelengthMean": float(np.trapezoid(lam * t, lam) / area_t),
+        "WavelengthMean": band_integral(grid, tg, None, 1) / area_t,
         "WavelengthPivot": pivot,
         "WavelengthPeak": float(lam[np.argmax(t)]),
         "WavelengthMin": float(lam[significant[0]]),
@@ -243,8 +244,8 @@ def filter_properties(
         grid, tv, f = on_vega
         flam = band_average_flux_lambda_from_arrays(grid, f, tv, detector_type)
         props.update({
-            "WavelengthEff": float(np.trapezoid(grid * tv * f, grid) / np.trapezoid(tv * f, grid)),
-            "WavelengthPhot": float(np.trapezoid(grid**2 * tv * f, grid) / np.trapezoid(grid * tv * f, grid)),
+            "WavelengthEff": band_integral(grid, tv, f, 1) / band_integral(grid, tv, f),
+            "WavelengthPhot": band_integral(grid, tv, f, 2) / band_integral(grid, tv, f, 1),
             "ZeroPointVega_flam": flam,
             "ZeroPointVega_Jy": flam * nu_factor / JY,
         })

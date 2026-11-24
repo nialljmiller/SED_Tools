@@ -24,6 +24,7 @@ import numpy as np
 from requests import RequestException
 
 from ..filters.curve_metadata import PHOTON
+from ..photometry import band_average_flux_lambda_from_arrays, band_grid
 from ._original import Component, Fetcher, Instrument, clean_curve, make_band, make_builder, open_fits
 
 logger = logging.getLogger(__name__)
@@ -132,9 +133,10 @@ def senscorr_summary(raw: bytes) -> str:
 
 
 def _photon_mag(wl, resp, temperature):
-    lam = wl * 1e-8
+    grid, r = band_grid(wl, resp)
+    lam = grid * 1e-8
     f = 1.0 / lam**5 / np.expm1(1.4388 / (lam * temperature))
-    return -2.5 * np.log10(np.trapezoid(f * resp * wl, wl) / np.trapezoid(resp * wl, wl))
+    return -2.5 * np.log10(band_average_flux_lambda_from_arrays(grid, f, r, PHOTON))
 
 
 def _composition_check(wl, published, composed) -> str:

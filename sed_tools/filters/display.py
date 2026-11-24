@@ -29,6 +29,8 @@ from typing import Dict, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
+from ..photometry import band_grid, band_integral
+
 CIE_DIR = Path(__file__).resolve().parents[1] / "cie"
 VISIBLE_ANGSTROM = (3800.0, 7500.0)
 TRUE_COLOR_FRACTION = 0.5
@@ -63,9 +65,11 @@ def _arrays(wavelength, transmission):
 
 
 def _mean_wavelength(lam: np.ndarray, t: np.ndarray) -> float:
-    """Transmission-weighted mean wavelength: it orders the false colours, the plotted curves and the legend."""
-    area = np.trapezoid(t, lam)
-    return float(np.trapezoid(lam * t, lam) / area) if area > 0 else float(lam.mean())
+    """Transmission-weighted mean wavelength (properties' WavelengthMean, on photometry's band grid): it orders the
+    false colours, the plotted curves and the legend."""
+    grid, tg = band_grid(lam, t)
+    area = band_integral(grid, tg)
+    return band_integral(grid, tg, None, 1) / area if area > 0 else float(lam.mean())
 
 
 def visible_fraction(wavelength: Sequence[float], transmission: Sequence[float]) -> float:

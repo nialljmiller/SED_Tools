@@ -924,10 +924,11 @@ def _convert_to_energy(t, manifest):
         assert np.isclose(curve.max(), native.max())
         assert_allclose(curve, native * WL * native.max() / (native * WL).max(), rtol=1e-12)
         assert_allclose(mesa_weights(inst / f"{band}.dat"), native, rtol=1e-12)
-        # SED_Tools' own weighting agrees: the same pivot and AB zero point as the native curve.
+        # SED_Tools' own weighting agrees: the same pivot and AB zero point as the native curve, to the difference
+        # between a curve linear in T*lambda between its 10 A steps and one linear in T, ~(10 A / lambda)^2.
         props, native_props = curve_properties(inst / f"{band}.dat"), filter_properties(WL, native, PHOTON)
         for key in ("WavelengthPivot", "ZeroPointAB_flam"):
-            assert np.isclose(props[key], native_props[key], rtol=1e-10)
+            assert np.isclose(props[key], native_props[key], rtol=2e-6)
     # The same instrument in the other convention: only the detector fields of NJM's records change.
     assert json.loads((inst / "properties.json").read_text())["bands"]["g"] == {
         "DetectorType": ENERGY, "DetectorTypeSource": "user", "WavelengthPivot": 1.0, "DisplayColor": "#000"}
@@ -1475,6 +1476,29 @@ def a_coarse_curve_sees_the_spectrum_between_its_samples(t):
     assert band_average_flux_lambda(*spectrum, curve) == pytest.approx(1.5, rel=1e-12)
     p = filter_properties(curve.wavelength, curve.transmission, ENERGY, vega=spectrum, sun=spectrum)
     assert p["ZeroPointVega_flam"] == pytest.approx(1.5, rel=1e-12) and p["Fsun"] == pytest.approx(1.5, rel=1e-12)
+
+
+@row
+def a_long_gap_between_samples_is_one_line_for_every_band_quantity(t):
+    from sed_tools.photometry import SPEED_OF_LIGHT_ANG_PER_S, FilterCurve, band_average_flux_lambda, band_average_flux_nu
+
+    # Two samples 8000 A apart, T falling linearly from 1 to 0: pivot^2 = int T / int T/lambda^2 = 4000 / ((2 - ln 3) / 8000),
+    # 5958 A (the trapezoid on the two samples gave 4000 A, as if T/lambda^2 were the line).
+    lam, tr = np.array([4000.0, 12000.0]), np.array([1.0, 0.0])
+    pivot = math.sqrt(4000.0 * 8000.0 / (2.0 - math.log(3.0)))
+    curve = FilterCurve("gap", lam, tr, {}, detector_type=ENERGY)
+    spectra = [(np.array([3000.0, 6000.0, 6100.0, 13000.0]), np.array([2.0, 1.0, 5.0, 0.5])),
+               (np.array([3000.0, 13000.0]), np.array([1.0, 3.0]))]
+    fine = np.linspace(4000.0, 12000.0, 400001)  # the same lines, resolved: the reference f_nu
+    for sl, sf in spectra:
+        f, w = np.interp(fine, sl, sf), np.interp(fine, lam, tr)
+        f_nu = np.trapezoid(f * w, fine) / np.trapezoid(w * SPEED_OF_LIGHT_ANG_PER_S / fine**2, fine)
+        assert band_average_flux_nu(sl, sf, curve) == pytest.approx(f_nu, rel=1e-8)
+        assert band_average_flux_nu(sl, sf, curve) / band_average_flux_lambda(sl, sf, curve) == pytest.approx(
+            pivot**2 / SPEED_OF_LIGHT_ANG_PER_S, rel=1e-8)
+    p = filter_properties(lam, tr, ENERGY, vega=spectra[0])
+    assert p["WavelengthPivot"] == pytest.approx(pivot, rel=1e-8)
+    assert p["ZeroPointVega_Jy"] == pytest.approx(band_average_flux_nu(*spectra[0], curve) / 1e-23, rel=1e-12)
 
 
 @row

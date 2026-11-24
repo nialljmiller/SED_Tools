@@ -1154,7 +1154,7 @@ def model_photometry_warns_once_about_filters_past_the_model(t):
     with t.caplog.at_level(logging.WARNING, logger="sed_tools.photometry"):
         sed.photometry(flat_filter("V"), flat_filter("B"), system="AB")
     [warning] = [r.getMessage() for r in t.caplog.records]
-    assert warning.endswith("so these bands are biased low: V (47.5%), B (47.5%).")
+    assert warning.endswith("so these bands are biased low: V (50%), B (50%).")
 
 
 def _averaged_rows(model_dir, caplog, **override):

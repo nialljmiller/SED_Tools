@@ -258,18 +258,111 @@ def filter_weight(
     return transmission
 
 
+#: :func:`band_grid` splits every step longer than lambda / BAND_RESOLVING_POWER, so that :func:`band_integral` is
+#: exact to about 1e-9 for the negative powers of lambda too (the pivot's lambda^-2), not only for polynomials.
+BAND_RESOLVING_POWER = 100.0
+
+
+def band_grid(
+    wavelength: Sequence[float], transmission: Sequence[float], points: Sequence[float] = ()
+) -> Tuple[np.ndarray, np.ndarray]:
+    """The wavelengths every band integral is taken on, and the curve's transmission there: (wavelength, transmission).
+
+    They are the curve's samples, the ``points`` (a spectrum's wavelengths) within the curve's range, and evenly spaced
+    points that split each step longer than lambda / :data:`BAND_RESOLVING_POWER`.  The transmission is linear between
+    the curve's samples, on every step however long.  The curve's wavelengths increase; one may repeat (a vertical
+    edge), and keeps its order.
+    """
+    lam = np.asarray(wavelength, dtype=float)
+    t = np.asarray(transmission, dtype=float)
+    points = np.asarray(points, dtype=float)
+    added = points[(points > lam[0]) & (points < lam[-1])]
+    added = added[~np.isin(added, lam)]
+    if added.size:
+        order = np.argsort(np.concatenate([lam, added]), kind="stable")
+        t = np.concatenate([t, np.interp(added, lam, t)])[order]
+        lam = np.concatenate([lam, added])[order]
+    step = np.diff(lam)
+    n = np.maximum(np.ceil(step * BAND_RESOLVING_POWER / lam[:-1]).astype(int) - 1, 0)  # points added in each step
+    if not n.any():
+        return lam, t
+    i = np.repeat(np.arange(step.size), n)
+    frac = (np.arange(i.size) - np.repeat(np.cumsum(n) - n, n) + 1) / (n[i] + 1)
+    return (np.insert(lam, i + 1, lam[i] + frac * step[i]),
+            np.insert(t, i + 1, t[i] + frac * (t[i + 1] - t[i])))
+
+
+def _step_integrals(wavelength, transmission, flux=None, power: int = 0) -> np.ndarray:
+    """∫ T F λ^power dλ over each step of a band grid, T and F linear across the step: Simpson's rule with T and F
+    at the step's middle taken from that line, which is exact for power 0 to 2 (a cubic at most)."""
+    lam = np.asarray(wavelength, dtype=float)
+    product = np.asarray(transmission, dtype=float)
+    middle = (product[1:] + product[:-1]) / 2
+    if flux is not None:
+        flux = np.asarray(flux, dtype=float)
+        product, middle = product * flux, middle * (flux[1:] + flux[:-1]) / 2
+    mid = (lam[1:] + lam[:-1]) / 2
+    ends = product * lam**power
+    return np.diff(lam) / 6 * (ends[:-1] + 4 * middle * mid**power + ends[1:])
+
+
+def band_integral(wavelength, transmission, flux=None, power: int = 0) -> float:
+    """∫ T F λ^power dλ on a :func:`band_grid` (``flux`` F omitted: 1), the one rule for every band quantity: band
+    averages, zero points, pivot and other wavelengths, and shares of the band.
+
+    T is linear between the grid's wavelengths, and so is F (a spectrum's own wavelengths are on the grid; see
+    :func:`on_band_grid`), and the integral of that product is exact (see :func:`_step_integrals`).
+    """
+    return float(_step_integrals(wavelength, transmission, flux, power).sum())
+
+
+def _weight_power(detector_type: str) -> int:
+    """The power of lambda in the weight :func:`filter_weight` gives: 0 (energy counting) or 1 (photon counting)."""
+    resolved = normalize_detector_type(detector_type)
+    if resolved is None:
+        raise ValueError(f"Unknown detector type: {detector_type!r}")
+    return 1 if resolved == PHOTON else 0
+
+
 def band_average_flux_lambda_from_arrays(
     wavelength: np.ndarray,
     flux: np.ndarray,
     transmission: np.ndarray,
     detector_type: str = ENERGY,
 ) -> float:
-    weight = filter_weight(wavelength, transmission, detector_type)
-    numerator = np.trapezoid(flux * weight, wavelength)
-    denom = np.trapezoid(weight, wavelength)
+    """∫ F W dλ / ∫ W dλ by :func:`band_integral` on the given wavelengths (a :func:`band_grid`), W the weight."""
+    k = _weight_power(detector_type)
+    denom = band_integral(wavelength, transmission, None, k)
     if denom == 0:
         raise ValueError("Filter transmission integrates to zero")
-    return float(numerator / denom)
+    return band_integral(wavelength, transmission, flux, k) / denom
+
+
+def pivot_wavelength(wavelength: Sequence[float], transmission: Sequence[float], detector_type: str = ENERGY) -> float:
+    """sqrt(∫ W dλ / ∫ W λ⁻² dλ) by :func:`band_integral`, W the weight: the band-averaged f_ν is f_λ λp² / c."""
+    k = _weight_power(detector_type)
+    grid, t = band_grid(wavelength, transmission)
+    denom = band_integral(grid, t, None, k - 2)
+    if not denom > 0:
+        raise ValueError("Filter transmission integrates to zero")
+    return math.sqrt(band_integral(grid, t, None, k) / denom)
+
+
+def _band_steps(wavelength, transmission, detector_type):
+    """Each step of the band grid: its middle wavelength and its part of ∫ W dλ (negative T counts as 0)."""
+    grid, t = band_grid(wavelength, np.clip(np.asarray(transmission, dtype=float), 0.0, None))
+    return (grid[1:] + grid[:-1]) / 2, _step_integrals(grid, t, None, _weight_power(detector_type))
+
+
+def band_share(wavelength: Sequence[float], transmission: Sequence[float], where, detector_type: str = ENERGY) -> float:
+    """The share of a band's weight ∫ W dλ (by :func:`band_integral`) in the steps of the band grid whose middle
+    wavelength ``where`` accepts (negative transmission counts as zero); NaN for a band whose weight integrates to
+    zero."""
+    middle, part = _band_steps(wavelength, transmission, detector_type)
+    total = part.sum()
+    if not total > 0:
+        return math.nan
+    return float(part[where(middle)].sum() / total)
 
 
 # ---- How a grid's wavelengths sample a band ----
@@ -289,7 +382,7 @@ class BandSampling:
     inside: int                   # grid wavelengths where the band transmits
     outside: float                # share of the band's weight beyond the grid's first and last wavelength
     coarse: float                 # share of its weight in coarse stretches between grid wavelengths
-    stretch: Tuple[float, float]  # the coarse stretch (Å) under the band's heaviest coarse sample; (nan, nan) if none
+    stretch: Tuple[float, float]  # the coarse stretch (Å) under the band's heaviest coarse step; (nan, nan) if none
 
     @property
     def sampled(self) -> bool:
@@ -315,44 +408,46 @@ class BandSampling:
 def band_sampling(grid_wavelength: Sequence[float], curve: FilterCurve) -> BandSampling:
     """How the increasing wavelengths ``grid_wavelength`` (Å; a flux cube's axis or a spectrum's) sample ``curve``.
 
-    The band's weight is the curve's band-average weight (``curve.weight``), integrated on the curve's samples.
+    The shares are of the band's weight (``curve.weight``) on :func:`band_grid`.
     """
     grid = np.asarray(grid_wavelength, dtype=float)
     lam = curve.wavelength
-    weight = np.clip(curve.weight, 0.0, None)
-    total = np.trapezoid(weight, lam)
     near = grid[np.searchsorted(grid, lam[0]):np.searchsorted(grid, lam[-1], side="right")]  # 0 elsewhere
     inside = int(np.count_nonzero(np.interp(near, lam, np.clip(curve.transmission, 0.0, None)) > 0))
-    if not total > 0:
+
+    def beyond(x):
+        return (x < grid[0]) | (x > grid[-1])
+
+    def stretch_of(x):  # each wavelength's stretch grid[k-1]..grid[k]
+        k = np.clip(np.searchsorted(grid, x, side="right"), 1, grid.size - 1)
+        return grid[k - 1], grid[k]
+
+    def coarse(x):
+        lo, hi = stretch_of(x)
+        return ~beyond(x) & ((hi - lo) * 2 * COARSE_RESOLVING_POWER > hi + lo)
+
+    outside = band_share(lam, curve.transmission, beyond, curve.detector_type)
+    if math.isnan(outside):
         return BandSampling(inside, 0.0, 0.0, (math.nan, math.nan))  # the band average itself raises
-
-    def share(mask):
-        return float(np.trapezoid(np.where(mask, weight, 0.0), lam) / total)
-
-    beyond = (lam < grid[0]) | (lam > grid[-1])
     if grid.size < 2:
-        return BandSampling(inside, share(beyond), 0.0, (math.nan, math.nan))
-    k = np.clip(np.searchsorted(grid, lam, side="right"), 1, grid.size - 1)  # each sample's stretch grid[k-1]..grid[k]
-    lo, hi = grid[k - 1], grid[k]
-    coarse = ~beyond & ((hi - lo) * 2 * COARSE_RESOLVING_POWER > hi + lo)
+        return BandSampling(inside, outside, 0.0, (math.nan, math.nan))
+    share = band_share(lam, curve.transmission, coarse, curve.detector_type)
     stretch = (math.nan, math.nan)
-    if coarse.any():
-        j = int(np.argmax(np.where(coarse, weight, -1.0)))
-        stretch = (float(lo[j]), float(hi[j]))
-    return BandSampling(inside, share(beyond), share(coarse), stretch)
+    if share > 0:
+        middle, part = _band_steps(lam, curve.transmission, curve.detector_type)
+        j = int(np.argmax(np.where(coarse(middle), part, -1.0)))
+        lo, hi = stretch_of(middle[j:j + 1])
+        stretch = (float(lo[0]), float(hi[0]))
+    return BandSampling(inside, outside, share, stretch)
 
 
 def _warn_outside_sed(sed_wavelength: np.ndarray, curves: Iterable[FilterCurve]) -> None:
-    """One warning naming the filters with transmission outside the SED, where band averages count zero flux."""
+    """One warning naming the filters with weight outside the SED, where band averages count zero flux."""
     lo, hi = np.min(sed_wavelength), np.max(sed_wavelength)
     outside = []
     for curve in curves:
-        total = np.trapezoid(curve.transmission, curve.wavelength)
-        if not total > 0:
-            continue  # the band average itself raises for a curve that integrates to zero
-        beyond = (curve.wavelength < lo) | (curve.wavelength > hi)
-        fraction = np.trapezoid(np.where(beyond, curve.transmission, 0.0), curve.wavelength) / total
-        if fraction > 0:
+        fraction = band_share(curve.wavelength, curve.transmission, lambda x: (x < lo) | (x > hi), curve.detector_type)
+        if fraction > 0:  # NaN (weight integrating to zero): the band average itself raises
             outside.append(f"{curve.name} ({100 * fraction:.3g}%)")
     if outside:
         logger.warning(
@@ -366,22 +461,15 @@ def on_band_grid(
     sed_wavelength: Sequence[float], sed_flux: Sequence[float], wavelength: Sequence[float],
     transmission: Sequence[float],
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """A spectrum and a filter curve on the wavelengths a band average integrates over: (wavelength, transmission,
+    """A spectrum and a filter curve on :func:`band_grid` with the spectrum's wavelengths: (wavelength, transmission,
     flux).
 
-    They are the curve's own samples and the spectrum's within the curve's range: the transmission is interpolated
-    onto the spectrum's points and the spectrum onto the curve's (linearly; zero flux beyond the spectrum), as MESA
-    interpolates a curve onto the SED.  A coarsely tabulated curve (Johnson U: 13 samples) then sees every spectral
-    feature in its band, not the spectrum at its 13 wavelengths.  Both increase (a curve may repeat a wavelength).
+    The spectrum is linear between its samples (interpolated onto the grid; zero beyond its range), as the curve is
+    between its own.  A coarsely tabulated curve (Johnson U: 13 samples) then sees every spectral feature in its band,
+    not the spectrum at its 13 wavelengths.
     """
-    lam = np.asarray(wavelength, dtype=float)
-    sed_wavelength = np.asarray(sed_wavelength, dtype=float)
-    added = sed_wavelength[(sed_wavelength > lam[0]) & (sed_wavelength < lam[-1])]
-    added = added[~np.isin(added, lam)]
-    grid = np.concatenate([lam, added])
-    order = np.argsort(grid, kind="stable")  # a curve's repeated wavelength (a vertical edge) keeps its order
-    t = np.concatenate([np.asarray(transmission, dtype=float), np.interp(added, lam, transmission)])
-    return grid[order], t[order], np.interp(grid[order], sed_wavelength, sed_flux, left=0.0, right=0.0)
+    grid, t = band_grid(wavelength, transmission, sed_wavelength)
+    return grid, t, np.interp(grid, sed_wavelength, sed_flux, left=0.0, right=0.0)
 
 
 def band_average_flux_lambda(
@@ -395,14 +483,10 @@ def band_average_flux_lambda(
 def band_average_flux_nu(
     sed_wavelength: np.ndarray, sed_flux: np.ndarray, curve: FilterCurve
 ) -> float:
-    """The band-averaged f_ν of a spectrum: ∫ F W dλ / ∫ W c/λ² dλ on :func:`on_band_grid`."""
-    wavelength, transmission, flux = on_band_grid(sed_wavelength, sed_flux, curve.wavelength, curve.transmission)
-    weight = filter_weight(wavelength, transmission, curve.detector_type)
-    numerator = np.trapezoid(flux * weight, wavelength)
-    denom = np.trapezoid(weight * SPEED_OF_LIGHT_ANG_PER_S / (wavelength**2), wavelength)
-    if denom == 0:
-        raise ValueError("Filter transmission integrates to zero")
-    return float(numerator / denom)
+    """The band-averaged f_ν of a spectrum: ∫ F W dλ / ∫ W c/λ² dλ, that is the band-averaged f_λ times λp² / c with
+    λp the :func:`pivot_wavelength`."""
+    pivot = pivot_wavelength(curve.wavelength, curve.transmission, curve.detector_type)
+    return band_average_flux_lambda(sed_wavelength, sed_flux, curve) * pivot**2 / SPEED_OF_LIGHT_ANG_PER_S
 
 def load_spectrum(path: str, wavelength_unit: str | None = None) -> Spectrum:
     wavelengths, fluxes, metadata = load_two_column_file(path)
