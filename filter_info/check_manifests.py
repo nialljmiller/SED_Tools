@@ -15,6 +15,10 @@ which overwrites NJM's curves with SVO's copies under the same names and exits 1
 beside the current curves (such as ``<band>_old``) stay out of the index file, so MESA does not load
 them, and out of ``bands``: they go under ``archived_bands``, which the clients ignore.
 
+Every band a manifest lists also needs a provider (filter_info.manifest_providers.problems, Nill's Q17 of
+24 Nov 2026): a ``published_bands`` entry when its curve says what it contains, and, in a manifest that declares
+components, a filter piece for a filter-only band. Without one, SED_Tools' filters-compose cannot provide the band.
+
 Usage: python3 -m filter_info.check_manifests [DATA_DIR]   (default: data)
 Prints every offending set and exits 1; prints a one-line summary and exits 0 otherwise.
 """
@@ -23,6 +27,8 @@ import sys
 from pathlib import Path
 
 from sed_tools.filters.manifest import set_problems
+
+from .manifest_providers import problems as provider_problems
 
 CLAIMS = Path(__file__).with_name("svo_instruments.json")
 ROOT = Path(__file__).resolve().parent.parent
@@ -55,6 +61,9 @@ def problems(filters_dir, claims=None):
             yield manifest.parent, f"{manifest}: 'bands' is not a list of band names"
         elif not any(manifest.parent.glob("*.dat")):
             yield manifest.parent, f"{manifest} declares {len(bands)} band(s) of a folder with no curves"
+        else:
+            for message in provider_problems(manifest.parent, json.loads(manifest.read_text(encoding="utf-8"))):
+                yield manifest.parent, message
     for instrument_dir in sorted(p for p in filters_dir.glob("*/*") if p.is_dir()):
         for message in set_problems(instrument_dir, claims):
             yield instrument_dir, message
@@ -74,7 +83,8 @@ def main(argv):
     if found:
         print(f"check_manifests: {len({where for where, _ in found})} of {checked} sets fail. A manifest band "
               "outside the index file makes SED_Tools 0.4.1 replace that set's curves with SVO's; a curve of "
-              "another set's instrument mixes two releases in one set. Fix them before refreshing.",
+              "another set's instrument mixes two releases in one set; a band without a provider cannot be composed. "
+              "Fix them before refreshing.",
               file=sys.stderr)
         return 1
     print(f"check_manifests: all {checked} sets agree with their index files, manifests and claims")
