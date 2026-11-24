@@ -1082,15 +1082,20 @@ def _ml_generator(t, generate):
 
 
 @row
-def densify_stops_when_ml_generation_fails(t):
-    # Used to log a warning and write a blackbody in place of the ML SED.
+def densify_stops_when_ml_generation_fails_and_leaves_the_output_as_it_was(t):
+    # Used to log a warning and write a blackbody in place of the ML SED; then it stopped but left the part it had
+    # written at the output, where MESA could read it. The cube is now renamed into place only when complete.
     def generate(self, **kwargs):
         raise ValueError("network produced NaN")
 
     _ml_generator(t, generate)
     _small_cube(t.tmp / "src.bin")
-    with pytest.raises(RuntimeError, match=r"Teff=6000 logg=4\.00 meta=0\.00.*network produced NaN"):
-        densify_grid(str(t.tmp / "src.bin"), str(t.tmp / "dense.bin"), teff_spacing=1000.0, ml_model="fake")
+    (t.tmp / "out").mkdir()
+    (t.tmp / "out" / "dense.bin").write_bytes(b"an earlier cube")
+    with pytest.raises(RuntimeError, match=r"Teff=6000 logg=4\.00 meta=0\.00.*network produced NaN.*was not written"):
+        densify_grid(str(t.tmp / "src.bin"), str(t.tmp / "out" / "dense.bin"), teff_spacing=1000.0, ml_model="fake")
+    assert [p.name for p in (t.tmp / "out").iterdir()] == ["dense.bin"]
+    assert (t.tmp / "out" / "dense.bin").read_bytes() == b"an earlier cube"
 
 
 #: name: the cube chosen from a menu of two. "0" and negative numbers used to pick cubes from the end of the list.

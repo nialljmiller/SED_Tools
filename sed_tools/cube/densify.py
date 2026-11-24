@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 import shutil
 import struct  # noqa: F401  (kept: older code star-imports this module)
+import tempfile
 import time
 from typing import Optional
 
@@ -78,7 +79,7 @@ def _ml_sed(generator, teff, logg, meta, wavelengths, dst):
     except Exception as exc:
         raise RuntimeError(
             f"ML generation failed for Teff={teff:.0f} logg={logg:.2f} meta={meta:.2f}: {exc}. "
-            f"{dst} is only partly written and must not be used; fix the model or re-run "
+            f"{dst} was not written (anything there is left as it was); fix the model or re-run "
             "without ml_model to use blackbodies."
         ) from exc
 
@@ -148,8 +149,9 @@ def densify_grid(
     teff_spacing : target Teff spacing in K (default 1000)
     ml_model     : path to a trained SEDGenerator model directory
 
-    The source grid's lookup_table.csv, which MESA requires beside a flux cube, is copied beside dst. Raises
-    RuntimeError if the ML model fails at any node; dst is then incomplete.
+    The source grid's lookup_table.csv, which MESA requires beside a flux cube, is copied beside dst. The cube is
+    written in a temporary folder beside dst and renamed to dst only when complete. Raises RuntimeError if the ML
+    model fails at any node; dst is then not written (a file already there is left as it was).
     """
     print(f"\n{'='*60}")
     print("SED_Tools Grid Densifier")
@@ -186,10 +188,13 @@ def densify_grid(
     print("done")
 
     os.makedirs(os.path.dirname(os.path.abspath(dst)), exist_ok=True)
-    with open(dst, "wb") as f:
-        write_header(f, teff_dense, logg_grid, meta_grid, wavelengths)
-        _write_dense_flux(f, flux_orig, _source_rows(teff_orig, teff_dense), teff_dense, teff_orig,
-                          logg_grid, meta_grid, wavelengths, bb_scale, generator, dst)
+    with tempfile.TemporaryDirectory(prefix=".densify-", dir=os.path.dirname(os.path.abspath(dst))) as work:
+        building = os.path.join(work, os.path.basename(dst))
+        with open(building, "wb") as f:
+            write_header(f, teff_dense, logg_grid, meta_grid, wavelengths)
+            _write_dense_flux(f, flux_orig, _source_rows(teff_orig, teff_dense), teff_dense, teff_orig,
+                              logg_grid, meta_grid, wavelengths, bb_scale, generator, dst)
+        os.replace(building, dst)  # complete or not there at all
 
     print(f"  Written: {nt_new} × {nl} × {nm} × {nw}  ({os.path.getsize(dst) / (1024**2):.1f} MiB)")
     lookup = os.path.join(os.path.dirname(os.path.abspath(src)), "lookup_table.csv")
