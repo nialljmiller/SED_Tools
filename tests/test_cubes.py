@@ -571,6 +571,15 @@ def three_axis_readers_leave_the_all_axes_cube_alone(t):
 
 
 @row
+def an_inlist_path_with_an_apostrophe_is_doubled(t):
+    # MESA's namelist read failed on stellar_atm = '/x/O'Brien/...' (review 24 Nov 2026, code.md B2).
+    from sed_tools.mesa_inlist import mesa_inlist_lines
+
+    grid = _simple_grid(t.tmp / "O'Brien grids" / "G")
+    assert mesa_inlist_lines(grid) == [f"stellar_atm = '{t.tmp}/O''Brien grids/G'"]
+
+
+@row
 def variant_cubes_on_different_wavelengths_get_no_all_axes_cube(t):
     from sed_tools.cube.variants import write_all_axes_cube
 
