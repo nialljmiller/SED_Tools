@@ -1433,6 +1433,17 @@ def combine_keeps_every_variant_of_an_extra_axis(t):
     assert [v.label for v in list_variants(combined)] == ["alpha_0.0", "alpha_0.4"]
 
 
+@row
+def combine_takes_a_column_with_one_value_throughout_for_no_axis(t):
+    # NJM's bbody states conversion = "F_lambda = pi*B_lambda" on every row; combined with Husfeld (split by yhe) it
+    # named every variant folder and was written on Husfeld's rows (review 24 Nov 2026, api.md 6).
+    _planck_grid(t, "alpha", [(5000.0, 4.5, 0.0, 0.0), (5000.0, 4.5, 0.0, 0.4)],
+                 columns=("teff", "logg", "metallicity", "alpha"))
+    _planck_grid(t, "bb", [(6000.0, "pi")], columns=("teff", "conversion"))
+    assert sorted(_combined_cubes(t, ["alpha", "bb"])) == ["combined_alpha_0p00", "combined_alpha_0p40"]
+    assert "conversion" not in (t.tmp / "models" / "combined" / "lookup_table.csv").read_text()
+
+
 # ----------------------------------------------------------------------
 # photometry() takes a (name, path) tuple as one filter, several such tuples, and plain paths as before
 # ----------------------------------------------------------------------
