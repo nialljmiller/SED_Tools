@@ -1502,6 +1502,17 @@ def a_long_gap_between_samples_is_one_line_for_every_band_quantity(t):
 
 
 @row
+def a_spectrum_ending_inside_a_band_stops_there(t):
+    # Flux used to ramp down linearly from the spectrum's last sample to the next band-grid point, up to lambda/100
+    # beyond it: 2.5 % too high here (review 24 Nov 2026, code.md L1).
+    from sed_tools.photometry import FilterCurve, band_average_flux_lambda
+
+    curve = FilterCurve("box", np.array([4000.0, 6000.0]), np.array([1.0, 1.0]), {}, detector_type=ENERGY)
+    for sl in (np.linspace(3000.0, 5000.5, 2001), np.linspace(4999.5, 7000.0, 2001)):
+        assert band_average_flux_lambda(sl, np.ones_like(sl), curve) == pytest.approx(1000.5 / 2000.0, rel=1e-12)
+
+
+@row
 def rejects_unusable_curves(t):
     with pytest.raises(ValueError):
         filter_properties([5000.0], [1.0])

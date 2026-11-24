@@ -464,12 +464,22 @@ def on_band_grid(
     """A spectrum and a filter curve on :func:`band_grid` with the spectrum's wavelengths: (wavelength, transmission,
     flux).
 
-    The spectrum is linear between its samples (interpolated onto the grid; zero beyond its range), as the curve is
-    between its own.  A coarsely tabulated curve (Johnson U: 13 samples) then sees every spectral feature in its band,
-    not the spectrum at its 13 wavelengths.
+    The spectrum is linear between its samples (interpolated onto the grid), as the curve is between its own, and
+    zero beyond its range: an end of the spectrum inside the band is a vertical edge (its wavelength twice, the
+    second with flux 0), so no flux is ramped down beyond it.  A coarsely tabulated curve (Johnson U: 13 samples)
+    then sees every spectral feature in its band, not the spectrum at its 13 wavelengths.
     """
+    sed_wavelength = np.asarray(sed_wavelength, dtype=float)
     grid, t = band_grid(wavelength, transmission, sed_wavelength)
-    return grid, t, np.interp(grid, sed_wavelength, sed_flux, left=0.0, right=0.0)
+    flux = np.interp(grid, sed_wavelength, sed_flux, left=0.0, right=0.0)
+    blue = np.searchsorted(grid, sed_wavelength[0], side="left")  # its ends inside the curve are on the grid
+    red = np.searchsorted(grid, sed_wavelength[-1], side="right")
+    if 0 < blue < grid.size:
+        grid, t, flux = np.insert(grid, blue, grid[blue]), np.insert(t, blue, t[blue]), np.insert(flux, blue, 0.0)
+        red += 1
+    if 0 < red < grid.size:
+        grid, t, flux = np.insert(grid, red, grid[red - 1]), np.insert(t, red, t[red - 1]), np.insert(flux, red, 0.0)
+    return grid, t, flux
 
 
 def band_average_flux_lambda(
