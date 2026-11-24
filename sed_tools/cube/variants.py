@@ -143,10 +143,11 @@ def _variant_paths(variants_index) -> List[str]:
 
 # --- The all-axes cube of a split grid ---
 
-def _extra_axes(fields: List[str], rows: List[Dict[str, str]]) -> List[Tuple[str, List, Dict[Any, str]]]:
+def _extra_axes(fields: List[str], rows: List[Dict[str, str]]) -> List[Tuple[str, List, Dict[Any, str], bool]]:
     """The extra axes of a split grid: each column of variants_index.csv (in its order) whose values differ between
-    the variants, as (column, its values sorted, {value: its text}); values as collision._value reads them, so a
-    column is numeric when every value reads as a number. A column with one value throughout is no axis."""
+    the variants, as (column, its values sorted, {value: its text}, numeric); values as collision._value reads them,
+    so a column is numeric when every value reads as a finite number, else a text axis. A column with one value
+    throughout is no axis."""
     axes = []
     for col in fields:
         if col in ("variant_name", "n_spectra", "path"):
@@ -156,7 +157,7 @@ def _extra_axes(fields: List[str], rows: List[Dict[str, str]]) -> List[Tuple[str
             texts.setdefault(_value(row[col]), row[col].strip())
         if len(texts) > 1:
             numeric = all(isinstance(v, float) for v in texts)
-            axes.append((col, sorted(texts, key=None if numeric else str), texts))
+            axes.append((col, sorted(texts, key=None if numeric else str), texts, numeric))
     return axes
 
 
@@ -194,10 +195,9 @@ def write_all_axes_cube(model_dir: str, part_bytes: int = 256 * 2**20) -> str:
                              "cube can hold both; rebuild the grid")
     shared = [np.unique(np.concatenate([h.axes[k] for h in headers])) for k in range(3)]
     wavelengths = headers[0].wavelengths
-    labels = {3 + k: [texts[v] for v in values] for k, (_, values, texts) in enumerate(extra)
-              if not isinstance(values[0], float)}
-    axes = [*shared, *(np.array(values if 3 + k not in labels else range(len(values)), dtype=float)
-                       for k, (_, values, _) in enumerate(extra))]
+    labels = {3 + k: [texts[v] for v in values] for k, (_, values, texts, numeric) in enumerate(extra) if not numeric}
+    axes = [*shared, *(np.array(values if numeric else range(len(values)), dtype=float)
+                       for _, values, _, numeric in extra)]
     block_of = {tuple(values.index(_value(row[col])) for col, values, *_ in extra): (path, header)
                 for row, path, header in zip(rows, cubes, headers)}
 

@@ -609,6 +609,39 @@ def three_axis_readers_leave_the_all_axes_cube_alone(t):
     assert mesa_inlist_lines(folder) == [f"stellar_atm = '{v}'" for v in variants]
 
 
+#: name: (the extra-axis columns, each variant's values in them, the text axes' labels {axis number: labels}). Each
+#: variant's spectra differ from every other's, and the all-axes cube evaluated at a variant's nodes is that
+#: variant's own cube there: blocks in their order with two extra axes, a column of numbers and text or with nan a
+#: text axis, and names and labels of any length.
+EXTRA_AXES = {
+    "the_all_axes_cube_puts_each_variant_at_its_values_on_two_extra_axes": (
+        ("alpha", "yhe"), [(a, y) for a in ("0.0", "0.4") for y in ("0.1", "0.2", "0.3")], {}),
+    "a_column_of_numbers_and_text_is_a_text_axis": (("x",), [("0.5",), ("h-rich",)], {3: ["0.5", "h-rich"]}),
+    "a_column_of_text_and_numbers_is_a_text_axis": (("x",), [("solar",), ("0.4",)], {3: ["0.4", "solar"]}),
+    "a_column_with_nan_is_a_text_axis": (("x",), [("0.0",), ("nan",)], {3: ["0.0", "nan"]}),
+    "names_and_labels_over_32_bytes_are_kept": (
+        ("alpha_enhancement_relative_to_solar", "atmosphere"),
+        [("0.0", "plane_parallel_local_thermodynamic_equilibrium"), ("0.4", "spherical")],
+        {4: ["plane_parallel_local_thermodynamic_equilibrium", "spherical"]}),
+}
+
+
+def _extra_axes(t, columns, values, labels):
+    rows = [(f"s{i}_{teff:.0f}.txt", teff, 4.0, 0.0, *v) for i, v in enumerate(values) for teff in (5000.0, 6000.0)]
+    grid = _write_grid(t.tmp / "G", rows, (*COLUMNS, *columns))
+    wl = np.linspace(1000.0, 1e4, 20)
+    for k, row in enumerate(rows):
+        np.savetxt(grid / row[0], np.column_stack([wl, 1e-10 * (1 + k) * (1 + (k % 3) * wl / 1e4)]))
+    _build(grid)
+    header = fileio.read_header(grid / ND)
+    assert header.names == ["teff", "logg", "meta", *columns] and header.labels == labels
+    model = SEDModel("G", grid / ND)
+    for k, row in enumerate(rows):
+        own = np.interp(wl, *np.loadtxt(grid / row[0], unpack=True))
+        given = {col: (value if 3 + c in labels else float(value)) for c, (col, value) in enumerate(zip(columns, row[4:]))}
+        np.testing.assert_allclose(model(row[1], 4.0, 0.0, **given).flux, own, rtol=1e-12, err_msg=row[0])
+
+
 @row
 def variant_cubes_on_different_wavelengths_get_no_all_axes_cube(t):
     from sed_tools.cube.variants import write_all_axes_cube
@@ -2026,6 +2059,7 @@ def test_cubes(rows):
     rows(BANDS, _band_sampling)
     rows(UNUSABLE_LOOKUP, _unusable_lookup)
     rows(CORRUPT_HEADERS, _corrupt_header)
+    rows(EXTRA_AXES, _extra_axes)
     rows(RAM, _ram)
     rows(SEARCHES, _unsearchable)
     rows(COMBINE_MISSING, _combine_missing)
