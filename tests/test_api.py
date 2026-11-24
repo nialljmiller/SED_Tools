@@ -185,7 +185,7 @@ def grid_write_keeps_a_split_grids_variants_and_leaves_out_an_unknown_axis(t):
     for name, rows in (("split", [(teff, alpha) for teff in (5000.0, 6000.0) for alpha in ("0.0", "0.4")]),
                        ("bb", [(5000.0, None), (6000.0, None)])):
         (t.tmp / name).mkdir()
-        lines = ["file_name,teff" + (",logg,metallicity,alpha" if name == "split" else "")]
+        lines = ["file_name,teff" + (",logg,metallicity,Alpha" if name == "split" else "")]
         for i, (teff, alpha) in enumerate(rows):  # flat, each at its own height
             height = teff + 100 * float(alpha or 0)
             np.savetxt(t.tmp / name / f"s{i}.txt", np.column_stack([wl, np.full(wl.size, height)]))
@@ -197,16 +197,17 @@ def grid_write_keeps_a_split_grids_variants_and_leaves_out_an_unknown_axis(t):
     assert len(variants) == 2
     for line in variants:
         variant = SED.local(line.split("'")[1], model_root=t.tmp)
-        alpha = float(variant.grid.spectra[0].extra["alpha"])
+        alpha = float(variant.grid.spectra[0].extra["Alpha"])  # as the lookup spells it
         assert np.allclose(variant(5000.0, 4.0, 0.0).flux, 5000.0 + 100 * alpha, rtol=1e-12)
     one = SpectralGrid(name="one", source="local", spectra=[s for s in SED.local("split", model_root=t.tmp).grid
-                                                             if s.extra["alpha"] == "0.4"])
+                                                             if s.extra["Alpha"] == "0.4"])
     with pytest.raises(ValueError, match="holds a grid split into variants"):
         one.write(out, build_h5=False)  # its one cube would have replaced the variant folders
     assert sed_tools.mesa_inlist_lines(out) == variants
     bb = SED.local("bb", model_root=t.tmp).grid.write(t.tmp / "bb_out", build_h5=False)
     assert (bb / "lookup_table.csv").read_text().splitlines()[0] == "file_name,teff"
     assert np.allclose(SED.local("bb_out", model_root=t.tmp)(5500.0, 0.0, 0.0).flux, 5500.0, rtol=1e-12)
+    assert SpectralGrid(name="none", source="local").write(t.tmp / "none").is_dir()  # no spectra: nothing to build
 
 
 @row
@@ -603,13 +604,14 @@ def ml_completer_extends_a_grid_and_the_041_functions_complete_and_list(t):
     extended = completer.extend(GRID, wavelength_range=(500.0, 60000.0))
     assert len(extended) == 12  # every spectrum of the grid
     assert all(s.wavelength.min() <= 500.0 and s.wavelength.max() >= 60000.0 for s in extended)
+    assert all(np.isfinite(s.flux).all() for s in extended)
     assert [m["name"] for m in ml.list_models(str(t.tmp / "models"))] == ["lib_completer"]
     spectrum = extended[0]
     inside = (spectrum.wavelength > 3000.0) & (spectrum.wavelength < 9000.0)
     wl, flux = ml.complete_sed(ml.load_completer(str(t.tmp / "models" / "lib_completer")), spectrum.wavelength[inside],
                                spectrum.flux[inside], teff=spectrum.teff, logg=spectrum.logg,
                                meta=spectrum.metallicity, extension_range=(1000.0, 20000.0))
-    assert wl.shape == flux.shape and wl.min() <= 1000.0 and wl.max() >= 20000.0
+    assert wl.shape == flux.shape and wl.min() <= 1000.0 and wl.max() >= 20000.0 and np.isfinite(flux).all()
 
 
 # ----------------------------------------------------------------------

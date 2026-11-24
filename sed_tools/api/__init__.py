@@ -247,7 +247,7 @@ class SpectralGrid:
         """
         path = self._base_dir / self.name if path is None else Path(path)
         table = self.parameters
-        table = table.drop(columns=[c for c in ("logg", "metallicity") if table[c].isna().all()])
+        table = table.drop(columns=[c for c in ("logg", "metallicity") if c in table and table[c].isna().all()])
         if (path / "variants_index.csv").is_file() and not _splits(table):
             raise ValueError(f"{path} holds a grid split into variants (variants_index.csv), and these spectra are "
                              "of one variant, so their flux cube would replace its variant folders; nothing was "
@@ -295,7 +295,7 @@ def _read_listed_spectra(lookup_path: Path, grid_name: str) -> List[Spectrum]:
     ValueError names one that cannot be read."""
     model_dir = lookup_path.parent
     df = pd.read_csv(lookup_path, dtype=str, keep_default_na=False)
-    df.columns = [c.lstrip('#').strip().lower() for c in df.columns]
+    df.columns = [c.lstrip('#').strip() for c in df.columns]  # extra columns keep their spelling
     file_col = find_file_column(df.columns)
     param_cols = {"teff": find_teff_column(df.columns), "logg": find_logg_column(df.columns),
                   "metallicity": find_metallicity_column(df.columns)}
