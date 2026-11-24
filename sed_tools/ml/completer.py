@@ -16,6 +16,7 @@ import numpy as np
 
 from .._constants import H as PLANCK_H, C as SPEED_C, K as BOLTZMANN_K, SIGMA
 from ..cube.fileio import load as load_cube
+from ..grids.header_parser import parse_header
 from ..ui_utils import (ask_number as _ask_number, banner as _banner, menu_choice as _menu_choice, ordered_range,
                         section as _section)
 from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, Engine, Network, action_menu, confirmed, data_loaders, fit,
@@ -860,7 +861,10 @@ class Completer:
         filename = str(row[columns['file']])
         if filename == 'nan' or not filename:
             raise ValueError("no file name")
-        data = np.loadtxt(_find_spectrum(input_dir, filename))
+        source = _find_spectrum(input_dir, filename)
+        data = np.loadtxt(source)
+        # Its header, with the lookup's parameters: a rebuild reads each spectrum's parameters from its file.
+        header = {**parse_header(source), 'teff': teff, 'logg': logg, 'metallicity': meta}
         if data.ndim != 2 or data.shape[1] < 2:
             raise ValueError(f"expected wavelength and flux columns, got an array of shape {data.shape}")
         wavelength = data[:, 0]
@@ -871,13 +875,13 @@ class Completer:
         covers_low = wavelength.min() <= extension_range[0] * 1.1
         covers_high = wavelength.max() >= extension_range[1] * 0.9
         if covers_low and covers_high:
-            write_spectrum(output_file, *data.T)  # every column of the file, as read
+            write_spectrum(output_file, *data.T, parameters=dict(header, extended_by_ml=False))  # every column
             new_row.update(extended_by_ml=False, file_name=filename)
             return new_row, None
 
         wl_ext, flux_ext = self.extend(wavelength, flux, teff=teff, logg=logg, meta=meta,
                                        extension_range=extension_range)
-        write_spectrum(output_file, wl_ext, flux_ext)
+        write_spectrum(output_file, wl_ext, flux_ext, parameters=dict(header, extended_by_ml=True))
         new_row.update(extended_by_ml=True, file_name=filename,
                        wl_min=float(wl_ext.min()), wl_max=float(wl_ext.max()))
         return new_row, (filename, wavelength, flux, wl_ext, flux_ext)

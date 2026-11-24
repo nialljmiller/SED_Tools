@@ -140,9 +140,11 @@ def require_finite(flux: np.ndarray, where: str) -> None:
         raise ValueError(f"the model's flux at {where} is not finite at {bad} of {flux.size} wavelengths")
 
 
-def write_spectrum(path, *columns, note: str = "") -> None:
-    """An ML .txt spectrum: the header 'wavelength_A flux_erg/s/cm2/A' (then '# note'), the columns at %.6e."""
-    header = "wavelength_A flux_erg/s/cm2/A" + (f"\n# {note}" if note else "")
+def write_spectrum(path, *columns, note: str = "", parameters: Optional[Dict[str, object]] = None) -> None:
+    """An ML .txt spectrum: '# key = value' lines for ``parameters``, the header 'wavelength_A flux_erg/s/cm2/A'
+    (then '# note'), the columns at %.6e."""
+    lines = [f"{key} = {value}" for key, value in (parameters or {}).items()]
+    header = "\n".join(lines + ["wavelength_A flux_erg/s/cm2/A"]) + (f"\n# {note}" if note else "")
     np.savetxt(path, np.column_stack(columns), header=header, fmt="%.6e")
 
 

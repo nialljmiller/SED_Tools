@@ -399,6 +399,12 @@ def extend_catalog_extends_each_spectrum_with_its_own_parameters(t):
     assert written[["teff", "logg", "metallicity", "extra"]].values.tolist() == [
         [4500.0, 4.0, -1.0, "x"], [5800.0, 4.4, 0.0, "y"], [7200.0, 3.5, 0.3, "z"]]
     assert sorted(p.name for p in out_dir.glob("*.txt")) == names
+    # Each spectrum carries its parameters (none did, so a rebuild's lookup had no Teff column and failed)
+    from sed_tools.grids.lookup import regenerate_lookup_table
+    regenerate_lookup_table(str(out_dir))
+    rebuilt = pd.read_csv(out_dir / "lookup_table.csv", skipinitialspace=True).rename(columns=lambda c: c.lstrip("#"))
+    assert rebuilt[["file_name", "teff", "logg", "metallicity", "extended_by_ml"]].values.tolist() == [
+        ["a.txt", 4500.0, 4.0, -1.0, True], ["b.txt", 5800.0, 4.4, 0.0, True], ["c.txt", 7200.0, 3.5, 0.3, False]]
 
 
 @row
