@@ -179,27 +179,31 @@ Added
   grid or filter set, and ``sed_tools.mesa_inlist_lines(path)`` returns the
   lines. ``sed-tools rebuild``, ``combine``, ``filters-combine`` and
   ``mesa_prepare`` print the same lines in place of their own advice.
-- **The all-axes flux cube of a split grid.** A split (``sed-tools
-  rebuild``, a split combination, or a whole split grid from NJM) now also
-  writes ``flux_cube.bin`` at the grid's top: every variant on shared axes,
-  Teff, log g and [M/H] (the union of the variants') and then each
-  ``variants_index.csv`` column whose value differs between the variants
-  (a column with one value, such as Kurucz's ``lh`` and ``vtur``, is no
-  axis). It is assembled from the variant cubes in parts of wavelengths, reads
-  no spectrum, and equals each variant cube at that variant's nodes; a node no
-  variant fills is zero. Its first int32 is -1, then ``FLUXCUBE`` and a
-  version, so every reader tells it from a 3-axis cube (the format is in
-  ``sed_tools/cube/fileio.py``). ``SED.local("<grid>")`` and
-  ``SED().model("<grid>")`` open it, and take each extra axis by keyword,
-  ``sed(5800, 4.4, 0.0, alpha=0.2)``: cubic Hermite on every numeric axis, as
-  the 3-axis cube, with empty nodes blended in as zeros and values beyond an
-  axis clamped; a text-valued axis is matched exactly. The variant cubes, and
-  what MESA reads from the variant folders, are unchanged. MESA cannot read
-  the all-axes cube: pointed at the grid's top folder it says the header is
-  invalid and loads the spectra one by one. The flux cube tool, the
-  densifier, the ML trainers and the cube checks read only 3-axis cubes and
-  leave it alone; ``spectra_not_in_cube``, ``FluxCube.from_file`` and
-  ``cube.fileio.load`` stop with ``ValueError`` on it.
+- **The all-axes flux cube of a split grid is** ``flux_cube_nd.bin``. A split
+  (``sed-tools rebuild``, a split combination, or a whole split grid from NJM)
+  writes it at the grid's top, and the top folder holds no ``flux_cube.bin``:
+  MESA opens ``<stellar_atm>/flux_cube.bin`` by that name, so no MESA release
+  meets the all-axes file. MESA 25.12.1 used to spin on it, and copying a
+  whole split grid into MESA's data folder replaced MESA's own cube. The
+  all-axes cube holds every variant on shared axes, Teff, log g and [M/H] (the
+  union of the variants') and then each ``variants_index.csv`` column whose
+  value differs between the variants (a column with one value, such as
+  Kurucz's ``lh`` and ``vtur``, is no axis). It is assembled from the variant
+  cubes in parts of wavelengths, reads no spectrum, and equals each variant
+  cube at that variant's nodes; a node no variant fills is zero. Its first
+  int32 is -1, then ``FLUXCUBE`` and a version, so every reader tells it from
+  a 3-axis cube. Its header (``sed_tools/cube/fileio.py``, version 2) stores
+  how many bytes each axis name and text value takes, so names of any length
+  are kept. Version 1 files (19–24 Nov 2026, named ``flux_cube.bin``) are
+  still read. ``SED.local("<grid>")`` and ``SED().model("<grid>")`` open it,
+  and take each extra axis by keyword, ``sed(5800, 4.4, 0.0, alpha=0.2)``:
+  cubic Hermite on every numeric axis, as the 3-axis cube, with empty nodes
+  blended in as zeros and values beyond an axis clamped; a text-valued axis is
+  matched exactly. The variant cubes, and what MESA reads from the variant
+  folders, are unchanged. The flux cube tool, the densifier, the ML trainers
+  and the cube checks read only 3-axis cubes and leave it alone;
+  ``spectra_not_in_cube``, ``FluxCube.from_file`` and ``cube.fileio.load``
+  stop with ``ValueError`` on it.
 
 Changed behaviour
 ~~~~~~~~~~~~~~~~~
@@ -304,22 +308,37 @@ Changed behaviour
 - **combine compares axis values exactly**, as the cube builder does. It
   merged Teff values within 1 K and log g and [M/H] values within 0.01, so
   MSG's OSTAR2002 (Z/Z☉ 0, 0.001 and 0.01) lost two spectra per node.
-- **Combining or building again into a folder replaces what the earlier run
-  wrote there.** combine removes the earlier combination's copies, cube and
-  variants before it writes, and copies every spectrum (a rerun used to keep
-  a copy under a reused name holding another star's spectrum). A cube build
-  that writes one cube as the grid's own removes an earlier split, which would
-  otherwise be read as the grid's cubes.
-- **A grid split into variants is read by MESA from a variant's folder.**
-  MESA reads a variant's folder (``stellar_atm = '.../<grid>/<variant>/'``).
-  A split replaces a top-level ``flux_cube.bin`` an earlier build left with
-  the all-axes cube (Added), and the NJM client no longer downloads NJM's
-  top-level copy of the default variant's cube; it builds the all-axes cube
-  from the variant cubes. ``SED.local("<grid>")`` and
-  ``SED().model("<grid>")`` on a split grid without an all-axes cube (split
-  by an earlier version) stop with ``FileNotFoundError`` naming its variants,
-  ``<grid>/<variant>``, which they load. The README's examples point at a
+- **Combining again into a folder copies every spectrum anew.** combine
+  removes the spectrum copies the earlier combination listed before it
+  writes, and copies every spectrum (a rerun used to keep a copy under a
+  reused name holding another star's spectrum). Its earlier variant folders
+  and cubes are kept (below).
+- **A split grid's top folder holds no** ``flux_cube.bin``. A split, a split
+  combination or an NJM download writes none there. One that an earlier
+  version or download left is kept, and ``SED.local`` and ``SED().model``
+  refuse the grid while it is there, naming its variants and saying to remove
+  or rename that file (it is not the grid's cube, and MESA would read it).
+
+  ``SED.local("<grid>")`` and ``SED().model("<grid>")`` open
+  ``flux_cube_nd.bin``. A split grid without one (split before it existed, or
+  with the all-axes cube still named ``flux_cube.bin``) stops with
+  ``FileNotFoundError`` naming its variants. ``sed-tools rebuild``,
+  ``sed-tools grids`` and ``SED.fetch`` of that grid write it, and leave an
+  old ``flux_cube.bin`` there as it is.
+
+  The NJM client downloads neither top cube of a split grid. It builds
+  ``flux_cube_nd.bin`` from the variant cubes, and rebuilds it only when a
+  variant's files were newly downloaded. MESA reads a variant's folder
+  (``stellar_atm = '.../<grid>/<variant>/'``), as before, and the variant
+  cubes are byte for byte unchanged. The README's examples point at a
   Kurucz2003all variant.
+
+- **A rebuild or combine keeps a grid's earlier variant folders and cubes.**
+  A grid rebuilt as one cube after a split, or a combination written over an
+  earlier one, keeps the earlier variant folders and ``flux_cube_nd.bin``
+  beside the new grid; only ``variants_index.csv`` goes, so the folder is
+  read as the new grid. A combine still removes the spectrum copies the
+  earlier combination listed.
 - **A split grid from NJM comes with its variant folders.** The NJM client
   downloads each variant folder's cube and lookup table of a whole split grid
   and links its spectra, so neither ``SED.fetch`` nor ``sed-tools grids``
@@ -397,6 +416,20 @@ Changed behaviour
   ``SED.ml_generator().train()`` saves. It read ``./models`` in the current
   working directory, which listed none of them. An absolute path is used as
   given.
+- **A combination names its variants only by the columns that vary.** A
+  column with one value across every grid combined is no variant axis: it no
+  longer names the variant folders or fills the combined lookup tables.
+  Combining Kurucz2003all's variants gives ``<output>_alpha_0p00`` instead of
+  ``<output>_alpha_0p00_lh_1p25_vtur_2p00``, and NJM's bbody no longer puts
+  its ``conversion`` note into the folder names and onto other grids' rows.
+  The cubes and spectra are byte for byte unchanged; the folder names are the
+  MESA ``stellar_atm`` paths, which are printed as before.
+- The NJM outage warning says the run continues without NJM for 5 minutes
+  (each new run asks again). The detector question says a set is "labelled
+  for" a detector type. The completer menu heads its list "trained completer
+  models".
+- ``MASTSpectraGrabber.get_model_metadata`` no longer asks anything; it plans
+  every metallicity, and ``download_model_spectra`` narrows them.
 
 Fixed
 ~~~~~
@@ -509,7 +542,7 @@ Fixed
   MESA does; Johnson U, B and V now agree with MESA to 0.006 mag. Curves
   sampled every 5 Å or finer change by less than 0.001 mag (99.9 % of NJM's).
   The detector weighting is unchanged. NJM's served ``properties.json``
-  values were computed the old way.
+  values follow this rule, and the next, since 24 Nov 2026.
 - **One rule for every band quantity.** The pivot wavelength, and with it
   ``ZeroPointAB_flam``, ``ZeroPointVega_Jy``, ``ABminusVega`` and ``AfAv``,
   still integrated on the curve's own samples, while band averages used the
@@ -530,8 +563,10 @@ Fixed
   over 10,998 curves. SVO's pivots follow the trapezoid on the curve's own
   samples, and so differ on those 52 curves.
 - **A split grid is checked by its variants.** NJM serves Kurucz2003all and
-  Husfeld split, with a top-level ``flux_cube.bin`` that copies the default
-  variant's cube. The client compared that copy with every variant's rows, so
+  Husfeld split. Its top-level ``flux_cube.bin`` copied the default variant's
+  cube until 19 Nov 2026 and has been the all-axes cube since; NJM moves it to
+  ``flux_cube_nd.bin`` in a separate step. The client compared NJM's top-level
+  cube with every variant's rows, so
   ``SED.fetch("Kurucz2003all")`` rebuilt the grid on every call, and it passed
   Husfeld although its variant cubes had not been downloaded
   (``mesa_prepare`` then failed). ``variants_index.csv`` now decides, and the
@@ -547,8 +582,102 @@ Fixed
   rewrite in the cleaner now leaves the file unchanged.
 - ``scripts/audit_pipeline.py`` audits a split grid variant by variant; it
   read the removed ``fluxcube_library/`` layout and reported every such grid's
-  ``flux_cube.bin`` missing. Notebooks 06 and 12 describe the current code,
-  and their outputs of removed behaviour are cleared.
+  ``flux_cube.bin`` missing.
+- ``SED.fetch`` returns the grid with its model, so ``sed(teff, logg, [M/H])``
+  works on what it returns. It had no model, for any grid.
+- ``sed-tools densify`` and ``densify_grid`` write the dense cube completely
+  or not at all. When an ML node failed, they stopped but left the
+  part already written at the output, where MESA could read it. The cube is
+  now built in a temporary folder beside the output and renamed into place
+  only when complete; a file already at the output is left as it was.
+- A variant column that mixes numbers and text (``0.5``, ``h-rich``), or that
+  holds ``nan``, is a text axis of the all-axes cube. Before, it stopped the
+  split after the variant cubes were written, or gave an axis ``[0, nan]`` on
+  which nothing could be evaluated.
+- A variant column name or text value over 32 bytes no longer stops the split
+  at its last step.
+- ``SED.fetch`` of an installed split grid no longer rewrites its all-axes
+  cube on every call.
+- The band sampling report (``sed-tools coverage --filters``) no longer lists
+  a split grid's all-axes cube as one more cube.
+- ``SpectralGrid.write()`` (``sed.grid.write()``) keeps the other columns of
+  each spectrum's lookup row (``Spectrum.extra``: alpha, yhe, ...), so a split
+  grid is written split, a folder per variant, instead of one cube averaging
+  its variants. A parameter that is unknown for every spectrum (log g of a
+  blackbody) is left out, so bbody and Husfeld can be written. Writing the
+  spectra of one variant into a folder that holds a split raises
+  ``ValueError`` before anything is written, so its variant folders are never
+  replaced.
+- A loaded ``SED`` reads its filter curves at each photometry call, so a curve
+  edited on disk (``Filters.correct_detector_type``) is the one used; it kept
+  the old curve before.
+- ``SED.coverage`` and ``sed-tools coverage`` count the nodes of a grid
+  without log g or [M/H] (bbody: 588 nodes, 100 % fill, not 0).
+- The MESA inlist lines double an apostrophe in a path
+  (``'/x/O''Brien/grid'``), as MESA's namelist reads it.
+- A spectrum that ends inside a band stops there: the flux beyond its last
+  sample is zero, not a line falling to zero over up to λ/100.
+- ``Filters.search`` returns only the bands of each served set, so
+  ``Filters.plot(Filters.search(...))`` no longer stops on a superseded copy
+  NJM keeps beside a set (``JWST/NIRCam F200W_old``).
+- The ``SED.fetch`` docstring says that from SVO nothing on disk is cut and no
+  flux cube is built (``sed-tools rebuild --grids NAME`` builds one), as the
+  README does.
+- ``photometry()`` keeps apart bands of different sets that share a name:
+  ``photometry("Johnson", "2MASS")`` gives ``Johnson/J`` and ``2MASS/J``,
+  where 2MASS J silently replaced Johnson J before.
+- ``sed-tools filters-detector`` and ``Filters.tag_detector_types`` take an
+  installed set's name (``GAIA/GAIA``) under the filter root, as ``--correct``
+  and ``--convert`` do; a target that does not exist is an error, not 0 files.
+- ``sed-tools grids`` no longer rewrites an HDF5 bundle that holds every
+  spectrum beside it.
+- **ML output is never infinite.** A training grid with one value throughout
+  an axis (log g and [M/H] of ``bbody``) stored a spread of 1e-8 for it, so
+  any other value of that axis overflowed the prediction to ``inf``.
+  ``sed-tools densify --ml-model`` and the completer wrote it and reported
+  success. That axis is now ignored, also by models saved before this
+  release, and ``SEDGenerator.generate`` and ``SEDCompleter.complete_sed``
+  raise ``ValueError`` on flux that is not finite: ``densify`` stops, and
+  ``extend_catalog`` lists the spectrum as failed and does not write it.
+- **ML-extended spectra keep their parameters.** ``extend_catalog`` (menu 8,
+  ``sed-tools ml_completer``) wrote its spectra without a header, so a later
+  ``sed-tools rebuild`` set Teff, log g and [M/H] to nan and the grid lost its
+  lookup table. Each written spectrum now carries the input's header, the
+  lookup table's parameters and ``extended_by_ml``.
+- ``sed-tools filters-inventory`` exits 0 when NJM is down and the other
+  sources list every instrument, as the other commands do.
+- **MAST (BOSZ) downloads run unattended.** The metallicity question came
+  before any cut was known, so ``--meta`` did not stop it, and without a
+  terminal the download failed and left an empty grid folder. It is now asked
+  only at a terminal, and only when no [M/H] range is given.
+- **A failed** ``filters-combine`` **writes nothing.** The output folder was
+  made and curves copied before a name conflict or a missing input stopped
+  it, leaving a set with no MESA index file. The set is now assembled beside
+  the output and put in place only when complete; an existing set is left as
+  it was.
+- **Composing a recipe that only some bands have** (``SLOAN/SDSS`` as
+  ``filter+optics+qe`` without ``--bands``) no longer downloads NJM's
+  components again and re-runs the original-source builder on every call,
+  and no longer says NJM lacks the components. The error names the bands
+  that have the recipe, and the compose menu lists such a recipe with those
+  bands.
+- The double-count error names the band and the curve that already holds the
+  part ("band g: the published curve already includes ['atmosphere']; adding
+  am1.30.dat would count it twice").
+- ``sed-tools import`` and the menu import print the MESA colors inlist path,
+  as every other build does.
+- ``sed-tools vega`` with NJM down and nothing cached names the Vega file
+  (``vega/vega_flam.csv``), not ``index.json``.
+- ``python -m sed_tools.cube.tool`` runs without a terminal: the distance,
+  filter-system and photometric-system questions take their defaults.
+  ``--model-dir`` selects the cube in that folder, and a folder of curves
+  given with ``--filters`` is one filter system.
+- An original-source builder's connection failure is reported in plain words,
+  as NJM's are.
+- ``scripts/audit_pipeline.py`` no longer fails an exact Planck grid: its
+  expected blackbody flux is integrated on a logarithmic grid.
+- ``scripts/bump_version.py`` replaces a ``Version X.Y.Z (unreleased)``
+  heading with the release heading, instead of adding a second one above it.
 
 Checks and guards
 ~~~~~~~~~~~~~~~~~
@@ -654,6 +783,48 @@ Packaging and scripts
 - The suite's packaging rows import every module of the package (they
   imported 51 of 90), and every builder row checks that each URL is
   downloaded once (PS1 was exempt by name).
+
+Documentation
+~~~~~~~~~~~~~
+
+- The README is short (about 130 lines: what SED_Tools does, install, a
+  command-line and a Python quick start, the MESA lines, a table of guides,
+  citation and licence). The rest is in topic pages under ``docs/``:
+  ``install``, ``quickstart``, ``grids``, ``filters``, ``photometry``,
+  ``mesa``, ``ml``, ``cli``, ``python-api``, ``njm``, ``developing`` and
+  ``citing``, with ``docs/README.md`` as their index. They are plain Markdown
+  that a later Sphinx build with ``myst-parser`` can include unchanged. PyPI
+  shows the short README and a "Documentation" link to ``docs/``
+  (``[project.urls]``).
+- Corrected examples: paths use the default data directory
+  (``~/.sed_tools/data/...``) instead of a relative ``data/...`` that did not
+  exist; the batch example writes spectra with ``np.savetxt``
+  (``EvaluatedSED`` has no ``save``); the command-to-API table names commands
+  that exist; the ``filters-combine --on-conflict error`` example combines
+  sets without a shared band name; ``filters-detector`` is given a path;
+  2MASS is no longer given as a photon-counting curve; the ``filters-info``
+  sample and the header-row sample are current; ``load_vega`` and
+  ``load_sun`` read files whose source is named; the MESA filter section says
+  that history columns are named after the file stem; the MSG link is MSG's
+  current address; the citation gives the concept DOI and the current version
+  DOI instead of 0.4.1's.
+- The MESA install step no longer copies a whole split grid into
+  ``$MESA_DIR/data/colors_data/stellar_models/``, where it replaced MESA's own
+  Kurucz2003all: paste the printed absolute lines, or export one variant with
+  ``sed-tools mesa_prepare``.
+- The 12 notebooks in ``jupyter_notebooks/`` are replaced by seven current
+  ones (decision R4): ``01_discovery_and_download`` (NJM optional),
+  ``02_filters`` (search, properties, components, detector types,
+  ``label_check``), ``03_photometry_and_zero_points`` (AB, ST and Vega;
+  photon- vs energy-counting), ``04_grids_and_interpolation`` (split grids,
+  the all-axes cube ``flux_cube_nd.bin`` and its extra-axis keywords),
+  ``05_combine_coverage_densify``, ``06_mesa`` (inlist paths, ``mesa-path``,
+  ``mesa_prepare``) and ``07_ml_generation_and_completion``. Each ends with
+  its command-line equivalents. They use small grids (bbody, Husfeld, part of
+  Kurucz2003all) and two filter sets, and check their physics with assertions.
+- ``scripts/run_notebooks.py`` runs every notebook against the checkout in a
+  scratch HOME and exits 1 if any cell fails: a manual check before a release
+  (needs ``nbclient`` and ``ipykernel``, which are not dependencies).
 
 Version 0.6.0 (November 2026)
 -----------------------------
