@@ -178,12 +178,36 @@ def trailing_bytes_emit_warning_but_do_not_raise(t):
     assert "trailing data" in t.capsys.readouterr().out.lower()
 
 
-@row
-def an_all_axes_cube_of_the_wrong_size_is_refused(t):
+#: name: (the all-axes cube of _two_variant_grid's bytes made corrupt, what the ValueError says). Its header: -1 at
+#: 0, FLUXCUBE at 4, version at 12, P = 4 at 16, the name width 5 at 20, the 9 counts from 24, the names from 60.
+CORRUPT_HEADERS = {
+    "a_corrupt_all_axes_header_is_refused_no_magic": (lambda b: b[:4] + b"NOTACUBE" + b[12:], "has no FLUXCUBE header"),
+    "a_corrupt_all_axes_header_is_refused_unknown_version": (
+        lambda b: b[:12] + struct.pack("<i", 3) + b[16:], "version 3 with 4 axes is not one this reads"),
+    "a_corrupt_all_axes_header_is_refused_fewer_than_3_axes": (
+        lambda b: b[:16] + struct.pack("<i", 2) + b[20:], "version 2 with 2 axes is not one this reads"),
+    "a_corrupt_all_axes_header_is_refused_no_name_width": (
+        lambda b: b[:20] + struct.pack("<i", 0) + b[24:], "truncated or gives an empty axis or name"),
+    "a_corrupt_all_axes_header_is_refused_an_empty_axis": (
+        lambda b: b[:24] + struct.pack("<i", 0) + b[28:], "truncated or gives an empty axis or name"),
+    "a_corrupt_all_axes_header_is_refused_truncated": (lambda b: b[:40], "truncated or gives an empty axis or name"),
+    "a_corrupt_all_axes_header_is_refused_wrong_size": (lambda b: b[:-8], r"bytes, but its all-axes header gives"),
+    # Version 1 (19-24 Nov 2026, named flux_cube.bin): no name width, 32 bytes per name; it is still read.
+    "a_version_1_all_axes_cube_is_read": (lambda b: b[:12] + struct.pack("<2i", 1, 4) + b[24:60] + b"".join(
+        b[60 + 5 * k:65 + 5 * k].ljust(32) for k in range(4)) + b[80:], None),
+}
+
+
+def _corrupt_header(t, corrupt, message):
     grid = _build(_two_variant_grid(t.tmp / "G"))
-    (t.tmp / "short.bin").write_bytes((grid / ND).read_bytes()[:-8])
-    with pytest.raises(ValueError, match="short.bin: .* bytes, but its all-axes header gives"):
-        SEDModel("short", t.tmp / "short.bin")
+    (t.tmp / "bad.bin").write_bytes(corrupt((grid / ND).read_bytes()))
+    if message is None:
+        assert fileio.read_header(t.tmp / "bad.bin").names == ["teff", "logg", "meta", "alpha"]
+        assert np.array_equal(SEDModel("v1", t.tmp / "bad.bin")(5000, 4.0, 0.0, alpha=0.4).flux,
+                              SEDModel("v2", grid / ND)(5000, 4.0, 0.0, alpha=0.4).flux)
+        return
+    with pytest.raises(ValueError, match=message):
+        SEDModel("bad", t.tmp / "bad.bin")
 
 
 # ----------------------------------------------------------------------
@@ -2001,6 +2025,7 @@ def test_cubes(rows):
     rows(SCENARIOS)
     rows(BANDS, _band_sampling)
     rows(UNUSABLE_LOOKUP, _unusable_lookup)
+    rows(CORRUPT_HEADERS, _corrupt_header)
     rows(RAM, _ram)
     rows(SEARCHES, _unsearchable)
     rows(COMBINE_MISSING, _combine_missing)
