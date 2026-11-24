@@ -191,7 +191,8 @@ class Filters:
         Parameters
         ----------
         path : str or Path, optional
-            Filter root, a facility/instrument directory, or a single file.
+            Filter root, a facility/instrument directory (a path, or
+            ``"Facility/Instrument"`` under the filter root), or a single file.
             Defaults to the configured filter root.
         facility : str, optional
             SVO facility name, when ``path`` is a single instrument directory.
@@ -220,7 +221,7 @@ class Filters:
                 note = f"  ({r.note})" if r.note and (r.kept or r.source == "assumed") else ""
                 print(f"[filters]{flag} {r.path}: {r.detector_type} [{r.source}]{note}")
 
-        target = Path(path) if path is not None else cls._filter_root
+        target = cls._installed_path(path if path is not None else cls._filter_root, cls._filter_root)
         if facility is None:
             tag_filter_tree(target, force=force, dry_run=dry_run, progress=record)
             return rows
@@ -286,14 +287,23 @@ class Filters:
         """
         return cls._edit_detector_type(path, detector_type, bands, filter_root, convert=True)
 
+    @staticmethod
+    def _installed_path(path: Union[str, Path], root: Union[str, Path]) -> Path:
+        """``path`` as given, or under the filter ``root`` when it is a relative path that does not exist
+        (``"GAIA/GAIA"``); FileNotFoundError when neither exists."""
+        path = Path(path)
+        if not path.exists() and not path.is_absolute():
+            path = Path(root) / path
+        if not path.exists():
+            raise FileNotFoundError(f"No filter file or set at {path}")
+        return path
+
     @classmethod
     def _edit_detector_type(cls, path, detector_type, bands, filter_root, *, convert):
         from ..filters.detector_edit import edit_detector_type
 
         root = Path(filter_root or cls._filter_root)
-        path = Path(path)
-        if not path.exists() and not path.is_absolute():
-            path = root / path
+        path = cls._installed_path(path, root)
         rows = edit_detector_type(path, detector_type, convert=convert, bands=bands,
                                   spectrum=cls._catalogue(root).spectrum)
         how = "converted" if convert else "label only"

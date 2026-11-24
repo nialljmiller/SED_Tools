@@ -1215,6 +1215,21 @@ def cli_reports_kept_types(t):
     assert path.read_bytes() == before
 
 
+@row
+def cli_tags_an_installed_set_by_its_name(t):
+    # "filters-detector GAIA/GAIA --dry-run" took the name for a path and reported 0 files (notebooks review,
+    # 24 Nov 2026); --correct and --convert already took a set's name under the filter root.
+    wl, tr = [15000.0, 16000.0, 17000.0, 18000.0], [0.0, 0.9, 0.95, 0.0]
+    naco_h(t.tmp / "filters", wl, tr, PHOTON, SOURCE_INFERRED)
+    t.mp.setattr(Filters, "_filter_root", t.tmp / "filters")
+    t.mp.setattr("sed_tools.filters.curve_metadata.SVOMetadataClient", lambda *a, **k: SVOClient())
+    t.mp.chdir(t.tmp)
+    run_cli(t.mp, "filters-detector", "Paranal/NACO", "--dry-run")
+    assert "1 files, 0 would change" in t.capsys.readouterr().out
+    with pytest.raises(FileNotFoundError, match="No filter file or set at"):
+        Filters.tag_detector_types("Paranal/Nothing", dry_run=True)
+
+
 # ======================================================================
 # The filter library offline: compose, atmospheres, SVO, NJM's burst block
 # ======================================================================
