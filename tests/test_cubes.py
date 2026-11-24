@@ -638,7 +638,8 @@ def _extra_axes(t, columns, values, labels):
     model = SEDModel("G", grid / ND)
     for k, row in enumerate(rows):
         own = np.interp(wl, *np.loadtxt(grid / row[0], unpack=True))
-        given = {col: (value if 3 + c in labels else float(value)) for c, (col, value) in enumerate(zip(columns, row[4:]))}
+        given = {col: (value if 3 + c in labels else float(value))
+                 for c, (col, value) in enumerate(zip(columns, row[4:]))}
         np.testing.assert_allclose(model(row[1], 4.0, 0.0, **given).flux, own, rtol=1e-12, err_msg=row[0])
 
 
@@ -698,6 +699,17 @@ def a_split_grid_from_njm_comes_with_its_variant_folders_and_is_not_rebuilt(t):
     assert np.array_equal(sed(*node, alpha=0.0).flux, own.interpolate_spectrum(*node)[1])
     API.fetch(GRID, source="njm", model_root=t.tmp / "api")  # complete: its all-axes cube is not written again
     assert builds == [] and written == [str(t.tmp / "api" / GRID), str(t.tmp / "cli" / GRID)]
+    # A cut re-fetch of a split grid an earlier version installed (the all-axes cube as flux_cube.bin) writes it
+    cut = ("--source", "njm", "--grids", GRID, "--teff", "5700", "6300", "--base", str(t.tmp / "cli"))
+    for folder, fetch in ((t.tmp / "api" / GRID, lambda: API.fetch(GRID, source="njm", model_root=t.tmp / "api",
+                                                                   teff_min=5700, teff_max=6300)),
+                          (t.tmp / "cli" / GRID, lambda: run_cli(t.mp, "grids", *cut))):
+        (folder / ND).rename(folder / "flux_cube.bin")
+        fetch()
+        assert written[-1] == str(folder) and (folder / ND).read_bytes() == (served / ND).read_bytes()
+        aside = folder / sorted(p.name for p in folder.glob("flux_cube.bin.old*"))[-1]
+        assert aside.read_bytes() == (served / ND).read_bytes()
+        assert not (folder / "flux_cube.bin").exists() and builds == []
 
 
 @row
@@ -1518,6 +1530,10 @@ def combine_keeps_every_variant_of_an_extra_axis(t):
             f"plain_000002.txt,6000.0,4.5,0.0,{own.split(',')[4]},plain,s0.txt"]
     assert fileio.is_all_axes(combined / ND) and not (combined / "flux_cube.bin").exists()  # as a split grid's
     assert [v.label for v in list_variants(combined)] == ["alpha_0.0", "alpha_0.4"]
+    from sed_tools.api import SED as API  # which returns its all-axes model
+
+    again = API.combine(["alpha", "plain"], output="again", model_root=t.tmp / "models", visualization=False)
+    assert list(again.model().extra_axes) == ["alpha"]
 
 
 # ----------------------------------------------------------------------
