@@ -363,6 +363,22 @@ def non_numeric_vega_zero_point_in_a_filter_file_raises(t):
         sed.photometry(band, system="Vega", vega_spectrum=vega)
 
 
+@row
+def a_curves_vega_zero_point_wins_over_a_vega_spectrum(t):
+    # Photometry that used the Vega spectrum although the curve states zp_vega passed every row, by both routes:
+    # EvaluatedSED.photometry and photometry._band_magnitude (review 24 Nov 2026, tests.md R3).
+    from sed_tools.photometry import _band_magnitude, load_filter_curve, load_spectrum
+
+    model = _build(_simple_grid(t.tmp / "grid"))  # flat 1e-10
+    sed = SEDModel(name="grid", flux_cube_path=model / "flux_cube.bin")(5500.0, 4.25, 0.0)
+    band = str(_box_filter(t.tmp / "Band.dat", "# zp_vega = 2e-10", ANGSTROM))
+    vega = str(_box_filter(t.tmp / "vega.dat", ANGSTROM))  # a zero point of about 1
+    expected = -2.5 * math.log10(0.5)
+    assert sed.photometry(band, system="Vega", vega_spectrum=vega)["Band"].magnitude == pytest.approx(expected)
+    assert _band_magnitude(sed.wavelength, sed.flux, load_filter_curve(band), "Vega",
+                           lambda: load_spectrum(vega))[2] == pytest.approx(expected)
+
+
 def _run_tool(tmp, mp, filters_dir):
     model = _build(_simple_grid(tmp / "grid"))
     mp.setattr("builtins.input", lambda *args: "")  # no distance scaling
@@ -568,6 +584,26 @@ def three_axis_readers_leave_the_all_axes_cube_alone(t):
     assert fileio.load_axes(top)[0].tolist() == _read_flux_cube_header(top)["teff"].tolist() == [5750.0, 6000.0, 6250.0]
     assert SED(model_root=t.tmp / "models").available_grids() == [f"K/{v.name}" for v in variants]
     assert mesa_inlist_lines(folder) == [f"stellar_atm = '{v}'" for v in variants]
+
+
+@row
+def the_3_axis_cube_puts_each_spectrum_where_mesa_reads_it(t):
+    # Read as MESA's colors module reads flux_cube.bin, not through fileio: four integers, the Teff, log g, [M/H] and
+    # wavelength axes, then the flux with Teff varying fastest, then log g, [M/H] and wavelength. A writer that
+    # swapped log g and [M/H] in the flux passed every row but golden, which CI does not run (review 24 Nov 2026).
+    nodes = [(te, lg, mh) for te in (5000.0, 6000.0, 7000.0) for lg in (4.0, 4.5) for mh in (-1.0, 0.0, 0.5)]
+    folder = _write_grid(t.tmp / "g", [(f"s{i}.txt", *node) for i, node in enumerate(nodes)])
+    for i in range(len(nodes)):  # a flat spectrum of its own height
+        (folder / f"s{i}.txt").write_text("".join(f"{w:.1f} {i + 1:.6e}\n" for w in np.linspace(1000.0, 1e4, 20)))
+    raw = (_build(folder) / "flux_cube.bin").read_bytes()
+    nt, nl, nm, nw = struct.unpack("<4i", raw[:16])
+    values = np.frombuffer(raw[16:], dtype="<f8")
+    teff, logg, meta, _ = np.split(values[:nt + nl + nm + nw], np.cumsum([nt, nl, nm]))
+    flux = values[nt + nl + nm + nw:]
+    assert (nt, nl, nm, nw, flux.size) == (3, 2, 3, 20, 3 * 2 * 3 * 20)
+    for i, (te, lg, mh) in enumerate(nodes):
+        it, il, im = (int(np.flatnonzero(axis == v)[0]) for axis, v in ((teff, te), (logg, lg), (meta, mh)))
+        assert np.allclose(flux[it + nt * (il + nl * (im + nm * np.arange(nw)))], i + 1, rtol=1e-12)
 
 
 @row

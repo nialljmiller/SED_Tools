@@ -1527,6 +1527,21 @@ def a_spectrum_ending_inside_a_band_stops_there(t):
 
 
 @row
+def ab_zero_points_from_first_principles(t):
+    # Computed here from the definitions, not by the package: a box curve's pivot is sqrt(a b), its AB zero point
+    # 3631 Jy c / pivot^2, and a flat 3631 Jy spectrum is AB magnitude 0. A 0.03 % error in 3631 Jy or 0.1 % in the
+    # zero point passed every row but golden, which CI does not run (review 24 Nov 2026, tests.md R2).
+    from sed_tools.photometry import FilterCurve, _band_magnitude
+
+    c, a, b = 2.99792458e18, 4000.0, 6000.0  # Å/s; the box's edges
+    lam, tr = np.array([a, a, b, b]), np.array([0.0, 1.0, 1.0, 0.0])
+    assert filter_properties(lam, tr, ENERGY)["ZeroPointAB_flam"] == pytest.approx(3631e-23 * c / (a * b), rel=1e-9)
+    wl = np.linspace(3000.0, 7000.0, 40001)
+    magnitude = _band_magnitude(wl, 3631e-23 * c / wl**2, FilterCurve("box", lam, tr, {}), "AB", None)[2]
+    assert magnitude == pytest.approx(0.0, abs=1e-6)
+
+
+@row
 def rejects_unusable_curves(t):
     with pytest.raises(ValueError):
         filter_properties([5000.0], [1.0])

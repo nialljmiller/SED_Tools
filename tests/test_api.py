@@ -594,6 +594,24 @@ def the_041_completer_api_loads_and_describes_a_model(t):
     assert sorted(m["name"] for m in ml.Completer.available_models(str(t.tmp / "models"))) == ["a", "b"]
 
 
+@row
+def ml_completer_extends_a_grid_and_the_041_functions_complete_and_list(t):
+    # MLCompleter.extend, ml.complete_sed and ml.list_models were public and run by no row (review 24 Nov 2026).
+    _tiny_training(t)
+    completer = SED.ml_completer(model_root=t.tmp).train("lib", epochs=1, batch_size=3)
+    shutil.copytree(KURUCZ, t.tmp / GRID)
+    extended = completer.extend(GRID, wavelength_range=(500.0, 60000.0))
+    assert len(extended) == 12  # every spectrum of the grid
+    assert all(s.wavelength.min() <= 500.0 and s.wavelength.max() >= 60000.0 for s in extended)
+    assert [m["name"] for m in ml.list_models(str(t.tmp / "models"))] == ["lib_completer"]
+    spectrum = extended[0]
+    inside = (spectrum.wavelength > 3000.0) & (spectrum.wavelength < 9000.0)
+    wl, flux = ml.complete_sed(ml.load_completer(str(t.tmp / "models" / "lib_completer")), spectrum.wavelength[inside],
+                               spectrum.flux[inside], teff=spectrum.teff, logg=spectrum.logg,
+                               meta=spectrum.metallicity, extension_range=(1000.0, 20000.0))
+    assert wl.shape == flux.shape and wl.min() <= 1000.0 and wl.max() >= 20000.0
+
+
 # ----------------------------------------------------------------------
 # Smaller pieces
 # ----------------------------------------------------------------------
