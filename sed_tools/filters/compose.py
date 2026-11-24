@@ -255,10 +255,10 @@ def _composition_steps(instrument_dir: Path, band: str, roles: set, manifest: In
     if instrument_roles:
         pieces = manifest.cover(band, instrument_roles)
         if pieces is None:
-            can = ", ".join(manifest.buildable()) or "none"
+            can = [b for b in manifest.primary_bands() if manifest.cover(b, instrument_roles)]
             raise ComponentError(
                 f"{manifest.facility}/{manifest.instrument} cannot provide '{recipe_name(instrument_roles)}' "
-                f"for band '{band}' (buildable: {can}; published curve: "
+                f"for band '{band}' ({'only for ' + ', '.join(can) if can else 'for no band'}; published curve: "
                 f"{manifest.published_bands.get(band) or manifest.published.get('components') or 'unknown'})"
             )
         steps.extend(("+".join(contains), instrument_dir / rel) for contains, rel in pieces)
@@ -297,6 +297,7 @@ def compose_band(
     steps = _composition_steps(instrument_dir, band, roles, manifest, spec, atmosphere_root)
 
     covered: List[str] = []
+    holder: Dict[str, str] = {}  # the step that put each role in
     curves: List[Curve] = []
     sources: List[str] = []
     policies: List[Optional[str]] = []
@@ -320,8 +321,10 @@ def compose_band(
                 raise ComponentError(f"{path.name}: component contents {contains} disagree with its manifest role {key!r}")
         overlap = set(contains) & set(covered)
         if overlap:
-            raise ComponentError(f"{path.name} already includes {sorted(overlap)}; refusing to double count")
+            raise ComponentError(f"band {band}: {holder[sorted(overlap)[0]]} already includes {sorted(overlap)}; "
+                                 f"adding {path.name} would count it twice")
         covered.extend(contains)
+        holder.update(dict.fromkeys(contains, "the published curve" if key == PUBLISHED else path.name))
         curves.append(curve)
         policies.append(policy)
         tolerances.append(tolerance)

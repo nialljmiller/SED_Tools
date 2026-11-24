@@ -841,7 +841,7 @@ def mast_lists_every_bosz_resolution_and_accepts_each(t):
     assert names == ["BOSZ-2024-r500", "BOSZ-2024-r1000", "BOSZ-2024-r2000", "BOSZ-2024-r5000",
                      "BOSZ-2024-r10000", "BOSZ-2024-r20000", "BOSZ-2024-r50000", "BOSZ-2024-rorig"]
     assert "Discovering spectral grids from MAST" in t.capsys.readouterr().out
-    answer(t.mp, *[""] * len(names))
+    answer(t.mp)  # no question: download_model_spectra asks for metallicities, only at a terminal
     assert [grabber.get_model_metadata(n)["reskey"] for n in names] == [n.rsplit("-", 1)[1] for n in names]
 
 

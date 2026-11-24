@@ -411,7 +411,10 @@ class FilterCatalogue:
 
     def vega(self, *, refresh: bool = False) -> Path:
         """Path to the cached Vega spectrum NJM's properties use (``vega/vega_flam.csv``, Å and f_λ)."""
-        definitions = self.index()["filters"].get("properties_definitions") or {}
+        try:
+            definitions = self.index()["filters"].get("properties_definitions") or {}
+        except CatalogueError:  # no index: NJM's usual path, which the cache may hold (else the error names it)
+            definitions = {}
         return self.spectrum((definitions.get("vega_spectrum") or {}).get("url") or VEGA_URL, refresh=refresh)
 
     def spectrum(self, rel: str, *, refresh: bool = False) -> Path:

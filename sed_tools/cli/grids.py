@@ -560,4 +560,4 @@ def run_import_flow(base_dir: str = str(STELLAR_DIR_DEFAULT)) -> None:
     name = input("Spectral grid name [blank = source folder name]: ").strip() or None
     mv = input("Move files instead of copying? [y/N] ").strip().lower().startswith("y")
     flux_unit = _ask_import_flux_unit(path, name)
-    SED.import_grid(path, name=name, model_root=base_dir, move=mv, flux_unit=flux_unit)
+    _print_mesa_inlist(SED.import_grid(path, name=name, model_root=base_dir, move=mv, flux_unit=flux_unit)["dest"])

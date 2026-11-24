@@ -12,6 +12,7 @@ import io
 import logging
 import os
 import re
+import sys
 import string
 import urllib.parse
 import zlib
@@ -317,6 +318,14 @@ def _write_lookup_table(model_dir: str, spectra: List[Tuple[str, Dict[str, str]]
     write_lookup_csv(rows, os.path.join(model_dir, "lookup_table.csv"), columns=["file_name"] + keys, comment=False)
     print(f"[MAST] wrote lookup_table.csv with {len(rows)} rows")
 
+def _ask_metals(metals: List[str]) -> List[str]:
+    """The metallicities typed at a terminal (blank for all of ``metals``); all of them without a terminal."""
+    if not sys.stdin.isatty():
+        return metals
+    print("  Limit metallicities? e.g., '-1.00,+0.00' or leave blank for ALL")
+    raw = input("> ").strip()
+    return [_metal_tag(tok.strip()) for tok in raw.split(",") if tok.strip()] or metals
+
 # ----------------- main class -----------------
 class MASTSpectraGrabber:
     def __init__(self, base_dir: str, max_workers: int = 5, session: Optional[requests.Session] = None):
@@ -329,7 +338,7 @@ class MASTSpectraGrabber:
         return [f"BOSZ-2024-{rk}" for rk in RES_KEYS]
 
     def get_model_metadata(self, model_name: str) -> Dict[str, Any]:
-        """Ask which metallicities to fetch and return the download plan.
+        """The download plan: the resolution and every metallicity (download_model_spectra narrows them).
 
         Raises ValueError for a model name that is not a BOSZ 2024 grid.
         """
@@ -338,10 +347,7 @@ class MASTSpectraGrabber:
             raise ValueError(f"Unrecognized BOSZ model name: {model_name}")
         reskey = m.group(1)
         print(f"[MAST:BOSZ] Selected resolution: {reskey}")
-        print("  Limit metallicities? e.g., '-1.00,+0.00' or leave blank for ALL")
-        raw = input("> ").strip()
-        metals = [_metal_tag(tok.strip()) for tok in raw.split(",") if tok.strip()] or METALS
-        return {"provider": "mast-bosz", "version": "2024", "reskey": reskey, "metals": metals}
+        return {"provider": "mast-bosz", "version": "2024", "reskey": reskey, "metals": list(METALS)}
 
     def download_model_spectra(self, model_name: str, info: Dict[str, Any],
                                teff_range: Optional[Tuple[float, float]] = None,
@@ -350,13 +356,15 @@ class MASTSpectraGrabber:
                                wl_range: Optional[Tuple[float, float]] = None, **_ignored: Any) -> int:
         """Download the BOSZ spectra in the plan from get_model_metadata.
 
+        Its metallicities are narrowed to meta_range; without one, a terminal is asked which to fetch.
         Returns the number written. Raises RuntimeError if the download
         scripts or the wavelength grid cannot be read; if any spectrum
         fails, the rest are still written, lookup_table.csv is not, and
         RuntimeError lists each failure.
         """
         reskey: str = info["reskey"]
-        metals = _filter_metals_by_range(info["metals"], meta_range)
+        metals = (_filter_metals_by_range(info["metals"], meta_range) if meta_range is not None
+                  else _ask_metals(info["metals"]))
         if not metals:
             print(f"[MAST] No BOSZ metallicities match meta_range={meta_range}")
             return 0

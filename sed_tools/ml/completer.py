@@ -16,11 +16,12 @@ import numpy as np
 
 from .._constants import H as PLANCK_H, C as SPEED_C, K as BOLTZMANN_K, SIGMA
 from ..cube.fileio import load as load_cube
+from ..grids.header_parser import parse_header
 from ..ui_utils import (ask_number as _ask_number, banner as _banner, menu_choice as _menu_choice, ordered_range,
                         section as _section)
 from .common import (DEFAULT_WL_MAX, DEFAULT_WL_MIN, Engine, Network, action_menu, confirmed, data_loaders, fit,
-                     log_grid, model_configs, normalised_params, param_scaler, predict, print_libraries, resample,
-                     sample_spectra, training_libraries, write_spectrum)
+                     log_grid, model_configs, normalised_params, param_scaler, predict, print_libraries,
+                     require_finite, resample, sample_spectra, training_libraries, write_spectrum)
 
 logger = logging.getLogger(__name__)
 
@@ -576,6 +577,8 @@ class SEDCompleter(Engine):
             The added points below the SED, its own wavelengths, then the added points above it
         flux_extended : np.ndarray
             Flux at those wavelengths
+
+        Raises ValueError if any added flux is not finite (a model that cannot predict at these parameters).
         """
         low, high = ordered_range(*extension_range)
         self.model.eval()
@@ -601,6 +604,7 @@ class SEDCompleter(Engine):
         flux_high = _blend_with_blackbody(
             wl_high, np.log10(wl_high) - np.log10(wl_max), self.wavelength_grid[known_end:], y_pred_flux[known_end:],
             bb_flux[need_high])
+        require_finite(np.concatenate([flux_low, flux_high]), f"Teff={teff:g}, logg={logg:g}, [M/H]={meta:g}")
 
         wl_out = np.concatenate([wl_low, wavelength, wl_high])
         flux_out = np.concatenate([flux_low, flux, flux_high])
@@ -622,7 +626,8 @@ class SEDCompleter(Engine):
         X_input = np.concatenate([flux_known_norm, params_norm]).astype(np.float32)
         y_pred_norm = predict(self.model, X_input, self.device)
         y_pred_log = y_pred_norm * self.scaler_params['ext_log_std'] + self.scaler_params['ext_log_mean']
-        return 10 ** y_pred_log
+        with np.errstate(over='ignore'):  # an overflow is refused by extend (require_finite)
+            return 10 ** y_pred_log
 
     @staticmethod
     def list_models(models_dir: str = "models") -> List[Dict[str, Any]]:
@@ -856,7 +861,10 @@ class Completer:
         filename = str(row[columns['file']])
         if filename == 'nan' or not filename:
             raise ValueError("no file name")
-        data = np.loadtxt(_find_spectrum(input_dir, filename))
+        source = _find_spectrum(input_dir, filename)
+        data = np.loadtxt(source)
+        # Its header, with the lookup's parameters: a rebuild reads each spectrum's parameters from its file.
+        header = {**parse_header(source), 'teff': teff, 'logg': logg, 'metallicity': meta}
         if data.ndim != 2 or data.shape[1] < 2:
             raise ValueError(f"expected wavelength and flux columns, got an array of shape {data.shape}")
         wavelength = data[:, 0]
@@ -867,13 +875,13 @@ class Completer:
         covers_low = wavelength.min() <= extension_range[0] * 1.1
         covers_high = wavelength.max() >= extension_range[1] * 0.9
         if covers_low and covers_high:
-            write_spectrum(output_file, *data.T)  # every column of the file, as read
+            write_spectrum(output_file, *data.T, parameters=dict(header, extended_by_ml=False))  # every column
             new_row.update(extended_by_ml=False, file_name=filename)
             return new_row, None
 
         wl_ext, flux_ext = self.extend(wavelength, flux, teff=teff, logg=logg, meta=meta,
                                        extension_range=extension_range)
-        write_spectrum(output_file, wl_ext, flux_ext)
+        write_spectrum(output_file, wl_ext, flux_ext, parameters=dict(header, extended_by_ml=True))
         new_row.update(extended_by_ml=True, file_name=filename,
                        wl_min=float(wl_ext.min()), wl_max=float(wl_ext.max()))
         return new_row, (filename, wavelength, flux, wl_ext, flux_ext)
@@ -1044,7 +1052,7 @@ def _extend_menu(base_dir: str, models_dir: str) -> None:
         print("Train a model first (option 1)")
         return
 
-    print("\nAvailable trained spectral grids:")
+    print("\nAvailable trained completer models:")
     print("-" * 60)
     for i, model in enumerate(trained_models, 1):
         arch = model.get('architecture', {})

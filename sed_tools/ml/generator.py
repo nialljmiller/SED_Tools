@@ -14,8 +14,8 @@ import numpy as np
 
 from ..cube.fileio import load as load_cube
 from .common import (Engine, Network, action_menu, confirmed, data_loaders, fit, log_grid, model_configs,
-                     normalised_params, param_scaler, predict, print_libraries, resample, sample_spectra,
-                     training_libraries, write_spectrum)
+                     normalised_params, param_scaler, predict, print_libraries, require_finite, resample,
+                     sample_spectra, training_libraries, write_spectrum)
 from ..ui_utils import (ask_number as _ask_number, ask_numbers as _ask_numbers, banner as _banner,
                         menu_choice as _menu_choice, section as _section)
 
@@ -381,6 +381,8 @@ class SEDGenerator(Engine):
         -------
         wavelength : array (Angstroms)
         flux : array (erg/s/cm²/Å)
+
+        Raises ValueError if the flux is not finite everywhere (a model that cannot predict at these parameters).
         """
         if check_bounds:
             ranges = self.config.get('parameter_ranges', {})
@@ -395,7 +397,10 @@ class SEDGenerator(Engine):
         params_norm = np.array(normalised_params(self.scaler_params, teff, logg, meta), dtype=np.float32)
         flux_norm = predict(self.model, params_norm, self.device)
         flux_log = flux_norm * self.scaler_params['flux_log_std'] + self.scaler_params['flux_log_mean']
-        return self.wavelength_grid.copy(), 10 ** flux_log
+        with np.errstate(over='ignore'):
+            flux = 10 ** flux_log
+        require_finite(flux, f"Teff={teff:g}, logg={logg:g}, [M/H]={meta:g}")
+        return self.wavelength_grid.copy(), flux
 
     def generate_with_outputs(
         self,

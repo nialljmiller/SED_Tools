@@ -314,10 +314,24 @@ def combine_leaves_out_archived_and_unlisted_copies(t):
 
 
 @row
-def combine_refuses_an_index_listing_a_missing_curve(t):
+def a_failed_combine_writes_nothing(t):
+    # The folder was made and curves copied before the checks: a failure left a set with no MESA index file.
     inst = put(t.tmp / "Generic" / "Johnson", {"B.dat": "Wavelength,Transmission\n1,1\n", "Johnson": "B.dat\nV.dat\n"})
+    good = put(t.tmp / "Generic" / "Good", {"U.dat": "Wavelength,Transmission\n1,1\n"})
+    other = put(t.tmp / "Generic" / "Other", {"U.dat": "Wavelength,Transmission\n2,1\n"})
     with pytest.raises(FileNotFoundError, match="lists V.dat, not found in"):
-        Filters.combine("Combined/J", inst, filter_root=t.tmp)
+        Filters.combine("Combined/J", good, inst, filter_root=t.tmp)
+    with pytest.raises(FileNotFoundError, match="Could not find .dat filters for input: nope"):
+        Filters.combine("Combined/J", good, "nope", filter_root=t.tmp)
+    with pytest.raises(FileExistsError, match="conflict while combining: U.dat"):
+        Filters.combine("Combined/J", good, other, on_conflict="error", filter_root=t.tmp)
+    assert list((t.tmp / "Combined").iterdir()) == []
+    out = Filters.combine("Combined/J", good, filter_root=t.tmp)
+    before = {p.name: p.read_bytes() for p in out.iterdir()}
+    with pytest.raises(FileNotFoundError):  # an existing set is left as it was
+        Filters.combine("Combined/J", other, inst, filter_root=t.tmp)
+    assert {p.name: p.read_bytes() for p in out.iterdir()} == before == {
+        "U.dat": b"Wavelength,Transmission\n1,1\n", "J": b"U.dat\n"}
 
 
 # ======================================================================
@@ -698,6 +712,10 @@ def vega_is_downloaded_from_njm_where_mesa_can_read_it(t):
     assert written.read_text() == served
     assert t.capsys.readouterr().out.endswith(f"MESA colors inlist: vega_sed = '{written}'\n")
     assert len(njm.fetched("vega/vega_flam.csv")) == 1  # the second copy came from the catalogue's cache
+    njm.fail = True  # NJM down, nothing cached: the error named index.json, not the Vega file
+    down = t.tmp / "down" / "filters"
+    with pytest.raises(CatalogueError, match="^vega/vega_flam.csv is not cached and NJM is unreachable$"):
+        FilterCatalogue(down, mirror=grabber_for(down, njm)).vega()
 
 
 # ======================================================================
@@ -789,7 +807,8 @@ def multiply_curves_refuses_to_extrapolate(t):
 
 PUBLISHED_WITH_ATMOSPHERE = {
     "published_with_atmosphere_is_not_double_counted": (lambda root: with_site(svo_published(
-        root / "2MASS" / "2MASS", "J", gauss(5000, 300), "filter+instrument+atmosphere")), "double count"),
+        root / "2MASS" / "2MASS", "J", gauss(5000, 300), "filter+instrument+atmosphere")),
+        r"band J: the published curve already includes \['atmosphere'\]; adding \S+\.dat would count it twice"),
     "space_instrument_refuses_atmosphere": (lambda root: svo_published(
         root / "TESS" / "TESS", "Red", gauss(5000, 300), "filter+instrument"), "no atmosphere site of its own"),
     "published_requires_known_contents": (lambda root: with_site(put(
@@ -841,7 +860,7 @@ def skycalc_build_writes_grid_and_resumes(t):
 G, R, I = gauss(4800.0, 300.0) * 0.9, gauss(5300.0, 300.0) * 0.7, gauss(5600.0, 200.0) * 0.8  # noqa: E741
 REFERENCE = Path(__file__).parent / "golden" / "inputs" / "reference"  # NJM's vega_flam.csv and sun_flam.csv
 SPECTRA = {"vega_spectrum": "vega/vega_flam.csv", "sun_spectrum": "sun/sun_flam.csv"}
-QUESTION = ("This filter set is known to be used with photon-counting detectors (svo). "
+QUESTION = ("This filter set is labelled for photon-counting detectors (svo). "
             "Do you wish to edit/correct this? [y/N] ")
 
 
@@ -1096,7 +1115,7 @@ def review_of_a_mixed_set_asks_for_the_type(t):
     inst = sdss(root := spectra_cached(t), energy_band=True)
     prompts = answer(t.mp, "y", "convert", "energy")
     review_detector_types(inst, root, "This product")
-    assert prompts[0] == ("This product is known to be used with photon-counting detectors (svo) for g, r and "
+    assert prompts[0] == ("This product is labelled for photon-counting detectors (svo) for g, r and "
                           "energy-counting detectors (svo) for i. Do you wish to edit/correct this? [y/N] ")
     assert prompts[2] == "Change them to energy or photon: "
     assert {b: read_filter_header(inst / f"{b}.dat")["DetectorType"] for b in "gri"} == dict.fromkeys("gri", ENERGY)
@@ -2093,6 +2112,26 @@ def njm_component_failure_is_reported_before_the_original_source(t):
 
 
 @default_svo_row
+def a_recipe_some_bands_can_never_have_asks_no_source_and_names_the_bands_that_have_it(t):
+    # As SLOAN/SDSS: g has filter+optics+qe, gp is filter only. Composing every band re-downloaded NJM's
+    # components, re-ran the builder and blamed NJM ("the mirror does not have them").
+    inst = put(t.tmp / "Fac" / "Cam", {"g.dat": CURVE, "gp.dat": CURVE, "manifest.json": json.dumps({
+        "facility": "Fac", "instrument": "Cam", "bands": ["g", "gp"],
+        "published_bands": {"g": "filter+optics+qe", "gp": "filter"},
+        "components": {"filter": {"gp": "gp.dat"}, "filter+optics+qe": {"g": "components/g.dat"}}})})
+    put(inst / "components", {"g.dat": CURVE})
+    asked = []
+    library = library_with(t.tmp, SimpleNamespace(is_available=lambda: True,
+                                                  download_components=lambda f, i: asked.append("njm")))
+    t.mp.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam"), catalog.BuilderRef("test"))
+    t.mp.setattr(filters_library, "get_builder", lambda name: lambda root, **kwargs: asked.append("builder"))
+    with pytest.raises(ComponentError, match=r"'filter\+optics\+qe' for band 'gp' \(only for g; published curve"):
+        library.compose(inst, "filter+optics+qe")
+    assert asked == []
+    assert sorted(p.name for p in library.compose(inst, "filter+optics+qe", bands=["g"]).glob("*.dat")) == ["g.dat"]
+
+
+@default_svo_row
 def njm_atmosphere_failure_is_reported_before_its_source(t):
     library = library_with(t.tmp / "filters", SimpleNamespace(download_atmosphere=raising(
         requests.HTTPError("502 for atmospheres/paranal/manifest.json"))))
@@ -2209,6 +2248,12 @@ def published_carries_every_source_reason(t):
                                "SVO: SVO Filter Profile Service unreachable")
     assert ("The original source cannot provide Fac/Cam (the builder left an incomplete set); trying SVO"
             in t.caplog.text)
+    # Its connection failure in plain words, as NJM's (it was urllib3's whole text)
+    t.mp.setattr(filters_library, "get_builder", lambda name: raising(requests.ConnectionError(
+        "HTTPSConnectionPool(host='cdsarc.cds.unistra.fr', port=443): Max retries exceeded with url: /ReadMe "
+        "(Caused by NewConnectionError('Failed to establish a new connection: [Errno 61] Connection refused'))")))
+    with pytest.raises(ComponentError, match="; original source: connection refused; SVO: "):
+        library.published("Fac", "Cam")
 
 
 @default_svo_row
@@ -2802,6 +2847,7 @@ def a_silent_outage_is_checked_and_reported_once_per_process(t):
     assert [g.is_available() for g in grabbers] == [False, False, False]
     assert session.calls == [("HEAD", "https://data.nialljmiller.com/sed_tools", True)]  # one 5 s wait, not three
     assert t.caplog.text.count("is unavailable (timed out)") == 1
+    assert "this run continues without it for 5 minutes" in t.caplog.text  # it is asked again by the next run
     with pytest.raises(requests.ConnectionError, match="not asked again for 5 minutes"):
         grabbers[2]._get("https://data.nialljmiller.com/sed_tools/index.json")
     assert len(session.calls) == 1

@@ -399,6 +399,12 @@ def extend_catalog_extends_each_spectrum_with_its_own_parameters(t):
     assert written[["teff", "logg", "metallicity", "extra"]].values.tolist() == [
         [4500.0, 4.0, -1.0, "x"], [5800.0, 4.4, 0.0, "y"], [7200.0, 3.5, 0.3, "z"]]
     assert sorted(p.name for p in out_dir.glob("*.txt")) == names
+    # Each spectrum carries its parameters (none did, so a rebuild's lookup had no Teff column and failed)
+    from sed_tools.grids.lookup import regenerate_lookup_table
+    regenerate_lookup_table(str(out_dir))
+    rebuilt = pd.read_csv(out_dir / "lookup_table.csv", skipinitialspace=True).rename(columns=lambda c: c.lstrip("#"))
+    assert rebuilt[["file_name", "teff", "logg", "metallicity", "extended_by_ml"]].values.tolist() == [
+        ["a.txt", 4500.0, 4.0, -1.0, True], ["b.txt", 5800.0, 4.4, 0.0, True], ["c.txt", 7200.0, 3.5, 0.3, False]]
 
 
 @row
@@ -503,6 +509,29 @@ def generate_check_bounds_prints_each_out_of_range_parameter(t):
     assert "Warning: Teff=9000 outside range [4000, 7000]" in out
     assert "Warning: logg=5.50 outside range [3.50, 5.00]" in out
     assert "Warning: [M/H]=0.60 outside range [-1.00, 0.50]" in out
+
+
+@row
+def a_constant_training_axis_is_ignored_and_non_finite_flux_is_refused(t):
+    # A grid with log g 0 throughout stored logg_std 1e-8, so log g 4.5 became 4.5e8 and the flux inf;
+    # densify and extend_catalog then wrote it and reported success.
+    from sed_tools.ml.common import param_scaler
+
+    torch = cpu_torch(t)
+    assert param_scaler(np.array([[5000.0, 0.0, 0.1], [6000.0, 0.0, 0.1]]))["logg_std"] == 0.0
+    generator = fixed_generator(torch)
+    generator.scaler_params.update(logg_mean=0.0, logg_std=1e-8)  # as a model saved before 0.7.0 holds it
+    flux = generator.generate(6000.0, 4.5, 0.0, check_bounds=False)[1]
+    np.testing.assert_array_equal(flux, generator.generate(6000.0, 0.0, 0.0, check_bounds=False)[1])
+    assert np.all(np.isfinite(flux))
+    generator.scaler_params["flux_log_std"] = 1e6  # a prediction that overflows
+    with pytest.raises(ValueError, match="flux at Teff=6000, logg=4.5, .M/H.=0 is not finite"):
+        generator.generate(6000.0, 4.5, 0.0, check_bounds=False)
+    completer = fixed_completer(torch)
+    completer.scaler_params["ext_log_std"] = 1e6
+    wl = np.logspace(np.log10(3000.0), np.log10(20000.0), 300)
+    with pytest.raises(ValueError, match="is not finite at"):
+        completer.complete_sed(wl, mc.planck_function(wl, 5800.0), 5800.0, 4.4, 0.1, extension_range=(500.0, 6e4))
 
 
 # ======================================================================
@@ -775,7 +804,9 @@ def extend_menu(t, *answers):
 def extend_menu_defaults_to_the_models_own_range(t):
     ranges = extend_menu(t, "2", "1", "1", "", "", "")
     assert ranges == [(100.0, 100000.0)]
-    assert "the model covers 100-100000 Å" in t.capsys.readouterr().out
+    out = t.capsys.readouterr().out
+    assert "the model covers 100-100000 Å" in out
+    assert "\nAvailable trained completer models:\n" in out  # it said "spectral grids"
 
 
 @row

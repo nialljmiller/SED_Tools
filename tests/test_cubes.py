@@ -1764,6 +1764,7 @@ def with_no_flux_cube_found_a_path_is_asked_for_once(t):
 
 @row
 def several_filter_systems_are_offered_by_number_once(t):
+    t.mp.setattr("sys.stdin", types.SimpleNamespace(isatty=lambda: True))
     entries = [("Gaia/G.dat", t.tmp / "G.dat"), ("Johnson/B.dat", t.tmp / "B.dat"), ("Johnson/V.dat", t.tmp / "V.dat")]
     answer(t.mp, "2")
     assert tool.prompt_for_filter_system(entries, None) == ("Johnson", entries[1:])
@@ -1822,6 +1823,7 @@ def _radius(t, typed, metres):
 def tool_scales_and_measures_vega_magnitudes_with_the_cube_it_finds(t):
     grid = _tool_grid(t)
     _write_vega(grid / "vega.dat")
+    t.mp.setattr("sys.stdin", types.SimpleNamespace(isatty=lambda: True))
     answer(t.mp, "y", "10 pc", "1 Rsun")  # scale for distance; the cube, filters and Vega are found
     status = tool.main(["--model-dir", str(grid), "--teff", "5000", "--logg", "4.0", "--metallicity", "0",
                         "--photometric-system", "Vega", "--plot", str(t.tmp / "sed.png"),
@@ -1839,6 +1841,18 @@ def tool_scales_and_measures_vega_magnitudes_with_the_cube_it_finds(t):
         assert float(line.split("mag=")[1]) == pytest.approx(mag, abs=1e-3)
     assert np.loadtxt(t.tmp / "sed.txt")[:, 1] == pytest.approx(np.full(TOOL_WL.size, scale))
     assert (t.tmp / "sed.png").is_file()
+    # Without a terminal nothing is asked (it asked about distance, and a folder of curves was one system per
+    # curve); --model-dir is the cube's folder (it was only a hint for a search).
+    t.mp.setattr("sys.stdin", types.SimpleNamespace(isatty=lambda: False))
+    answer(t.mp)
+    other = t.tmp / "grids" / "h" / "flux_cube.bin"
+    other.parent.mkdir()
+    other.write_bytes((grid / "flux_cube.bin").read_bytes())
+    assert tool.main(["--model-dir", str(other.parent), "--teff", "5000", "--logg", "4.0", "--metallicity", "0",
+                      "--filters", str(grid.parent / "filters" / "Sys"), "--plot", str(t.tmp / "sed2.png")]) == 0
+    out = t.capsys.readouterr().out
+    assert f"Using flux cube: {other.resolve()}" in out and "(using 2 filters from" in out
+    assert "(system:" not in out and "[scaling]" not in out and "Photometric system: AB" in out
 
 
 # ----------------------------------------------------------------------

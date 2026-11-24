@@ -242,7 +242,7 @@ def _installed_availability(instrument_dir: Path) -> dict:
 
 def _has_parts(info: dict) -> bool:
     """Whether the instrument's own components, atmosphere site or original-source builder can build a curve."""
-    return bool(info["buildable"] or _atmosphere_sites(info)
+    return bool(info["recipes_by_band"] or _atmosphere_sites(info)
                 or info["component_availability"]["status"] == "supported")
 
 
@@ -265,17 +265,19 @@ def _compose_interactively(instrument_dir: Path, info: dict) -> None:
 
 
 def _ask_recipe(info: dict) -> List[str]:
-    """The recipe picked by its number, or typed as roles."""
-    numbered = {str(i): recipe.replace("+", ",") for i, recipe in enumerate([*info["buildable"], "published"], 1)}
+    """The recipe picked by its number, or typed as roles; one that only some bands have is listed with them."""
+    by_band = info["recipes_by_band"]
+    numbered = {str(i): recipe.replace("+", ",") for i, recipe in enumerate([*by_band, "published"], 1)}
     print("Recipes (or type your own, e.g. published,optics):")
-    for number, recipe in numbered.items():
-        print(f"  {number}. {recipe}")
+    for number, recipe in zip(numbered, [*by_band, "published"]):
+        only = f" (only {', '.join(by_band[recipe])})" if recipe in by_band and recipe not in info["buildable"] else ""
+        print(f"  {number}. {recipe.replace('+', ',')}{only}")
     pick = input("Choose a recipe [1]: ").strip() or "1"
     return list(parse_components(numbered.get(pick, pick)))
 
 
 def review_detector_types(directory: Path, filter_root: Path, what: str = "This filter set") -> None:
-    """Say which detector type the curves at ``directory`` are known to be used with; on request, correct the
+    """Say which detector type the curves at ``directory`` are labelled for; on request, correct the
     label or convert the curves, in place."""
     by_type: Dict[Optional[str], Tuple[List[str], set]] = {}
     for curve in curve_files(directory) if Path(directory).is_dir() else ():
@@ -289,7 +291,7 @@ def review_detector_types(directory: Path, filter_root: Path, what: str = "This 
         (f"{dtype}-counting detectors ({', '.join(sorted(sources))})" if dtype else "no stated detector type")
         + (f" for {', '.join(bands)}" if len(by_type) > 1 else "")
         for dtype, (bands, sources) in by_type.items())
-    if not ask_yes(f"{what} is known to be used with {known}. Do you wish to edit/correct this? [y/N] "):
+    if not ask_yes(f"{what} is labelled for {known}. Do you wish to edit/correct this? [y/N] "):
         return
     action = ask_option("Correct the label only, or convert the curves? [correct/convert]: ", ["correct", "convert"])
     current = next(iter(by_type))
