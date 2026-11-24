@@ -45,6 +45,7 @@ ml-tune = ["optuna>=3"]
 
 [project.urls]
 "Homepage" = "https://github.com/nialljmiller/SED_Tools"
+"Documentation" = "https://github.com/nialljmiller/SED_Tools/tree/main/docs"
 
 [tool.setuptools.packages.find]
 include = ["sed_tools*"]
