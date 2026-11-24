@@ -789,7 +789,8 @@ def multiply_curves_refuses_to_extrapolate(t):
 
 PUBLISHED_WITH_ATMOSPHERE = {
     "published_with_atmosphere_is_not_double_counted": (lambda root: with_site(svo_published(
-        root / "2MASS" / "2MASS", "J", gauss(5000, 300), "filter+instrument+atmosphere")), "double count"),
+        root / "2MASS" / "2MASS", "J", gauss(5000, 300), "filter+instrument+atmosphere")),
+        r"band J: the published curve already includes \['atmosphere'\]; adding \S+\.dat would count it twice"),
     "space_instrument_refuses_atmosphere": (lambda root: svo_published(
         root / "TESS" / "TESS", "Red", gauss(5000, 300), "filter+instrument"), "no atmosphere site of its own"),
     "published_requires_known_contents": (lambda root: with_site(put(

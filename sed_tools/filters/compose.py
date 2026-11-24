@@ -297,6 +297,7 @@ def compose_band(
     steps = _composition_steps(instrument_dir, band, roles, manifest, spec, atmosphere_root)
 
     covered: List[str] = []
+    holder: Dict[str, str] = {}  # the step that put each role in
     curves: List[Curve] = []
     sources: List[str] = []
     policies: List[Optional[str]] = []
@@ -320,8 +321,10 @@ def compose_band(
                 raise ComponentError(f"{path.name}: component contents {contains} disagree with its manifest role {key!r}")
         overlap = set(contains) & set(covered)
         if overlap:
-            raise ComponentError(f"{path.name} already includes {sorted(overlap)}; refusing to double count")
+            raise ComponentError(f"band {band}: {holder[sorted(overlap)[0]]} already includes {sorted(overlap)}; "
+                                 f"adding {path.name} would count it twice")
         covered.extend(contains)
+        holder.update(dict.fromkeys(contains, "the published curve" if key == PUBLISHED else path.name))
         curves.append(curve)
         policies.append(policy)
         tolerances.append(tolerance)
