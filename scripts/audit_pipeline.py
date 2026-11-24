@@ -70,9 +70,10 @@ def wien_peak_ang(teff):
     return 2.897771955e7 / teff
 
 
-def expected_bol_in_range(teff, wl_min, wl_max, n=2000):
-    """Expected bolometric flux within [wl_min, wl_max] Å for blackbody at teff."""
-    wl = np.linspace(max(wl_min, 1.0), wl_max, n)
+def expected_bol_in_range(teff, wl_min, wl_max, n=20000):
+    """Expected bolometric flux within [wl_min, wl_max] Å for blackbody at teff (on a logarithmic grid: a linear
+    one missed the peak of a hot star over a wide range, so an exact Planck grid failed)."""
+    wl = np.geomspace(max(wl_min, 1.0), wl_max, n)
     bb = planck_flam(wl, teff)
     bol_range = float(np.trapezoid(bb, wl))
     bol_total = SIGMA * teff**4

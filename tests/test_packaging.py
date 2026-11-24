@@ -110,6 +110,15 @@ target = done.stdout.split("-> ")[1].split()[0]
 text = open(os.path.join(repo, "docs", "source", "changelog.rst")).read()
 print(text.count(f"Version {target} ("), "(unreleased)" in text)
 """, lambda out, err: out.strip() in ("1 False", "bump_version.py needs Python 3.11 (tomllib)")),
+    # The pipeline audit's expected blackbody flux over bbody's range, 1 Å to 1e7 Å: a linear grid gave 0.024 of
+    # sigma*T^4 at 50 000 K, so the audit failed the exact Planck grid.
+    "audit_pipeline_integrates_the_blackbody_over_a_wide_range": ("""
+import importlib.util
+spec = importlib.util.spec_from_file_location("audit_pipeline", "scripts/audit_pipeline.py")
+audit = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(audit)
+print([round(audit.expected_bol_in_range(teff, 1.0, 9.99e6)[1], 4) for teff in (3000.0, 50000.0, 200000.0)])
+""", lambda out, err: out.strip() == "[1.0, 1.0, 1.0]"),
     # Blocked, every module still imports; installed, importing them loads none of the optional packages.
     "imports_every_module_with_the_optional_packages_blocked": (
         _IMPORT_ALL.format(blocked=OPTIONAL, optional=OPTIONAL), lambda out, err: out.strip() == "[]"),
