@@ -514,13 +514,16 @@ class SED:
         Notes
         -----
         With any bound (a bound of 0 is a bound; a single bound leaves the
-        other side open), only the spectra within the bounds are downloaded,
-        as ``sed-tools grids --teff ... --logg ... --meta ...`` does, and the
-        lookup table, HDF5 bundle and flux cube in ``model_root/catalog`` are
-        built from them, so ``SED.local`` and MESA use that selection. NJM's
-        flux cube and HDF5 bundle of the whole grid are not downloaded. MSG
-        downloads its grid's HDF5 file whole and extracts the selection; SVO
-        cannot select, so the whole grid is downloaded, with a warning, then cut.
+        other side open), only the spectra within the bounds are downloaded
+        from NJM or MSG, as ``sed-tools grids --teff ... --logg ... --meta ...``
+        does, and the lookup table, HDF5 bundle and flux cube in
+        ``model_root/catalog`` are built from them, so ``SED.local`` and MESA
+        use that selection. NJM's flux cube and HDF5 bundle of the whole grid
+        are not downloaded. MSG downloads its grid's HDF5 file whole and
+        extracts the selection. SVO cannot select: the whole grid is
+        downloaded, with a warning, and only the returned ``sed.grid`` is cut;
+        nothing on disk is cut and no flux cube is built, from SVO with or
+        without bounds. Build one with ``sed-tools rebuild --grids NAME``.
 
         A folder that already holds every selected spectrum, with a flux cube
         holding every spectrum there, is cut as it stands: nothing is
