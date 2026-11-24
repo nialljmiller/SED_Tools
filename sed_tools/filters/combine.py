@@ -12,7 +12,7 @@ from typing import List, Optional, Sequence, Union
 import numpy as np
 
 from .manifest import COMPONENTS_DIR, archived_bands, index_listing, is_auxiliary_path, write_filter_index
-from .curve_metadata import _read_curve, copy_filter_file
+from .curve_metadata import _read_curve, copy_filter_file, migrate_filter_file  # noqa: F401 (star-import surface)
 from ..cube.model import FILTER_DIR_DEFAULT
 
 PathLike = Union[str, os.PathLike[str]]
