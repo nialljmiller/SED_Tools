@@ -15,6 +15,7 @@ from typing import Dict, List, Optional, Tuple
 from requests import RequestException
 
 from ..api import SED, Filters
+from ..api.filters import _listing_failures
 from ..component_sources import AUTOMATIC_BUILDERS, BUILDERS, get_builder
 from ..config import set_data_dir, show_config
 from ..cube.model import FILTER_DIR_DEFAULT, STELLAR_DIR_DEFAULT
@@ -428,15 +429,16 @@ def _cmd_vega(args, parser):
 
 def _cmd_filters_inventory(args, parser):
     result = Filters.inventory(filter_root=args.base, include_remote=not args.offline, facility=args.facility)
+    failures = _listing_failures(result["errors"])  # NJM down leaves the listing complete; it is warned once
     if args.json:
         print(json.dumps(result, indent=2))
     else:
         for row in result["instruments"]:
             status = row["component_availability"]["status"]
             print(f"{row['facility']}/{row['instrument']}: {status} [{', '.join(row['sources'])}]")
-        for error in result["errors"]:
+        for error in failures:
             print(f"[filters] {error}")
-    return 1 if result["errors"] else 0
+    return 1 if failures else 0
 
 
 def _cmd_filters_build_components(args, parser):

@@ -196,6 +196,19 @@ def _filters_info(t, source_errors, catalogue_errors, offline, expected):
 
 
 @row
+def filters_inventory_exits_1_only_when_the_listing_is_incomplete(t):
+    # NJM down left its "NJM unavailable" in errors, so a complete listing from SVO exited 1.
+    listing = {"instruments": [{"facility": "Fac", "instrument": "Cam", "sources": ["svo"],
+                                "component_availability": {"status": "unreviewed"}}]}
+    for errors, status in ((["NJM unavailable"], 0), (["NJM unavailable", "SVO: timed out"], 1)):
+        t.mp.setattr(filters_api(t), "inventory", classmethod(lambda cls, **kw: dict(listing, errors=errors)))
+        assert run_cli(t.mp, "filters-inventory") == status
+        out = t.capsys.readouterr().out
+        assert "Fac/Cam: unreviewed [svo]" in out and "NJM unavailable" not in out
+        assert ("[filters] SVO: timed out" in out) == bool(status)
+
+
+@row
 def coverage_exits_1_when_there_are_no_local_grids(t):
     assert run_cli(t.mp, "coverage", "--base", str(t.tmp)) == 1
     assert "No local grids found" in t.capsys.readouterr().out
