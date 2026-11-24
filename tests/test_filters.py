@@ -314,10 +314,24 @@ def combine_leaves_out_archived_and_unlisted_copies(t):
 
 
 @row
-def combine_refuses_an_index_listing_a_missing_curve(t):
+def a_failed_combine_writes_nothing(t):
+    # The folder was made and curves copied before the checks: a failure left a set with no MESA index file.
     inst = put(t.tmp / "Generic" / "Johnson", {"B.dat": "Wavelength,Transmission\n1,1\n", "Johnson": "B.dat\nV.dat\n"})
+    good = put(t.tmp / "Generic" / "Good", {"U.dat": "Wavelength,Transmission\n1,1\n"})
+    other = put(t.tmp / "Generic" / "Other", {"U.dat": "Wavelength,Transmission\n2,1\n"})
     with pytest.raises(FileNotFoundError, match="lists V.dat, not found in"):
-        Filters.combine("Combined/J", inst, filter_root=t.tmp)
+        Filters.combine("Combined/J", good, inst, filter_root=t.tmp)
+    with pytest.raises(FileNotFoundError, match="Could not find .dat filters for input: nope"):
+        Filters.combine("Combined/J", good, "nope", filter_root=t.tmp)
+    with pytest.raises(FileExistsError, match="conflict while combining: U.dat"):
+        Filters.combine("Combined/J", good, other, on_conflict="error", filter_root=t.tmp)
+    assert list((t.tmp / "Combined").iterdir()) == []
+    out = Filters.combine("Combined/J", good, filter_root=t.tmp)
+    before = {p.name: p.read_bytes() for p in out.iterdir()}
+    with pytest.raises(FileNotFoundError):  # an existing set is left as it was
+        Filters.combine("Combined/J", other, inst, filter_root=t.tmp)
+    assert {p.name: p.read_bytes() for p in out.iterdir()} == before == {
+        "U.dat": b"Wavelength,Transmission\n1,1\n", "J": b"U.dat\n"}
 
 
 # ======================================================================
