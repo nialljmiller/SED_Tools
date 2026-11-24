@@ -94,6 +94,22 @@ for name, teff, logg in (("a", 5000.0, 4.0), ("b", 6000.0, 4.5)):
 SED.combine(["a", "b"], output="ab", model_root=root, visualization=False)
 print("combined:", sorted(os.listdir(os.path.join(root, "ab"))))
 """, lambda out, err: "combined: ['a_000000.txt', 'b_000001.txt', 'flux_cube.bin', 'lookup_table.csv']" in out),
+    # The release heading replaces 'Version X.Y.Z (unreleased)' (a second heading was put above it). On a copy.
+    "bump_version_names_the_unreleased_changelog_section": ("""
+import os, shutil, subprocess, sys
+if sys.version_info < (3, 11):
+    sys.exit(print("bump_version.py needs Python 3.11 (tomllib)"))
+repo = os.path.join(os.path.expanduser("~"), "repo")
+for name in ("pyproject.toml", "sed_tools/__init__.py", "CITATION.cff", "README.md", "docs/source/changelog.rst",
+             "scripts/bump_version.py"):
+    os.makedirs(os.path.dirname(os.path.join(repo, name)), exist_ok=True)
+    shutil.copy(name, os.path.join(repo, name))
+done = subprocess.run([sys.executable, os.path.join(repo, "scripts", "bump_version.py"), "minor"],
+                      capture_output=True, text=True, check=True)
+target = done.stdout.split("-> ")[1].split()[0]
+text = open(os.path.join(repo, "docs", "source", "changelog.rst")).read()
+print(text.count(f"Version {target} ("), "(unreleased)" in text)
+""", lambda out, err: out.strip() in ("1 False", "bump_version.py needs Python 3.11 (tomllib)")),
     # Blocked, every module still imports; installed, importing them loads none of the optional packages.
     "imports_every_module_with_the_optional_packages_blocked": (
         _IMPORT_ALL.format(blocked=OPTIONAL, optional=OPTIONAL), lambda out, err: out.strip() == "[]"),

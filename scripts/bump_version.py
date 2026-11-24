@@ -84,8 +84,9 @@ def main():
             f'A version-specific Zenodo DOI for Version {target} will be added following archival of this release.')
         heading = f"Version {target} ({today.strftime('%B %Y')})"
         changelog = contents["docs/source/changelog.rst"]
-        if re.search(r'^Unreleased\n-+\n', changelog, re.M):
-            changelog = replace_once(changelog, r'^Unreleased\n-+\n', heading + '\n' + '-' * len(heading) + '\n')
+        unreleased = r'^(?:Unreleased|Version [0-9.]+ \(unreleased\))\n-+\n'  # the heading written before release
+        if re.search(unreleased, changelog, re.M):
+            changelog = replace_once(changelog, unreleased, heading + '\n' + '-' * len(heading) + '\n')
         else:
             marker = "Changelog\n=========\n\n"
             if changelog.count(marker) != 1:
