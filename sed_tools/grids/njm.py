@@ -522,20 +522,20 @@ class NJMSpectraGrabber:
             if has_param_cuts:
                 csv_files = []
         split = "variants_index.csv" in csv_files and not (has_param_cuts or wl_range)
-        if split:  # its cubes are its variants' (below), and its all-axes cube is built from them here
-            bin_files = [f for f in bin_files if f != "flux_cube.bin"]
-            if os.path.isfile(os.path.join(model_dir, "flux_cube.bin")):
-                os.remove(os.path.join(model_dir, "flux_cube.bin"))
+        if split:  # its cubes are its variants' (below); its all-axes cube is built from them here, not downloaded
+            from ..cube.fileio import ALL_AXES_NAME
+            from ..cube.variants import ensure_all_axes_cube, write_all_axes_cube
+            bin_files = [f for f in bin_files if f not in ("flux_cube.bin", ALL_AXES_NAME)]
         aux_files = bin_files + h5_files + csv_files
         
         print(f"[njm] Downloading {len(txt_files)} spectra + {len(aux_files)} auxiliary for {model_name}...")
         
         counts, failures = self._download_files(model_dir, model_url, txt_files, aux_files)
         if split and os.path.isfile(os.path.join(model_dir, "variants_index.csv")):
+            fetched = counts["ok"]
             failures += self._download_variants(model_dir, model_url, counts)
-            if not failures:  # built here from the variant cubes, whatever NJM's top-level cube is
-                from ..cube.variants import write_all_axes_cube
-                write_all_axes_cube(model_dir)
+            if not failures:  # rewritten only when a variant's files came new in this download
+                (write_all_axes_cube if counts["ok"] > fetched else ensure_all_axes_cube)(model_dir)
         
         print(f"[njm] {model_name}: {counts['ok']} downloaded, {counts['skip']} skipped, {counts['fail']} failed")
         

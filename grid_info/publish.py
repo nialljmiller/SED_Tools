@@ -3,11 +3,11 @@
 For each grid it first builds the flux cubes with SED_Tools' cube builder when they need it (build_cubes): none yet,
 one lacking a spectrum beside it, or a layout other than SED_Tools' split rule gives (sed_tools.cube.collision.
 discover_extra_axes: a grid whose extra axes tell apart spectra at one node is split into one variant folder per
-value, each with its cube, lookup table and links to the spectra, and the grid's top-level flux_cube.bin is then
-the all-axes cube of every variant). A split grid whose variant cubes need nothing but whose top-level flux_cube.bin
-is not its all-axes cube (a 3-axis copy of a variant, or none) gets only that cube, assembled from the variant cubes
-(sed_tools.cube.variants.write_all_axes_cube). Cube files it replaces are first copied to
-backups/<UTC>-grid-publish/.
+value, each with its cube, lookup table and links to the spectra, and the grid's top-level flux_cube_nd.bin is then
+the all-axes cube of every variant). A split grid whose variant cubes need nothing but whose top-level
+flux_cube_nd.bin is not its all-axes cube (none, or a flux_cube.bin still beside it) gets only that cube, assembled
+from the variant cubes (sed_tools.cube.variants.write_all_axes_cube). Cube files it replaces are first copied to
+backups/<UTC>-grid-publish/; a split grid's top-level flux_cube.bin (MESA reads that name) is moved there.
 Then it runs grid_info.check_grids on data/stellar_models/<grid>/ and writes beside the spectra:
   manifest.json    the files clients download (and the variant cubes), with size, modification time and SHA-256,
                    plus the SHA-256 of each spectrum's data lines; axes, variants, cube layout, the archived
@@ -125,7 +125,7 @@ def file_records(grid, cache):
             rec["data_sha256"] = hit["data_sha256"]
         if p.name == "variants_index.csv":
             rec["role"] = "variants"
-        elif rel == "flux_cube.bin" and (grid / "variants_index.csv").is_file():
+        elif rel == "flux_cube_nd.bin" and (grid / "variants_index.csv").is_file():
             rec["role"] = "cube (all axes: every variant; MESA reads a variant's)"
         elif p.name == "lookup_table_full.csv":
             rec["role"] = "lookup (whole grid, all variants)"
@@ -236,7 +236,7 @@ def cube_build_needed(grid):
 def _cube_files(grid):
     """The cube files a build replaces or removes: the top-level cube and variants index, and each listed variant's
     cube and lookup table."""
-    paths = [grid / n for n in ("flux_cube.bin", "variants_index.csv", "lookup_table_full.csv")]
+    paths = [grid / n for n in ("flux_cube.bin", "flux_cube_nd.bin", "variants_index.csv", "lookup_table_full.csv")]
     vindex = grid / "variants_index.csv"
     if vindex.is_file():
         for rel in variant_paths(vindex):
@@ -261,6 +261,8 @@ def build_cubes(grid, stamp, dry_run=False):
         target = backup / path.relative_to(grid)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(path, target)
+    if (grid / "flux_cube.bin").is_file() and ((grid / "variants_index.csv").is_file() or _split_by_rule(grid)):
+        os.replace(grid / "flux_cube.bin", backup / "flux_cube.bin")  # moved out of the served tree, not deleted
     if top_only:
         write_all_axes_cube(str(grid))
         return top_only

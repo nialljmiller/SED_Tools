@@ -116,6 +116,16 @@ def _anderson_darling(x: np.ndarray) -> Optional[Dict[str, float]]:
     return {"statistic": stat, "pvalue": p, "normal_at_5pct": (bool(p > 0.05) if p == p else None)}
 
 
+def _nodes(df: pd.DataFrame) -> pd.DataFrame:
+    """The (Teff, log g, [M/H]) of each spectrum with all three known; an axis no spectrum states (log g and [M/H]
+    of a blackbody) is the single value 0, as the cube builder reads it, and counts once in ``full_product``."""
+    nodes = df[list(_AXES)].astype(float)
+    for axis in _AXES:
+        if nodes[axis].isna().all():
+            nodes[axis] = 0.0
+    return nodes.dropna()
+
+
 def coverage_summary(model_dir: Union[str, Path]) -> Dict:
     """Compute a coverage summary dict for one grid."""
     model_dir = Path(model_dir)
@@ -140,7 +150,7 @@ def coverage_summary(model_dir: Union[str, Path]) -> Dict:
             "anderson_darling": _anderson_darling(finite),
         }
 
-    n_distinct_nodes = int(df.dropna(subset=list(_AXES)).drop_duplicates(subset=list(_AXES)).shape[0])
+    n_distinct_nodes = int(_nodes(df).drop_duplicates().shape[0])
     return {
         "name": model_dir.name,
         "model_dir": str(model_dir),
@@ -381,7 +391,7 @@ def plot_coverage(
     import matplotlib.pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D  # noqa: F401  (registers 3d projection)
 
-    sub = df.dropna(subset=list(_AXES))
+    sub = _nodes(df)
     values = {axis: sub[axis].to_numpy() for axis in _AXES}
 
     fig = plt.figure(figsize=(14, 10), constrained_layout=True)

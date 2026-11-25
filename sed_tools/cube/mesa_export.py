@@ -232,7 +232,7 @@ def print_variant_table(variants: List[VariantInfo], model_name: str = "") -> No
     print("=" * 90)
 
 
-def export_variant(variant: VariantInfo, output_dir: str | os.PathLike, *, overwrite: bool = False) -> Path:
+def export_variant(variant: VariantInfo, output_dir: str | os.PathLike) -> Path:
     """
     Write a clean MESA-ready folder for *variant*.
 
@@ -247,10 +247,9 @@ def export_variant(variant: VariantInfo, output_dir: str | os.PathLike, *, overw
     variant:
         A :class:`VariantInfo` returned by :func:`list_variants`.
     output_dir:
-        Destination directory.  Created if it does not exist.
-    overwrite:
-        If ``False`` (default) and *output_dir* already exists, raise
-        ``FileExistsError``.
+        Destination directory.  Created if it does not exist; an existing one
+        is written into, the exported files replacing theirs and its other
+        files left as they are.
 
     Returns
     -------
@@ -262,10 +261,6 @@ def export_variant(variant: VariantInfo, output_dir: str | os.PathLike, *, overw
     """
     out = Path(output_dir)
     src = variant.source_model_dir
-
-    if out.exists() and not overwrite:
-        raise FileExistsError(f"Output directory already exists: {out}\n"
-                              "Pass overwrite=True or choose a different name.")
 
     file_col = next((c for c in variant.lookup_rows.columns if c.lower() == "file_name"), None)
     if file_col is None:
@@ -354,8 +349,9 @@ def run_interactive(base_dir: str = None, model=None, output=None, variant=None)
     variants_index.csv lists it), and exports it to a clean folder. Exits with
     status 1 and an error message if nothing was exported: no grid to pick, an
     invalid choice or variant name, a missing lookup table or flux cube, a grid
-    with no variants to choose from, or an existing output directory the user
-    chose not to overwrite.
+    with no variants to choose from. An existing output directory is written
+    into without asking: the exported files replace theirs, and its other files
+    stay.
     """
     base_path = Path(base_dir if base_dir is not None else STELLAR_DIR_DEFAULT)
 
@@ -393,10 +389,4 @@ def run_interactive(base_dir: str = None, model=None, output=None, variant=None)
         output = input(f"\nOutput directory [{base_path / default_name}]: ").strip() or str(base_path / default_name)
 
     print(f"\nExporting variant to {output}...")
-    try:
-        export_variant(chosen, output_dir=output)
-    except FileExistsError as exc:
-        print(f"Error: {exc}")
-        if input("Overwrite? [y/N]: ").strip().lower() != "y":
-            raise SystemExit(f"Error: {output} already exists and was not overwritten; nothing was exported.")
-        export_variant(chosen, output_dir=output, overwrite=True)
+    export_variant(chosen, output_dir=output)

@@ -15,6 +15,7 @@ from typing import Dict, List, Optional, Tuple
 from requests import RequestException
 
 from ..api import SED, Filters
+from ..api.filters import _listing_failures
 from ..component_sources import AUTOMATIC_BUILDERS, BUILDERS, get_builder
 from ..config import set_data_dir, show_config
 from ..cube.model import FILTER_DIR_DEFAULT, STELLAR_DIR_DEFAULT
@@ -152,7 +153,6 @@ def _add_grid_download_parser(sub) -> None:
                     help="Spectral grid names to process, or 'all'")
     _add_base_option(sp, STELLAR_DIR_DEFAULT, "Output directory for spectral grids")
     sp.add_argument("--workers", type=int, default=5, help="Parallel workers")
-    sp.add_argument("--no-h5", action="store_true", help="Do not force-create HDF5 bundle")
     sp.add_argument("--no-cube", action="store_true", help="Skip flux cube build")
     _add_flux_unit_option(sp)
     cut = ("; NJM, MSG and MAST cut downloads, SVO refuses cuts. Without any cut option an NJM "
@@ -295,8 +295,8 @@ def _add_grid_tool_parsers(sub) -> None:
 
     mpp = sub.add_parser("mesa-path", help="Print the MESA colors inlist line(s) for a local spectral grid or "
                                            "filter set")
-    mpp.add_argument("path", help="The grid's folder (e.g. data/stellar_models/Kurucz2003all) or the filter set's "
-                                  "(e.g. data/filters/Generic/Johnson)")
+    mpp.add_argument("path", help="The grid's folder (e.g. ~/.sed_tools/data/stellar_models/Kurucz2003all) or the "
+                                  "filter set's (e.g. ~/.sed_tools/data/filters/Generic/Johnson)")
 
     cfg_p = sub.add_parser("config", help="Show or set the data directory")
     cfg_p.add_argument("--set", metavar="PATH", default=None, help="Set data directory to PATH")
@@ -335,7 +335,7 @@ def _range(values) -> Optional[Tuple[float, float]]:
 
 def _cmd_grids(args, parser):
     run_spectra_flow(source=args.source, base_dir=args.base, models=args.models, workers=args.workers,
-                     force_bundle_h5=not args.no_h5, build_flux_cube=not args.no_cube, flux_unit=args.flux_unit,
+                     build_flux_cube=not args.no_cube, flux_unit=args.flux_unit,
                      teff_range=_range(args.teff), logg_range=_range(args.logg), meta_range=_range(args.meta),
                      wl_range=_range(args.wavelength))
     return 0
@@ -428,15 +428,16 @@ def _cmd_vega(args, parser):
 
 def _cmd_filters_inventory(args, parser):
     result = Filters.inventory(filter_root=args.base, include_remote=not args.offline, facility=args.facility)
+    failures = _listing_failures(result["errors"])  # NJM down leaves the listing complete; it is warned once
     if args.json:
         print(json.dumps(result, indent=2))
     else:
         for row in result["instruments"]:
             status = row["component_availability"]["status"]
             print(f"{row['facility']}/{row['instrument']}: {status} [{', '.join(row['sources'])}]")
-        for error in result["errors"]:
+        for error in failures:
             print(f"[filters] {error}")
-    return 1 if result["errors"] else 0
+    return 1 if failures else 0
 
 
 def _cmd_filters_build_components(args, parser):
@@ -547,10 +548,13 @@ def _cmd_coverage(args, parser):
 
 def _cmd_import(args, parser):
     flux_unit = None if args.dry_run else _ask_import_flux_unit(args.path, args.name, args.flux_unit)
-    SED.import_grid(args.path, name=args.name, model_root=args.base, move=args.move, build_h5=not args.no_h5,
-                    build_cube=not args.no_cube, dry_run=args.dry_run, flux_unit=flux_unit)
+    result = SED.import_grid(args.path, name=args.name, model_root=args.base, move=args.move,
+                             build_h5=not args.no_h5, build_cube=not args.no_cube, dry_run=args.dry_run,
+                             flux_unit=flux_unit)
     if args.dry_run:
         _report_import_flux_unit(args.path, args.name, args.flux_unit)
+    elif not args.no_cube:
+        _print_mesa_inlist(result["dest"])
     return 0
 
 

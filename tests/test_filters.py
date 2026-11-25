@@ -314,10 +314,24 @@ def combine_leaves_out_archived_and_unlisted_copies(t):
 
 
 @row
-def combine_refuses_an_index_listing_a_missing_curve(t):
+def a_failed_combine_writes_nothing(t):
+    # The folder was made and curves copied before the checks: a failure left a set with no MESA index file.
     inst = put(t.tmp / "Generic" / "Johnson", {"B.dat": "Wavelength,Transmission\n1,1\n", "Johnson": "B.dat\nV.dat\n"})
+    good = put(t.tmp / "Generic" / "Good", {"U.dat": "Wavelength,Transmission\n1,1\n"})
+    other = put(t.tmp / "Generic" / "Other", {"U.dat": "Wavelength,Transmission\n2,1\n"})
     with pytest.raises(FileNotFoundError, match="lists V.dat, not found in"):
-        Filters.combine("Combined/J", inst, filter_root=t.tmp)
+        Filters.combine("Combined/J", good, inst, filter_root=t.tmp)
+    with pytest.raises(FileNotFoundError, match="Could not find .dat filters for input: nope"):
+        Filters.combine("Combined/J", good, "nope", filter_root=t.tmp)
+    with pytest.raises(FileExistsError, match="conflict while combining: U.dat"):
+        Filters.combine("Combined/J", good, other, on_conflict="error", filter_root=t.tmp)
+    assert list((t.tmp / "Combined").iterdir()) == []
+    out = Filters.combine("Combined/J", good, filter_root=t.tmp)
+    before = {p.name: p.read_bytes() for p in out.iterdir()}
+    with pytest.raises(FileNotFoundError):  # an existing set is left as it was
+        Filters.combine("Combined/J", other, inst, filter_root=t.tmp)
+    assert {p.name: p.read_bytes() for p in out.iterdir()} == before == {
+        "U.dat": b"Wavelength,Transmission\n1,1\n", "J": b"U.dat\n"}
 
 
 # ======================================================================
@@ -499,6 +513,20 @@ def search_matches_names_in_the_index_before_fetching_properties(t):
     assert njm.fetched("filters/Other/IR/properties.json")
     assert not njm.fetched("filters/Fac/Cam/properties.json")
     assert list(Filters.search("cam/r", filter_root=root)["band"]) == ["r"]
+
+
+@row
+def search_leaves_out_the_bands_kept_beside_a_set(t):
+    # NJM's index.json also lists JWST/NIRCam's F200W_old, which its MESA index leaves out and a fetch does not
+    # install, so Filters.plot(Filters.search(...)) stopped on it (review 24 Nov 2026).
+    root, njm = njm_catalogue(t)
+    index, props = json.loads(njm.files["index.json"]), json.loads(njm.files["filters/Fac/Cam/properties.json"])
+    index["filters"]["facilities_detailed"]["Fac"]["instruments"]["Cam"]["filters"].append("g_old")
+    props["bands"]["g_old"] = props["bands"]["g"]
+    njm.files.update({"index.json": json.dumps(index), "filters/Fac/Cam/properties.json": json.dumps(props),
+                      "filters/Fac/Cam/Cam": "g.dat\nr.dat\ni.dat\n"})
+    assert list(Filters.search(pivot=(4000, 5000), filter_root=root)["band"]) == ["g"]
+    assert list(Filters.search("cam/g", properties=False, filter_root=root)["band"]) == ["g"]
 
 
 @row
@@ -684,6 +712,10 @@ def vega_is_downloaded_from_njm_where_mesa_can_read_it(t):
     assert written.read_text() == served
     assert t.capsys.readouterr().out.endswith(f"MESA colors inlist: vega_sed = '{written}'\n")
     assert len(njm.fetched("vega/vega_flam.csv")) == 1  # the second copy came from the catalogue's cache
+    njm.fail = True  # NJM down, nothing cached: the error named index.json, not the Vega file
+    down = t.tmp / "down" / "filters"
+    with pytest.raises(CatalogueError, match="^vega/vega_flam.csv is not cached and NJM is unreachable$"):
+        FilterCatalogue(down, mirror=grabber_for(down, njm)).vega()
 
 
 # ======================================================================
@@ -775,7 +807,8 @@ def multiply_curves_refuses_to_extrapolate(t):
 
 PUBLISHED_WITH_ATMOSPHERE = {
     "published_with_atmosphere_is_not_double_counted": (lambda root: with_site(svo_published(
-        root / "2MASS" / "2MASS", "J", gauss(5000, 300), "filter+instrument+atmosphere")), "double count"),
+        root / "2MASS" / "2MASS", "J", gauss(5000, 300), "filter+instrument+atmosphere")),
+        r"band J: the published curve already includes \['atmosphere'\]; adding \S+\.dat would count it twice"),
     "space_instrument_refuses_atmosphere": (lambda root: svo_published(
         root / "TESS" / "TESS", "Red", gauss(5000, 300), "filter+instrument"), "no atmosphere site of its own"),
     "published_requires_known_contents": (lambda root: with_site(put(
@@ -827,7 +860,7 @@ def skycalc_build_writes_grid_and_resumes(t):
 G, R, I = gauss(4800.0, 300.0) * 0.9, gauss(5300.0, 300.0) * 0.7, gauss(5600.0, 200.0) * 0.8  # noqa: E741
 REFERENCE = Path(__file__).parent / "golden" / "inputs" / "reference"  # NJM's vega_flam.csv and sun_flam.csv
 SPECTRA = {"vega_spectrum": "vega/vega_flam.csv", "sun_spectrum": "sun/sun_flam.csv"}
-QUESTION = ("This filter set is known to be used with photon-counting detectors (svo). "
+QUESTION = ("This filter set is labelled for photon-counting detectors (svo). "
             "Do you wish to edit/correct this? [y/N] ")
 
 
@@ -1082,7 +1115,7 @@ def review_of_a_mixed_set_asks_for_the_type(t):
     inst = sdss(root := spectra_cached(t), energy_band=True)
     prompts = answer(t.mp, "y", "convert", "energy")
     review_detector_types(inst, root, "This product")
-    assert prompts[0] == ("This product is known to be used with photon-counting detectors (svo) for g, r and "
+    assert prompts[0] == ("This product is labelled for photon-counting detectors (svo) for g, r and "
                           "energy-counting detectors (svo) for i. Do you wish to edit/correct this? [y/N] ")
     assert prompts[2] == "Change them to energy or photon: "
     assert {b: read_filter_header(inst / f"{b}.dat")["DetectorType"] for b in "gri"} == dict.fromkeys("gri", ENERGY)
@@ -1199,6 +1232,21 @@ def cli_reports_kept_types(t):
     assert "1 kept their DetectorType" in out and "1 of them resolve to the other type" in out
     assert "kept photon [inferred]: inferred outranks svo-curve-match; svo-curve-match gives energy" in out
     assert path.read_bytes() == before
+
+
+@row
+def cli_tags_an_installed_set_by_its_name(t):
+    # "filters-detector GAIA/GAIA --dry-run" took the name for a path and reported 0 files (notebooks review,
+    # 24 Nov 2026); --correct and --convert already took a set's name under the filter root.
+    wl, tr = [15000.0, 16000.0, 17000.0, 18000.0], [0.0, 0.9, 0.95, 0.0]
+    naco_h(t.tmp / "filters", wl, tr, PHOTON, SOURCE_INFERRED)
+    t.mp.setattr(Filters, "_filter_root", t.tmp / "filters")
+    t.mp.setattr("sed_tools.filters.curve_metadata.SVOMetadataClient", lambda *a, **k: SVOClient())
+    t.mp.chdir(t.tmp)
+    run_cli(t.mp, "filters-detector", "Paranal/NACO", "--dry-run")
+    assert "1 files, 0 would change" in t.capsys.readouterr().out
+    with pytest.raises(FileNotFoundError, match="No filter file or set at"):
+        Filters.tag_detector_types("Paranal/Nothing", dry_run=True)
 
 
 # ======================================================================
@@ -1469,13 +1517,15 @@ def vega_quantities_need_coverage_where_the_filter_transmits(t):
 def a_coarse_curve_sees_the_spectrum_between_its_samples(t):
     from sed_tools.photometry import FilterCurve, band_average_flux_lambda
 
-    # A flat band tabulated at three points, and a flat spectrum with a line between them (height 11 at 4500 Å):
-    # (2000 + 1000) / 2000 = 1.5, where the curve's own samples see 1.0.
+    # A flat band tabulated at three points, and a flat spectrum with a line between them (height 11 from 4401 to
+    # 4599 Å, 1 Å edges): (2000 + 1980 + 10) / 2000 = 1.995, where the curve's own samples see 1.0. The spectrum's
+    # steps in the band are flat or shorter than lambda/100, so the band grid holds only its samples: exact.
     curve = FilterCurve("c", np.array([4000.0, 5000.0, 6000.0]), np.ones(3), {}, detector_type=ENERGY)
-    spectrum = np.array([3000.0, 4400.0, 4500.0, 4600.0, 7000.0]), np.array([1.0, 1.0, 11.0, 1.0, 1.0])
-    assert band_average_flux_lambda(*spectrum, curve) == pytest.approx(1.5, rel=1e-12)
+    spectrum = (np.array([3000.0, 4400.0, 4401.0, 4599.0, 4600.0, 7000.0]),
+                np.array([1.0, 1.0, 11.0, 11.0, 1.0, 1.0]))
+    assert band_average_flux_lambda(*spectrum, curve) == pytest.approx(1.995, rel=1e-12)
     p = filter_properties(curve.wavelength, curve.transmission, ENERGY, vega=spectrum, sun=spectrum)
-    assert p["ZeroPointVega_flam"] == pytest.approx(1.5, rel=1e-12) and p["Fsun"] == pytest.approx(1.5, rel=1e-12)
+    assert p["ZeroPointVega_flam"] == pytest.approx(1.995, rel=1e-12) and p["Fsun"] == pytest.approx(1.995, rel=1e-12)
 
 
 @row
@@ -1487,18 +1537,63 @@ def a_long_gap_between_samples_is_one_line_for_every_band_quantity(t):
     lam, tr = np.array([4000.0, 12000.0]), np.array([1.0, 0.0])
     pivot = math.sqrt(4000.0 * 8000.0 / (2.0 - math.log(3.0)))
     curve = FilterCurve("gap", lam, tr, {}, detector_type=ENERGY)
-    spectra = [(np.array([3000.0, 6000.0, 6100.0, 13000.0]), np.array([2.0, 1.0, 5.0, 0.5])),
-               (np.array([3000.0, 13000.0]), np.array([1.0, 3.0]))]
-    fine = np.linspace(4000.0, 12000.0, 400001)  # the same lines, resolved: the reference f_nu
-    for sl, sf in spectra:
-        f, w = np.interp(fine, sl, sf), np.interp(fine, lam, tr)
+    # The spectra follow the log rule between their samples (Q12); the band grid's steps of lambda/100 follow that
+    # curve to 1.6e-6 on the smooth spectrum and to 1.2e-3 on the steep one (x5 in 100 A, two grid steps).
+    spectra = [(np.array([3000.0, 6000.0, 6100.0, 13000.0]), np.array([2.0, 1.0, 5.0, 0.5]), 2e-3),
+               (np.array([3000.0, 13000.0]), np.array([1.0, 3.0]), 1e-5)]
+    fine = np.linspace(4000.0, 12000.0, 400001)  # the same curves, resolved: the reference f_nu
+    for sl, sf, tolerance in spectra:
+        f, w = 10.0 ** np.interp(fine, sl, np.log10(sf)), np.interp(fine, lam, tr)
         f_nu = np.trapezoid(f * w, fine) / np.trapezoid(w * SPEED_OF_LIGHT_ANG_PER_S / fine**2, fine)
-        assert band_average_flux_nu(sl, sf, curve) == pytest.approx(f_nu, rel=1e-8)
+        assert band_average_flux_nu(sl, sf, curve) == pytest.approx(f_nu, rel=tolerance)
         assert band_average_flux_nu(sl, sf, curve) / band_average_flux_lambda(sl, sf, curve) == pytest.approx(
             pivot**2 / SPEED_OF_LIGHT_ANG_PER_S, rel=1e-8)
-    p = filter_properties(lam, tr, ENERGY, vega=spectra[0])
+    p = filter_properties(lam, tr, ENERGY, vega=spectra[0][:2])
     assert p["WavelengthPivot"] == pytest.approx(pivot, rel=1e-8)
-    assert p["ZeroPointVega_Jy"] == pytest.approx(band_average_flux_nu(*spectra[0], curve) / 1e-23, rel=1e-12)
+    assert p["ZeroPointVega_Jy"] == pytest.approx(band_average_flux_nu(*spectra[0][:2], curve) / 1e-23, rel=1e-12)
+
+
+@row
+def a_spectrum_is_log_linear_between_positive_samples_and_linear_next_to_others(t):
+    # Cubes were built log-linear, with a zero or negative sample stored as 1e-300 and the steps beside it emptied,
+    # and photometry was linear: one rule for both now (Nill, 25 Nov 2026, Q12: "log, straight line where needed").
+    from sed_tools.cube.build import resample_to_grid as cube_rule
+    from sed_tools.photometry import FilterCurve, band_average_flux_lambda, resample_to_grid
+
+    assert cube_rule is resample_to_grid
+    wl, flux = np.array([1000.0, 2000.0, 3000.0, 4000.0, 5000.0]), np.array([1.0, 4.0, 0.0, -2.0, 6.0])
+    out = resample_to_grid(wl, flux, [500.0, 1500.0, 2500.0, 3000.0, 3500.0, 4000.0, 4500.0, 6000.0])
+    assert out[0] == out[-1] == 0.0 and out[1] == pytest.approx(2.0, rel=1e-12)  # outside; the geometric midpoint
+    assert list(out[2:7]) == [2.0, 0.0, -1.0, -2.0, 2.0]  # straight lines beside a zero or negative sample
+    # Photometry follows it: a box band over one step beside a zero sample sees that step's straight line.
+    box = FilterCurve("box", np.array([2000.0, 3000.0]), np.ones(2), {}, detector_type=ENERGY)
+    assert band_average_flux_lambda(wl, flux, box) == pytest.approx(2.0, rel=1e-12)
+
+
+@row
+def a_spectrum_ending_inside_a_band_stops_there(t):
+    # Flux used to ramp down linearly from the spectrum's last sample to the next band-grid point, up to lambda/100
+    # beyond it: 2.5 % too high here (review 24 Nov 2026, code.md L1).
+    from sed_tools.photometry import FilterCurve, band_average_flux_lambda
+
+    curve = FilterCurve("box", np.array([4000.0, 6000.0]), np.array([1.0, 1.0]), {}, detector_type=ENERGY)
+    for sl in (np.linspace(3000.0, 5000.5, 2001), np.linspace(4999.5, 7000.0, 2001)):
+        assert band_average_flux_lambda(sl, np.ones_like(sl), curve) == pytest.approx(1000.5 / 2000.0, rel=1e-12)
+
+
+@row
+def ab_zero_points_from_first_principles(t):
+    # Computed here from the definitions, not by the package: a box curve's pivot is sqrt(a b), its AB zero point
+    # 3631 Jy c / pivot^2, and a flat 3631 Jy spectrum is AB magnitude 0. A 0.03 % error in 3631 Jy or 0.1 % in the
+    # zero point passed every row but golden, which CI does not run (review 24 Nov 2026, tests.md R2).
+    from sed_tools.photometry import FilterCurve, _band_magnitude
+
+    c, a, b = 2.99792458e18, 4000.0, 6000.0  # Å/s; the box's edges
+    lam, tr = np.array([a, a, b, b]), np.array([0.0, 1.0, 1.0, 0.0])
+    assert filter_properties(lam, tr, ENERGY)["ZeroPointAB_flam"] == pytest.approx(3631e-23 * c / (a * b), rel=1e-9)
+    wl = np.linspace(3000.0, 7000.0, 40001)
+    magnitude = _band_magnitude(wl, 3631e-23 * c / wl**2, FilterCurve("box", lam, tr, {}), "AB", None)[2]
+    assert magnitude == pytest.approx(0.0, abs=1e-6)
 
 
 @row
@@ -2038,6 +2133,26 @@ def njm_component_failure_is_reported_before_the_original_source(t):
 
 
 @default_svo_row
+def a_recipe_some_bands_can_never_have_asks_no_source_and_names_the_bands_that_have_it(t):
+    # As SLOAN/SDSS: g has filter+optics+qe, gp is filter only. Composing every band re-downloaded NJM's
+    # components, re-ran the builder and blamed NJM ("the mirror does not have them").
+    inst = put(t.tmp / "Fac" / "Cam", {"g.dat": CURVE, "gp.dat": CURVE, "manifest.json": json.dumps({
+        "facility": "Fac", "instrument": "Cam", "bands": ["g", "gp"],
+        "published_bands": {"g": "filter+optics+qe", "gp": "filter"},
+        "components": {"filter": {"gp": "gp.dat"}, "filter+optics+qe": {"g": "components/g.dat"}}})})
+    put(inst / "components", {"g.dat": CURVE})
+    asked = []
+    library = library_with(t.tmp, SimpleNamespace(is_available=lambda: True,
+                                                  download_components=lambda f, i: asked.append("njm")))
+    t.mp.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam"), catalog.BuilderRef("test"))
+    t.mp.setattr(filters_library, "get_builder", lambda name: lambda root, **kwargs: asked.append("builder"))
+    with pytest.raises(ComponentError, match=r"'filter\+optics\+qe' for band 'gp' \(only for g; published curve"):
+        library.compose(inst, "filter+optics+qe")
+    assert asked == []
+    assert sorted(p.name for p in library.compose(inst, "filter+optics+qe", bands=["g"]).glob("*.dat")) == ["g.dat"]
+
+
+@default_svo_row
 def njm_atmosphere_failure_is_reported_before_its_source(t):
     library = library_with(t.tmp / "filters", SimpleNamespace(download_atmosphere=raising(
         requests.HTTPError("502 for atmospheres/paranal/manifest.json"))))
@@ -2154,6 +2269,12 @@ def published_carries_every_source_reason(t):
                                "SVO: SVO Filter Profile Service unreachable")
     assert ("The original source cannot provide Fac/Cam (the builder left an incomplete set); trying SVO"
             in t.caplog.text)
+    # Its connection failure in plain words, as NJM's (it was urllib3's whole text)
+    t.mp.setattr(filters_library, "get_builder", lambda name: raising(requests.ConnectionError(
+        "HTTPSConnectionPool(host='cdsarc.cds.unistra.fr', port=443): Max retries exceeded with url: /ReadMe "
+        "(Caused by NewConnectionError('Failed to establish a new connection: [Errno 61] Connection refused'))")))
+    with pytest.raises(ComponentError, match="; original source: connection refused; SVO: "):
+        library.published("Fac", "Cam")
 
 
 @default_svo_row
@@ -2747,6 +2868,7 @@ def a_silent_outage_is_checked_and_reported_once_per_process(t):
     assert [g.is_available() for g in grabbers] == [False, False, False]
     assert session.calls == [("HEAD", "https://data.nialljmiller.com/sed_tools", True)]  # one 5 s wait, not three
     assert t.caplog.text.count("is unavailable (timed out)") == 1
+    assert "this run continues without it for 5 minutes" in t.caplog.text  # it is asked again by the next run
     with pytest.raises(requests.ConnectionError, match="not asked again for 5 minutes"):
         grabbers[2]._get("https://data.nialljmiller.com/sed_tools/index.json")
     assert len(session.calls) == 1

@@ -15,12 +15,12 @@ import numpy as np
 
 from ..config import get_data_dir
 from ..filters.manifest import is_auxiliary_path
-from ..photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve, Spectrum, _warn_outside_sed,
-                          band_average_flux_lambda, band_average_flux_nu, get_metadata_float, load_filter_curve,
-                          load_spectrum)
+from ..photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, FilterCurve, Spectrum, _warn_outside_sed,
+                          band_average_flux_lambda, band_average_flux_nu, load_filter_curve, load_spectrum,
+                          save_spectrum, vega_zero_point)
 from ..ui_utils import ordered_range
 from .collision import _normalise_key
-from .fileio import is_all_axes, read_header
+from .fileio import ALL_AXES_NAME, read_header
 from .fluxcube import AllAxesCube, FluxCube
 from .variants import _variant_paths
 
@@ -90,6 +90,13 @@ class EvaluatedSED:
     def metallicity(self) -> float:
         return self.metadata["metallicity"]
 
+    def save(self, path: Union[str, os.PathLike[str]]) -> None:
+        """Save the spectrum in SED_Tools' text format, as its grids store theirs (sed_tools.photometry.save_spectrum):
+        ``# key = value`` lines for Teff, log g, [M/H], the units and any extra axis (alpha, ...), then a line per
+        sample: wavelength (Å) and flux (erg/s/cm²/Å)."""
+        parameters = {key: self.metadata[key] for key in ("teff", "logg", "metallicity")}
+        save_spectrum(path, self.wavelength, self.flux, parameters, self.metadata)
+
     def photometry(
         self,
         *filters: FilterSpec,
@@ -106,14 +113,16 @@ class EvaluatedSED:
             :class:`FilterCurve`. ``(name, path)`` tuples are also accepted.
         system:
             Photometric system to use. "AB" (default) computes magnitudes using
-            the AB zero-point. "Vega" relies on either the filter metadata or on
-            a provided Vega reference spectrum. In both, a band flux of zero
+            the AB zero-point. "Vega" uses the Vega spectrum given as
+            ``vega_spectrum``; without one, the zero point the curve states (its
+            header, or ``ZeroPointVega_flam`` in the ``properties.json`` beside
+            it; see photometry.vega_zero_point). In both, a band flux of zero
             gives an infinite magnitude and a negative one NaN. A Vega zero
             point of zero gives ``-inf``, and a negative one NaN.
         vega_spectrum:
-            Optional spectrum to use as Vega reference when ``system="Vega"``
-            and the filter file does not encode a zero point. Can be provided as
-            a :class:`Spectrum` instance or a filesystem path.
+            Optional Vega spectrum for ``system="Vega"``, which wins over any
+            zero point the curves state. Can be provided as a :class:`Spectrum`
+            instance or a filesystem path.
         """
 
         resolved = self._model._resolve_filters(filters)
@@ -136,28 +145,13 @@ class EvaluatedSED:
                     magnitude = float(-2.5 * np.log10(flux_density / AB_ZERO_FLUX))
             else:
                 flux_density = band_average_flux_lambda(self.wavelength, self.flux, curve)
-                vega_zero = _vega_zero_point(curve, vega_curve)
+                vega_zero = vega_zero_point(curve, vega_curve)
                 with np.errstate(divide="ignore", invalid="ignore"):
                     magnitude = float(-2.5 * np.log10(np.divide(flux_density, vega_zero)))
             results[name] = PhotometryResult(magnitude=magnitude, flux_density=float(flux_density),
                                              system="AB" if system == "AB" else "Vega", filter_name=name)
 
         return results
-
-
-def _vega_zero_point(curve: FilterCurve, vega_curve: Optional[Spectrum]) -> float:
-    try:
-        metadata_value = get_metadata_float(curve.metadata, VEGA_ZP_KEYS)
-    except ValueError as exc:
-        raise ValueError(f"Filter '{curve.name}': {exc}") from exc
-    if metadata_value is not None:
-        return float(metadata_value)
-    if vega_curve is None:
-        raise ValueError(
-            "Filter does not provide a Vega zero point. Supply a Vega spectrum via "
-            "the 'vega_spectrum' argument."
-        )
-    return band_average_flux_lambda(vega_curve.wavelength, vega_curve.flux, curve)
 
 
 class SEDModel:
@@ -167,7 +161,7 @@ class SEDModel:
     outside the grid is clamped to the nearest grid edge; with ``False`` it
     raises ValueError.
 
-    A split grid's all-axes cube (its top-level flux_cube.bin) also has the
+    A split grid's all-axes cube (its top-level flux_cube_nd.bin) also has the
     grid's extra axes (``extra_axes``, e.g. alpha): each is given by keyword,
     ``model(5800, 4.4, 0.0, alpha=0.2)``, the name matched ignoring case and
     punctuation (``alpha_fe`` finds ``[alpha/Fe]``). A numeric extra axis is
@@ -194,7 +188,6 @@ class SEDModel:
                            for k, (name, axis) in enumerate(zip(self._header.names, self._header.axes)) if k >= 3}
 
         self._cube: Union[None, FluxCube, AllAxesCube] = None
-        self._filter_cache: Dict[str, FilterCurve] = {}
         self._filter_index: Optional[Dict[str, List[Path]]] = None
 
     # --- Flux cube loading & interpolation ---
@@ -253,35 +246,27 @@ class SEDModel:
     # --- Filter handling ---
 
     def _resolve_filters(self, filters: Sequence[FilterSpec]) -> Dict[str, FilterCurve]:
-        entries = _normalize_filter_sequence(filters)
-        resolved: Dict[str, FilterCurve] = {}
-
-        for item in entries:
+        """Each curve by its name. Curves of different files that share a name (J of Generic/Johnson and of
+        2MASS/2MASS) are named with their folder, "Johnson/J" and "2MASS/J", so no result replaces another; a file
+        asked for twice is one curve. Curves are read at each call, so one edited on disk
+        (Filters.correct_detector_type) is the one used. ValueError if two curves would still share a name."""
+        found: Dict[Tuple, Tuple[str, FilterCurve, Optional[Path]]] = {}
+        for item in _normalize_filter_sequence(filters):
             if isinstance(item, FilterCurve):
-                resolved[item.name] = item
-            elif isinstance(item, tuple):
-                custom_name, source = item
-                curve = self._load_filter(source, custom_name=custom_name)
-                resolved[curve.name] = curve
-            else:  # a name or path
-                resolved.update(self._load_filter_group(item))
+                found[item.name, id(item)] = (item.name, item, None)
+                continue
+            custom, spec = item if isinstance(item, tuple) else (None, item)
+            for path in [self._locate_filter_path(spec)] if custom else self._locate_filter_paths(spec):
+                curve = load_filter_curve(str(path), name=custom)
+                found[curve.name, Path(path).resolve()] = (curve.name, curve, Path(path))
+        names = [name for name, _, _ in found.values()]
+        resolved: Dict[str, FilterCurve] = {}
+        for name, curve, path in found.values():
+            key = f"{path.parent.name}/{name}" if path is not None and names.count(name) > 1 else name
+            if key in resolved:
+                raise ValueError(f"Two filters would both be reported as {key!r}; name one with a (name, path) pair")
+            resolved[key] = curve
         return resolved
-
-    def _load_filter_group(self, spec: Union[str, os.PathLike[str]]) -> Dict[str, FilterCurve]:
-        curves: Dict[str, FilterCurve] = {}
-        for path in self._locate_filter_paths(spec):
-            key = (os.fspath(path), "")
-            if key not in self._filter_cache:
-                self._filter_cache[key] = load_filter_curve(str(path))
-            curve = self._filter_cache[key]
-            curves[curve.name] = curve
-        return curves
-
-    def _load_filter(self, spec: Union[str, os.PathLike[str]], *, custom_name: Optional[str] = None) -> FilterCurve:
-        key = (os.fspath(spec), custom_name or "")
-        if key not in self._filter_cache:
-            self._filter_cache[key] = load_filter_curve(str(self._locate_filter_path(spec)), name=custom_name)
-        return self._filter_cache[key]
 
     def _locate_filter_paths(self, spec: Union[str, os.PathLike[str]]) -> List[Path]:
         path = Path(spec)
@@ -358,15 +343,22 @@ class SEDModel:
         return float(min(max(value, lower), upper))
 
 
-def _refuse_split_grid(directory: Path, name: str) -> None:
-    """FileNotFoundError naming the variants when ``directory`` is a grid split into variants (variants_index.csv)
-    whose top-level flux_cube.bin is not its all-axes cube: none, or a 3-axis cube an earlier version or download
-    left there (one variant's, not the grid's). Photometry then reads one variant's folder."""
+def grid_cube(directory: Path, name: str) -> Path:
+    """The cube a grid folder is opened by: a grid split into variants (variants_index.csv) by its all-axes
+    flux_cube_nd.bin, any other by its flux_cube.bin. FileNotFoundError naming the variants for a split grid without
+    flux_cube_nd.bin (split before it existed), or with a flux_cube.bin at its top (an earlier version's or download's,
+    which MESA would read there and is not the grid's cube; it says to remove or rename it): photometry then reads
+    one variant's folder."""
     index, top = Path(directory) / "variants_index.csv", Path(directory) / "flux_cube.bin"
-    if index.is_file() and not (top.is_file() and is_all_axes(top)):
+    if not index.is_file():
+        return top
+    if top.exists() or not (Path(directory) / ALL_AXES_NAME).is_file():
         variants = [f"{name}/{path}" for path in _variant_paths(index)]
+        fixes = ([f"remove or rename {top}, which is not its cube"] if top.exists() else []) + (
+            [] if (Path(directory) / ALL_AXES_NAME).is_file() else [f"rebuild {name} to get its all-axes cube"])
         raise FileNotFoundError(f"{name} is split into variants, each with its own flux cube; name one of them: "
-                                + ", ".join(variants) + f", or rebuild {name} to get its all-axes cube")
+                                + ", ".join(variants) + ", or " + " and ".join(fixes))
+    return Path(directory) / ALL_AXES_NAME
 
 
 class SED:
@@ -532,9 +524,8 @@ class SED:
         if path.is_file() and path.suffix.lower() == ".bin":
             return path
         for directory in (path, self.model_root / path):
-            _refuse_split_grid(directory, str(model))
-            if directory.is_dir() and (directory / "flux_cube.bin").is_file():
-                return directory / "flux_cube.bin"
+            if directory.is_dir() and grid_cube(directory, str(model)).is_file():
+                return grid_cube(directory, str(model))
 
         candidate = self.model_root / f"{path}.bin"
         if candidate.is_file():

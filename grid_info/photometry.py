@@ -5,13 +5,13 @@ per variant, the rectilinear node layout with its holes. For each grid and instr
 gives every spectrum's band-averaged surface flux as an ST magnitude, rounded to 1e-4 mag, with each band's AB and Vega
 offsets, so the AB, Vega and ST magnitudes and the bolometric corrections follow by addition (see DEFINITIONS).
 
-Band averages are SED_Tools' ``band_average_flux_lambda``: SED_Tools' one band rule, ``band_integral`` on
-``band_grid`` with the spectrum's wavelengths (``on_band_grid``). That is linear in the spectrum, so for a wavelength
-grid shared by several spectra it is written as one sparse matrix: each row holds the coefficient of every spectrum
-sample, taken from SED_Tools' own per-step integrals (``_step_integrals``, called with flux 1 at one end of each step
-and 0 at the other); one product then applies every band to every spectrum. Other spectra call
-``band_average_flux_lambda`` itself. ``check`` asserts that the product equals ``band_average_flux_lambda`` and
-``_band_magnitude`` on random (spectrum, band) pairs before anything is written.
+Band averages are SED_Tools' ``band_average_flux_lambda``: the spectrum put on each band's grid by ``on_band_grid``
+(``resample_to_grid``'s rule, with a vertical edge where the spectrum ends inside the band) and integrated by
+``band_integral``. For one wavelength grid of spectra, the band grids, the points ``on_band_grid`` sets to zero, and
+each grid point's coefficient in the integral (from SED_Tools' own per-step integrals, ``_step_integrals``, which are
+linear in the flux at a step's two ends) are found once (``Bands.layout``); each spectrum is then resampled onto all of
+them at once with ``resample_to_grid`` and summed (``Bands.averages``). ``check`` asserts that this equals
+``band_average_flux_lambda`` and ``_band_magnitude`` on random (spectrum, band) pairs before anything is written.
 
 Usage: python -m grid_info.photometry DATA_DIR OUT_DIR --grids G ... [--instruments Facility/Instrument ...]
        python -m grid_info.photometry DATA_DIR OUT_DIR --index-only     (rebuild OUT_DIR/index.json)
@@ -31,12 +31,12 @@ from pathlib import Path
 
 import h5py
 import numpy as np
-from scipy.sparse import csr_matrix
 
 from grid_info.check_grids import BOLO_FAIL, BOLO_WARN, COVERED, pi_b, trapz
 from sed_tools.filters.properties import ST_FLAM, filter_properties, load_vega
 from sed_tools.photometry import (AB_ZERO_FLUX, SPEED_OF_LIGHT_ANG_PER_S, Spectrum, _band_magnitude, _step_integrals,
-                                  _weight_power, band_average_flux_lambda, band_grid, band_integral, integrate_flux,
+                                  _weight_power, band_average_flux_lambda, band_integral, integrate_flux, on_band_grid,
+                                  resample_to_grid,
                                   load_filter_curve)
 
 SCHEMA = 1
@@ -48,7 +48,6 @@ DECIMALS = 4                                    # 1e-4 mag
 CHECK_PAIRS = 300                               # random (spectrum, band) pairs checked against the reference
 CHECK_TOL = 1e-6                                # mag
 CHUNK = 256                                     # spectra read at once
-OPERATOR_MIN = 3                                # spectra sharing a wavelength grid before its matrix pays off
 
 DEFINITIONS = {
     "m_st": "ST magnitude of the band-averaged surface flux F (erg/s/cm2/A): -2.5 log10(F / 3.631e-9); "
@@ -178,7 +177,7 @@ class Grid:
 # ---------------------------------------------------------------------------------------------------- bands
 
 class Bands:
-    """Every band of the chosen instruments: curves and zero points; operator() and apply() give band averages."""
+    """Every band of the chosen instruments: curves and zero points; layout() and averages() give band averages."""
 
     def __init__(self, data_dir: Path, instruments, vega):
         self.instruments, self.curves, self.meta, self.errors = {}, [], [], {}
@@ -207,39 +206,28 @@ class Bands:
         self.n = len(self.curves)
         self.samples = sum(c.wavelength.size for c in self.curves)
 
-    def operator(self, lam):
-        """Sparse A (bands x len(lam)): A @ flux is band_average_flux_lambda(lam, flux, curve) for every band.
-
-        On each band's band_grid with lam, SED_Tools' _step_integrals gives every step's integral for a flux of 1 at
-        one end and 0 at the other (the step integral is linear in the flux at its two ends); a grid point's
-        coefficient is the sum over its two steps, divided by band_integral of the weight. The flux at a grid point is
-        np.interp of lam (zero beyond it), as on_band_grid takes it."""
-        n = lam.size
-        rows, cols, vals = [], [], []
+    def layout(self, lam):
+        """For spectra on the wavelengths ``lam``: every band's on_band_grid points (concatenated), whether
+        on_band_grid keeps the spectrum's flux there (False at its vertical edges and beyond the spectrum), each point's
+        coefficient in band_integral of flux * weight over band_integral of the weight, and its band."""
+        xs, keep, coefs, bands = [], [], [], []
+        ones = np.ones(lam.size)
         for b, c in enumerate(self.curves):
             k = _weight_power(c.detector_type)
-            x, t = band_grid(c.wavelength, c.transmission, lam)
+            x, t, kept = on_band_grid(lam, ones, c.wavelength, c.transmission)
             even = (np.arange(x.size) % 2 == 0).astype(float)
             p, q = _step_integrals(x, t, even, k), _step_integrals(x, t, 1 - even, k)
             steps = np.arange(x.size - 1)
-            left = np.where(steps % 2 == 0, p, q)     # each step's integral for flux 1 at its left end, 0 at its right
-            right = np.where(steps % 2 == 0, q, p)    # and for 0 at its left end, 1 at its right
             coef = np.zeros(x.size)
-            coef[:-1] += left
-            coef[1:] += right
-            coef /= band_integral(x, t, None, k)
-            inside = (x >= lam[0]) & (x <= lam[-1])  # np.interp(..., left=0, right=0)
-            x, coef = x[inside], coef[inside]
-            i = np.clip(np.searchsorted(lam, x, side="right") - 1, 0, n - 2)
-            f = (x - lam[i]) / (lam[i + 1] - lam[i])
-            rows.append(np.full(2 * x.size, b))
-            cols += [i, i + 1]
-            vals += [coef * (1 - f), coef * f]
-        return csr_matrix((np.concatenate(vals), (np.concatenate(rows), np.concatenate(cols))), shape=(self.n, n))
+            coef[:-1] += np.where(steps % 2 == 0, p, q)  # each step's integral for flux 1 at its left end, 0 at its right
+            coef[1:] += np.where(steps % 2 == 0, q, p)   # and for 0 at its left end, 1 at its right
+            xs.append(x); keep.append(kept); coefs.append(coef / band_integral(x, t, None, k)); bands.append(np.full(x.size, b))
+        return np.concatenate(xs), np.concatenate(keep), np.concatenate(coefs), np.concatenate(bands)
 
-    def apply(self, lam, flux):
-        """The same band averages for one spectrum, from band_average_flux_lambda itself."""
-        return np.array([band_average_flux_lambda(lam, flux, c) for c in self.curves])
+    def averages(self, lam, flux, layout):
+        """band_average_flux_lambda(lam, flux, curve) for every band, by the layout of lam."""
+        x, keep, coef, band = layout
+        return np.bincount(band, weights=coef * keep * resample_to_grid(lam, flux, x), minlength=self.n)
 
 
 # ---------------------------------------------------------------------------------------------------- photometry
@@ -254,22 +242,22 @@ def photometry(grid: Grid, bands: Bands | None, vega=None):
     for group in grid.groups:
         lam = grid.wavelengths(group[0])
         lam_range[group] = lam[0], lam[-1]
-        a = None if bands is None or len(group) < OPERATOR_MIN else bands.operator(lam)   # few spectra: no matrix
+        layout = None if bands is None else bands.layout(lam)
         if bands is not None:
-            outside[group] = 1 - (bands.apply(lam, np.ones(lam.size)) if a is None else a @ np.ones(lam.size))
+            outside[group] = 1 - bands.averages(lam, np.ones(lam.size), layout)
         for start in range(0, len(group), CHUNK):       # bounded memory for grids with long spectra
             members = group[start:start + CHUNK]
             spectra = grid.fluxes(members)
             if bands is not None:
-                flux[members] = (a @ spectra.T).T if a is not None else [bands.apply(lam, f) for f in spectra]
+                flux[members] = [bands.averages(lam, f, layout) for f in spectra]
             for i, f in zip(members, spectra):
                 fbol[i] = integrate_flux(lam, f)
                 planck[i] = trapz(pi_b(lam, teff[i]), lam)
     if bands is not None:
-        vega_flux = bands.operator(vega[0]) @ vega[1]
-        for b, m in enumerate(bands.meta):            # the operator reproduces the published Vega zero points
+        vega_flux = bands.averages(vega[0], vega[1], bands.layout(vega[0]))
+        for b, m in enumerate(bands.meta):            # the same sum reproduces the published Vega zero points
             if m["zp_vega"] is not None and abs(vega_flux[b] / m["zp_vega"] - 1) > 1e-9:
-                raise AssertionError(f"band {b}: operator Vega flux {vega_flux[b]} != zero point {m['zp_vega']}")
+                raise AssertionError(f"band {b}: Vega flux {vega_flux[b]} != zero point {m['zp_vega']}")
     return flux, outside, {"fbol": fbol, "planck": planck, "lam_range": lam_range}
 
 
@@ -290,13 +278,14 @@ def check(grid: Grid, bands: Bands, flux, vega, rng):
             if ref <= 0:
                 continue
             m_st = -2.5 * math.log10(flux[p, b] / ST_FLAM)
-            worst["AB"] = max(worst["AB"], abs(_band_magnitude(lam, f, curve, "AB", None)[2]
+            worst["AB"] = max(worst["AB"], abs(_band_magnitude(lam, f, curve, "AB", None, given_vega=False)[2]
                                                - (m_st + meta["AB_minus_ST"])))
             if meta["Vega_minus_ST"] is not None:
-                worst["Vega"] = max(worst["Vega"], abs(_band_magnitude(lam, f, curve, "Vega", lambda: vega_spectrum)[2]
+                worst["Vega"] = max(worst["Vega"], abs(_band_magnitude(lam, f, curve, "Vega", lambda: vega_spectrum,
+                                                                       given_vega=True)[2]
                                                        - (m_st + meta["Vega_minus_ST"])))
     if max(worst["AB"], worst["Vega"], worst["flux_rel"]) > CHECK_TOL:
-        raise AssertionError(f"{grid.name}: matrix photometry differs from sed_tools.photometry: {worst}")
+        raise AssertionError(f"{grid.name}: table photometry differs from sed_tools.photometry: {worst}")
     return worst
 
 

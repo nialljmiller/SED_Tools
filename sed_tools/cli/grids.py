@@ -252,7 +252,6 @@ def run_spectra_flow(
     base_dir: str = str(STELLAR_DIR_DEFAULT),
     models: Optional[List[str]] = None,
     workers: int = 5,
-    force_bundle_h5: bool = True,
     build_flux_cube: bool = True,
     *,
     flux_unit: Optional[str] = None,
@@ -291,7 +290,7 @@ def run_spectra_flow(
 
     for sources, name in chosen:
         try:
-            problems = _download_and_build_grid(name, sources, grabs, base_dir, force_bundle_h5, build_flux_cube,
+            problems = _download_and_build_grid(name, sources, grabs, base_dir, build_flux_cube,
                                                 flux_unit=flux_unit, ranges=ranges)
         except (ValueError, RequestException, OSError, RuntimeError) as exc:
             print(f"[{name}] failed: {exc}")
@@ -400,7 +399,7 @@ def _download_cuts(name: str, src: str, g, meta, ranges: Dict) -> Dict:
 
 
 def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_dir: str,
-                             force_bundle_h5: bool, build_flux_cube: bool, *,
+                             build_flux_cube: bool, *,
                              flux_unit: Optional[str] = None, ranges: Optional[Dict] = None) -> List[str]:
     """Download one grid from its first source that has it, clean it and build its products; returns what
     was not done."""
@@ -418,7 +417,7 @@ def _download_and_build_grid(name: str, sources: List[str], grabs: Dict, base_di
         print("\n  No spectra remaining after cleaning")
         return ["no spectra remaining after cleaning"]
 
-    problems = _build_data_products(name, model_dir, src, force_bundle_h5, build_flux_cube)
+    problems = _build_data_products(name, model_dir, src, build_flux_cube)
     _print_mesa_inlist(model_dir)
     return problems
 
@@ -560,4 +559,4 @@ def run_import_flow(base_dir: str = str(STELLAR_DIR_DEFAULT)) -> None:
     name = input("Spectral grid name [blank = source folder name]: ").strip() or None
     mv = input("Move files instead of copying? [y/N] ").strip().lower().startswith("y")
     flux_unit = _ask_import_flux_unit(path, name)
-    SED.import_grid(path, name=name, model_root=base_dir, move=mv, flux_unit=flux_unit)
+    _print_mesa_inlist(SED.import_grid(path, name=name, model_root=base_dir, move=mv, flux_unit=flux_unit)["dest"])

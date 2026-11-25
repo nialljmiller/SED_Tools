@@ -11,6 +11,7 @@ from typing import Callable, Dict, List, Optional, Tuple
 
 from ..cube.check import _bundle_shortfall, _flux_cube_file, _flux_cube_shortfall, _variant_paths
 from ..cube.model import STELLAR_DIR_DEFAULT
+from ..cube.variants import ensure_all_axes_cube
 from ..ui_utils import ordered_range, wrap
 from . import mast, msg, njm, svo
 from .header_parser import parse_header
@@ -91,7 +92,7 @@ def build_h5_bundle_from_txt(model_dir: str, out_h5: str) -> None:
 
 def _build_flux_cube(model_dir: Path) -> Path:
     """Run precompute_flux_cube on ``model_dir``; returns ``flux_cube.bin``, or ``variants_index.csv``
-    for a grid split into one cube per variant (whose flux_cube.bin is then the all-axes cube). RuntimeError when
+    for a grid split into one cube per variant (with its all-axes flux_cube_nd.bin). RuntimeError when
     this call wrote neither (it said why)."""
     from ..cube.build import precompute_flux_cube  # at call time, so a patched builder is the one run
 
@@ -105,15 +106,15 @@ def _build_flux_cube(model_dir: Path) -> Path:
     raise RuntimeError(f"No flux cube was built in {model_dir}; see the flux cube messages above")
 
 
-def _build_data_products(name: str, model_dir: str, src: str, force_bundle_h5: bool,
-                         build_flux_cube: bool) -> List[str]:
+def _build_data_products(name: str, model_dir: str, src: str, build_flux_cube: bool) -> List[str]:
     """Build the HDF5 bundle, lookup table and flux cube of a downloaded grid; returns what was not done.
 
-    A bundle or cube lacking spectra beside it is rebuilt, and one holding every spectrum is kept (NJM serves both,
-    and a split grid's variant cubes); with ``build_flux_cube`` False a cube lacking spectra is a problem.
+    A bundle or cube missing or not holding exactly the spectra beside it is (re)built, and one holding every
+    spectrum is kept, not rewritten (NJM serves both, and a split grid's variant cubes); with ``build_flux_cube``
+    False a cube lacking spectra is a problem.
     """
     out_h5 = str(_bundle_path(model_dir, name))
-    fresh = force_bundle_h5 or not os.path.exists(out_h5)
+    fresh = not os.path.exists(out_h5)
     stale = None if fresh else _bundle_shortfall(Path(out_h5), Path(model_dir))
     if fresh or stale:
         if stale:
@@ -138,6 +139,7 @@ def _build_data_products(name: str, model_dir: str, src: str, force_bundle_h5: b
     if cube is not None and _flux_cube_shortfall(Path(model_dir)) is None:
         written = cube
         print(f"Flux cube     : {cube.name} (holds every spectrum; kept)")
+        ensure_all_axes_cube(model_dir)  # a split grid an earlier version installed gets its all-axes cube
     else:
         written = _build_flux_cube(model_dir)
     if written.name == "variants_index.csv":

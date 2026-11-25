@@ -4,6 +4,7 @@ and bolometric flux. The flux-cube tool, the SED API, the filter modules and the
 
 from __future__ import annotations
 
+import json
 import logging
 import math
 import re
@@ -45,11 +46,7 @@ class FilterCurve:
     metadata: Dict[str, object]
     wavelength_unit: str = "angstrom"
     detector_type: str = ENERGY
-
-    @property
-    def weight(self) -> np.ndarray:
-        """Integration weight: ``T`` (energy counting) or ``T*lambda`` (photon counting)."""
-        return filter_weight(self.wavelength, self.transmission, self.detector_type)
+    path: str | None = None  # the file it was read from
 
 
 @dataclass
@@ -237,25 +234,7 @@ def load_filter_curve(
         detector_type = ENERGY
         metadata.setdefault("detectortypesource", "assumed")
     return FilterCurve(name or Path(path).stem, wavelength, transmission, metadata,
-                       wavelength_unit="angstrom", detector_type=detector_type)
-
-
-def filter_weight(
-    wavelength: np.ndarray, transmission: np.ndarray, detector_type: str = ENERGY
-) -> np.ndarray:
-    """Return the synthetic-photometry weight for a transmission curve.
-
-    Photon-counting curves are weighted by ``T*lambda`` so the band average is
-    over photons rather than energy (Bessell & Murphy 2012, PASP 124, 140,
-    eq. A9).  Energy-counting curves use ``T`` directly.
-    """
-    resolved = normalize_detector_type(detector_type)
-    if resolved is None:
-        raise ValueError(f"Unknown detector type: {detector_type!r}")
-    transmission = np.asarray(transmission, dtype=float)
-    if resolved == PHOTON:
-        return transmission * np.asarray(wavelength, dtype=float)
-    return transmission
+                       wavelength_unit="angstrom", detector_type=detector_type, path=str(path))
 
 
 #: :func:`band_grid` splits every step longer than lambda / BAND_RESOLVING_POWER, so that :func:`band_integral` is
@@ -310,14 +289,17 @@ def band_integral(wavelength, transmission, flux=None, power: int = 0) -> float:
     """∫ T F λ^power dλ on a :func:`band_grid` (``flux`` F omitted: 1), the one rule for every band quantity: band
     averages, zero points, pivot and other wavelengths, and shares of the band.
 
-    T is linear between the grid's wavelengths, and so is F (a spectrum's own wavelengths are on the grid; see
-    :func:`on_band_grid`), and the integral of that product is exact (see :func:`_step_integrals`).
+    T and F are taken as linear between the grid's wavelengths, on which the integral of their product is exact
+    (see :func:`_step_integrals`). T is linear between the curve's samples, so that is exact for T; F is log-linear
+    between a spectrum's positive samples (see :func:`on_band_grid`), and the grid's steps of at most
+    lambda / :data:`BAND_RESOLVING_POWER` follow it closely.
     """
     return float(_step_integrals(wavelength, transmission, flux, power).sum())
 
 
 def _weight_power(detector_type: str) -> int:
-    """The power of lambda in the weight :func:`filter_weight` gives: 0 (energy counting) or 1 (photon counting)."""
+    """The power of lambda in a band's weight T λ^power: 0 (energy counting) or 1 (photon counting, which averages
+    over photons rather than energy; Bessell & Murphy 2012, PASP 124, 140, eq. A9)."""
     resolved = normalize_detector_type(detector_type)
     if resolved is None:
         raise ValueError(f"Unknown detector type: {detector_type!r}")
@@ -408,7 +390,7 @@ class BandSampling:
 def band_sampling(grid_wavelength: Sequence[float], curve: FilterCurve) -> BandSampling:
     """How the increasing wavelengths ``grid_wavelength`` (Å; a flux cube's axis or a spectrum's) sample ``curve``.
 
-    The shares are of the band's weight (``curve.weight``) on :func:`band_grid`.
+    The shares are of the band's weight (``T``, or ``T·λ`` for photon counting) on :func:`band_grid`.
     """
     grid = np.asarray(grid_wavelength, dtype=float)
     lam = curve.wavelength
@@ -457,6 +439,31 @@ def _warn_outside_sed(sed_wavelength: np.ndarray, curves: Iterable[FilterCurve])
         )
 
 
+#: Stands in for log10 of a zero or negative sample, which the log rule of :func:`resample_to_grid` never uses.
+_FLUX_FLOOR = 1e-300
+
+
+def resample_to_grid(wl_src: Sequence[float], fl_src: Sequence[float], wl_tgt: Sequence[float]) -> np.ndarray:
+    """A spectrum's flux at the wavelengths ``wl_tgt`` (Å): the one rule for a spectrum between its samples, used by
+    every flux cube builder and every band average (:func:`on_band_grid`).
+
+    Between two samples that are both positive, log flux is linear in wavelength, which is closer than linear flux
+    on coarsely sampled continua; between two where either is zero or negative, the flux is linear (Nill, 25 Nov
+    2026, Q12). A sample keeps its own value: a positive one as ``10**log10`` of it, as cubes have always stored
+    it, and a zero or negative one as it is. Outside the spectrum's range the flux is zero: no flux is invented
+    beyond a spectrum's coverage. ``wl_src`` increases.
+    """
+    wl = np.asarray(wl_src, dtype=np.float64)
+    fl = np.asarray(fl_src, dtype=np.float64)
+    at = np.asarray(wl_tgt, dtype=np.float64)
+    i = np.clip(np.searchsorted(wl, at, side="right") - 1, 0, max(wl.size - 2, 0))  # the step each point is in
+    j = np.minimum(i + 1, wl.size - 1)
+    log_rule = ((fl[i] > 0) & (fl[j] > 0)) | ((at == wl[i]) & (fl[i] > 0)) | ((at == wl[j]) & (fl[j] > 0))
+    flux = np.where(log_rule, 10.0 ** np.interp(at, wl, np.log10(np.maximum(fl, _FLUX_FLOOR))), np.interp(at, wl, fl))
+    flux[(at < wl[0]) | (at > wl[-1])] = 0.0
+    return flux
+
+
 def on_band_grid(
     sed_wavelength: Sequence[float], sed_flux: Sequence[float], wavelength: Sequence[float],
     transmission: Sequence[float],
@@ -464,12 +471,23 @@ def on_band_grid(
     """A spectrum and a filter curve on :func:`band_grid` with the spectrum's wavelengths: (wavelength, transmission,
     flux).
 
-    The spectrum is linear between its samples (interpolated onto the grid; zero beyond its range), as the curve is
-    between its own.  A coarsely tabulated curve (Johnson U: 13 samples) then sees every spectral feature in its band,
-    not the spectrum at its 13 wavelengths.
+    The spectrum is put onto the grid by :func:`resample_to_grid` (log flux linear between positive samples,
+    flux linear next to a zero or negative one), the curve linearly between its own samples, and the spectrum is
+    zero beyond its range: an end of the spectrum inside the band is a vertical edge (its wavelength twice, the
+    second with flux 0), so no flux is ramped down beyond it.  A coarsely tabulated curve (Johnson U: 13 samples)
+    then sees every spectral feature in its band, not the spectrum at its 13 wavelengths.
     """
+    sed_wavelength = np.asarray(sed_wavelength, dtype=float)
     grid, t = band_grid(wavelength, transmission, sed_wavelength)
-    return grid, t, np.interp(grid, sed_wavelength, sed_flux, left=0.0, right=0.0)
+    flux = resample_to_grid(sed_wavelength, sed_flux, grid)
+    blue = np.searchsorted(grid, sed_wavelength[0], side="left")  # its ends inside the curve are on the grid
+    red = np.searchsorted(grid, sed_wavelength[-1], side="right")
+    if 0 < blue < grid.size:
+        grid, t, flux = np.insert(grid, blue, grid[blue]), np.insert(t, blue, t[blue]), np.insert(flux, blue, 0.0)
+        red += 1
+    if 0 < red < grid.size:
+        grid, t, flux = np.insert(grid, red, grid[red - 1]), np.insert(t, red, t[red - 1]), np.insert(flux, red, 0.0)
+    return grid, t, flux
 
 
 def band_average_flux_lambda(
@@ -493,13 +511,56 @@ def load_spectrum(path: str, wavelength_unit: str | None = None) -> Spectrum:
     wavelength, order = _standardize_file_wavelengths(path, wavelengths, metadata, wavelength_unit)
     return Spectrum(wavelength, np.asarray(fluxes, dtype=float)[order], metadata, wavelength_unit="angstrom")
 
-def _band_magnitude(wl, flux, curve, photometric_system, vega_spectrum):
+
+def save_spectrum(path, wavelength, flux, parameters: Dict[str, float], extra: Dict[str, object]) -> None:
+    """Write a spectrum in SED_Tools' text format, as its grids store theirs: a ``# key = value`` line for each
+    parameter (one that is NaN, unknown, is left out), the units and each ``extra`` entry, then a line per sample:
+    wavelength (Å) and flux (erg/s/cm²/Å)."""
+    units = {"wavelength_unit": "angstrom", "flux_unit": "erg/cm2/s/A", "units_standardized": True}
+    header = {**{k: v for k, v in parameters.items() if not np.isnan(v)}, **units,
+              **{k: v for k, v in extra.items() if k not in parameters and k not in units}}
+    with open(Path(path), "w") as f:
+        f.writelines(f"# {key} = {value}\n" for key, value in header.items())
+        f.writelines(f"{w:.6f} {fl:.8e}\n" for w, fl in zip(wavelength, flux))
+
+def vega_zero_point(curve: FilterCurve, vega: Spectrum | None = None, find_vega=None) -> float:
+    """The zero point of ``curve``'s Vega magnitudes, Vega's band-averaged f_lambda: from ``vega``, a Vega spectrum,
+    when one is given; otherwise the zero point the curve states, in its header (:data:`VEGA_ZP_KEYS`) or as
+    ``ZeroPointVega_flam`` in the ``properties.json`` beside its file (NJM's, saved with the curves); otherwise from
+    the spectrum ``find_vega()`` returns. ValueError when there is none."""
+    if vega is None:
+        try:
+            stated = get_metadata_float(curve.metadata, VEGA_ZP_KEYS)
+        except ValueError as exc:
+            raise ValueError(f"Filter '{curve.name}': {exc}") from exc
+        if stated is None and curve.path is not None:
+            stated = _published_vega_zero_point(Path(curve.path))
+        if stated is not None:
+            return stated
+        if find_vega is None:
+            raise ValueError(f"Filter '{curve.name}' states no Vega zero point, in its header or a properties.json "
+                             "beside it. Supply a Vega spectrum via the 'vega_spectrum' argument.")
+        vega = find_vega()
+    return band_average_flux_lambda(vega.wavelength, vega.flux, curve)
+
+
+def _published_vega_zero_point(path: Path) -> float | None:
+    """``ZeroPointVega_flam`` of the band named as the file ``path`` in the ``properties.json`` beside it, if any."""
+    properties = path.with_name("properties.json")
+    if not properties.is_file():
+        return None
+    value = (json.loads(properties.read_text(encoding="utf-8"))["bands"].get(path.stem) or {}).get("ZeroPointVega_flam")
+    return None if value is None else float(value)
+
+
+def _band_magnitude(wl, flux, curve, photometric_system, find_vega, given_vega: bool = False):
     """Return (flux label, band-averaged flux, magnitude) for one filter.
 
     In both systems the magnitude of a zero band flux is ``inf`` and of a
     negative one NaN; a zero or negative Vega zero point gives ``-inf`` or NaN.
-    *vega_spectrum* is called for the Vega reference only when the filter has
-    no Vega zero point in its metadata.
+    The Vega zero point is :func:`vega_zero_point`'s: *find_vega* is called for
+    a Vega spectrum only when the curve states no zero point, or first when
+    ``given_vega`` (it returns a spectrum the user supplied, which wins).
     """
     if photometric_system == "AB":
         flux_density = band_average_flux_nu(wl, flux, curve)
@@ -508,10 +569,7 @@ def _band_magnitude(wl, flux, curve, photometric_system, vega_spectrum):
             return "f_nu", flux_density, float(-2.5 * np.log10(flux_density / AB_ZERO_FLUX))
 
     flux_density = band_average_flux_lambda(wl, flux, curve)
-    vega_zero = get_metadata_float(curve.metadata, VEGA_ZP_KEYS)
-    if vega_zero is None:
-        vega_curve = vega_spectrum()
-        vega_zero = band_average_flux_lambda(vega_curve.wavelength, vega_curve.flux, curve)
+    vega_zero = vega_zero_point(curve, find_vega() if given_vega else None, find_vega)
     # A zero or negative band flux or zero point gives inf, -inf or NaN, as computed; no error.
     with np.errstate(divide="ignore", invalid="ignore"):
         return "f_lambda", flux_density, float(-2.5 * np.log10(np.divide(flux_density, vega_zero)))

@@ -1,13 +1,13 @@
 """FluxCube: a 3-axis flux_cube.bin (the format is in cube/fileio.py) in memory, with cubic Hermite interpolation in
 Teff, log g and [M/H]. SEDModel (cube/model.py) and the flux cube tool (cube/tool.py, which re-exports it) use it.
-AllAxesCube: a split grid's all-axes flux_cube.bin, memory-mapped, with the same cubic Hermite on every numeric axis.
+AllAxesCube: a split grid's all-axes flux_cube_nd.bin, memory-mapped, with the same cubic Hermite on every numeric axis.
 """
 
 from __future__ import annotations
 
 import struct  # noqa: F401  (kept: older code star-imports this module)
 from dataclasses import dataclass
-from typing import List, Sequence, Tuple
+from typing import Sequence, Tuple
 
 import numpy as np
 
@@ -120,7 +120,7 @@ class AllAxesCube:
     """A split grid's all-axes flux cube (cube/fileio.py), its flux memory-mapped and never read whole."""
 
     header: CubeHeader
-    flux: np.ndarray  # as stored: (n_P, ..., n_4, nw, n_meta, n_logg, n_teff)
+    flux: np.ndarray  # as stored: header.shape
 
     @classmethod
     def from_header(cls, path, header: CubeHeader) -> "AllAxesCube":
@@ -137,11 +137,16 @@ class AllAxesCube:
         nw = len(self.header.wavelengths)
         step = max(1, (256 * 2**20) // (8 * corners))
         p = len(stencils)
-        # stored order (P..4, w, meta, logg, teff) to (teff, logg, meta, 4..P, w), so axis k is contracted k-th
-        order = [p, p - 1, p - 2, *range(p - 4, -1, -1), p - 3]
+        # stored order to (teff, logg, meta, 4..P, w), so axis k is contracted k-th: version 3 stores
+        # (P..4, meta, logg, teff, w), each node's spectrum whole; versions 1 and 2 (P..4, w, meta, logg, teff)
+        v3 = self.header.version >= 3
+        order = ([p - 1, p - 2, p - 3, *range(p - 4, -1, -1), p] if v3
+                 else [p, p - 1, p - 2, *range(p - 4, -1, -1), p - 3])
+        extra, nodes = [s for s, _ in stencils[:2:-1]], [s for s, _ in stencils[2::-1]]
         flux = np.empty(nw)
         for w0 in range(0, nw, step):
-            where = (*(s for s, _ in stencils[:2:-1]), slice(w0, w0 + step), *(s for s, _ in stencils[2::-1]))
+            band = slice(w0, w0 + step)
+            where = (*extra, *nodes, band) if v3 else (*extra, band, *nodes)
             part = np.asarray(self.flux[where], dtype=np.float64).transpose(order)
             for _, weights in stencils:
                 part = np.tensordot(weights, part, axes=(0, 0))

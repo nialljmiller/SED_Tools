@@ -152,6 +152,14 @@ def _in_range(val, rng):
     return lo <= val <= hi
 
 
+def _link_version(link) -> int:
+    """The version N of a grid file linked from MSG's index: the link's text when it is "vN" (an old version), else
+    the "vN" its table row states (the current one); 0 when neither says."""
+    texts = [link.get_text(strip=True)] + [cell.get_text(strip=True) for cell in
+                                           (link.find_parent("tr") or link).find_all("td")]
+    return next((int(m.group(1)) for m in map(re.compile(r"v(\d+)").fullmatch, texts) if m), 0)
+
+
 class MSGSpectraGrabber:
     def __init__(self, base_dir="../data/stellar_models/", max_workers=6):
         self.base_dir = base_dir
@@ -161,7 +169,7 @@ class MSGSpectraGrabber:
         self.session = retrying_session("SED_Tools (MSG)", Retry(
             total=5, backoff_factor=1, status_forcelist=[500, 502, 503, 504, 429]), separate_adapters=True)
 
-        self.index_url = "http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids"
+        self.index_url = "https://madstar.richtownsend.dev/static.php?ref=msg-grids"
         mount_discovery(self.session, self.index_url)
         self.model_urls = {}
 
@@ -176,12 +184,14 @@ class MSGSpectraGrabber:
                            self.index_url, discovery_failure(e))
             return []
         soup = BeautifulSoup(r.text, "html.parser")
-        urls = {}
+        newest = {}  # name: (version, url); the page links a grid's old versions beside its current one
         for link in soup.find_all("a", href=True):
             href = link["href"]
             if "/msg/grids/" in href and href.endswith(".h5"):
-                urls[os.path.basename(href).removesuffix(".h5")] = urljoin(self.index_url, href)
-        self.model_urls = urls
+                name, version = os.path.basename(href).removesuffix(".h5"), _link_version(link)
+                if name not in newest or version > newest[name][0]:
+                    newest[name] = (version, urljoin(self.index_url, href))
+        self.model_urls = {name: url for name, (_, url) in newest.items()}
         if not self.model_urls:
             logger.warning("MSG: no grids linked from %s; MSG spectral grids are not offered", self.index_url)
         return sorted(self.model_urls.keys())

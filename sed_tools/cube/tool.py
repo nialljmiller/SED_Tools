@@ -9,6 +9,7 @@ import argparse
 import logging
 import math
 import os
+import sys
 from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
 
@@ -25,8 +26,13 @@ from ..photometry import (
 
 logger = logging.getLogger(__name__)
 
+def _ask(prompt: str) -> str:
+    """input(prompt), or the blank answer (each question's default) without a terminal: the tool runs unattended."""
+    return input(prompt) if sys.stdin.isatty() else ""
+
+
 def prompt_scale_choice() -> bool:
-    resp = input("\nScale flux for distance (apparent magnitudes)? [y/N]: ").strip().lower()
+    resp = _ask("\nScale flux for distance (apparent magnitudes)? [y/N]: ").strip().lower()
     return resp in ("y", "yes")
 
 def _prompt_length(prompt: str, default_unit: str, unit_names: Tuple[str, ...], factor: float) -> float:
@@ -206,8 +212,8 @@ def collect_filter_files(
 
 
 def extract_filter_system(filter_name: str) -> str:
-    separator = "/" if "/" in filter_name else "\\"
-    return filter_name.split(separator, 1)[0]
+    """The folder a filter's name starts with; '' for a filter directly in a folder given (one system)."""
+    return filter_name.split("/", 1)[0] if "/" in filter_name else ""
 
 
 def prompt_for_filter_system(
@@ -233,7 +239,7 @@ def prompt_for_filter_system(
         print(f"  {idx}) {system} ({count} filters)")
     print("  0) All systems")
 
-    response = input("Select a filter system by number (or '0' for all): ").strip()
+    response = _ask("Select a filter system by number (or '0' for all): ").strip()
     if response.lower() in {"", "0", "all", "a", "*"}:
         return None, filter_entries
     system = {str(idx): name for idx, (name, _) in enumerate(ordered, start=1)}[response]  # else KeyError
@@ -244,7 +250,7 @@ def prompt_for_photometric_system(provided: str | None) -> str:
     if provided:
         return {"ab": "AB", "vega": "Vega"}[provided.strip().lower()]
     answers = {"": "AB", "ab": "AB", "a": "AB", "vega": "Vega", "v": "Vega"}
-    return answers[input("Compute magnitudes in the AB or Vega system? [AB/Vega]: ").strip().lower()]
+    return answers[_ask("Compute magnitudes in the AB or Vega system? [AB/Vega]: ").strip().lower()]
 
 
 def discover_vega_candidates(search_roots: Sequence[Path]) -> List[Path]:
@@ -342,7 +348,7 @@ def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = No
             continue
         try:
             for match in directory.rglob("flux_cube.bin"):
-                if match.is_file() and not is_all_axes(match):  # a split grid's all-axes cube: SEDModel reads it
+                if match.is_file() and not is_all_axes(match):  # an all-axes cube an earlier version named flux_cube.bin
                     found.add(match.resolve())
         except OSError as exc:
             logger.warning(
@@ -404,7 +410,8 @@ def prompt_for_flux_cube_path(hints: Sequence[str | os.PathLike[str]] | None = N
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Inspect and interpolate a flux cube")
     parser.add_argument("--flux-cube", help="Path to flux_cube.bin")
-    parser.add_argument("--model-dir", help="Model directory containing a flux cube", default=None)
+    parser.add_argument("--model-dir", help="Model directory containing a flux cube (its one flux_cube.bin)",
+                        default=None)
     parser.add_argument("--teff", type=float, help="Target effective temperature (K)")
     parser.add_argument("--logg", type=float, help="Target log g (dex)")
     parser.add_argument("--metallicity", type=float, help="Target metallicity [M/H] (dex)")
@@ -416,7 +423,9 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--filter-system", help="Restrict photometry to a specific filter system")
     parser.add_argument("--photometric-system", choices=["AB", "Vega", "ab", "vega"],
                         help="Photometric system for synthetic magnitudes")
-    parser.add_argument("--vega-sed", help="Path to a Vega reference spectrum (required for Vega magnitudes if no zeropoint metadata is provided)")
+    parser.add_argument("--vega-sed", help="Path to a Vega reference spectrum for Vega magnitudes; it wins over the "
+                                           "curves' zero points (header or properties.json). Without either, one is "
+                                           "searched for near the cube")
     parser.add_argument("--plot", help="Write a diagnostic plot to this path (defaults to plots/)")
     parser.add_argument("--save-sed", help="Write interpolated SED (wavelength, flux) to a text file")
     return parser
@@ -425,9 +434,11 @@ def _build_parser() -> argparse.ArgumentParser:
 def main(argv: Sequence[str] | None = None) -> int:
     args = _build_parser().parse_args(argv)
 
-    hints: List[str | os.PathLike[str]] = [args.model_dir] if args.model_dir else []
-
-    flux_cube_path = resolve_flux_cube_path(args.flux_cube) if args.flux_cube else prompt_for_flux_cube_path(hints)
+    if args.flux_cube or args.model_dir:
+        flux_cube_path = resolve_flux_cube_path(args.flux_cube or args.model_dir)
+        print(f"Using flux cube: {flux_cube_path.resolve()}")
+    else:
+        flux_cube_path = prompt_for_flux_cube_path()
     cube = FluxCube.from_file(str(flux_cube_path))
 
     teff = prompt_for_parameter("effective temperature", "K", cube.teff_grid, args.teff)
@@ -520,7 +531,8 @@ def _print_filter_photometry(
         curve = load_filter_curve(str(fpath), name)
         filters[name] = curve
         try:
-            flux_label, flux_density, magnitude = _band_magnitude(wl, flux, curve, photometric_system, ensure_vega_spec)
+            flux_label, flux_density, magnitude = _band_magnitude(wl, flux, curve, photometric_system, ensure_vega_spec,
+                                                                  given_vega=bool(args.vega_sed))
         except ValueError as exc:
             print(f"  {name:30s}  error: {exc}")
             failures.append(f"{name}: {exc}")

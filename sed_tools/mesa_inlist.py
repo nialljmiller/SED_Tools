@@ -15,6 +15,12 @@ from typing import List, Union
 from .cube.variants import _variant_paths
 
 
+def _line(name: str, path) -> str:
+    """``name = '<path>'``, an apostrophe in the path doubled, as a Fortran namelist string reads it."""
+    quoted = str(path).replace("'", "''")
+    return f"{name} = '{quoted}'"
+
+
 def mesa_inlist_lines(path: Union[str, os.PathLike]) -> List[str]:
     """The MESA colors inlist line(s) for the spectral grid or filter set in folder ``path``.
 
@@ -23,17 +29,17 @@ def mesa_inlist_lines(path: Union[str, os.PathLike]) -> List[str]:
     - Any other grid (``lookup_table.csv``) gives ``stellar_atm = '<folder>'``.
     - A filter set (the MESA index file named after its folder) gives ``instrument = '<folder>'``.
 
-    Paths are absolute, as given (symlinks are not resolved), with no trailing slash. ValueError for a folder that
-    is none of these.
+    Paths are absolute, as given (symlinks are not resolved), with no trailing slash; an apostrophe is doubled, as
+    MESA's namelist reads it. ValueError for a folder that is none of these.
     """
     folder = Path(os.path.abspath(os.path.expanduser(path)))
     if (folder / "variants_index.csv").is_file():
-        return [f"stellar_atm = '{os.path.normpath(folder / variant)}'"
+        return [_line("stellar_atm", os.path.normpath(folder / variant))
                 for variant in _variant_paths(folder / "variants_index.csv")]
     if (folder / "lookup_table.csv").is_file():
-        return [f"stellar_atm = '{folder}'"]
+        return [_line("stellar_atm", folder)]
     if (folder / folder.name).is_file():
-        return [f"instrument = '{folder}'"]
+        return [_line("instrument", folder)]
     raise ValueError(f"{folder} is neither a spectral grid (it has no lookup_table.csv) nor a filter set (it has "
                      f"no index file {folder.name}), so MESA cannot read it")
 

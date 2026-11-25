@@ -21,8 +21,9 @@ from ..grids.lookup import (
 from .collision import copy_global_config_to_model, discover_extra_axes, load_config
 from .fileio import flux_offset, read_dims, write_header
 from .variants import (_build_filtered_cube, _build_mean_cube, _group_by_extra_axes, _parameter_arrays, _print_summary,
-                       _remove_variants, _split_into_subgrids, _warn_averaged_rows)
+                       _end_split, _split_into_subgrids, _warn_averaged_rows)
 from ..grids.spectrum_io import read_text_spectrum
+from ..photometry import resample_to_grid  # noqa: F401  (every cube builder's rule; imported from here)
 
 logger = logging.getLogger(__name__)
 
@@ -31,49 +32,6 @@ SPLIT_THRESHOLD = 25
 
 
 # --- Spectra and the lookup table ---
-
-_FLUX_FLOOR = 1e-300
-
-
-def resample_to_grid(
-    wl_src:  "np.ndarray",
-    fl_src:  "np.ndarray",
-    wl_tgt:  "np.ndarray",
-) -> "np.ndarray":
-    """
-    Resample a stellar spectrum onto *wl_tgt*: the one rule every flux cube builder uses.
-
-    Inside the spectrum's wavelength coverage the flux is interpolated
-    linearly in log flux; outside it is zero. No flux is invented outside a
-    spectrum's native coverage: the bolometric integral is dominated by the
-    covered range, and a synthetic (e.g. blackbody) tail would inflate it
-    without a physically justified normalization.
-
-    Parameters
-    ----------
-    wl_src : array
-        Source wavelengths in Angstroms, must be strictly increasing.
-    fl_src : array
-        Source flux in erg/cm²/s/Å, same length as wl_src.
-    wl_tgt : array
-        Target wavelength grid in Angstroms.
-
-    Returns
-    -------
-    fl_tgt : array
-        Flux on *wl_tgt* in erg/cm²/s/Å.  Always >= 0.
-    """
-    wl_src = np.asarray(wl_src, dtype=np.float64)
-    fl_src = np.asarray(fl_src, dtype=np.float64)
-    wl_tgt = np.asarray(wl_tgt, dtype=np.float64)
-
-    log_fl = np.log10(np.maximum(fl_src, _FLUX_FLOOR))
-    in_cov = (wl_tgt >= float(wl_src[0])) & (wl_tgt <= float(wl_src[-1]))
-    fl_tgt = np.zeros(len(wl_tgt), dtype=np.float64)
-    if in_cov.any():
-        fl_tgt[in_cov] = 10.0 ** np.interp(wl_tgt[in_cov], wl_src, log_fl)
-    return fl_tgt
-
 
 def load_lookup_table(lookup_file: str) -> Dict[str, List]:
     """Every column of lookup_table.csv as {column_name: [values]}, so callers can find extra axes.
@@ -381,10 +339,10 @@ def _accumulate_spectra(
 # --- precompute_flux_cube ---
 
 def _remove_earlier_split(model_dir: str, output_file: str) -> None:
-    """Once one cube is written as the grid's own (model_dir/flux_cube.bin), remove an earlier split of the grid,
-    whose variants_index.csv would otherwise be read as the grid's cubes (cube/check.py)."""
+    """Once one cube is written as the grid's own (model_dir/flux_cube.bin), the grid is no longer split
+    (variants._end_split): its variants_index.csv would otherwise be read as the grid's cubes (cube/check.py)."""
     if os.path.abspath(output_file) == os.path.abspath(os.path.join(model_dir, "flux_cube.bin")):
-        _remove_variants(model_dir)
+        _end_split(model_dir)
 
 
 def precompute_flux_cube(

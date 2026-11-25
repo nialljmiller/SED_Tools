@@ -4,13 +4,15 @@ from __future__ import annotations
 
 import logging
 import os
+import shutil
+import tempfile
 from pathlib import Path
 from typing import List, Optional, Sequence, Union
 
 import numpy as np
 
 from .manifest import COMPONENTS_DIR, archived_bands, index_listing, is_auxiliary_path, write_filter_index
-from .curve_metadata import _read_curve, copy_filter_file, migrate_filter_file
+from .curve_metadata import _read_curve, copy_filter_file, migrate_filter_file  # noqa: F401 (star-import surface)
 from ..cube.model import FILTER_DIR_DEFAULT
 
 PathLike = Union[str, os.PathLike[str]]
@@ -135,31 +137,41 @@ def combine_filter_sets(
     without one), less its manifest's ``archived_bands``.  A curve whose name
     another curve holds is renamed, overwrites it or stops (``on_conflict``);
     run again, each curve finds its own earlier copy and adds nothing.
+    The set is assembled beside the output folder and put in its place only
+    when complete: a combine that fails leaves the output as it was.
     """
     mode = on_conflict.lower()
     root = Path(filter_root) if filter_root is not None else FILTER_DIR_DEFAULT
     output_dir = resolve_output_path(output, root, facility=facility, instrument=instrument)
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    copied: List[str] = []
-    for source in inputs:
-        for source_file in resolve_filter_sources(source, root):
-            target = output_dir / source_file.name
-            if _taken(target, source_file, copied):
-                if mode not in ("rename", "overwrite"):  # "error", or a mode that is neither
-                    raise FileExistsError(f"Filter name conflict while combining: {source_file.name}")
-                if mode == "rename":
-                    target = unique_filter_target(output_dir, source_file, copied)
-
-            if target.resolve() != source_file.resolve():
+    output_dir.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=".combine-", dir=output_dir.parent) as tmp:
+        staging = Path(tmp) / output_dir.name  # named as the output, so its index file already is
+        if output_dir.is_dir():
+            shutil.copytree(output_dir, staging, copy_function=shutil.copy2)
+        else:
+            staging.mkdir()
+        copied: List[str] = []
+        for source in inputs:
+            for source_file in resolve_filter_sources(source, root):
+                target = staging / source_file.name
+                if _taken(target, source_file, copied):
+                    if mode not in ("rename", "overwrite"):  # "error", or a mode that is neither
+                        raise FileExistsError(f"Filter name conflict while combining: {source_file.name}")
+                    if mode == "rename":
+                        target = unique_filter_target(staging, source_file, copied)
                 copy_filter_file(source_file, target)
-            else:
-                migrate_filter_file(target)
-            copied.append(target.name)
-
-    if not copied:
-        raise ValueError("No .dat filter files were found in the supplied inputs")
-
-    write_filter_index(output_dir)  # named after the folder, where MESA opens it
+                copied.append(target.name)
+        if not copied:
+            raise ValueError("No .dat filter files were found in the supplied inputs")
+        write_filter_index(staging)  # named after the folder, where MESA opens it
+        previous = Path(tmp) / ".previous"
+        if output_dir.exists():
+            output_dir.rename(previous)
+        try:
+            staging.rename(output_dir)
+        except OSError:
+            if previous.exists():
+                previous.rename(output_dir)
+            raise
     return output_dir
 

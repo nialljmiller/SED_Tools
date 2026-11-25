@@ -132,8 +132,8 @@ class NJMFilterGrabber:
     def _unavailable(self, reason) -> bool:
         reason = plain_reason(reason)
         self._pause(reason, f"NJM mirror {self.base_url} is unavailable ({reason});\n"
-                            f"  it will not be used for {NJM_PAUSE // 60} minutes, and filters come from "
-                            f"installed copies,\n  the original-source builders and SVO")
+                            f"  this run continues without it for {NJM_PAUSE // 60} minutes (filters come from "
+                            f"installed copies,\n  the original-source builders and SVO)")
         return False
 
     _pause = staticmethod(pause)

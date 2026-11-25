@@ -29,7 +29,7 @@ from .manifest import (
 )
 from .curve_metadata import SVOUnreachableError, migrate_filter_tree, svo_components_header
 from .njm import NJMFilterGrabber, curve_file
-from ..njm_mirror import NJM_NOT_LISTED, _status, cache_root
+from ..njm_mirror import NJM_NOT_LISTED, _status, cache_root, plain_reason
 from .names import (
     _adopt_claimed_svo, _drop_svo_duplicates, _instrument_metadata, _merge, _picker_entries, load_instrument_catalogue,
 )
@@ -292,7 +292,9 @@ class FilterLibrary:
         """Build the set from its original source; ``None`` once it is complete, else why it is not."""
         try:
             get_builder(ref.name)(self.root, **dict(ref.kwargs))
-        except (RequestException, OSError, RuntimeError, ValueError) as exc:
+        except RequestException as exc:
+            return plain_reason(exc)
+        except (OSError, RuntimeError, ValueError) as exc:
             return str(exc)
         return None if self.published_complete(directory) else "the builder left an incomplete set"
 
@@ -522,10 +524,25 @@ class FilterLibrary:
         roles = [r for r in requested if r in (FILTER, OPTICS, QE)]
         return not roles or all(manifest.cover(b, roles) for b in selected)
 
+    @staticmethod
+    def _missing_by_nature(directory, components, bands):
+        """Whether the installed parts give the recipe for some selected bands and the manifest declares none for
+        the others: then no source can add them (SDSS's filter-only primed bands never have optics or QE)."""
+        roles = [r for r in parse_components(components or ()) if r in (FILTER, OPTICS, QE)]
+        if not roles:
+            return False
+        declared = InstrumentManifest.load(directory)
+        installed = declared.local(directory)
+        selected = declared.primary_bands() if bands is None else list(bands)
+        return (any(installed.cover(b, roles) for b in selected)
+                and all(installed.cover(b, roles) or not declared.cover(b, roles) for b in selected))
+
     def prepare_components(self, directory, *, components=None, bands=None, allow_heavy=False):
         directory = Path(directory)
         if self.components_ready(directory, components, bands):
             return True
+        if self._missing_by_nature(directory, components, bands):
+            return False  # build_product names the bands that cannot have the recipe
         facility, instrument = directory.parent.name, directory.name
         njm_facility, njm_instrument = self._njm_spelling(facility, instrument) or (facility, instrument)
         reason = NJM_UNAVAILABLE
@@ -540,6 +557,8 @@ class FilterLibrary:
             else:
                 if self.components_ready(directory, components, bands):
                     return True
+                if self._missing_by_nature(directory, components, bands):
+                    return False
                 reason = _NJM_HAS_NO_COMPONENTS
         announce = not _njm_outage(reason)  # an outage is announced once per process by the NJM client
         ref = builder_for(facility, instrument)

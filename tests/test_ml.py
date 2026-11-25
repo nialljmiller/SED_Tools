@@ -40,7 +40,7 @@ def write_config(directory, config):
 def grid(t, teff, flux):
     """A flux cube at ``t.tmp/lib`` over ``teff`` (logg 4, [M/H] 0) and 200 wavelengths: ``flux`` is
     the (n, 1, 1, 200) array, or one value everywhere."""
-    write_flux_cube(t.tmp / "lib" / "flux_cube.bin", teff, [4.0], [0.0], WL, np.broadcast_to(flux, (2, 1, 1, 200)))
+    write_flux_cube(t.tmp / "lib" / "flux_cube.bin", teff, [4.0], [0.0], WL, np.broadcast_to(flux, (len(teff), 1, 1, 200)))
     return str(t.tmp / "lib")
 
 
@@ -399,6 +399,12 @@ def extend_catalog_extends_each_spectrum_with_its_own_parameters(t):
     assert written[["teff", "logg", "metallicity", "extra"]].values.tolist() == [
         [4500.0, 4.0, -1.0, "x"], [5800.0, 4.4, 0.0, "y"], [7200.0, 3.5, 0.3, "z"]]
     assert sorted(p.name for p in out_dir.glob("*.txt")) == names
+    # Each spectrum carries its parameters (none did, so a rebuild's lookup had no Teff column and failed)
+    from sed_tools.grids.lookup import regenerate_lookup_table
+    regenerate_lookup_table(str(out_dir))
+    rebuilt = pd.read_csv(out_dir / "lookup_table.csv", skipinitialspace=True).rename(columns=lambda c: c.lstrip("#"))
+    assert rebuilt[["file_name", "teff", "logg", "metallicity", "extended_by_ml"]].values.tolist() == [
+        ["a.txt", 4500.0, 4.0, -1.0, True], ["b.txt", 5800.0, 4.4, 0.0, True], ["c.txt", 7200.0, 3.5, 0.3, False]]
 
 
 @row
@@ -421,11 +427,12 @@ def auto_trainer_saves_a_model_sedgenerator_and_the_api_load(t):
     assert sorted(config) == ["architecture", "framework", "model_type", "parameter_ranges",
                               "scaler_params", "training_params", "version", "wavelength_grid"]
     assert (config["model_type"], config["version"], config["framework"]) == ("sed_generator", "1.0.0", "pytorch")
-    # The scalers are those of SEDGenerator's own preparation of the cube (11 usable spectra)
+    # The scalers are those of SEDGenerator's own preparation of the cube: all 12 spectra (fid18917 lacks the
+    # cube's last wavelength, a zero there, and was left out until zeros were accepted)
     reference = mg.SEDGenerator()
     params, flux, masks = reference._prepare_training_data(str(kurucz_library), 10000)
     reference._normalise_training_data(params, flux, masks, str(kurucz_library))
-    assert len(params) == 11
+    assert len(params) == 12
     assert config["scaler_params"] == pytest.approx(reference.scaler_params, rel=1e-6)
     assert [m["name"] for m in mg.SEDGenerator.list_models(str(output.parent))] == ["auto"]
 
@@ -503,6 +510,29 @@ def generate_check_bounds_prints_each_out_of_range_parameter(t):
     assert "Warning: Teff=9000 outside range [4000, 7000]" in out
     assert "Warning: logg=5.50 outside range [3.50, 5.00]" in out
     assert "Warning: [M/H]=0.60 outside range [-1.00, 0.50]" in out
+
+
+@row
+def a_constant_training_axis_is_ignored_and_non_finite_flux_is_refused(t):
+    # A grid with log g 0 throughout stored logg_std 1e-8, so log g 4.5 became 4.5e8 and the flux inf;
+    # densify and extend_catalog then wrote it and reported success.
+    from sed_tools.ml.common import param_scaler
+
+    torch = cpu_torch(t)
+    assert param_scaler(np.array([[5000.0, 0.0, 0.1], [6000.0, 0.0, 0.1]]))["logg_std"] == 0.0
+    generator = fixed_generator(torch)
+    generator.scaler_params.update(logg_mean=0.0, logg_std=1e-8)  # as a model saved before 0.7.0 holds it
+    flux = generator.generate(6000.0, 4.5, 0.0, check_bounds=False)[1]
+    np.testing.assert_array_equal(flux, generator.generate(6000.0, 0.0, 0.0, check_bounds=False)[1])
+    assert np.all(np.isfinite(flux))
+    generator.scaler_params["flux_log_std"] = 1e6  # a prediction that overflows
+    with pytest.raises(ValueError, match="flux at Teff=6000, logg=4.5, .M/H.=0 is not finite"):
+        generator.generate(6000.0, 4.5, 0.0, check_bounds=False)
+    completer = fixed_completer(torch)
+    completer.scaler_params["ext_log_std"] = 1e6
+    wl = np.logspace(np.log10(3000.0), np.log10(20000.0), 300)
+    with pytest.raises(ValueError, match="is not finite at"):
+        completer.complete_sed(wl, mc.planck_function(wl, 5800.0), 5800.0, 4.4, 0.1, extension_range=(500.0, 6e4))
 
 
 # ======================================================================
@@ -643,12 +673,16 @@ def completer_prepare_training_data_warns_how_many_spectra_it_dropped(t):
 
 @row
 def generator_prepare_training_data_warns_how_many_spectra_it_dropped(t):
-    flux = np.full((2, 1, 1, 200), 1e-10)
+    # A zero is a real value (cubes store zero samples as they are since Q12): the 5000 K spectrum with zeros is
+    # kept, its zeros left out of the loss; it was dropped (Nill, 25 Nov 2026: "accept zeros, skip negatives").
+    flux = np.full((3, 1, 1, 200), 1e-10)
     flux[0, 0, 0, 5] = np.nan
-    params, _, _ = mg.SEDGenerator()._prepare_training_data(grid(t, [4000.0, 5000.0], flux), 2)
+    flux[1, 0, 0, :5] = 0.0
+    flux[2, 0, 0, 5] = -1e-20
+    params, _, masks = mg.SEDGenerator()._prepare_training_data(grid(t, [4000.0, 5000.0, 6000.0], flux), 3)
 
-    assert params[:, 0].tolist() == [5000.0]
-    assert "dropped 1 of 2 sampled spectra (1 with non-positive or non-finite flux)" in t.caplog.text
+    assert params[:, 0].tolist() == [5000.0] and 0 < masks.mean() < 1
+    assert "dropped 2 of 3 sampled spectra (2 with negative or non-finite flux)" in t.caplog.text
 
 
 @row
@@ -775,7 +809,9 @@ def extend_menu(t, *answers):
 def extend_menu_defaults_to_the_models_own_range(t):
     ranges = extend_menu(t, "2", "1", "1", "", "", "")
     assert ranges == [(100.0, 100000.0)]
-    assert "the model covers 100-100000 Å" in t.capsys.readouterr().out
+    out = t.capsys.readouterr().out
+    assert "the model covers 100-100000 Å" in out
+    assert "\nAvailable trained completer models:\n" in out  # it said "spectral grids"
 
 
 @row

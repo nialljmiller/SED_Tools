@@ -17,12 +17,15 @@ import re
 import tarfile
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
-from typing import Callable, Dict, Mapping, Optional, Sequence, Tuple, Union
+from typing import TYPE_CHECKING, Callable, Dict, Mapping, Optional, Sequence, Tuple, Union
 
 import numpy as np
 
 from ..filters.compose import InstrumentManifest, add_component, parse_components, recipe_name
 from ..filters.curve_metadata import DETECTOR_TYPES, write_filter_file
+
+if TYPE_CHECKING:  # _common imports this module
+    from ._common import SiteAtmosphere
 
 logger = logging.getLogger(__name__)
 

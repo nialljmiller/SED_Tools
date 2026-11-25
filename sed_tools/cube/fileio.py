@@ -1,16 +1,22 @@
-"""flux_cube.bin in its two formats.
+"""The flux cube in its two formats: flux_cube.bin (3-axis) and flux_cube_nd.bin (all-axes).
 
-3-axis (every grid's cube, and each variant's of a split grid): four int32 axis lengths (Teff, log g, [M/H],
+3-axis, flux_cube.bin (every grid's cube, and each variant's of a split grid; MESA reads it): four int32 axis lengths (Teff, log g, [M/H],
 wavelength), the four float64 axes, then the float64 flux in (wavelength, [M/H], log g, Teff) order with Teff varying
 fastest, as MESA reads it.
 
-All-axes (the top folder of a split grid, one cube for every variant), little-endian: int32 -1 (where a 3-axis cube
-holds its Teff count, at least 1), the magic ``FLUXCUBE``, int32 version 1, int32 P (parameter axes, wavelength not
-counted), int32 n_1..n_P and n_wavelength, int32 kind_1..kind_P (0 numeric, 1 text), the P names (32 bytes each,
-space-padded UTF-8), the labels of each text axis in axis order (32 bytes each), the float64 axes one after another
-(a text axis stores 0..n-1), the float64 wavelengths, then the flux: one block per combination of the extra axes
-(4..P, axis 4 varying fastest), each laid out exactly as a 3-axis cube's flux on axes 1-3 (Teff, log g, [M/H]).
-A node no spectrum fills is zero.
+All-axes, flux_cube_nd.bin (the top folder of a split grid, one cube for every variant; MESA does not read it, and a
+split grid's top folder holds no flux_cube.bin), little-endian: int32 -1 (where a 3-axis cube holds its Teff count,
+at least 1), the magic ``FLUXCUBE``, int32 version 3, int32 P (parameter axes, wavelength not counted), int32 W (the
+bytes each name and label takes), int32 n_1..n_P and n_wavelength, int32 kind_1..kind_P (0 numeric, 1 text), the P
+names (W bytes each, space-padded UTF-8), the labels of each text axis in axis order (W bytes each), the float64 axes
+one after another
+(a text axis stores 0..n-1), the float64 wavelengths, then the flux: one spectrum per node, each stored whole
+(wavelength varying fastest), the nodes in the order (n_P, ..., n_4, [M/H], log g, Teff) with Teff varying fastest.
+One evaluation therefore reads only its neighbouring nodes' spectra. A node no spectrum fills is zero.
+Version 2 (24 Nov 2026) has the same header but stores the flux as a 3-axis cube's, one block per combination of the
+extra axes (axis 4 varying fastest), each in (wavelength, [M/H], log g, Teff) order; version 1 (19-24 Nov 2026,
+written as a split grid's top flux_cube.bin) is version 2 without W, taking 32 bytes per name and label. Both are
+still read.
 
 Each reader checks a short or corrupt file itself.
 """
@@ -22,10 +28,11 @@ from typing import Dict, List
 
 import numpy as np
 
+ALL_AXES_NAME = "flux_cube_nd.bin"
 ALL_AXES_MARKER = -1
 MAGIC = b"FLUXCUBE"
-VERSION = 1
-NAME_BYTES = 32
+VERSION = 3
+NAME_BYTES_V1 = 32
 NUMERIC, TEXT = 0, 1
 
 
@@ -84,17 +91,21 @@ def write_header(fh, teff, logg, meta, wavelengths):
 class CubeHeader:
     """A flux cube's axes: ``names`` and ``axes`` of its P parameter axes (teff, logg, meta, then a split grid's
     extra axes), ``labels`` {axis number: its text values} for a text axis, the wavelengths, and where the flux
-    starts. ``shape`` is the flux as stored, in C order: (n_P, ..., n_4, n_wavelength, n_meta, n_logg, n_teff)."""
+    starts. ``shape`` is the flux as stored, in C order: (n_P, ..., n_4, n_meta, n_logg, n_teff, n_wavelength) for
+    version 3, and (n_P, ..., n_4, n_wavelength, n_meta, n_logg, n_teff) for a 3-axis cube and versions 1 and 2."""
     names: List[str]
     axes: List[np.ndarray]
     wavelengths: np.ndarray
     offset: int
     labels: Dict[int, List[str]] = field(default_factory=dict)
     all_axes: bool = False
+    version: int = 0
 
     @property
     def shape(self):
         n = [len(axis) for axis in self.axes]
+        if self.version >= 3:
+            return (*n[:2:-1], n[2], n[1], n[0], len(self.wavelengths))
         return (*n[:2:-1], len(self.wavelengths), n[2], n[1], n[0])
 
 
@@ -120,18 +131,19 @@ def read_header(path) -> CubeHeader:
         if len(fixed) != 16 or fixed[:8] != MAGIC:
             raise ValueError(f"{path} starts as an all-axes flux cube but has no {MAGIC.decode()} header")
         version, p = struct.unpack("<2i", fixed[8:])
-        if version != VERSION or p < 3:
+        if version not in (1, 2, VERSION) or p < 3:
             raise ValueError(f"{path}: all-axes flux cube version {version} with {p} axes is not one this reads")
+        width = NAME_BYTES_V1 if version == 1 else int(np.fromfile(fh, dtype="<i4", count=1).sum())
         counts = np.fromfile(fh, dtype="<i4", count=2 * p + 1)
-        if len(counts) != 2 * p + 1 or counts[:p + 1].min() < 1:
-            raise ValueError(f"{path}: the all-axes header is truncated or gives an empty axis")
+        if len(counts) != 2 * p + 1 or counts[:p + 1].min() < 1 or width < 1:
+            raise ValueError(f"{path}: the all-axes header is truncated or gives an empty axis or name")
         n, nw, kinds = [int(c) for c in counts[:p]], int(counts[p]), [int(k) for k in counts[p + 1:]]
-        names = [_text(fh.read(NAME_BYTES)) for _ in range(p)]
-        labels = {k: [_text(fh.read(NAME_BYTES)) for _ in range(n[k])] for k in range(p) if kinds[k] == TEXT}
+        names = [_text(fh.read(width)) for _ in range(p)]
+        labels = {k: [_text(fh.read(width)) for _ in range(n[k])] for k in range(p) if kinds[k] == TEXT}
         axes = [np.fromfile(fh, dtype="<f8", count=count) for count in n]
         wavelengths = np.fromfile(fh, dtype="<f8", count=nw)
         offset = fh.tell()
-    header = CubeHeader(names, axes, wavelengths, offset, labels, all_axes=True)
+    header = CubeHeader(names, axes, wavelengths, offset, labels, all_axes=True, version=version)
     expected = offset + 8 * int(np.prod(header.shape, dtype=np.int64))
     if len(wavelengths) != nw or size != expected:
         raise ValueError(f"{path}: {size} bytes, but its all-axes header gives {expected}")
@@ -140,20 +152,13 @@ def read_header(path) -> CubeHeader:
 
 def write_all_axes_header(fh, names, axes, labels, wavelengths) -> None:
     """The header of an all-axes cube: ``names`` and ``axes`` of its parameter axes, ``labels`` {axis number: text
-    values} for each text axis (whose axis is then 0..n-1), and the wavelengths. ValueError for a name or label
-    longer than NAME_BYTES."""
-    p = len(names)
-
-    def fixed(text):
-        raw = str(text).encode("utf-8")
-        if len(raw) > NAME_BYTES:
-            raise ValueError(f"'{text}' is longer than the {NAME_BYTES} bytes an all-axes flux cube stores")
-        return raw.ljust(NAME_BYTES, b" ")
-
-    fh.write(struct.pack("<i", ALL_AXES_MARKER) + MAGIC + struct.pack("<2i", VERSION, p))
-    np.array([*map(len, axes), len(wavelengths)] + [TEXT if k in labels else NUMERIC for k in range(p)],
+    values} for each text axis (whose axis is then 0..n-1), and the wavelengths. Each name and label takes as many
+    bytes as the longest."""
+    texts = [str(text).encode("utf-8") for text in (*names, *(label for k in sorted(labels) for label in labels[k]))]
+    width = max(map(len, texts))
+    fh.write(struct.pack("<i", ALL_AXES_MARKER) + MAGIC + struct.pack("<3i", VERSION, len(names), width))
+    np.array([*map(len, axes), len(wavelengths)] + [TEXT if k in labels else NUMERIC for k in range(len(names))],
              dtype="<i4").tofile(fh)
-    fh.write(b"".join(fixed(name) for name in names))
-    fh.write(b"".join(fixed(label) for k in sorted(labels) for label in labels[k]))
+    fh.write(b"".join(text.ljust(width, b" ") for text in texts))
     for axis in (*axes, wavelengths):
         np.asarray(axis, dtype="<f8").tofile(fh)

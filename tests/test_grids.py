@@ -454,21 +454,29 @@ def _unknown_unit(t, how):
 def cli_import_asks_for_the_flux_unit_and_passes_it_on(t):
     src = _grid(t.tmp / "mine")
     calls = []
-    t.mp.setattr("sed_tools.api.SED.import_grid", lambda *a, **k: calls.append(k))
+    dest = t.tmp / "models" / "mine"
+    t.mp.setattr("sed_tools.api.SED.import_grid", lambda *a, **k: calls.append(k) or {"dest": str(dest)})
     _terminal(t, str(src), "", "n", "flam")
+    dest.mkdir(parents=True)
+    (dest / "lookup_table.csv").write_text("file_name,teff\n")
     cli.run_import_flow(base_dir=str(t.tmp / "models"))
     assert calls[0]["flux_unit"] == "flam"
+    assert f"stellar_atm = '{dest}'" in t.capsys.readouterr().out  # as every other build prints it
 
 
 @row
 def cli_import_command_asks_on_a_terminal_and_not_for_a_dry_run(t):
     src = _grid(t.tmp / "mine")
     calls = []
-    t.mp.setattr("sed_tools.api.SED.import_grid", lambda *a, **k: calls.append(k))
+    dest = t.tmp / "models" / "mine"
+    dest.mkdir(parents=True)
+    (dest / "lookup_table.csv").write_text("file_name,teff\n")
+    t.mp.setattr("sed_tools.api.SED.import_grid", lambda *a, **k: calls.append(k) or {"dest": str(dest)})
     prompts = _terminal(t, "fnu")
     for extra in ([], ["--dry-run"]):
         t.mp.setattr(sys, "argv", ["sed-tools", "import", "--path", str(src), "--base", str(t.tmp / "models")] + extra)
         assert cli.main() == 0
+        assert (f"stellar_atm = '{dest}'" in t.capsys.readouterr().out) == (not extra)  # the MESA path, once built
     assert [c["flux_unit"] for c in calls] == ["fnu", None]
     assert len(prompts) == 1
 
@@ -735,6 +743,7 @@ def a_whole_grid_copied_without_its_times_is_cut_as_it_stands(t):
     sed = SED.fetch(GRID, source="njm", model_root=t.tmp / "b", teff_min=5900, teff_max=6100)
     assert digests(folder) == before  # no lookup table, bundle or cube rewritten
     assert server.spectra_requested() == [] and len(sed.grid) == 4
+    assert sed(6000.0, 4.0, 0.0).flux.any()  # SED.fetch's return used to have no model to call
     out = t.capsys.readouterr().out
     assert "[fetch] 4 already present, 0 downloaded" in out
     assert "nothing was downloaded or rewritten" in " ".join(out.split())
@@ -749,9 +758,21 @@ def grids_no_cube_on_a_grid_copied_without_its_times_exits_0(t):
     # The re-check's command, which 0.4.1 runs with exit 0 on such a copy
     assert run_cli(t.mp, "grids", "--source", "njm", "--grids", GRID, "--no-cube", "--base", str(t.tmp / "b")) == 0
     assert (folder / "flux_cube.bin").read_bytes() == cube
-    assert run_cli(t.mp, "grids", "--source", "njm", "--grids", GRID, "--no-cube", "--no-h5",
-                   "--base", str(t.tmp / "b")) == 0
     assert "HDF5 bundle   : Kurucz2003all.h5 (exists)" in t.capsys.readouterr().out
+
+
+@row
+def grids_keeps_a_bundle_that_holds_every_spectrum(t):
+    # sed-tools grids (without the --no-h5 it no longer has, Q10) rewrote the bundle on every run, with everything
+    # present (notebooks review, 24 Nov 2026).
+    njm_grids(t)
+    bundle = t.tmp / GRID / f"{GRID}.h5"
+    assert run_cli(t.mp, "grids", "--source", "njm", "--grids", GRID, "--base", str(t.tmp)) == 0
+    before = (bundle.read_bytes(), bundle.stat().st_mtime_ns)
+    t.capsys.readouterr()
+    assert run_cli(t.mp, "grids", "--source", "njm", "--grids", GRID, "--base", str(t.tmp)) == 0
+    assert (bundle.read_bytes(), bundle.stat().st_mtime_ns) == before
+    assert f"HDF5 bundle   : {GRID}.h5 (exists)" in t.capsys.readouterr().out
 
 
 @row
@@ -868,11 +889,11 @@ def grids_after_a_selection_rebuilds_or_says_why_it_did_not(t):
     assert run_cli(t.mp, "grids", "--grids", GRID, "--source", "njm", "--base", base, "--teff", "5900", "6100") == 0
     assert list(_read_flux_cube_header(folder / "flux_cube.bin")["teff"]) == [6000.0]
     # The rest, without a cube build: the selection's cube is not taken for the whole grid's.
-    assert run_cli(t.mp, "grids", "--grids", GRID, "--source", "njm", "--base", base, "--no-h5", "--no-cube") == 1
+    assert run_cli(t.mp, "grids", "--grids", GRID, "--source", "njm", "--base", base, "--no-cube") == 1
     err = " ".join(t.capsys.readouterr().err.split())
     assert "flux_cube.bin does not include 8 of the 12 spectra beside it" in err
     assert f"Rebuild it with: sed-tools rebuild --grids {GRID} --base {base}" in err
-    with h5py.File(folder / f"{GRID}.h5", "r") as bundle:  # rebuilt although --no-h5: it lacked the rest
+    with h5py.File(folder / f"{GRID}.h5", "r") as bundle:  # rebuilt: it lacked the rest
         assert len(bundle["spectra"]) == 12
     assert run_cli(t.mp, "grids", "--grids", GRID, "--source", "njm", "--base", base) == 0
     assert list(_read_flux_cube_header(folder / "flux_cube.bin")["teff"]) == [5750.0, 6000.0, 6250.0]
@@ -917,8 +938,8 @@ SSAP_QUERY = f"{SSAP}?model=Grid&REQUEST=queryData&FORMAT=votable"
 SVO_MODELS = f"{SVO_INDEX}?models=Grid"
 SVO_SPECTRUM = "# teff = 5000\n# logg = 4.5\n" + "".join(f"{wl} 1.0e-10\n" for wl in range(1000, 1100))
 FID_CACHE = Path(".cache") / "svo_fids" / "Grid.json"
-MSG_INDEX = "http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids"
-MSG_FILE = "http://user.astro.wisc.edu/msg/grids/sg-Test.h5"
+MSG_INDEX = "https://madstar.richtownsend.dev/static.php?ref=msg-grids"  # the wisc.edu page redirects here (Nov 2026)
+MSG_FILE = "https://madstar.richtownsend.dev/resource/download/msg/grids/Test/sg-Test.h5"
 GRABBERS = {"njm": lambda root: njm.NJMSpectraGrabber(base_dir=root),
             "svo": lambda root: svo.SVOSpectraGrabber(base_dir=root),
             "msg": lambda root: msg.MSGSpectraGrabber(base_dir=root, max_workers=1)}
@@ -1227,6 +1248,20 @@ def msg_metadata_raises_for_unknown_grid_and_failed_download(t):
 
 
 @row
+def msg_discovery_takes_the_newest_version_of_a_grid(t):
+    # MSG's index links a grid's old versions beside its current one, and discovery kept the last link, an old
+    # version (CAP18 v1, Goettingen v2; review 24 Nov 2026). Nill, 25 Nov: "pick the newest".
+    base = MSG_FILE.rsplit("/", 2)[0]
+    page = "".join(f'<tr><td><a href="{base}/{current}/sg-{name}.h5">sg-{name}.h5</a></td><td>v{n}</td><td>'
+                   + "".join(f'<a href="{base}/{name}/v{k}/sg-{name}.h5">v{k}</a>' for k in old) + "</td></tr>"
+                   for name, current, n, old in (("A", "A", 2, [1]), ("B", "B/v3", 3, [2, 1]), ("C", "C", 1, [])))
+    grabber, _ = _grabber(t, "msg", {MSG_INDEX: f"<table>{page}</table>"})
+    assert grabber.discover_models() == ["sg-A", "sg-B", "sg-C"]
+    assert grabber.model_urls == {"sg-A": f"{base}/A/sg-A.h5", "sg-B": f"{base}/B/v3/sg-B.h5",
+                                  "sg-C": f"{base}/C/sg-C.h5"}
+
+
+@row
 def msg_metadata_raises_for_unreadable_or_empty_file(t):
     grabber, _ = _grabber(t, "msg")
     grabber.model_urls["sg-Test"] = MSG_FILE
@@ -1480,10 +1515,19 @@ def mast_unreadable_download_script_raises(t):
 
 
 @row
-def mast_metallicity_prompt_takes_the_values_typed(t):
-    grabber = mast.MASTSpectraGrabber(base_dir=str(t.tmp), session=Routes({}))
-    t.mp.setattr("builtins.input", lambda prompt: "-1.0, +0.25,")
-    assert grabber.get_model_metadata("BOSZ-2024-r1000")["metals"] == ["m-1.00", "m+0.25"]
+def mast_asks_for_metallicities_only_at_a_terminal_and_without_meta_range(t):
+    # It asked in get_model_metadata, before the cuts: --meta did not stop it, and without a terminal the
+    # download failed on EOF, leaving an empty grid folder.
+    grabber = _bosz(t, {bosz_url(5750): bosz_resam(12)})
+    t.mp.setattr("sys.stdin", SimpleNamespace(isatty=lambda: True))
+    answer(t.mp)  # a question fails the row
+    info = grabber.get_model_metadata("BOSZ-2024-r1000")
+    assert grabber.download_model_spectra("BOSZ-2024-r1000", info, meta_range=(0.0, 0.0)) == 1
+    answer(t.mp, "-1.0, +0.25,")
+    assert mast._ask_metals(info["metals"]) == ["m-1.00", "m+0.25"]
+    t.mp.setattr("sys.stdin", SimpleNamespace(isatty=lambda: False))
+    answer(t.mp)
+    assert mast._ask_metals(info["metals"]) == info["metals"] == mast.METALS
 
 
 @row

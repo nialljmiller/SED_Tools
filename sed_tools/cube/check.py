@@ -16,9 +16,9 @@ from .variants import _variant_paths
 def _flux_cube_file(model_dir: Path) -> Optional[Path]:
     """The grid's flux cube: ``variants_index.csv`` (one cube per variant), else ``flux_cube.bin``, else None.
 
-    A split grid's top-level flux_cube.bin is its all-axes cube, assembled from the variant cubes (one an earlier
-    version left there is not the grid's cube either), so it is never compared with the grid's spectra; each
-    variant's cube is.
+    A split grid's all-axes flux_cube_nd.bin is assembled from the variant cubes, and a flux_cube.bin an earlier
+    version left at its top is not the grid's cube, so neither is compared with the grid's spectra; each variant's
+    cube is.
     """
     for name in ("variants_index.csv", "flux_cube.bin"):
         if (Path(model_dir) / name).is_file():
