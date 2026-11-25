@@ -834,6 +834,21 @@ def extend_catalog_keeps_every_sample_of_the_kurucz_grid(t):
         assert extended[0, 0] == pytest.approx(100.0)
         assert extended[-1, 0] == original[-1, 0] == 1.6e6
 
+    # A model saved without its input window (no 'regions' in config.json) loads with the central one
+    config = json.loads((t.tmp / "model" / "config.json").read_text())
+    stored = config.pop("regions")
+    assert stored == {"known_start": 300, "known_end": 700, "known_width": 400}
+    (t.tmp / "model" / "config.json").write_text(json.dumps(config))
+    loaded = mc.SEDCompleter(t.tmp / "model")
+    assert (loaded._known_start, loaded._known_end, loaded._known_width) == (300, 700, 400)
+    # The inference plot: nothing for no examples; one example leaves the other two panels empty
+    loaded.plot_inference_examples([], str(t.tmp / "plots"))
+    assert not (t.tmp / "plots").exists()
+    (t.tmp / "plots").mkdir()
+    wl = np.logspace(3, 4, 20)
+    loaded.plot_inference_examples([("a.txt", wl, wl ** -2, wl, wl ** -2)], str(t.tmp / "plots"), "one.png")
+    assert [p.name for p in (t.tmp / "plots").iterdir()] == ["one.png"]
+
 
 @row
 def complete_sed_keeps_samples_outside_a_narrower_range(t):
