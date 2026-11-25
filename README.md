@@ -111,7 +111,7 @@ Please cite the archived release through Zenodo, using the concept DOI, which
 covers all versions and resolves to the latest:
 [10.5281/zenodo.18321943](https://doi.org/10.5281/zenodo.18321943).
 
-Version 0.6.0: [10.5281/zenodo.24117340](https://doi.org/10.5281/zenodo.24117340)
+A version-specific Zenodo DOI for Version 0.7.0 will be added following archival of this release.
 
 Metadata are in [`CITATION.cff`](https://github.com/nialljmiller/SED_Tools/blob/main/CITATION.cff).
 SED_Tools is the data-preparation pipeline for MESA's `colors` module

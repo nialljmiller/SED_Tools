@@ -46,7 +46,7 @@ from .grids.lookup import regenerate_lookup_table
 from .grids.svo import SVOSpectraGrabber
 from .mesa_inlist import mesa_inlist_lines
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 
 def list_txt_spectra(model_dir: str) -> list[str]:
