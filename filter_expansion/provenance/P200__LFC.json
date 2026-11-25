@@ -1,0 +1,24 @@
+{
+ "facility": "P200",
+ "instrument": "LFC",
+ "bands": {
+  "sdss_i_filter": {
+   "cleaning": "Components filter (was filter+instrument in the manifest): the publisher's i_prime.txt (LFC cookbook) equals the curve; SVO's Description says filter only (Nill, 25 Nov 2026, Q33)."
+  },
+  "sdss_u_filter": {
+   "cleaning": "Components filter (was filter+instrument in the manifest): the publisher's u_prime.txt (LFC cookbook) equals the curve; SVO's Description says filter only (Nill, 25 Nov 2026, Q33)."
+  },
+  "Halpha": {
+   "cleaning": "Components filter+instrument (was filter in the manifest, filter in the header): SVO's Description says filter+ccd; the curve divided by Halpha_filter is a constant 0.87, as a QE over a narrow band (Nill, 25 Nov 2026, Q33)."
+  },
+  "SII": {
+   "cleaning": "Components filter+instrument (was filter in the manifest, filter in the header): SVO's Description says filter+ccd; the curve divided by SII_filter is a constant 0.87, as a QE over a narrow band (Nill, 25 Nov 2026, Q33)."
+  },
+  "Is": {
+   "cleaning": "Components filter+instrument (was filter in the manifest, filter in the header): SVO's Description says filter+ccd; the curve divided by Is_filter is 0.39-0.82, as a QE (Nill, 25 Nov 2026, Q33)."
+  },
+  "Rs": {
+   "cleaning": "Components filter+instrument (was filter in the manifest, filter in the header): SVO's Description says filter+ccd; the curve divided by Rs_filter is 0.77-0.88, as a QE (Nill, 25 Nov 2026, Q33)."
+  }
+ }
+}

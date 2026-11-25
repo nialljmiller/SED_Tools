@@ -1,0 +1,18 @@
+{
+ "facility": "Misc",
+ "instrument": "APASS",
+ "bands": {
+  "B": {
+   "cleaning": "Components filter+instrument (was filter in the manifest): byte-identical to GCPD/Johnson B_Landolt, which SVO gives as Filter + Instrument; the manifest's 'filter' was assumed (Nill, 25 Nov 2026, Q33)."
+  },
+  "V": {
+   "cleaning": "Components filter+instrument (was filter in the manifest): identical to GCPD/Johnson V_Landolt, which SVO gives as Filter + Instrument; the manifest's 'filter' was assumed (Nill, 25 Nov 2026, Q33)."
+  },
+  "sdss_i": {
+   "cleaning": "Components filter+instrument+atmosphere (was filter in the manifest): byte-identical to SLOAN/SDSS i, which SVO gives as Filter + Instrument + Atmosphere; the manifest's 'filter' was assumed (Nill, 25 Nov 2026, Q33)."
+  },
+  "sdss_z": {
+   "cleaning": "Components filter+instrument+atmosphere (was filter in the manifest): equal to SLOAN/SDSS z (float32 copy), which SVO gives as Filter + Instrument + Atmosphere; the manifest's 'filter' was assumed (Nill, 25 Nov 2026, Q33)."
+  }
+ }
+}

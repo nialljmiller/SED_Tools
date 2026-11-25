@@ -1,0 +1,15 @@
+{
+ "facility": "WIYN",
+ "instrument": "NESSI",
+ "bands": {
+  "NB467_filter": {
+   "cleaning": "Components filter (was filter+qe in the manifest): SVO's Description says filter only, and the full curve is this one times a QE-like factor (publisher page offline, not verified against it) (Nill, 25 Nov 2026, Q33)."
+  },
+  "NB562_filter": {
+   "cleaning": "Components filter (was filter+qe in the manifest): SVO's Description says filter only, and the full curve is this one times a QE-like factor (publisher page offline, not verified against it) (Nill, 25 Nov 2026, Q33)."
+  },
+  "NB716_filter": {
+   "cleaning": "Components filter (was filter+qe in the manifest): SVO's Description says filter only, and the full curve is this one times a QE-like factor (publisher page offline, not verified against it) (Nill, 25 Nov 2026, Q33)."
+  }
+ }
+}

@@ -1,0 +1,9 @@
+{
+ "facility": "CFHT",
+ "instrument": "Megaprime",
+ "bands": {
+  "Halpha_off_old": {
+   "cleaning": "Components filter+optics+qe+instrument (was none in the manifest, none in the header): the curve divided by Halpha_off_old_fil equals NJM's optics times QE components (0.560-0.563), as for its siblings; SVO's sibling records say Filter + CCD + Instrument + Other optical components (Nill, 25 Nov 2026, Q33)."
+  }
+ }
+}

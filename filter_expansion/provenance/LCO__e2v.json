@@ -1,0 +1,19 @@
+{
+ "facility": "LCO",
+ "instrument": "e2v",
+ "bands": {
+  "B": {
+   "cleaning": "Components filter+optics+qe+atmosphere (was filter+qe+atmosphere in the manifest): CSP's file *_CSP2_tel_ccd_atm_ext_1.2.dat (telescope, CCD, atmosphere) equals the curve, as the header says (Nill, 25 Nov 2026, Q33)."
+  },
+  "g": {
+   "cleaning": "Components filter+optics+qe+atmosphere (was filter+qe+atmosphere in the manifest): CSP's file *_CSP2_tel_ccd_atm_ext_1.2.dat (telescope, CCD, atmosphere) equals the curve, as the header says (Nill, 25 Nov 2026, Q33)."
+  },
+  "r": {
+   "cleaning": "Components filter+optics+qe+atmosphere (was filter+qe+atmosphere in the manifest): CSP's file *_CSP2_tel_ccd_atm_ext_1.2.dat (telescope, CCD, atmosphere) equals the curve, as the header says (Nill, 25 Nov 2026, Q33)."
+  },
+  "i": {
+   "cleaning": "Replaced by the publisher's (CSP) i curve, i_CSP2_tel_ccd_atm_ext_1.2.dat (telescope, CCD and atmosphere at airmass 1.2; CSP gives its effective wavelength as 7573.8 A). The curve served before, like SVO's record LCO/e2v.i (captures of 2026-06-06 and 2026-10-28), held CSP's r curve (r_CSP2_tel_ccd_atm_ext_1.2.dat) at another decimal precision (Nill, 25 Nov 2026: \"Replace with the real i\").",
+   "sources": "https://csp.obs.carnegiescience.edu/data/i_CSP2_tel_ccd_atm_ext_1.2.dat"
+  }
+ }
+}

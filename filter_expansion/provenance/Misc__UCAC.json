@@ -1,0 +1,15 @@
+{
+ "facility": "Misc",
+ "instrument": "UCAC",
+ "bands": {
+  "B": {
+   "cleaning": "Components filter+instrument (was filter in the manifest): byte-identical to GCPD/Johnson B_Landolt, which SVO gives as Filter + Instrument; the manifest's 'filter' was assumed (Nill, 25 Nov 2026, Q33)."
+  },
+  "sdss_g": {
+   "cleaning": "Components filter+instrument+atmosphere (was filter in the manifest): equal to SLOAN/SDSS g (float32 copy), which SVO gives as Filter + Instrument + Atmosphere; the manifest's 'filter' was assumed (Nill, 25 Nov 2026, Q33)."
+  },
+  "sdss_r": {
+   "cleaning": "Components filter+instrument+atmosphere (was filter in the manifest): byte-identical to SLOAN/SDSS r, which SVO gives as Filter + Instrument + Atmosphere; the manifest's 'filter' was assumed (Nill, 25 Nov 2026, Q33)."
+  }
+ }
+}

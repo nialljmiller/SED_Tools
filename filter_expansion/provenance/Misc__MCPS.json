@@ -1,0 +1,9 @@
+{
+ "facility": "Misc",
+ "instrument": "MCPS",
+ "bands": {
+  "B": {
+   "cleaning": "Components filter+instrument (was filter in the manifest): byte-identical to GCPD/Johnson B_Straizys, which SVO gives as Filter + Instrument; the manifest's 'filter' was assumed (Nill, 25 Nov 2026, Q33)."
+  }
+ }
+}

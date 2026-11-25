@@ -1,0 +1,74 @@
+{
+ "facility": "IRTF",
+ "instrument": "NSFCam",
+ "bands": {
+  "BRG": {
+   "cleaning": "Cut at 6 um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive (647 samples beyond it removed). (IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/; Nill, 25 Nov 2026)",
+   "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_brg_trans.dat"
+  },
+  "CO": {
+   "cleaning": "IRTF's scan with the PK50 blocker (nsfcam_coblka_trans.dat) is served: IRTF uses this filter with the uncoated PK50 blocker to suppress long-wavelength red leaks and publishes both scans. Cut at 6 um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive (647 samples beyond it removed). (IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/; Nill, 25 Nov 2026)",
+   "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_coblka_trans.dat"
+  },
+  "CONT": {
+   "cleaning": "IRTF's scan with the PK50 blocker (nsfcam_contblka_trans.dat) is served: IRTF uses this filter with the uncoated PK50 blocker to suppress long-wavelength red leaks and publishes both scans. Cut at 6 um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive (647 samples beyond it removed). (IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/; Nill, 25 Nov 2026)",
+   "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_contblka_trans.dat"
+  },
+  "FE": {
+   "cleaning": "IRTF's scan with the PK50 blocker (nsfcam_feblka_trans.dat) is served: IRTF uses this filter with the uncoated PK50 blocker to suppress long-wavelength red leaks and publishes both scans. Cut at 6 um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive (647 samples beyond it removed). (IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/; Nill, 25 Nov 2026)",
+   "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_feblka_trans.dat"
+  },
+  "H21": {
+   "cleaning": "IRTF's scan with the PK50 blocker (nsfcam_h21blka_trans.dat) is served: IRTF uses this filter with the uncoated PK50 blocker to suppress long-wavelength red leaks and publishes both scans. Cut at 6 um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive (647 samples beyond it removed). (IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/; Nill, 25 Nov 2026)",
+   "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_h21blka_trans.dat"
+  },
+  "H22": {
+   "cleaning": "IRTF's scan with the PK50 blocker (nsfcam_h22blka_trans.dat) is served: IRTF uses this filter with the uncoated PK50 blocker to suppress long-wavelength red leaks and publishes both scans. Cut at 6 um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive (647 samples beyond it removed). (IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/; Nill, 25 Nov 2026)",
+   "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_h22blka_trans.dat"
+  },
+  "J": {
+   "cleaning": "IRTF's scan with the PK50 blocker (nsfcam_jblka_trans.dat) is served: IRTF uses this filter with the uncoated PK50 blocker to suppress long-wavelength red leaks and publishes both scans. Cut at 6 um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive (634 samples beyond it removed). Incomplete: IRTF's J scans start at 1.282 um, inside the band, which begins near 1.10 um; no IRTF file covers its blue half. (IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/; Nill, 25 Nov 2026)",
+   "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_jblka_trans.dat"
+  },
+  "K": {
+   "cleaning": "Cut at 6 um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive (647 samples beyond it removed). (IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/; Nill, 25 Nov 2026)",
+   "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_k_trans.dat"
+  },
+  "KP": {
+   "cleaning": "IRTF's scan with the PK50 blocker (nsfcam_kpblka_trans.dat) is served: IRTF uses this filter with the uncoated PK50 blocker to suppress long-wavelength red leaks and publishes both scans. Cut at 6 um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive (647 samples beyond it removed). (IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/; Nill, 25 Nov 2026)",
+   "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_kpblka_trans.dat"
+  },
+  "KS": {
+   "cleaning": "IRTF's scan with the PK50 blocker (nsfcam_ksblka_trans.dat) is served: IRTF uses this filter with the uncoated PK50 blocker to suppress long-wavelength red leaks and publishes both scans. Cut at 6 um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive (647 samples beyond it removed). (IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/; Nill, 25 Nov 2026)",
+   "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_ksblka_trans.dat"
+  },
+  "L": {
+   "cleaning": "Cut at 6 um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive (647 samples beyond it removed). (IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/; Nill, 25 Nov 2026)",
+   "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_l_trans.dat"
+  },
+  "LP": {
+   "cleaning": "Cut at 6 um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive (647 samples beyond it removed). (IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/; Nill, 25 Nov 2026)",
+   "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_lp_trans.dat"
+  },
+  "M": {
+   "cleaning": "Cut at 6 um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive (647 samples beyond it removed). (IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/; Nill, 25 Nov 2026)",
+   "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_m_trans.dat"
+  },
+  "MP1": {
+   "cleaning": "Cut at 6 um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive (647 samples beyond it removed). (IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/; Nill, 25 Nov 2026)",
+   "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_mp1_trans.dat"
+  },
+  "PAB": {
+   "cleaning": "IRTF's scan with the PK50 blocker (nsfcam_pabblka_trans.dat) is served: IRTF uses this filter with the uncoated PK50 blocker to suppress long-wavelength red leaks and publishes both scans. Cut at 6 um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive (647 samples beyond it removed). (IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/; Nill, 25 Nov 2026)",
+   "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_pabblka_trans.dat"
+  },
+  "S17": {
+   "cleaning": "Cut at 6 um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive (647 samples beyond it removed). (IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/; Nill, 25 Nov 2026)",
+   "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_s17_trans.dat"
+  },
+  "S23": {
+   "cleaning": "Cut at 6 um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive (647 samples beyond it removed). (IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/; Nill, 25 Nov 2026)",
+   "sources": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/nsfcam_s23_trans.dat"
+  }
+ }
+}

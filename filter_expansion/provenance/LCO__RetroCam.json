@@ -1,0 +1,9 @@
+{
+ "facility": "LCO",
+ "instrument": "RetroCam",
+ "bands": {
+  "Y_CSP2": {
+   "cleaning": "Components filter+optics+qe+instrument+atmosphere (was filter in the manifest, filter+optics+qe+atmosphere in the header): the publisher's (CSP) file Y_RetroCam_duPont_TAMU_atm.dat equals the curve; SVO: Filter + CCD + Instrument + Other optical components + Atmosphere; siblings J_CSP2 and H_CSP2 (Nill, 25 Nov 2026, Q33)."
+  }
+ }
+}
