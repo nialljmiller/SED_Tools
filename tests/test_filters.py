@@ -2434,6 +2434,18 @@ def svo_instruments_are_found_by_label_and_the_ones_svo_lacks_are_named(t):
 
 
 @default_svo_row
+def an_empty_svo_listing_is_an_error_and_the_inventory_keeps_to_the_facility_asked_for(t):
+    for facility in ("Aaa", "Bbb"):
+        put(t.tmp / facility / "Cam", {"g.dat": CURVE})
+    library = library_with(t.tmp, NJM_DOWN, SimpleNamespace(list_facilities=lambda: [],
+                                                            list_instruments=lambda key: []))
+    assert "SVO: SVO returned no facilities" in library.facilities()["errors"]
+    inventory = library.inventory(facility="bbb")
+    assert [(row["facility"], row["instrument"]) for row in inventory["instruments"]] == [("Bbb", "Cam")]
+    assert "SVO: SVO returned no facilities" in inventory["errors"]
+
+
+@default_svo_row
 def njm_atmosphere_failure_is_reported_before_its_source(t):
     library = library_with(t.tmp / "filters", SimpleNamespace(download_atmosphere=raising(
         requests.HTTPError("502 for atmospheres/paranal/manifest.json"))))
