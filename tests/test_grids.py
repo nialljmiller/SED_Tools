@@ -938,8 +938,8 @@ SSAP_QUERY = f"{SSAP}?model=Grid&REQUEST=queryData&FORMAT=votable"
 SVO_MODELS = f"{SVO_INDEX}?models=Grid"
 SVO_SPECTRUM = "# teff = 5000\n# logg = 4.5\n" + "".join(f"{wl} 1.0e-10\n" for wl in range(1000, 1100))
 FID_CACHE = Path(".cache") / "svo_fids" / "Grid.json"
-MSG_INDEX = "http://user.astro.wisc.edu/~townsend/static.php?ref=msg-grids"
-MSG_FILE = "http://user.astro.wisc.edu/msg/grids/sg-Test.h5"
+MSG_INDEX = "https://madstar.richtownsend.dev/static.php?ref=msg-grids"  # the wisc.edu page redirects here (Nov 2026)
+MSG_FILE = "https://madstar.richtownsend.dev/resource/download/msg/grids/Test/sg-Test.h5"
 GRABBERS = {"njm": lambda root: njm.NJMSpectraGrabber(base_dir=root),
             "svo": lambda root: svo.SVOSpectraGrabber(base_dir=root),
             "msg": lambda root: msg.MSGSpectraGrabber(base_dir=root, max_workers=1)}
