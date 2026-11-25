@@ -165,8 +165,9 @@ def write_all_axes_cube(model_dir: str, part_bytes: int = 256 * 2**20) -> str:
     """The all-axes flux_cube_nd.bin of a split grid (format in cube/fileio.py), assembled from its variant cubes; no
     spectrum is read. Its Teff, log g and [M/H] axes are the union of the variants', its extra axes the
     variants_index.csv columns that vary; each variant is placed at its own values, zeros fill the rest, so the cube
-    equals each variant cube at that variant's nodes. A text axis stores its values as labels. Written a part of
-    wavelengths at a time (about part_bytes), to flux_cube_nd.bin.tmp and then renamed over model_dir/flux_cube_nd.bin.
+    equals each variant cube at that variant's nodes. A text axis stores its values as labels. Each variant cube is
+    read a part of wavelengths at a time (about part_bytes), each node's part written in its place in that node's
+    spectrum, to flux_cube_nd.bin.tmp, then renamed over model_dir/flux_cube_nd.bin.
     ValueError, before anything is written, when the variants' wavelengths differ."""
     fields, rows = _variant_rows(os.path.join(model_dir, "variants_index.csv"))
     extra = _extra_axes(fields, rows)
@@ -186,21 +187,26 @@ def write_all_axes_cube(model_dir: str, part_bytes: int = 256 * 2**20) -> str:
     block_of = {tuple(values.index(_value(row[col])) for col, values, *_ in extra): (path, header)
                 for row, path, header in zip(rows, cubes, headers)}
 
-    nt, nl, nm, nw = (*map(len, shared), len(wavelengths))
-    step = max(1, part_bytes // (8 * nt * nl * nm))
+    nodes, nw = int(np.prod([len(axis) for axis in shared])), len(wavelengths)
+    step = max(1, part_bytes // (8 * nodes))
     target = os.path.join(model_dir, ALL_AXES_NAME)
     with open(target + ".tmp", "wb") as fh:
         write_all_axes_header(fh, ["teff", "logg", "meta", *(col for col, *_ in extra)], axes, labels, wavelengths)
-        for slow_first in itertools.product(*(range(len(values)) for _, values, *_ in reversed(extra))):
+        offset = fh.tell()
+        blocks = list(itertools.product(*(range(len(values)) for _, values, *_ in reversed(extra))))
+        fh.truncate(offset + 8 * nodes * nw * len(blocks))  # zero where no variant is
+        for b, slow_first in enumerate(blocks):
             path, header = block_of.get(tuple(reversed(slow_first)), (None, None))
-            flux = None if path is None else np.memmap(path, dtype=np.float64, mode="r", offset=header.offset,
-                                                        shape=header.shape)
-            at = None if path is None else np.ix_(*(np.searchsorted(shared[k], header.axes[k]) for k in (2, 1, 0)))
-            for w0 in range(0, nw, step):
-                part = np.zeros((min(step, nw - w0), nm, nl, nt), dtype="<f8")
-                if flux is not None:
-                    part[(slice(None), *at)] = flux[w0:w0 + step]
-                part.tofile(fh)
+            if path is None:
+                continue
+            flux = np.memmap(path, dtype=np.float64, mode="r", offset=header.offset, shape=header.shape)
+            at = np.ix_(*(np.searchsorted(shared[k], header.axes[k]) for k in (2, 1, 0)))
+            for w0 in range(0, nw, step):  # the variant's wavelengths w0.., each node's part in its place
+                part = np.zeros((*map(len, shared[::-1]), min(step, nw - w0)), dtype="<f8")
+                part[at] = np.moveaxis(flux[w0:w0 + step], 0, -1)
+                for node, spectrum in enumerate(part.reshape(nodes, -1)):
+                    fh.seek(offset + 8 * ((b * nodes + node) * nw + w0))
+                    fh.write(spectrum)
             del flux
     os.replace(target + ".tmp", target)
     print(f"All-axes flux cube: {target} (Teff, log g, [M/H], {', '.join(col for col, *_ in extra)}; "
