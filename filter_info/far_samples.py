@@ -1,20 +1,22 @@
 """Curation of isolated far samples in two classes of NJM filter curves (Nill, 24 Nov 2026; evidence and the class
 analysis in the SED_Tools report far-samples.md and hst-tails.md, copies under source_evidence/far-samples/).
 
-An isolated sample is one whose gaps to both neighbours exceed lambda/10 and 20 times the curve's median step. A
-curve with one is in scope when it belongs to one of two classes (class C also needs its isolated samples to carry
-at least 1 % of its weight, trapezoid of lambda*T on its own samples, the threshold of the approved list; class A
-has no threshold since Nill's Q1 of 24 Nov 2026):
+Two classes of curves are curated:
 
 A  ESO La Silla filter tables: the curve's Sources cite an ESO-MIDAS XFilter member (``eso*.mt``) or an
    ls.eso.org WFI, SUSI2 or EMMI-archive filter file. ESO's opticians scanned 300-1200 nm and left out readings below about
    1e-4, so a gap next to an isolated reading is zero, not a line ("Zero in those gaps"). Each such gap gets
    T = 0 samples half a median step inside both of its ends. A reading at 1100 or 1200 nm for which ESO's RLEAK
    keyword declares a leak there stays as it is (the gaps next to it are not zeroed).
-C  HST FOC (f/48, f/96) and WFPC1 (PC, WF) curves that SVO computed with stsynphot and that hold STScI's
-   30000 A placeholder: beyond the red end of the curve's shortest component table, stsynphot held every
-   component at its last value, so the curve ends there ("Cut at measured end"); the end per curve is in
-   source_evidence/far-samples/stsci/hst_component_ends.json (STScI TRDS tables of the curve's obsmode).
+C  HST curves that SVO computed with stsynphot, which holds each component table at its last value beyond its end
+   and at its first value below its start. Where STScI's tables confirm such a hold (the curve divided by the other
+   components equals the held value to within 1e-4; source_evidence/far-samples/stsci/hst_component_ends.json,
+   from hst-tails.md) and the curve still transmits beyond the measured range, it is cut at the end of its shortest
+   component table and at the start of its latest-starting one ("Cut at measured end", 24 Nov 2026; both ends,
+   Nill's Q2), with one interpolated sample at each cut.
+
+An isolated sample (class A) is one whose gaps to both neighbours exceed lambda/10 and 20 times the curve's median
+step; class A has no weight threshold (Nill's Q1 of 24 Nov 2026).
 
 Every path whose data rows equal a curve of a class is that class too (exact copies). The header row is kept
 (class C adds the component table that ends the curve to Sources); the change, its reason and its evidence go to
@@ -38,20 +40,18 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent.parent
 EVIDENCE = ROOT / "source_evidence" / "far-samples"
 PROVENANCE = ROOT / "filter_expansion" / "provenance"
-SHARE_MIN = 0.01
 ESO_MEMBER = re.compile(r"filters/(eso\d+\.mt)")
 ESO_WEB = ("ls.eso.org/sci/facilities/lasilla/instruments/wfi/", "ls.eso.org/sci/facilities/lasilla/instruments/susi/",
            "ls.eso.org/lasilla/sciops/ntt/emmi/archive/filters/")
-HST_INSTRUMENTS = {"FOC_F48", "FOC_F96", "WFPC1-PC", "WFPC1-WF"}
+HELD_MAXDEV = 1e-4  # the hold is confirmed when curve / other components equals the held value to this
 TRDS = "https://ssb.stsci.edu/trds/comp/"
 NOTE_A = ("T = 0 samples added inside the {n} gap(s) next to the isolated ESO reading(s) at {where} A: ESO's La Silla "
           "tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; "
           "{src}). ESO's readings are kept.")
 NOTE_A_LEAK = " The reading(s) at {kept} A stay with their gaps: ESO's RLEAK keyword declares a leak there ({rleak})."
-NOTE_C = ("Cut at {end:g} A, where the shortest component table of this obsmode ends ({comp}): beyond it SVO's "
-          "stsynphot curve held every component at its last value, with STScI's 30000 A placeholder "
-          "(hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). "
-          "{n} samples beyond it removed from NJM's copy; no longer SVO's curve.")
+NOTE_C = ("Cut {where}: beyond the measured range of {tables}, SVO's stsynphot curve held the table at its value at that end "
+          "(curve / other components = that value to {dev:.0e}), so it was not measured (Nill, 24 Nov 2026). {n} samples "
+          "removed from NJM's copy; no longer SVO's curve.")
 
 
 def read_curve(path):
@@ -123,13 +123,24 @@ def plan(data_dir):
         far, share = isolated(data[:, 0], data[:, 1])
         if not far:
             continue
+        if not (ESO_MEMBER.search(meta.get("Sources", "")) or any(w in meta.get("Sources", "") for w in ESO_WEB)):
+            continue
         src = meta.get("Sources", "")
         fac, inst, band = rel[:-4].split("/")
         member = ESO_MEMBER.search(src)
         if member or any(w in src for w in ESO_WEB):
             changes[rel] = {"class": "A", "far": far, "share": share, "member": member and member.group(1)}
-        elif share >= SHARE_MIN and fac == "HST" and inst in HST_INSTRUMENTS and "svo2.cab.inta-csic.es" in src and data[-1, 0] >= 30000:
-            changes[rel] = {"class": "C", "far": far, "share": share, "end": ends[(inst, band)]["red"]}
+    for rel, (path, head, lines, data, meta) in curves.items():
+        fac, inst, band = rel[:-4].split("/")
+        record = ends.get((inst, band)) if fac == "HST" and "svo2.cab.inta-csic.es" in meta.get("Sources", "") else None
+        cuts = {}
+        for side, beyond in (("red", lambda x, e: x > e), ("blue", lambda x, e: x < e)):
+            r = (record or {}).get(side) or {}
+            if (r.get("ratio_vs_held_maxdev") is not None and r["ratio_vs_held_maxdev"] < HELD_MAXDEV
+                    and np.any(beyond(data[:, 0], r["end"]) & (data[:, 1] > 0))):
+                cuts[side] = r
+        if cuts:
+            changes[rel] = {"class": "C", "far": [], "share": 0.0, "cuts": cuts}
     for rel, change in list(changes.items()):  # exact copies of a curve of a class
         digest = hashlib.sha256("\n".join(curves[rel][2]).encode()).hexdigest()
         for other in by_rows[digest]:
@@ -142,12 +153,27 @@ def new_curve(curve, change, leaks):
     lam = data[:, 0]
     fac, inst, band = str(path)[:-4].split("/")[-3:]
     if change["class"] == "C":
-        end, comp = change["end"]["end"], change["end"]["comp"]
-        keep = [l for l, x in zip(lines, lam) if x <= end]
-        if lam[len(keep) - 1] < end:
-            keep.append(f"{float(end)!r},{float(np.interp(end, lam, data[:, 1]))!r}")
-        note = NOTE_C.format(end=end, comp=comp.replace(TRDS, ""), n=len(lines) - len(keep) + (lam[len(keep) - 1] < end))
-        return head, keep, note, {"sources": comp, "add_source": comp}
+        t, keep_lines, keep_lam = data[:, 1], list(lines), lam
+        red, blue = change["cuts"].get("red"), change["cuts"].get("blue")
+        where, tables, comps, devs = [], [], [], []
+        if red:
+            k = keep_lam <= red["end"]
+            keep_lines = [l for l, ok in zip(keep_lines, k) if ok] + ([] if red["end"] in keep_lam else
+                         [f"{float(red['end'])!r},{float(np.interp(red['end'], lam, t))!r}"])
+            keep_lam = np.append(keep_lam[k], [] if red["end"] in keep_lam else [red["end"]])
+            where.append(f"at {red['end']:g} A (red end)")
+        if blue:
+            k = keep_lam >= blue["end"]
+            keep_lines = ([] if blue["end"] in keep_lam else
+                          [f"{float(blue['end'])!r},{float(np.interp(blue['end'], lam, t))!r}"]) + \
+                         [l for l, ok in zip(keep_lines, k) if ok]
+            where.append(f"from {blue['end']:g} A (blue start)")
+        for r in (red, blue):
+            if r:
+                comps.append(r["comp"]); tables.append(r["comp"].replace(TRDS, "")); devs.append(r["ratio_vs_held_maxdev"])
+        removed = len(lines) - len([l for l in keep_lines if l in set(lines)])
+        note = NOTE_C.format(where=" and ".join(where), tables=" and ".join(dict.fromkeys(tables)), dev=max(devs), n=removed)
+        return head, keep_lines, note, {"sources": " | ".join(dict.fromkeys(comps)), "add_source": comps}
     h = float(np.median(np.diff(lam))) / 2
     rleak = leaks.get(change.get("member") or "", "")
     kept, zero_at = [], set()
@@ -201,18 +227,22 @@ def main(argv=None):
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(path, target)
             path.write_text(head + "\n" + "\n".join(rows) + "\n")
-            if extra.get("add_source"):  # the header row through SED_Tools' writer: Sources gains the component table
+            if extra.get("add_source"):  # the header row through SED_Tools' writer: Sources gains the component tables
                 from sed_tools.filters.curve_metadata import read_filter_header, write_filter_header
                 fields = read_filter_header(path)
-                if extra["add_source"] not in fields.get("Sources", ""):
-                    fields["Sources"] = " | ".join(x for x in (fields.get("Sources"), extra["add_source"]) if x)
+                new = [c for c in extra["add_source"] if c not in fields.get("Sources", "")]
+                if new:
+                    fields["Sources"] = " | ".join(x for x in (fields.get("Sources"), *new) if x)
                     write_filter_header(path, fields)
     for name, bands in sorted(provenance.items()):
         path = PROVENANCE / f"{name}.json"
         doc = json.loads(path.read_text()) if path.is_file() else {"facility": name.split("__")[0],
                                                                     "instrument": name.split("__")[1], "bands": {}}
         for band, fields in bands.items():
-            doc.setdefault("bands", {}).setdefault(band, {}).update(fields)
+            entry = doc.setdefault("bands", {}).setdefault(band, {})
+            for key, value in fields.items():  # an earlier curation's note and sources are kept, the new one added
+                old = entry.get(key)
+                entry[key] = value if not old or value in old else f"{old} | {value}" if key == "sources" else f"{old} {value}"
         if args.apply:
             if path.is_file():
                 target = args.apply / path.relative_to(ROOT)
