@@ -1,0 +1,14 @@
+{
+ "facility": "Subaru",
+ "instrument": "VAMPIRES",
+ "bands": {
+  "Halpha": {
+   "cleaning": "Wavelengths were in nm although the header (as SVO's record) declared Angstrom; multiplied by 10 to Angstrom (Uyama et al. 2020, JATIS 6, 045004 (arXiv:2008.10780), the curve's source: VAMPIRES H-alpha filter at 656.3 nm, width 1.0 nm; Nill, 24 Nov 2026).",
+   "sources": "https://arxiv.org/abs/2008.10780"
+  },
+  "Cont": {
+   "cleaning": "Wavelengths were in nm although the header (as SVO's record) declared Angstrom; multiplied by 10 to Angstrom (Uyama et al. 2020, JATIS 6, 045004 (arXiv:2008.10780), the curve's source: VAMPIRES continuum filter at 647.68 nm, width 2.05 nm; Nill, 24 Nov 2026).",
+   "sources": "https://arxiv.org/abs/2008.10780"
+  }
+ }
+}
