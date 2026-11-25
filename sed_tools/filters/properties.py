@@ -1,8 +1,8 @@
 """Characteristic properties of filter curves, as the SVO Filter Profile Service lists them.
 
 Wavelengths are in Angstrom.  ``T`` is the tabulated transmission and ``W`` the
-synthetic-photometry weight used everywhere in SED_Tools (:func:`filter_weight`:
-``T`` for energy-counting curves, ``T·λ`` for photon-counting ones; Bessell &
+synthetic-photometry weight used everywhere in SED_Tools (``T`` for
+energy-counting curves, ``T·λ`` for photon-counting ones; Bessell &
 Murphy 2012, PASP 124, 140).  Every integral is photometry's one rule,
 :func:`sed_tools.photometry.band_integral`: the exact integral with the
 transmission linear between the curve's samples and a reference spectrum (Vega,

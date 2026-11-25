@@ -571,7 +571,7 @@ class SED:
                 if shortfall:
                     print(f"[fetch] {cube.name} {shortfall}:\n        rebuilding the lookup table, HDF5 "
                           "bundle and flux cube from all of them")
-                _build_data_products(catalog, str(model_dir), used_source, True, True)
+                _build_data_products(catalog, str(model_dir), used_source, True)
 
         cat = cls._load_catalog_from_dir(model_dir, catalog, used_source)
         _print_mesa_inlist(model_dir)

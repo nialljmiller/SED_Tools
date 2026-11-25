@@ -46,11 +46,6 @@ class FilterCurve:
     wavelength_unit: str = "angstrom"
     detector_type: str = ENERGY
 
-    @property
-    def weight(self) -> np.ndarray:
-        """Integration weight: ``T`` (energy counting) or ``T*lambda`` (photon counting)."""
-        return filter_weight(self.wavelength, self.transmission, self.detector_type)
-
 
 @dataclass
 class Spectrum:
@@ -240,24 +235,6 @@ def load_filter_curve(
                        wavelength_unit="angstrom", detector_type=detector_type)
 
 
-def filter_weight(
-    wavelength: np.ndarray, transmission: np.ndarray, detector_type: str = ENERGY
-) -> np.ndarray:
-    """Return the synthetic-photometry weight for a transmission curve.
-
-    Photon-counting curves are weighted by ``T*lambda`` so the band average is
-    over photons rather than energy (Bessell & Murphy 2012, PASP 124, 140,
-    eq. A9).  Energy-counting curves use ``T`` directly.
-    """
-    resolved = normalize_detector_type(detector_type)
-    if resolved is None:
-        raise ValueError(f"Unknown detector type: {detector_type!r}")
-    transmission = np.asarray(transmission, dtype=float)
-    if resolved == PHOTON:
-        return transmission * np.asarray(wavelength, dtype=float)
-    return transmission
-
-
 #: :func:`band_grid` splits every step longer than lambda / BAND_RESOLVING_POWER, so that :func:`band_integral` is
 #: exact to about 1e-9 for the negative powers of lambda too (the pivot's lambda^-2), not only for polynomials.
 BAND_RESOLVING_POWER = 100.0
@@ -317,7 +294,8 @@ def band_integral(wavelength, transmission, flux=None, power: int = 0) -> float:
 
 
 def _weight_power(detector_type: str) -> int:
-    """The power of lambda in the weight :func:`filter_weight` gives: 0 (energy counting) or 1 (photon counting)."""
+    """The power of lambda in a band's weight T λ^power: 0 (energy counting) or 1 (photon counting, which averages
+    over photons rather than energy; Bessell & Murphy 2012, PASP 124, 140, eq. A9)."""
     resolved = normalize_detector_type(detector_type)
     if resolved is None:
         raise ValueError(f"Unknown detector type: {detector_type!r}")
@@ -408,7 +386,7 @@ class BandSampling:
 def band_sampling(grid_wavelength: Sequence[float], curve: FilterCurve) -> BandSampling:
     """How the increasing wavelengths ``grid_wavelength`` (Å; a flux cube's axis or a spectrum's) sample ``curve``.
 
-    The shares are of the band's weight (``curve.weight``) on :func:`band_grid`.
+    The shares are of the band's weight (``T``, or ``T·λ`` for photon counting) on :func:`band_grid`.
     """
     grid = np.asarray(grid_wavelength, dtype=float)
     lam = curve.wavelength

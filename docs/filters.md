@@ -235,8 +235,8 @@ to the weakest:
 
 Types set by SED_Tools' own tools (`user` overrides, `composed` products and
 `component` files) are outside this order and are never replaced.
-`load_filter_curve` reads the type (`FilterCurve.detector_type`,
-`FilterCurve.weight`), and every band average uses it; an untagged file is
+`load_filter_curve` reads the type (`FilterCurve.detector_type`), and every
+band average uses it (weight `T`, or `T·λ` for photon counting); an untagged file is
 treated as energy-counting.
 
 ### Tagging existing files

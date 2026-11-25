@@ -106,14 +106,12 @@ def _build_flux_cube(model_dir: Path) -> Path:
     raise RuntimeError(f"No flux cube was built in {model_dir}; see the flux cube messages above")
 
 
-def _build_data_products(name: str, model_dir: str, src: str, force_bundle_h5: bool,
-                         build_flux_cube: bool) -> List[str]:
+def _build_data_products(name: str, model_dir: str, src: str, build_flux_cube: bool) -> List[str]:
     """Build the HDF5 bundle, lookup table and flux cube of a downloaded grid; returns what was not done.
 
     A bundle or cube missing or not holding exactly the spectra beside it is (re)built, and one holding every
     spectrum is kept, not rewritten (NJM serves both, and a split grid's variant cubes); with ``build_flux_cube``
-    False a cube lacking spectra is a problem. ``force_bundle_h5`` (``sed-tools grids`` without ``--no-h5``) no
-    longer rewrites a bundle that holds every spectrum: it gave the same file again.
+    False a cube lacking spectra is a problem.
     """
     out_h5 = str(_bundle_path(model_dir, name))
     fresh = not os.path.exists(out_h5)

@@ -153,7 +153,6 @@ def _add_grid_download_parser(sub) -> None:
                     help="Spectral grid names to process, or 'all'")
     _add_base_option(sp, STELLAR_DIR_DEFAULT, "Output directory for spectral grids")
     sp.add_argument("--workers", type=int, default=5, help="Parallel workers")
-    sp.add_argument("--no-h5", action="store_true", help="Do not force-create HDF5 bundle")
     sp.add_argument("--no-cube", action="store_true", help="Skip flux cube build")
     _add_flux_unit_option(sp)
     cut = ("; NJM, MSG and MAST cut downloads, SVO refuses cuts. Without any cut option an NJM "
@@ -336,7 +335,7 @@ def _range(values) -> Optional[Tuple[float, float]]:
 
 def _cmd_grids(args, parser):
     run_spectra_flow(source=args.source, base_dir=args.base, models=args.models, workers=args.workers,
-                     force_bundle_h5=not args.no_h5, build_flux_cube=not args.no_cube, flux_unit=args.flux_unit,
+                     build_flux_cube=not args.no_cube, flux_unit=args.flux_unit,
                      teff_range=_range(args.teff), logg_range=_range(args.logg), meta_range=_range(args.meta),
                      wl_range=_range(args.wavelength))
     return 0

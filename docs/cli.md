@@ -92,7 +92,8 @@ sed-tools filters-inventory --offline --json > inventory.json
 | `--base DIR` | grid and filter commands | Use this folder instead of the data directory's `stellar_models/` or `filters/` |
 | `--grids NAME ...` (`--models`) | `grids`, `rebuild`, `combine`, `coverage` | The grids to work on |
 | `--flux-unit UNIT` | `grids`, `rebuild`, `import` | Flux unit of spectra whose headers do not declare one: `flam`, `fnu`, `fnu_jy`, `flam_si`, `flam_si_nm`, `flam_si_um`, `normalized` |
-| `--no-h5`, `--no-cube` | `grids`, `rebuild`, `import` | Skip the HDF5 bundle or the flux cube |
+| `--no-cube` | `grids`, `rebuild`, `import` | Skip the flux cube |
+| `--no-h5` | `rebuild`, `import` | Skip the HDF5 bundle (`grids` keeps a bundle that holds every spectrum and rebuilds any other) |
 | `--workers N` | `grids` | Parallel downloads |
 | `--components`, `--bands`, `--airmass`, `--pwv`, `--atmosphere-site`, `--detector-type` | `filters`, `filters-compose` | What to compose ([Filters](filters.md)) |
 | `--offline`, `--json` | `filters-info`, `filters-inventory` | Use only local data and the cached catalogue; print JSON |

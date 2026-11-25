@@ -758,15 +758,13 @@ def grids_no_cube_on_a_grid_copied_without_its_times_exits_0(t):
     # The re-check's command, which 0.4.1 runs with exit 0 on such a copy
     assert run_cli(t.mp, "grids", "--source", "njm", "--grids", GRID, "--no-cube", "--base", str(t.tmp / "b")) == 0
     assert (folder / "flux_cube.bin").read_bytes() == cube
-    assert run_cli(t.mp, "grids", "--source", "njm", "--grids", GRID, "--no-cube", "--no-h5",
-                   "--base", str(t.tmp / "b")) == 0
     assert "HDF5 bundle   : Kurucz2003all.h5 (exists)" in t.capsys.readouterr().out
 
 
 @row
 def grids_keeps_a_bundle_that_holds_every_spectrum(t):
-    # Without --no-h5, sed-tools grids rewrote the bundle on every run, with everything present (notebooks review,
-    # 24 Nov 2026).
+    # sed-tools grids (without the --no-h5 it no longer has, Q10) rewrote the bundle on every run, with everything
+    # present (notebooks review, 24 Nov 2026).
     njm_grids(t)
     bundle = t.tmp / GRID / f"{GRID}.h5"
     assert run_cli(t.mp, "grids", "--source", "njm", "--grids", GRID, "--base", str(t.tmp)) == 0
@@ -891,11 +889,11 @@ def grids_after_a_selection_rebuilds_or_says_why_it_did_not(t):
     assert run_cli(t.mp, "grids", "--grids", GRID, "--source", "njm", "--base", base, "--teff", "5900", "6100") == 0
     assert list(_read_flux_cube_header(folder / "flux_cube.bin")["teff"]) == [6000.0]
     # The rest, without a cube build: the selection's cube is not taken for the whole grid's.
-    assert run_cli(t.mp, "grids", "--grids", GRID, "--source", "njm", "--base", base, "--no-h5", "--no-cube") == 1
+    assert run_cli(t.mp, "grids", "--grids", GRID, "--source", "njm", "--base", base, "--no-cube") == 1
     err = " ".join(t.capsys.readouterr().err.split())
     assert "flux_cube.bin does not include 8 of the 12 spectra beside it" in err
     assert f"Rebuild it with: sed-tools rebuild --grids {GRID} --base {base}" in err
-    with h5py.File(folder / f"{GRID}.h5", "r") as bundle:  # rebuilt although --no-h5: it lacked the rest
+    with h5py.File(folder / f"{GRID}.h5", "r") as bundle:  # rebuilt: it lacked the rest
         assert len(bundle["spectra"]) == 12
     assert run_cli(t.mp, "grids", "--grids", GRID, "--source", "njm", "--base", base) == 0
     assert list(_read_flux_cube_header(folder / "flux_cube.bin")["teff"]) == [5750.0, 6000.0, 6250.0]
