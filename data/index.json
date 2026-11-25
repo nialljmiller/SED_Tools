@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-11-25T01:05:38.767402",
+  "generated": "2026-11-25T01:31:40.615032",
   "statistics": {
     "total_models": 8,
     "complete_models": 7,
@@ -12670,8 +12670,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 835508,
-            "size_human": "815.93 KB",
+            "size_bytes": 770185,
+            "size_human": "752.13 KB",
             "description": "Hubble Faint Object Camera (FOC) f/48 camera filters and prisms",
             "svo_instruments": [
               "HST/FOC_F48"
@@ -12736,8 +12736,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 2246628,
-            "size_human": "2.14 MB",
+            "size_bytes": 2009879,
+            "size_human": "1.92 MB",
             "description": "Hubble Faint Object Camera (FOC) f/96 camera filters",
             "svo_instruments": [
               "HST/FOC_F96"
@@ -12765,8 +12765,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 115335,
-            "size_human": "112.63 KB",
+            "size_bytes": 71931,
+            "size_human": "70.25 KB",
             "description": "Hubble Faint Object Spectrograph blue detector gratings and prism",
             "svo_instruments": [
               "HST/FOS_BLUE"
@@ -12796,8 +12796,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 202562,
-            "size_human": "197.81 KB",
+            "size_bytes": 104240,
+            "size_human": "101.80 KB",
             "description": "Hubble Faint Object Spectrograph red detector gratings and prism",
             "svo_instruments": [
               "HST/FOS_RED"
@@ -12871,8 +12871,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 254377,
-            "size_human": "248.42 KB",
+            "size_bytes": 246183,
+            "size_human": "240.41 KB",
             "description": "Hubble High Speed Photometer (HSP) UV1 channel filters",
             "svo_instruments": [
               "HST/HSP_UV1"
@@ -12919,8 +12919,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 277269,
-            "size_human": "270.77 KB",
+            "size_bytes": 271259,
+            "size_human": "264.90 KB",
             "description": "Hubble High Speed Photometer (HSP) UV2 channel filters",
             "svo_instruments": [
               "HST/HSP_UV2"
@@ -12963,8 +12963,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 340300,
-            "size_human": "332.32 KB",
+            "size_bytes": 321774,
+            "size_human": "314.23 KB",
             "description": "Hubble High Speed Photometer (HSP) visible channel filters",
             "svo_instruments": [
               "HST/HSP_VIS"
@@ -13273,7 +13273,7 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 8286562,
+            "size_bytes": 8287394,
             "size_human": "7.90 MB",
             "description": "Hubble STIS near-ultraviolet channel filters, with/without gratings",
             "svo_instruments": [
@@ -13565,8 +13565,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 642735,
-            "size_human": "627.67 KB",
+            "size_bytes": 641719,
+            "size_human": "626.68 KB",
             "description": "Hubble WF/PC-1 Planetary Camera (detectors 5-8) filters",
             "svo_instruments": [
               "HST/WFPC1-PC"
@@ -13636,8 +13636,8 @@
             "has_component_manifest": false,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 609071,
-            "size_human": "594.80 KB",
+            "size_bytes": 608559,
+            "size_human": "594.30 KB",
             "description": "Hubble WF/PC-1 Wide Field Camera (detectors 1-4) filters",
             "svo_instruments": [
               "HST/WFPC1-WF"
@@ -13706,8 +13706,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 3060867,
-            "size_human": "2.92 MB",
+            "size_bytes": 3032742,
+            "size_human": "2.89 MB",
             "description": "Hubble WFPC2 Planetary Camera (detector 1) filters",
             "svo_instruments": [
               "HST/WFPC2-PC"
@@ -13784,8 +13784,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 3079449,
-            "size_human": "2.94 MB",
+            "size_bytes": 3048458,
+            "size_human": "2.91 MB",
             "description": "Hubble WFPC2 Wide Field Camera (detectors 2-4) filters",
             "svo_instruments": [
               "HST/WFPC2-WF"
