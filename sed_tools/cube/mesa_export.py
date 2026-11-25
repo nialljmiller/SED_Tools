@@ -354,8 +354,9 @@ def run_interactive(base_dir: str = None, model=None, output=None, variant=None)
     variants_index.csv lists it), and exports it to a clean folder. Exits with
     status 1 and an error message if nothing was exported: no grid to pick, an
     invalid choice or variant name, a missing lookup table or flux cube, a grid
-    with no variants to choose from, or an existing output directory the user
-    chose not to overwrite.
+    with no variants to choose from. An existing output directory is written
+    into without asking: the exported files replace theirs, and its other files
+    stay.
     """
     base_path = Path(base_dir if base_dir is not None else STELLAR_DIR_DEFAULT)
 
@@ -393,10 +394,4 @@ def run_interactive(base_dir: str = None, model=None, output=None, variant=None)
         output = input(f"\nOutput directory [{base_path / default_name}]: ").strip() or str(base_path / default_name)
 
     print(f"\nExporting variant to {output}...")
-    try:
-        export_variant(chosen, output_dir=output)
-    except FileExistsError as exc:
-        print(f"Error: {exc}")
-        if input("Overwrite? [y/N]: ").strip().lower() != "y":
-            raise SystemExit(f"Error: {output} already exists and was not overwritten; nothing was exported.")
-        export_variant(chosen, output_dir=output, overwrite=True)
+    export_variant(chosen, output_dir=output, overwrite=True)  # into an existing folder too, keeping its other files

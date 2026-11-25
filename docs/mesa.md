@@ -115,8 +115,9 @@ sed-tools mesa_prepare --grid Kurucz2003all \
 It writes that variant's `flux_cube.bin`, its `lookup_table.csv` and a copy of
 each of its spectra (real files, not links), and prints the `stellar_atm` line
 for the new folder; it stops before writing anything if a spectrum or the cube
-is missing. Without options it asks for the
-grid, the variant and the output folder. A grid that is not split is already
+is missing. An existing output folder is written into without asking: the
+files it writes replace theirs, and the folder's other files stay. Without
+options it asks for the grid, the variant and the output folder. A grid that is not split is already
 MESA-ready; `mesa_prepare` says so and prints the grid's own line.
 
 Do not copy or link a whole split grid into

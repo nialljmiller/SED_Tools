@@ -1263,13 +1263,17 @@ def mesa_prepare_exits_1_on_an_invalid_variant_choice(t):
 
 
 @row
-def mesa_prepare_exits_1_when_overwrite_is_declined(t):
+def mesa_prepare_writes_into_an_existing_folder_without_asking(t):
+    # It asked "Overwrite? [y/N]" even with every argument given (Nill, 24 Nov 2026, Q6): it now replaces the files
+    # it writes and leaves the folder's other files alone. answer() fails the row on any further prompt.
     out = _variant_grid(t) / "out"
     out.mkdir()
     (out / "keep.txt").write_text("untouched")
-    message = _mesa_exits(t, out.parent, "1", "n", model="Grid", output=str(out))
-    assert message == f"Error: {out} already exists and was not overwritten; nothing was exported."
-    assert [p.name for p in out.iterdir()] == ["keep.txt"]
+    (out / "lookup_table.csv").write_text("stale")
+    answer(t.mp, "1")
+    mesa_export.run_interactive(base_dir=str(out.parent), model="Grid", output=str(out))
+    assert sorted(p.name for p in out.iterdir()) == ["a.txt", "flux_cube.bin", "keep.txt", "lookup_table.csv"]
+    assert (out / "keep.txt").read_text() == "untouched" and "a.txt" in (out / "lookup_table.csv").read_text()
 
 
 @row
