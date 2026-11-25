@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-11-24T20:24:15.095923",
+  "generated": "2026-11-25T01:05:38.767402",
   "statistics": {
     "total_models": 8,
     "complete_models": 7,
@@ -7891,8 +7891,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 4188834,
-            "size_human": "3.99 MB",
+            "size_bytes": 4296385,
+            "size_human": "4.10 MB",
             "description": "European Southern Observatory filter database, by ESO filter number",
             "svo_instruments": [
               "ESO/ESO"
@@ -18994,8 +18994,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 338158,
-            "size_human": "330.23 KB",
+            "size_bytes": 341137,
+            "size_human": "333.14 KB",
             "description": "DFOSC on the Danish 1.54 m: ESO-numbered filters, filter only",
             "svo_instruments": [
               "LaSilla/DFOSC"
@@ -19034,8 +19034,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 121967,
-            "size_human": "119.11 KB",
+            "size_bytes": 125328,
+            "size_human": "122.39 KB",
             "description": "EFOSC2 (ESO Faint Object Spectrograph and Camera) basic filter set",
             "svo_instruments": [
               "LaSilla/EFOSC"
@@ -19113,8 +19113,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 400560,
-            "size_human": "391.17 KB",
+            "size_bytes": 410311,
+            "size_human": "400.69 KB",
             "description": "ESO Multi-Mode Instrument (EMMI) on the NTT, ESO-numbered filters",
             "svo_instruments": [
               "LaSilla/EMMI"
@@ -19230,8 +19230,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 143851,
-            "size_human": "140.48 KB",
+            "size_bytes": 147826,
+            "size_human": "144.36 KB",
             "description": "SUSI2 (SUperb Seeing Imager 2) on the NTT, ESO-numbered filters",
             "svo_instruments": [
               "LaSilla/SUSI2"
@@ -19383,8 +19383,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 822624,
-            "size_human": "803.34 KB",
+            "size_bytes": 834353,
+            "size_human": "814.80 KB",
             "description": "Wide Field Imager (WFI) on the MPG/ESO 2.2 m, by ESO filter number",
             "svo_instruments": [
               "LaSilla/WFI"
