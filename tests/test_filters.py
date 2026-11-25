@@ -2374,6 +2374,75 @@ def a_recipe_some_bands_can_never_have_asks_no_source_and_names_the_bands_that_h
         library.compose(inst, "filter+optics+qe")
     assert asked == []
     assert sorted(p.name for p in library.compose(inst, "filter+optics+qe", bands=["g"]).glob("*.dat")) == ["g.dat"]
+    assert not FilterLibrary.components_ready(inst, "filter", bands=["z"])  # a band the set does not have
+    manifest = json.loads((inst / "manifest.json").read_text())
+    fresh = put(t.tmp / "Fac" / "Fresh", {"g.dat": CURVE, "gp.dat": CURVE, "manifest.json": json.dumps(dict(
+        manifest, instrument="Fresh", published_bands={"g": "filter+optics+qe"}))})
+    assert not FilterLibrary.components_ready(fresh, "published+atmosphere")  # gp's published contents unknown
+    library.mirror.download_components = lambda f, i: asked.append(f"njm {i}") or put(fresh / "components",
+                                                                                         {"g.dat": CURVE})
+    assert library.prepare_components(fresh, components="filter+optics+qe") is False  # NJM sent all there can be
+    assert asked == ["njm Fresh"]
+
+
+@default_svo_row
+def components_go_into_the_installed_folder_from_njms_spelling_and_never_from_a_builder_writing_another(t):
+    bundled(t, {"Fac": {"Cam_X": {"bands": ["g"]}}})
+    spelt, saved = flat_published(t.tmp / "Fac" / "Cam-X"), []
+
+    def save_components(facility, instrument, directory):
+        saved.append((facility, instrument, directory))
+        manifest = InstrumentManifest.load(directory)
+        add_component(directory, "filter", [4000.0, 6000.0], [1.0, 1.0], band="g", manifest=manifest)
+        add_component(directory, "qe", [4000.0, 6000.0], [0.8, 0.8], manifest=manifest)
+        manifest.save(directory)
+
+    library = library_with(t.tmp, SimpleNamespace(is_available=lambda: True, _save_components=save_components,
+                                                  download_components=raising(RuntimeError("NJM failed"))))
+    assert library.prepare_components(spelt, components="filter+qe") is True
+    assert saved == [("Fac", "Cam_X", spelt)]
+    other = flat_published(t.tmp / "Fac" / "Cam-Y")  # its builder writes Fac/Cam_Y: a second copy
+    t.mp.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam_Y"), catalog.BuilderRef("test"))
+    t.mp.setattr(filters_library, "get_builder", raising(AssertionError("the builder is not run")))
+    with t.caplog.at_level(logging.WARNING):
+        assert library.prepare_components(other, components="filter+qe") is False
+    assert ("NJM cannot provide the components of Fac/Cam-Y (NJM failed), and its original-source builder writes "
+            f"only Fac/Cam_Y, which would be a second copy beside {other}") in t.caplog.text
+
+
+@default_svo_row
+def svo_instruments_are_found_by_label_and_the_ones_svo_lacks_are_named(t):
+    bundled(t, {"Fac": {"Old": {"svo_instruments": ["Fac/Gone"], "bands": ["G"], "svo_bands": {"Fac/Gone": ["G"]}},
+                        "New": {"svo_instruments": ["Fac/Cam2"], "bands": ["G"], "svo_bands": {"Fac/Cam2": ["G"]}}}})
+    unreachable = SVOUnreachableError("SVO Filter Profile Service unreachable")
+    library = library_with(t.tmp, NJM_DOWN, SimpleNamespace(
+        list_facilities=lambda: [Facility("Fac", "Fac")],
+        list_instruments=lambda key: [Instrument("Fac", "Cam2", "Camera Two"), Instrument("Fac", "Empty", "Empty")],
+        list_filters=lambda fac, inst: [FilterRow(f"{fac}/{inst}.G", "G", fac, inst, "")] if inst == "Cam2" else [],
+        download_into=raising(unreachable)))
+    assert [row.filter_id for row in library.svo_filters("Fac", "camera two")] == ["Fac/Cam2.G"]
+    with pytest.raises(ComponentError, match="^SVO instrument not found: Fac/Nope$"):
+        library.svo_filters("Fac", "Nope")
+    with pytest.raises(ComponentError) as info:
+        library.svo_filters("Fac", "Old")
+    assert str(info.value) == ("SVO lists none of the filters of Fac/Old's SVO equivalents (Fac/Gone): "
+                               "Fac/Gone: SVO instrument not found: Fac/Gone")
+    assert library.available("Fac", "Empty")["availability_source"] == "unknown"  # SVO lists no curve of it
+    with pytest.raises(ComponentError, match="^No source can provide Fac/New: .*SVO: SVO Filter Profile Service "
+                                             "unreachable$"):
+        library.published("Fac", "New")  # SVO holds New's curves under Fac/Cam2, but cannot be reached
+
+
+@default_svo_row
+def an_empty_svo_listing_is_an_error_and_the_inventory_keeps_to_the_facility_asked_for(t):
+    for facility in ("Aaa", "Bbb"):
+        put(t.tmp / facility / "Cam", {"g.dat": CURVE})
+    library = library_with(t.tmp, NJM_DOWN, SimpleNamespace(list_facilities=lambda: [],
+                                                            list_instruments=lambda key: []))
+    assert "SVO: SVO returned no facilities" in library.facilities()["errors"]
+    inventory = library.inventory(facility="bbb")
+    assert [(row["facility"], row["instrument"]) for row in inventory["instruments"]] == [("Bbb", "Cam")]
+    assert "SVO: SVO returned no facilities" in inventory["errors"]
 
 
 @default_svo_row
@@ -2387,6 +2456,29 @@ def njm_atmosphere_failure_is_reported_before_its_source(t):
         path = library.prepare_atmosphere(manifest, AtmosphereSpec(None, 1.2, 2.5))
     assert path.name == "a.dat"
     assert "NJM cannot provide the paranal_am1.2_pwv2.5 atmosphere (502" in t.caplog.text
+
+
+@default_svo_row
+def njm_serves_the_atmosphere_point_it_lists_and_the_instruments_builder_is_asked_for_one_it_lacks(t):
+    library, asked = library_with(t.tmp / "filters"), []
+    site = library.atmosphere_root / "fac_site"
+
+    def download_atmosphere(root, name, filename=None):  # NJM's manifest, then the grid point named
+        asked.append(filename)
+        site.mkdir(parents=True, exist_ok=True)
+        (site / (filename or "manifest.json")).write_text(
+            json.dumps(dict(STALE, site=name)) if filename is None else "Wavelength,Transmission\n5000,0.9\n6000,0.95\n")
+        return True
+
+    library.mirror = SimpleNamespace(download_atmosphere=download_atmosphere)
+    manifest = InstrumentManifest("Fac", "Cam", ["g"], ground_based=True, default_site="fac_site")
+    assert library.prepare_atmosphere(manifest, AtmosphereSpec(None, 1.2)) == site / "am1.20.dat"
+    assert asked == [None, "am1.20.dat"]
+    t.mp.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam"), catalog.BuilderRef("test"))
+    t.mp.setattr(filters_library, "get_builder", lambda name: lambda root, **kwargs: asked.append(name))
+    with pytest.raises(ComponentError, match="Site fac_site has no atmosphere for airmass 2"):
+        library.prepare_atmosphere(manifest, AtmosphereSpec(None, 2.0))  # not in NJM's grid, nor the builder's
+    assert asked[2:] == [None, "test"]
 
 
 # SVO failures are no longer taken for "SVO has no answer"
@@ -2736,6 +2828,11 @@ def a_stale_installed_atmosphere_takes_njms_manifest_and_keeps_its_grids(t):
     requested = len(library.mirror.session.calls)
     library.atmospheres()  # checked today: only the site list is asked for
     assert library.mirror.session.calls[requested:] == ["atmospheres/"]
+    checked = cache_root(library.root) / "atmospheres_checked.json"
+    checked.write_text("{unreadable")  # a damaged record of the checks: checked again, and the record rewritten
+    library.atmospheres()
+    assert "atmospheres/lsst_std/manifest.json" in library.mirror.session.calls[requested + 1:]
+    assert list(json.loads(checked.read_text())) == ["lsst_std"]
 
 
 @row
@@ -4059,8 +4156,9 @@ def label_check_finds_the_same_curve_served_with_two_detector_types(t):
         (t.tmp / rel).parent.mkdir(parents=True, exist_ok=True)
         write_filter_file(t.tmp / rel, wl, [float(v) for v in transmission], detector_type=detector, source=source,
                           wavelength_unit="Angstrom")
-    # Labelled, but with no samples to compare by: a curve whose wavelengths run backwards, and a dark one.
-    for name, wavelength, transmission in (("back", wl[::-1], tr), ("dark", wl, 0 * tr)):
+    # Labelled, but with no samples to compare by: a curve whose wavelengths run backwards, a dark one and one
+    # that cannot be read (a negative transmission).
+    for name, wavelength, transmission in (("back", wl[::-1], tr), ("dark", wl, 0 * tr), ("unreadable", wl, tr - 0.2)):
         write_filter_file(t.tmp / "Misc" / "APASS" / f"{name}.dat", wavelength, transmission, detector_type=ENERGY,
                           source=SOURCE_SVO, wavelength_unit="Angstrom")
     component = t.tmp / "Misc" / "APASS" / "components" / "filter" / "g.dat"   # components keep their own labels
