@@ -262,9 +262,7 @@ def export_variant(variant: VariantInfo, output_dir: str | os.PathLike) -> Path:
     out = Path(output_dir)
     src = variant.source_model_dir
 
-    file_col = next((c for c in variant.lookup_rows.columns if c.lower() == "file_name"), None)
-    if file_col is None:
-        raise KeyError("lookup_rows has no 'file_name' column — cannot locate spectra.")
+    file_col = _file_column(variant.lookup_rows)
 
     # Each file once: a combined grid lists a spectrum at every node it fills
     filenames = list(dict.fromkeys(variant.lookup_rows[file_col].dropna()))

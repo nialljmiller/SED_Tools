@@ -1730,6 +1730,17 @@ def mesa_prepare_notes_a_mean_cube_naming_only_the_varying_axes(t):
 
 
 @row
+def export_variant_finds_the_spectra_by_any_recognised_file_column(t):
+    # It looked only for a column named file_name, so a grid listed by "filename" was listed but its export raised
+    # KeyError (Nill, 25 Nov 2026); it now finds the column as list_variants and MESA do.
+    rows = [("a.txt", 5000.0, 4.0, 0.0), ("b.txt", 6000.0, 4.0, 0.0)]
+    grid = _build(_write_grid(t.tmp / "Plain", rows, ("filename", "teff", "logg", "metallicity")))
+    (variant,) = mesa_export.list_variants(grid)
+    out = mesa_export.export_variant(variant, t.tmp / "out")
+    assert sorted(p.name for p in out.iterdir()) == ["a.txt", "b.txt", "flux_cube.bin", "lookup_table.csv"]
+
+
+@row
 def export_variant_refuses_a_missing_cube_before_writing(t):
     grid = t.tmp / "Plain"
     grid.mkdir()
