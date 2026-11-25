@@ -295,8 +295,8 @@ def _add_grid_tool_parsers(sub) -> None:
 
     mpp = sub.add_parser("mesa-path", help="Print the MESA colors inlist line(s) for a local spectral grid or "
                                            "filter set")
-    mpp.add_argument("path", help="The grid's folder (e.g. data/stellar_models/Kurucz2003all) or the filter set's "
-                                  "(e.g. data/filters/Generic/Johnson)")
+    mpp.add_argument("path", help="The grid's folder (e.g. ~/.sed_tools/data/stellar_models/Kurucz2003all) or the "
+                                  "filter set's (e.g. ~/.sed_tools/data/filters/Generic/Johnson)")
 
     cfg_p = sub.add_parser("config", help="Show or set the data directory")
     cfg_p.add_argument("--set", metavar="PATH", default=None, help="Set data directory to PATH")
