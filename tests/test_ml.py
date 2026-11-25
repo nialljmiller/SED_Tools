@@ -40,7 +40,7 @@ def write_config(directory, config):
 def grid(t, teff, flux):
     """A flux cube at ``t.tmp/lib`` over ``teff`` (logg 4, [M/H] 0) and 200 wavelengths: ``flux`` is
     the (n, 1, 1, 200) array, or one value everywhere."""
-    write_flux_cube(t.tmp / "lib" / "flux_cube.bin", teff, [4.0], [0.0], WL, np.broadcast_to(flux, (2, 1, 1, 200)))
+    write_flux_cube(t.tmp / "lib" / "flux_cube.bin", teff, [4.0], [0.0], WL, np.broadcast_to(flux, (len(teff), 1, 1, 200)))
     return str(t.tmp / "lib")
 
 
@@ -427,11 +427,12 @@ def auto_trainer_saves_a_model_sedgenerator_and_the_api_load(t):
     assert sorted(config) == ["architecture", "framework", "model_type", "parameter_ranges",
                               "scaler_params", "training_params", "version", "wavelength_grid"]
     assert (config["model_type"], config["version"], config["framework"]) == ("sed_generator", "1.0.0", "pytorch")
-    # The scalers are those of SEDGenerator's own preparation of the cube (11 usable spectra)
+    # The scalers are those of SEDGenerator's own preparation of the cube: all 12 spectra (fid18917 lacks the
+    # cube's last wavelength, a zero there, and was left out until zeros were accepted)
     reference = mg.SEDGenerator()
     params, flux, masks = reference._prepare_training_data(str(kurucz_library), 10000)
     reference._normalise_training_data(params, flux, masks, str(kurucz_library))
-    assert len(params) == 11
+    assert len(params) == 12
     assert config["scaler_params"] == pytest.approx(reference.scaler_params, rel=1e-6)
     assert [m["name"] for m in mg.SEDGenerator.list_models(str(output.parent))] == ["auto"]
 
@@ -672,12 +673,16 @@ def completer_prepare_training_data_warns_how_many_spectra_it_dropped(t):
 
 @row
 def generator_prepare_training_data_warns_how_many_spectra_it_dropped(t):
-    flux = np.full((2, 1, 1, 200), 1e-10)
+    # A zero is a real value (cubes store zero samples as they are since Q12): the 5000 K spectrum with zeros is
+    # kept, its zeros left out of the loss; it was dropped (Nill, 25 Nov 2026: "accept zeros, skip negatives").
+    flux = np.full((3, 1, 1, 200), 1e-10)
     flux[0, 0, 0, 5] = np.nan
-    params, _, _ = mg.SEDGenerator()._prepare_training_data(grid(t, [4000.0, 5000.0], flux), 2)
+    flux[1, 0, 0, :5] = 0.0
+    flux[2, 0, 0, 5] = -1e-20
+    params, _, masks = mg.SEDGenerator()._prepare_training_data(grid(t, [4000.0, 5000.0, 6000.0], flux), 3)
 
-    assert params[:, 0].tolist() == [5000.0]
-    assert "dropped 1 of 2 sampled spectra (1 with non-positive or non-finite flux)" in t.caplog.text
+    assert params[:, 0].tolist() == [5000.0] and 0 < masks.mean() < 1
+    assert "dropped 2 of 3 sampled spectra (2 with negative or non-finite flux)" in t.caplog.text
 
 
 @row

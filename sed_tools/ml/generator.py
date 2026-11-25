@@ -130,9 +130,13 @@ class SEDGenerator(Engine):
         flux: np.ndarray,
         wavelengths: np.ndarray,
     ) -> Tuple[Optional[str], Optional[Tuple[np.ndarray, np.ndarray]]]:
-        """(None, (flux, valid_mask)) on the model grid, 1e-30 and 0 outside the coverage; or (reason, None)."""
-        if np.any(flux <= 0) or np.any(~np.isfinite(flux)):
-            return "non-positive or non-finite flux", None
+        """(None, (flux, valid_mask)) on the model grid, 1e-30 and 0 outside the coverage; or (reason, None).
+
+        A zero is a real value (a cube stores a spectrum's zero samples as they are): the spectrum is kept, and its
+        zeros, which log flux cannot hold, are left out of the loss like uncovered points (valid 0, flux 1e-30). A
+        spectrum with negative or non-finite flux is skipped (Nill, 25 Nov 2026)."""
+        if np.any(flux < 0) or np.any(~np.isfinite(flux)):
+            return "negative or non-finite flux", None
         flux_interp, valid_mask = resample(self.wavelength_grid, wavelengths, flux)
         if valid_mask.sum() < len(self.wavelength_grid) * 0.3:
             return "less than 30% of the model grid covered", None
