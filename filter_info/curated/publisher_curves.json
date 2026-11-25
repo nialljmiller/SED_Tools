@@ -1,0 +1,16 @@
+[
+ {"set": "LCO/e2v", "band": "i", "file": "source_evidence/csp/i_CSP2_tel_ccd_atm_ext_1.2.dat", "unit_A": 1,
+  "url": "https://csp.obs.carnegiescience.edu/data/i_CSP2_tel_ccd_atm_ext_1.2.dat",
+  "note": "Replaced by the publisher's (CSP) i curve, i_CSP2_tel_ccd_atm_ext_1.2.dat (telescope, CCD and atmosphere at airmass 1.2; CSP gives its effective wavelength as 7573.8 A). The curve served before, like SVO's record LCO/e2v.i (captures of 2026-06-06 and 2026-10-28), held CSP's r curve (r_CSP2_tel_ccd_atm_ext_1.2.dat) at another decimal precision (Nill, 25 Nov 2026: \"Replace with the real i\")."},
+ {"set": "IRTF/NSFCam",
+  "source_pattern": "irtfweb\\.ifa\\.hawaii\\.edu/~nsfcam/filters/nsfcam_(?P<name>[a-z0-9]+)_trans\\.dat",
+  "evidence_dir": "source_evidence/nsfcam", "file_template": "nsfcam_{name}_trans.dat", "unit_A": 10000,
+  "url_template": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/{file}",
+  "publisher_lists": ["blka_scale", "brg", "co", "coblka", "cont", "contblka", "fe", "feblka", "h21", "h21blka", "h22", "h22blka", "hblka", "hei", "heiblka", "hmk", "j", "jblka", "jmk", "k", "kmk", "kp", "kpblka", "kpmk", "ks", "ksblka", "ksmk", "l", "lp", "lpmk", "m", "mp1", "mpmk", "pab", "pabblka", "pag", "pagblka", "s17", "s23"],
+  "prefer_suffix": "blka",
+  "prefer_note": "IRTF's scan with the PK50 blocker ({file}) is served: IRTF uses this filter with the uncoated PK50 blocker to suppress long-wavelength red leaks and publishes both scans.",
+  "detector_max_A": 60000,
+  "cut_note": "Cut at {max_um:g} um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive ({n} samples beyond it removed).",
+  "incomplete": {"J": "Incomplete: IRTF's J scans start at 1.282 um, inside the band, which begins near 1.10 um; no IRTF file covers its blue half."},
+  "evidence": "IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/"}
+]

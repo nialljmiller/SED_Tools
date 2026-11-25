@@ -19,6 +19,10 @@ Every band a manifest lists also needs a provider (filter_info.manifest_provider
 24 Nov 2026): a ``published_bands`` entry when its curve says what it contains, and, in a manifest that declares
 components, a filter piece for a filter-only band. Without one, SED_Tools' filters-compose cannot provide the band.
 
+What a manifest says a curve contains must not contradict its evidence (filter_info.components_corrections.problems,
+Nill's Q33 of 25 Nov 2026): an assumed published_bands entry against a header naming the components, SVO components
+against SVO's own Description.
+
 Usage: python3 -m filter_info.check_manifests [DATA_DIR]   (default: data)
 Prints every offending set and exits 1; prints a one-line summary and exits 0 otherwise.
 """
@@ -28,7 +32,9 @@ from pathlib import Path
 
 from sed_tools.filters.manifest import set_problems
 
+from .components_corrections import problems as components_problems
 from .manifest_providers import problems as provider_problems
+from .numeric_duplicates import problems as duplicate_problems
 
 CLAIMS = Path(__file__).with_name("svo_instruments.json")
 ROOT = Path(__file__).resolve().parent.parent
@@ -62,7 +68,8 @@ def problems(filters_dir, claims=None):
         elif not any(manifest.parent.glob("*.dat")):
             yield manifest.parent, f"{manifest} declares {len(bands)} band(s) of a folder with no curves"
         else:
-            for message in provider_problems(manifest.parent, json.loads(manifest.read_text(encoding="utf-8"))):
+            doc = json.loads(manifest.read_text(encoding="utf-8"))
+            for message in [*provider_problems(manifest.parent, doc), *components_problems(manifest.parent, doc)]:
                 yield manifest.parent, message
     for instrument_dir in sorted(p for p in filters_dir.glob("*/*") if p.is_dir()):
         for message in set_problems(instrument_dir, claims):
@@ -77,6 +84,13 @@ def main(argv):
         return 2
     claims = served_claims(filters_dir)
     found = list(problems(filters_dir, claims))
+    # Two band names holding one curve at different decimal precision (Nill, 25 Nov 2026): reported, not yet fatal,
+    # while the cases found are with Nill. Byte-identical copies are the 29 Oct dedupe's class.
+    for set_dir in sorted(p for p in filters_dir.glob("*/*") if p.is_dir()):
+        manifest = set_dir / "manifest.json"
+        doc = json.loads(manifest.read_text(encoding="utf-8")) if manifest.is_file() else {}
+        for message in duplicate_problems(set_dir, doc):
+            print(f"WARNING {message}", file=sys.stderr)
     for _, message in found:
         print(f"ERROR {message}", file=sys.stderr)
     checked = sum(1 for p in filters_dir.glob("*/*") if p.is_dir())
