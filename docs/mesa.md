@@ -18,8 +18,9 @@ The MESA colors inlist path for this is:
 
 Each line is absolute, single-quoted and has no trailing slash (an apostrophe
 in a path is doubled, as a Fortran namelist string needs), and can be pasted
-into the inlist as it is. MESA reads a path that does not start with
-`/` relative to `$MESA_DIR`, which is why the lines are absolute. A complete
+into the inlist as it is. MESA reads a path that starts with `./` or `../`
+relative to the directory it runs in, and any other path that does not start
+with `/` relative to `$MESA_DIR`, which is why the lines are absolute. A complete
 `&colors` section looks like this:
 
 ```fortran
@@ -89,7 +90,12 @@ folder ([Spectral grids](grids.md) shows the layout). Point `stellar_atm` at a
 variant folder, never at the grid's top folder.
 
 The top folder holds `flux_cube_nd.bin`, the all-axes cube that SED_Tools
-reads and MESA cannot, and no `flux_cube.bin`. Pointed at it, MESA prints
+reads and MESA cannot, and no `flux_cube.bin`. A grid split or downloaded with
+0.6.0 or earlier, or with a build from 19–24 Nov 2026, can still have an old
+`flux_cube.bin` at its top, which MESA would read if pointed there; SED_Tools
+does not move it. Rename or remove that file and run `sed-tools rebuild
+--grids NAME` ([Spectral grids](grids.md)). Pointed at a top folder without
+it, MESA prints
 `colors: no flux_cube.bin found; using slower per-file SED loading` and loads
 spectra one by one from the top-level `lookup_table.csv`, which lists every
 variant; the result is not that of any one variant.
@@ -106,8 +112,10 @@ sed-tools mesa_prepare --grid Kurucz2003all \
     --output ~/mesa_grids/Kurucz2003all_alpha04
 ```
 
-It writes only that variant's `flux_cube.bin` and `lookup_table.csv` and prints
-the `stellar_atm` line for the new folder. Without options it asks for the
+It writes that variant's `flux_cube.bin`, its `lookup_table.csv` and a copy of
+each of its spectra (real files, not links), and prints the `stellar_atm` line
+for the new folder; it stops before writing anything if a spectrum or the cube
+is missing. Without options it asks for the
 grid, the variant and the output folder. A grid that is not split is already
 MESA-ready; `mesa_prepare` says so and prints the grid's own line.
 
@@ -143,7 +151,9 @@ The folder `stellar_atm` names must hold both files:
 ```
 
 If it has `variants_index.csv`, it is a split grid's top folder: use one of
-its variant folders. `sed-tools mesa-path <grid folder>` prints the right
+its variant folders. A `flux_cube.bin` in such a top folder was left by an
+earlier version and is not the grid's cube; rename it and rebuild (see
+"Grids split into variants" above). `sed-tools mesa-path <grid folder>` prints the right
 lines.
 
 ## Reading MESA's own data from Python

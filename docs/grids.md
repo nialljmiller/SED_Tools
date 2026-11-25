@@ -132,6 +132,7 @@ their values, a **variant**:
 ~/.sed_tools/data/stellar_models/Kurucz2003all/
   flux_cube_nd.bin          the all-axes cube: every variant, alpha as a fourth axis
   lookup_table.csv          every spectrum, with its alpha
+  lookup_table_full.csv     the full grid's table as it was before the first split
   variants_index.csv        one row per variant: its values, number of spectra, folder
   Kurucz2003all.h5
   Kurucz2003all_fid*.txt    the spectra
@@ -143,7 +144,8 @@ their values, a **variant**:
     ...
 ```
 
-The top folder holds no `flux_cube.bin`. Each variant folder is a complete
+The top folder holds no `flux_cube.bin` (unless an earlier version left one;
+see below). Each variant folder is a complete
 grid that MESA and `SED.local` read:
 
 ```python
@@ -166,10 +168,28 @@ spectrum = SED.local("Kurucz2003all")(5777, 4.44, 0.0, alpha=0.2)
 ```
 
 MESA cannot read `flux_cube_nd.bin`; give it a variant folder
-([MESA](mesa.md)). A grid split by an earlier version has no
-`flux_cube_nd.bin`, and `SED.local` on its top folder raises FileNotFoundError
-naming its variants; `sed-tools rebuild --grids NAME`, or fetching the grid
-again, writes it.
+([MESA](mesa.md)).
+
+### Split grids from earlier versions
+
+A grid split or downloaded with SED_Tools 0.6.0 or earlier, or with a build
+from 19–24 Nov 2026, can have a `flux_cube.bin` at its top: a copy of one
+variant's cube, or the all-axes cube under its old name. SED_Tools does not
+move or delete that file. While it is there, `SED.local` on the top folder
+refuses the grid, names its variants and says to remove or rename the file;
+`sed-tools rebuild` and a new download leave it in place; and MESA, if
+`stellar_atm` names the top folder, reads it.
+
+To upgrade such a grid, rename (or remove) the old file, then rebuild:
+
+```bash
+mv ~/.sed_tools/data/stellar_models/Husfeld/flux_cube.bin ~/Husfeld_old_top_flux_cube.bin
+sed-tools rebuild --grids Husfeld
+```
+
+The rebuild writes `flux_cube_nd.bin`. A split grid that has neither file (split
+before the all-axes cube existed) needs only the rebuild, or a new download of
+the grid.
 
 ## Rebuilding
 
@@ -211,7 +231,10 @@ spectrum fills stays at zero. A grid that lacks an axis the others have
 (bbody has no log g) is used at every value of that axis. A combination whose
 extra axes vary is split into variants, and the command names the variant
 folders to give MESA. Combining again into the same output folder replaces
-the earlier combination; the output may not be one of the grids combined.
+the earlier combination's spectrum copies and its `variants_index.csv`; the
+earlier variant folders and `flux_cube_nd.bin` stay beside the new grid,
+which is read from the new `variants_index.csv` (or the new `flux_cube.bin`).
+The output may not be one of the grids combined.
 
 `sed-tools combine` with no options asks which grids to combine;
 `--non-interactive` without `--grids` combines every local grid except earlier

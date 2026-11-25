@@ -79,8 +79,9 @@ Paste them as printed: MESA reads the absolute paths, and nothing needs to be
 copied into MESA's own data folder. `sed-tools mesa-path PATH` prints them
 again for any installed grid or filter set, and `sed-tools vega` downloads the
 Vega spectrum MESA uses for Vega magnitudes. A grid split into variants
-(Kurucz2003all: [alpha/M] 0 and 0.4) is read by MESA one variant folder at a
-time; its top folder is for SED_Tools only. Do not copy a whole split grid into
+(Kurucz2003all: [alpha/M] 0 and 0.4) has one folder per variant, and MESA reads
+one of them; its top folder is for SED_Tools only (a `flux_cube.bin` there was left by
+0.6.0 or earlier: rename it and run `sed-tools rebuild`). Do not copy a whole split grid into
 `$MESA_DIR/data/colors_data/stellar_models/`: it mixes its files with MESA's own
 Kurucz2003all and replaces MESA's lookup table. See the
 [MESA guide](https://github.com/nialljmiller/SED_Tools/blob/main/docs/mesa.md).
