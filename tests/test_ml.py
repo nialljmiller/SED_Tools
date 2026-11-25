@@ -208,11 +208,14 @@ def workflow_ends_on_the_answer(t, engine, answers, message):
     # 0 and -1 used to index from the end of the list and pick the last entry.
     stellar_dir = stellar_grids(t)
     write_config(t.tmp / "models" / "gm1", {"model_type": "sed_generator"})
+    write_config(t.tmp / "models" / "cm1", CM1)
     for cls in (mc.SEDCompleter, mg.SEDGenerator):
         t.mp.setattr(cls, "train", lambda self, **kw: pytest.fail("trained"))
+    extended = loads_a_model(t)
     answer(t.mp, *answers, echo=True)
     engine.run_interactive_workflow(str(stellar_dir), str(t.tmp / "models"))
     assert t.capsys.readouterr().out.rstrip().endswith(message)
+    assert extended == []
 
 
 def extend_catalog_raises_when_a_column_is_missing(t, missing):
@@ -255,7 +258,9 @@ ALL_NAN = {
 ENDING_ANSWERS = {
     "completer_workflow_is_cancelled_by_n_at_start_training": (mc, ["1", "1", "", "", "", "n"], "Cancelled"),
     "generator_workflow_is_cancelled_by_n_at_start_training": (mg, ["1", "1", "", "", "", "n"], "Cancelled"),
+    "completer_workflow_is_cancelled_by_n_at_start_extension": (mc, ["2", "1", "1", "", "", "n"], "Cancelled"),
     "completer_workflow_rejects_bad_answers_invalid_choice": (mc, ["9"], "Invalid choice"),
+    "completer_workflow_rejects_bad_answers_invalid_model_number": (mc, ["2", "x"], "Invalid selection"),
     "generator_workflow_rejects_zero_and_negative_menu_numbers_0": (mg, ["3", "0"], "Invalid selection"),
     "generator_workflow_rejects_zero_and_negative_menu_numbers_minus_1": (mg, ["3", "-1"], "Invalid selection")}
 MISSING_COLUMN = {f"extend_catalog_raises_when_a_column_is_missing_{name}": name for name in ("teff", "file_name")}
@@ -595,17 +600,30 @@ def completer_workflow_extends_the_chosen_grid(t):
 
 
 @row
-def completer_workflow_lists_models(t):
-    models = t.tmp / "models"
+def completer_workflow_lists_models_and_says_what_is_missing(t):
+    models, stellar = t.tmp / "models", t.tmp / "stellar"
+    for action in ("1", "2", "3"):  # no grids and no models yet
+        answer(t.mp, action)
+        mc.run_interactive_workflow(str(stellar), str(models))
+    out = t.capsys.readouterr().out
+    assert f"\nNo model libraries with flux_cube.bin found in {stellar}\n" in out
+    assert f"\nNo trained models found in {models}/\nTrain a model first (option 1)\n" in out
+    assert f"\nNo models found in {models}/\n" in out
+
     write_config(models / "cm1", CM1)
     answer(t.mp, "3", echo=True)
 
-    mc.run_interactive_workflow(str(t.tmp / "stellar"), str(models))
+    mc.run_interactive_workflow(str(stellar), str(models))
 
     out = t.capsys.readouterr().out
     assert "\n  cm1\n" in out
     assert "    Framework: pytorch, Version: 2.0.0" in out
     assert "    Architecture: 400 -> [8] -> 1000" in out
+
+    extended = loads_a_model(t)
+    answer(t.mp, "2", "1")  # a model, but still no grid to extend
+    mc.run_interactive_workflow(str(stellar), str(models))
+    assert f"\nNo model sets found in {stellar}\n" in t.capsys.readouterr().out and extended == []
 
 
 @row
@@ -623,8 +641,15 @@ def generator_workflow_trains_on_the_chosen_library(t):
 
 
 @row
-def generator_workflow_lists_generators_only(t):
+def generator_workflow_lists_generators_only_and_says_what_is_missing(t):
     models = t.tmp / "models"
+    for action in ("1", "4"):  # no libraries and no generators yet
+        answer(t.mp, action)
+        mg.run_interactive_workflow(str(t.tmp / "stellar"), str(models))
+    out = t.capsys.readouterr().out
+    assert f"\nNo libraries with flux_cube.bin found in {t.tmp / 'stellar'}\n" in out
+    assert f"\nNo generators found in {models}/\n" in out
+
     write_config(models / "gm1", {"model_type": "sed_generator",
                                   "parameter_ranges": {"teff": [4000, 6000], "logg": [4, 4.5], "meta": [-0.5, 0]},
                                   "architecture": {"hidden_layers": [8], "output_dim": 1000}})
@@ -703,16 +728,25 @@ def generator_workflow_warns_about_an_unreadable_lookup_table(t):
 # ======================================================================
 @row
 def completer_prepare_training_data_warns_how_many_spectra_it_dropped(t):
-    flux = np.full((2, 1, 1, 200), 1e-10)
+    # On the 1000-point model grid the input window is 400 points; 1000-50000 Å covers 566 of them.
+    flux = np.full((6, 1, 1, 200), 1e-10)
     flux[0, 0, 0, :150] = np.nan          # 4000 K: only 50 usable points
-    lib = grid(t, [4000.0, 5000.0], flux)
+    flux[2, 0, 0, :80] = np.nan           # 6000 K: 338 grid points, fewer than the window
+    flux[3, 0, 0, 142:] = np.nan          # 7000 K: 401 grid points, no room to move the window
+    flux[4, 0, 0, 80:133] = np.nan        # 8000 K: a gap that every window position contains
+    flux[5, 0, 0, 150:] = np.nan          # 9000 K: 424 grid points, 24 of them outside the window
+    lib = grid(t, [4000.0, 5000.0, 6000.0, 7000.0, 8000.0, 9000.0], flux)
 
     np.random.seed(0)
-    _, _, params, _ = mc.SEDCompleter()._prepare_training_data(lib, 2)
+    _, _, params, _ = mc.SEDCompleter()._prepare_training_data(lib, 6)
 
     assert params[:, 0].tolist() == [5000.0]
-    assert ("dropped 1 of 2 sampled spectra (1 with fewer than 100 positive, finite flux points)"
-            in t.caplog.text)
+    assert "dropped 5 of 6 sampled spectra (" in t.caplog.text
+    for reason in ("1 with fewer than 100 positive, finite flux points",
+                   "2 with coverage narrower than the 400-point input window",
+                   "1 with input window less than 80% valid",
+                   "1 with fewer than 50 valid points outside the input window"):
+        assert reason in t.caplog.text
 
 
 @row
@@ -799,6 +833,22 @@ def extend_catalog_writes_the_good_spectra_then_lists_every_failure(t):
     assert len(completer._completer.calls) == 2
 
 
+@row
+def extend_catalog_prints_its_progress_every_50_spectra_extended(t):
+    import pandas as pd
+
+    catalog = three_spectra(t)
+    pd.DataFrame({"file_name": ["a.txt"] * 100 + ["c.txt"], "teff": 5000, "logg": 4.0, "meta": 0.0}
+                 ).to_csv(catalog / "lookup_table.csv", index=False)
+    completer = stubbed_completer()
+
+    summary = completer.extend_catalog(str(catalog), str(t.tmp / "out"))
+
+    out = t.capsys.readouterr().out
+    assert summary["extended"] == 100 and summary["skipped"] == 1
+    assert "\n  Extended 50 SEDs...\n  Extended 100 SEDs...\n" in out and "Extended 101" not in out
+
+
 # ======================================================================
 # Ranges: the completer keeps every original sample; a reversed range raises wherever it is given
 # ======================================================================
@@ -824,6 +874,21 @@ def extend_catalog_keeps_every_sample_of_the_kurucz_grid(t):
         assert_keeps_original(extended[:, 0], extended[:, 1], original[:, 0], original[:, 1])
         assert extended[0, 0] == pytest.approx(100.0)
         assert extended[-1, 0] == original[-1, 0] == 1.6e6
+
+    # A model saved without its input window (no 'regions' in config.json) loads with the central one
+    config = json.loads((t.tmp / "model" / "config.json").read_text())
+    stored = config.pop("regions")
+    assert stored == {"known_start": 300, "known_end": 700, "known_width": 400}
+    (t.tmp / "model" / "config.json").write_text(json.dumps(config))
+    loaded = mc.SEDCompleter(t.tmp / "model")
+    assert (loaded._known_start, loaded._known_end, loaded._known_width) == (300, 700, 400)
+    # The inference plot: nothing for no examples; one example leaves the other two panels empty
+    loaded.plot_inference_examples([], str(t.tmp / "plots"))
+    assert not (t.tmp / "plots").exists()
+    (t.tmp / "plots").mkdir()
+    wl = np.logspace(3, 4, 20)
+    loaded.plot_inference_examples([("a.txt", wl, wl ** -2, wl, wl ** -2)], str(t.tmp / "plots"), "one.png")
+    assert [p.name for p in (t.tmp / "plots").iterdir()] == ["one.png"]
 
 
 @row
