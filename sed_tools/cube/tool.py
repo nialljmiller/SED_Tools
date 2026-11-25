@@ -341,10 +341,7 @@ def discover_flux_cube_files(hints: Sequence[str | os.PathLike[str]] | None = No
 
     for directory in search_dirs:
         directory = directory.expanduser().resolve()
-        if not directory.exists():
-            continue
-        if directory.is_file():
-            found.add(directory)
+        if not directory.is_dir():  # a hint naming a file was taken above; any other file is no folder to search
             continue
         try:
             for match in directory.rglob("flux_cube.bin"):

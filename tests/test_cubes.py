@@ -1963,6 +1963,18 @@ def _tool_grid(t):
     return t.tmp / "grids" / "g"
 
 
+@row
+def the_cube_search_skips_a_file_where_it_looks_for_folders(t):
+    # A file named like a default search folder (here ./data) was offered as a flux cube (Nill, 25 Nov 2026).
+    _searched_only_here(t)
+    (t.tmp / "work" / "data").write_text("not a cube\n")
+    write_flux_cube(t.tmp / "work" / "models" / "g" / "flux_cube.bin", [5000.0], [4.0], [0.0], TOOL_WL,
+                    np.ones((1, 1, 1, TOOL_WL.size)))
+    found = tool.discover_flux_cube_files()
+    assert (t.tmp / "work" / "models" / "g" / "flux_cube.bin").resolve() in found
+    assert (t.tmp / "work" / "data").resolve() not in found
+
+
 def _write_vega(path):
     path.parent.mkdir(parents=True, exist_ok=True)
     np.savetxt(path, np.column_stack([TOOL_WL, np.full(TOOL_WL.size, 3.0)]))
