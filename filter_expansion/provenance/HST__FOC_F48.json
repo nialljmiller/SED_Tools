@@ -3,11 +3,11 @@
  "instrument": "FOC_F48",
  "bands": {
   "F130LP": {
-   "cleaning": "Cut at 5940 A, where the shortest component table of this obsmode ends (foc/foc_48_f130lp_004_syn.fits): beyond it SVO's stsynphot curve held every component at its last value, with STScI's 30000 A placeholder (hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). 730 samples beyond it removed from NJM's copy; no longer SVO's curve.",
+   "cleaning": "Cut at 5940 A, where the shortest component table of this obsmode ends (foc/foc_48_f130lp_004_syn.fits): beyond it SVO's stsynphot curve held every component at its last value, with STScI's 30000 A placeholder (hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). 730 samples beyond it removed from NJM's copy; no longer SVO's curve. Cut from 1200 A (blue start): beyond the measured range of foc/foc_48_f130lp_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 24 samples removed from NJM's copy; no longer SVO's curve.",
    "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_f130lp_004_syn.fits"
   },
   "F180LP": {
-   "cleaning": "Cut at 5940 A, where the shortest component table of this obsmode ends (foc/foc_48_f180lp_004_syn.fits): beyond it SVO's stsynphot curve held every component at its last value, with STScI's 30000 A placeholder (hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). 730 samples beyond it removed from NJM's copy; no longer SVO's curve.",
+   "cleaning": "Cut at 5940 A, where the shortest component table of this obsmode ends (foc/foc_48_f180lp_004_syn.fits): beyond it SVO's stsynphot curve held every component at its last value, with STScI's 30000 A placeholder (hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). 730 samples beyond it removed from NJM's copy; no longer SVO's curve. Cut from 1570 A (blue start): beyond the measured range of foc/foc_48_f180lp_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 200 samples removed from NJM's copy; no longer SVO's curve.",
    "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_f180lp_004_syn.fits"
   },
   "F305LP": {
@@ -15,16 +15,40 @@
    "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_f305lp_004_syn.fits"
   },
   "PRISM1": {
-   "cleaning": "Cut at 6500 A, where the shortest component table of this obsmode ends (foc/foc_48_m1m2_003_syn.fits): beyond it SVO's stsynphot curve held every component at its last value, with STScI's 30000 A placeholder (hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). 450 samples beyond it removed from NJM's copy; no longer SVO's curve.",
+   "cleaning": "Cut at 6500 A, where the shortest component table of this obsmode ends (foc/foc_48_m1m2_003_syn.fits): beyond it SVO's stsynphot curve held every component at its last value, with STScI's 30000 A placeholder (hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). 450 samples beyond it removed from NJM's copy; no longer SVO's curve. Cut from 1150 A (blue start): beyond the measured range of foc/foc_48_m1m2_003_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 2e-06), so it was not measured (Nill, 24 Nov 2026). 15 samples removed from NJM's copy; no longer SVO's curve.",
    "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_m1m2_003_syn.fits"
   },
   "PRISM2": {
-   "cleaning": "Cut at 5940 A, where the shortest component table of this obsmode ends (foc/foc_48_prism2_004_syn.fits): beyond it SVO's stsynphot curve held every component at its last value, with STScI's 30000 A placeholder (hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). 730 samples beyond it removed from NJM's copy; no longer SVO's curve.",
+   "cleaning": "Cut at 5940 A, where the shortest component table of this obsmode ends (foc/foc_48_prism2_004_syn.fits): beyond it SVO's stsynphot curve held every component at its last value, with STScI's 30000 A placeholder (hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). 730 samples beyond it removed from NJM's copy; no longer SVO's curve. Cut from 1600 A (blue start): beyond the measured range of foc/foc_48_prism2_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 230 samples removed from NJM's copy; no longer SVO's curve.",
    "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_prism2_004_syn.fits"
   },
   "PRISM3": {
-   "cleaning": "Cut at 5990 A, where the shortest component table of this obsmode ends (foc/foc_48_prism3_004_syn.fits): beyond it SVO's stsynphot curve held every component at its last value, with STScI's 30000 A placeholder (hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). 705 samples beyond it removed from NJM's copy; no longer SVO's curve.",
+   "cleaning": "Cut at 5990 A, where the shortest component table of this obsmode ends (foc/foc_48_prism3_004_syn.fits): beyond it SVO's stsynphot curve held every component at its last value, with STScI's 30000 A placeholder (hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). 705 samples beyond it removed from NJM's copy; no longer SVO's curve. Cut from 1200 A (blue start): beyond the measured range of foc/foc_48_prism3_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 3e-06), so it was not measured (Nill, 24 Nov 2026). 40 samples removed from NJM's copy; no longer SVO's curve.",
    "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_prism3_004_syn.fits"
+  },
+  "F140W": {
+   "cleaning": "Cut at 5940 A (red end) and from 1160 A (blue start): beyond the measured range of foc/foc_48_f140w_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 5e-06), so it was not measured (Nill, 24 Nov 2026). 63 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_f140w_004_syn.fits"
+  },
+  "F150W": {
+   "cleaning": "Cut at 5940 A (red end) and from 1160 A (blue start): beyond the measured range of foc/foc_48_f150w_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 84 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_f150w_004_syn.fits"
+  },
+  "F175W": {
+   "cleaning": "Cut at 5940 A (red end) and from 1200 A (blue start): beyond the measured range of foc/foc_48_f175w_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 114 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_f175w_004_syn.fits"
+  },
+  "F195W": {
+   "cleaning": "Cut at 5940 A (red end) and from 1200 A (blue start): beyond the measured range of foc/foc_48_f195w_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 319 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_f195w_004_syn.fits"
+  },
+  "F342W": {
+   "cleaning": "Cut at 3950 A (red end): beyond the measured range of foc/foc_48_f342w_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 5e-06), so it was not measured (Nill, 24 Nov 2026). 1160 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_f342w_004_syn.fits"
+  },
+  "F430W": {
+   "cleaning": "Cut from 3080 A (blue start): beyond the measured range of foc/foc_48_f430w_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 5e-06), so it was not measured (Nill, 24 Nov 2026). 453 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/foc/foc_48_f430w_004_syn.fits"
   }
  }
 }

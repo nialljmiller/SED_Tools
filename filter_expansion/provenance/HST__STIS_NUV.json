@@ -1,0 +1,14 @@
+{
+ "facility": "HST",
+ "instrument": "STIS_NUV",
+ "bands": {
+  "F25NDQ1_PRISM": {
+   "cleaning": "Cut from 1160.22 A (blue start): beyond the measured range of stis/stis_247nd1_007_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 1e-07), so it was not measured (Nill, 24 Nov 2026). 2 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/stis/stis_247nd1_007_syn.fits"
+  },
+  "F25NDQ4_PRISM": {
+   "cleaning": "Cut from 1160.22 A (blue start): beyond the measured range of stis/stis_247nd4_007_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 3e-06), so it was not measured (Nill, 24 Nov 2026). 2 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/stis/stis_247nd4_007_syn.fits"
+  }
+ }
+}

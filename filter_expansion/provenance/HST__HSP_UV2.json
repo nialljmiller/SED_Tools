@@ -1,0 +1,42 @@
+{
+ "facility": "HST",
+ "instrument": "HSP_UV2",
+ "bands": {
+  "F122M_A": {
+   "cleaning": "Cut from 1500 A (blue start): beyond the measured range of hsp/hsp_ap_f122u2_a_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 78 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/hsp/hsp_ap_f122u2_a_004_syn.fits"
+  },
+  "F122M_B": {
+   "cleaning": "Cut from 1500 A (blue start): beyond the measured range of hsp/hsp_ap_f122u2_b_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 78 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/hsp/hsp_ap_f122u2_b_004_syn.fits"
+  },
+  "F140LP_A": {
+   "cleaning": "Cut from 1500 A (blue start): beyond the measured range of hsp/hsp_ap_clru2_a_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 2e-06), so it was not measured (Nill, 24 Nov 2026). 15 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/hsp/hsp_ap_clru2_a_004_syn.fits"
+  },
+  "F140LP_B": {
+   "cleaning": "Cut from 1500 A (blue start): beyond the measured range of hsp/hsp_ap_clru2_b_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 2e-06), so it was not measured (Nill, 24 Nov 2026). 15 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/hsp/hsp_ap_clru2_b_004_syn.fits"
+  },
+  "F145M_A": {
+   "cleaning": "Cut from 1500 A (blue start): beyond the measured range of hsp/hsp_ap_f145u2_a_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 3e-06), so it was not measured (Nill, 24 Nov 2026). 59 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/hsp/hsp_ap_f145u2_a_004_syn.fits"
+  },
+  "F145M_B": {
+   "cleaning": "Cut from 1500 A (blue start): beyond the measured range of hsp/hsp_ap_f145u2_b_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 59 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/hsp/hsp_ap_f145u2_b_004_syn.fits"
+  },
+  "F152M_A": {
+   "cleaning": "Cut from 1500 A (blue start): beyond the measured range of hsp/hsp_ap_f152u2_a_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 1e-06), so it was not measured (Nill, 24 Nov 2026). 17 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/hsp/hsp_ap_f152u2_a_004_syn.fits"
+  },
+  "F152M_B": {
+   "cleaning": "Cut from 1500 A (blue start): beyond the measured range of hsp/hsp_ap_f152u2_b_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 2e-06), so it was not measured (Nill, 24 Nov 2026). 17 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/hsp/hsp_ap_f152u2_b_004_syn.fits"
+  },
+  "PRISM_BLUE": {
+   "cleaning": "Cut from 1500 A (blue start): beyond the measured range of hsp/hsp_ap_f145u2_a_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 59 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/hsp/hsp_ap_f145u2_a_004_syn.fits"
+  }
+ }
+}

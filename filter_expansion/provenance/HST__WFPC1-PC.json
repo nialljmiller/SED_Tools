@@ -37,6 +37,18 @@
   "POL60": {
    "cleaning": "Cut at 11000 A, where the shortest component table of this obsmode ends (wfpc/wfpc_optics_003_syn.fits): beyond it SVO's stsynphot curve held every component at its last value, with STScI's 30000 A placeholder (hst_ota_007_syn.fits: 'Extrapolated to 30000A for NICMOS'), so it was not measured (Nill, 24 Nov 2026). 1 samples beyond it removed from NJM's copy; no longer SVO's curve.",
    "sources": "https://ssb.stsci.edu/trds/comp/wfpc/wfpc_optics_003_syn.fits"
+  },
+  "F122M": {
+   "cleaning": "Cut at 11000 A (red end): beyond the measured range of wfpc/wfpc_optics_003_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 1e-06), so it was not measured (Nill, 24 Nov 2026). 48 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/wfpc/wfpc_optics_003_syn.fits"
+  },
+  "G200": {
+   "cleaning": "Cut at 11000 A (red end): beyond the measured range of wfpc/wfpc_optics_003_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 5 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/wfpc/wfpc_optics_003_syn.fits"
+  },
+  "G800": {
+   "cleaning": "Cut at 11000 A (red end): beyond the measured range of wfpc/wfpc_optics_003_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 3e-06), so it was not measured (Nill, 24 Nov 2026). 36 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/wfpc/wfpc_optics_003_syn.fits"
   }
  }
 }

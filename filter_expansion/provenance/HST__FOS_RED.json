@@ -1,0 +1,42 @@
+{
+ "facility": "HST",
+ "instrument": "FOS_RED",
+ "bands": {
+  "G160L": {
+   "cleaning": "Cut at 2413.1 A (red end) and from 1606 A (blue start): beyond the measured range of fos/fos_g160l_r_co_003_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 651 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/fos/fos_g160l_r_co_003_syn.fits"
+  },
+  "G190H": {
+   "cleaning": "Cut at 2260 A (red end) and from 1603.4 A (blue start): beyond the measured range of fos/fos_g190h_003_syn.fits and fos/fos_g190h_r_co_003_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 5e-06), so it was not measured (Nill, 24 Nov 2026). 665 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/fos/fos_g190h_003_syn.fits | https://ssb.stsci.edu/trds/comp/fos/fos_g190h_r_co_003_syn.fits"
+  },
+  "G270H": {
+   "cleaning": "Cut at 3277.5 A (red end) and from 2224.3 A (blue start): beyond the measured range of fos/fos_g270h_r_co_003_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 620 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/fos/fos_g270h_r_co_003_syn.fits"
+  },
+  "G400H": {
+   "cleaning": "Cut at 4771.5 A (red end) and from 3246.1 A (blue start): beyond the measured range of fos/fos_g400h_r_co_003_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 5e-06), so it was not measured (Nill, 24 Nov 2026). 580 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/fos/fos_g400h_r_co_003_syn.fits"
+  },
+  "G570H": {
+   "cleaning": "Cut at 6790.6 A (red end) and from 4610 A (blue start): beyond the measured range of fos/fos_g570h_r_co_003_syn.fits and fos/fos_g570h_003_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 513 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/fos/fos_g570h_r_co_003_syn.fits | https://ssb.stsci.edu/trds/comp/fos/fos_g570h_003_syn.fits"
+  },
+  "G650L": {
+   "cleaning": "Cut at 6940.9 A (red end) and from 3920 A (blue start): beyond the measured range of fos/fos_g650l_r_co_003_syn.fits and fos/fos_g650l_003_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 5e-06), so it was not measured (Nill, 24 Nov 2026). 431 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/fos/fos_g650l_r_co_003_syn.fits | https://ssb.stsci.edu/trds/comp/fos/fos_g650l_003_syn.fits"
+  },
+  "G780H": {
+   "cleaning": "Cut at 8493.4 A (red end) and from 6270 A (blue start): beyond the measured range of fos/fos_g780h_r_co_003_syn.fits and fos/fos_og530_003_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 5e-06), so it was not measured (Nill, 24 Nov 2026). 510 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/fos/fos_g780h_r_co_003_syn.fits | https://ssb.stsci.edu/trds/comp/fos/fos_og530_003_syn.fits"
+  },
+  "MIRROR": {
+   "cleaning": "Cut at 8136 A (red end): beyond the measured range of fos/fos_rflcam_r_co_003_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 69 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/fos/fos_rflcam_r_co_003_syn.fits"
+  },
+  "PRISM": {
+   "cleaning": "Cut at 7530 A (red end) and from 2005.9 A (blue start): beyond the measured range of fos/fos_prism_003_syn.fits and fos/fos_prism_r_co_003_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 5e-06), so it was not measured (Nill, 24 Nov 2026). 182 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/fos/fos_prism_003_syn.fits | https://ssb.stsci.edu/trds/comp/fos/fos_prism_r_co_003_syn.fits"
+  }
+ }
+}

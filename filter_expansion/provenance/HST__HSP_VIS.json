@@ -1,0 +1,30 @@
+{
+ "facility": "HST",
+ "instrument": "HSP_VIS",
+ "bands": {
+  "F160LP_A": {
+   "cleaning": "Cut at 7500 A (red end): beyond the measured range of hsp/hsp_ap_clrv_a_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 140 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/hsp/hsp_ap_clrv_a_004_syn.fits"
+  },
+  "F160LP_B": {
+   "cleaning": "Cut at 7500 A (red end): beyond the measured range of hsp/hsp_ap_clrv_b_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 3e-06), so it was not measured (Nill, 24 Nov 2026). 140 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/hsp/hsp_ap_clrv_b_004_syn.fits"
+  },
+  "F400LP_A": {
+   "cleaning": "Cut at 7500 A (red end): beyond the measured range of hsp/hsp_ap_f400v_a_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 140 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/hsp/hsp_ap_f400v_a_004_syn.fits"
+  },
+  "F400LP_B": {
+   "cleaning": "Cut at 7500 A (red end): beyond the measured range of hsp/hsp_ap_f400v_b_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 140 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/hsp/hsp_ap_f400v_b_004_syn.fits"
+  },
+  "F620W_A": {
+   "cleaning": "Cut at 7500 A (red end): beyond the measured range of hsp/hsp_ap_f620v_a_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 5e-06), so it was not measured (Nill, 24 Nov 2026). 140 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/hsp/hsp_ap_f620v_a_004_syn.fits"
+  },
+  "F620W_B": {
+   "cleaning": "Cut at 7500 A (red end): beyond the measured range of hsp/hsp_ap_f620v_b_004_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 5e-06), so it was not measured (Nill, 24 Nov 2026). 140 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/hsp/hsp_ap_f620v_b_004_syn.fits"
+  }
+ }
+}

@@ -1,0 +1,46 @@
+{
+ "facility": "HST",
+ "instrument": "WFPC2-PC",
+ "bands": {
+  "F122M": {
+   "cleaning": "Cut from 1216 A (blue start): beyond the measured range of wfpc2/wfpc2_dqepc1_005_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 2e-06), so it was not measured (Nill, 24 Nov 2026). 8 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/wfpc2/wfpc2_dqepc1_005_syn.fits"
+  },
+  "F130LP": {
+   "cleaning": "Cut at 11000 A (red end) and from 1216 A (blue start): beyond the measured range of wfpc2/wfpc2_dqepc1_005_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 2e-06), so it was not measured (Nill, 24 Nov 2026). 53 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/wfpc2/wfpc2_dqepc1_005_syn.fits"
+  },
+  "F157W": {
+   "cleaning": "Cut from 1216 A (blue start): beyond the measured range of wfpc2/wfpc2_dqepc1_005_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 3e-06), so it was not measured (Nill, 24 Nov 2026). 10 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/wfpc2/wfpc2_dqepc1_005_syn.fits"
+  },
+  "F160BW": {
+   "cleaning": "Cut from 1216 A (blue start): beyond the measured range of wfpc2/wfpc2_dqepc1_005_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 3e-06), so it was not measured (Nill, 24 Nov 2026). 10 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/wfpc2/wfpc2_dqepc1_005_syn.fits"
+  },
+  "F165LP": {
+   "cleaning": "Cut at 11000 A (red end): beyond the measured range of wfpc2/wfpc2_dqepc1_005_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 2e-06), so it was not measured (Nill, 24 Nov 2026). 46 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/wfpc2/wfpc2_dqepc1_005_syn.fits"
+  },
+  "F170W": {
+   "cleaning": "Cut from 1216 A (blue start): beyond the measured range of wfpc2/wfpc2_dqepc1_005_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 3e-06), so it was not measured (Nill, 24 Nov 2026). 8 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/wfpc2/wfpc2_dqepc1_005_syn.fits"
+  },
+  "F785LP": {
+   "cleaning": "Cut at 11000 A (red end): beyond the measured range of wfpc2/wfpc2_f785lp_006_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 3e-06), so it was not measured (Nill, 24 Nov 2026). 67 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/wfpc2/wfpc2_f785lp_006_syn.fits"
+  },
+  "F850LP": {
+   "cleaning": "Cut at 11000 A (red end): beyond the measured range of wfpc2/wfpc2_f850lp_006_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 4e-06), so it was not measured (Nill, 24 Nov 2026). 69 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/wfpc2/wfpc2_f850lp_006_syn.fits"
+  },
+  "F953N": {
+   "cleaning": "Cut at 9650 A (red end) and from 9457 A (blue start): beyond the measured range of wfpc2/wfpc2_f953n_005_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 5e-06), so it was not measured (Nill, 24 Nov 2026). 920 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/wfpc2/wfpc2_f953n_005_syn.fits"
+  },
+  "POLQ": {
+   "cleaning": "Cut at 11000 A (red end) and from 1216 A (blue start): beyond the measured range of wfpc2/wfpc2_dqepc1_005_syn.fits, SVO's stsynphot curve held the table at its value at that end (curve / other components = that value to 2e-06), so it was not measured (Nill, 24 Nov 2026). 68 samples removed from NJM's copy; no longer SVO's curve.",
+   "sources": "https://ssb.stsci.edu/trds/comp/wfpc2/wfpc2_dqepc1_005_syn.fits"
+  }
+ }
+}
