@@ -200,10 +200,19 @@ Added
   cubes in parts of wavelengths, reads no spectrum, and equals each variant
   cube at that variant's nodes; a node no variant fills is zero. Its first
   int32 is -1, then ``FLUXCUBE`` and a version, so every reader tells it from
-  a 3-axis cube. Its header (``sed_tools/cube/fileio.py``, version 2) stores
+  a 3-axis cube. Its header (``sed_tools/cube/fileio.py``, version 3) stores
   how many bytes each axis name and text value takes, so names of any length
-  are kept. Version 1 files (19–24 Nov 2026, named ``flux_cube.bin``) are
-  still read. ``SED.local("<grid>")`` and ``SED().model("<grid>")`` open it,
+  are kept, and its flux holds each node's spectrum in one piece, so one
+  evaluation reads only its neighbouring nodes' spectra. By computation, that
+  is about 0.6 GB of CAP18-large's 339 GB and 3.2 GB of
+  Goettingen-HiRes-alpha's 321 GB; version 2, which stored the spectra one
+  wavelength at a time as a 3-axis cube does, read 21–35 GB and 112–190 GB.
+  On a 2.3 GB test cube the first evaluation from disk takes 0.07 s and reads
+  21 MiB (version 2: 5.6 s and about 1,400 MiB), with the same values to the
+  last bit. Version 2 files (24 Nov 2026) and version 1 files (19–24 Nov
+  2026, named ``flux_cube.bin``) are still read; ``sed-tools rebuild``
+  rewrites them as version 3. ``SED.local("<grid>")`` and
+  ``SED().model("<grid>")`` open it,
   and take each extra axis by keyword, ``sed(5800, 4.4, 0.0, alpha=0.2)``:
   cubic Hermite on every numeric axis, as the 3-axis cube, with empty nodes
   blended in as zeros and values beyond an axis clamped; a text-valued axis is

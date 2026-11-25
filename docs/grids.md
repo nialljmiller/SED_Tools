@@ -158,7 +158,9 @@ spectrum = sed(teff=40000, logg=4.0, metallicity=0.0)
 The top folder loads the all-axes cube, `flux_cube_nd.bin`. It takes each extra
 axis by keyword and interpolates it like Teff, log g and [M/H] (cubic Hermite);
 a text-valued axis is matched exactly. A missing or unknown keyword raises
-ValueError naming the axes.
+ValueError naming the axes. The file stores each node's spectrum in one piece,
+so an evaluation reads only the spectra of the nodes around the point, a small
+part of the file even for the largest grids.
 
 ```python
 from sed_tools.api import SED
@@ -190,6 +192,12 @@ sed-tools rebuild --grids Husfeld
 The rebuild writes `flux_cube_nd.bin`. A split grid that has neither file (split
 before the all-axes cube existed) needs only the rebuild, or a new download of
 the grid.
+
+A `flux_cube_nd.bin` written before 25 Nov 2026 (header version 2) is still
+read and gives the same values, but it stores the spectra one wavelength at a
+time, so an evaluation reads much of the file: up to 190 GB for the largest MSG
+grids. `sed-tools rebuild --grids NAME` rewrites it in the current layout
+(version 3).
 
 ## Rebuilding
 
