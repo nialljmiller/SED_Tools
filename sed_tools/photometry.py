@@ -289,8 +289,10 @@ def band_integral(wavelength, transmission, flux=None, power: int = 0) -> float:
     """∫ T F λ^power dλ on a :func:`band_grid` (``flux`` F omitted: 1), the one rule for every band quantity: band
     averages, zero points, pivot and other wavelengths, and shares of the band.
 
-    T is linear between the grid's wavelengths, and so is F (a spectrum's own wavelengths are on the grid; see
-    :func:`on_band_grid`), and the integral of that product is exact (see :func:`_step_integrals`).
+    T and F are taken as linear between the grid's wavelengths, on which the integral of their product is exact
+    (see :func:`_step_integrals`). T is linear between the curve's samples, so that is exact for T; F is log-linear
+    between a spectrum's positive samples (see :func:`on_band_grid`), and the grid's steps of at most
+    lambda / :data:`BAND_RESOLVING_POWER` follow it closely.
     """
     return float(_step_integrals(wavelength, transmission, flux, power).sum())
 
@@ -437,6 +439,31 @@ def _warn_outside_sed(sed_wavelength: np.ndarray, curves: Iterable[FilterCurve])
         )
 
 
+#: Stands in for log10 of a zero or negative sample, which the log rule of :func:`resample_to_grid` never uses.
+_FLUX_FLOOR = 1e-300
+
+
+def resample_to_grid(wl_src: Sequence[float], fl_src: Sequence[float], wl_tgt: Sequence[float]) -> np.ndarray:
+    """A spectrum's flux at the wavelengths ``wl_tgt`` (Å): the one rule for a spectrum between its samples, used by
+    every flux cube builder and every band average (:func:`on_band_grid`).
+
+    Between two samples that are both positive, log flux is linear in wavelength, which is closer than linear flux
+    on coarsely sampled continua; between two where either is zero or negative, the flux is linear (Nill, 25 Nov
+    2026, Q12). A sample keeps its own value: a positive one as ``10**log10`` of it, as cubes have always stored
+    it, and a zero or negative one as it is. Outside the spectrum's range the flux is zero: no flux is invented
+    beyond a spectrum's coverage. ``wl_src`` increases.
+    """
+    wl = np.asarray(wl_src, dtype=np.float64)
+    fl = np.asarray(fl_src, dtype=np.float64)
+    at = np.asarray(wl_tgt, dtype=np.float64)
+    i = np.clip(np.searchsorted(wl, at, side="right") - 1, 0, max(wl.size - 2, 0))  # the step each point is in
+    j = np.minimum(i + 1, wl.size - 1)
+    log_rule = ((fl[i] > 0) & (fl[j] > 0)) | ((at == wl[i]) & (fl[i] > 0)) | ((at == wl[j]) & (fl[j] > 0))
+    flux = np.where(log_rule, 10.0 ** np.interp(at, wl, np.log10(np.maximum(fl, _FLUX_FLOOR))), np.interp(at, wl, fl))
+    flux[(at < wl[0]) | (at > wl[-1])] = 0.0
+    return flux
+
+
 def on_band_grid(
     sed_wavelength: Sequence[float], sed_flux: Sequence[float], wavelength: Sequence[float],
     transmission: Sequence[float],
@@ -444,14 +471,15 @@ def on_band_grid(
     """A spectrum and a filter curve on :func:`band_grid` with the spectrum's wavelengths: (wavelength, transmission,
     flux).
 
-    The spectrum is linear between its samples (interpolated onto the grid), as the curve is between its own, and
+    The spectrum is put onto the grid by :func:`resample_to_grid` (log flux linear between positive samples,
+    flux linear next to a zero or negative one), the curve linearly between its own samples, and the spectrum is
     zero beyond its range: an end of the spectrum inside the band is a vertical edge (its wavelength twice, the
     second with flux 0), so no flux is ramped down beyond it.  A coarsely tabulated curve (Johnson U: 13 samples)
     then sees every spectral feature in its band, not the spectrum at its 13 wavelengths.
     """
     sed_wavelength = np.asarray(sed_wavelength, dtype=float)
     grid, t = band_grid(wavelength, transmission, sed_wavelength)
-    flux = np.interp(grid, sed_wavelength, sed_flux, left=0.0, right=0.0)
+    flux = resample_to_grid(sed_wavelength, sed_flux, grid)
     blue = np.searchsorted(grid, sed_wavelength[0], side="left")  # its ends inside the curve are on the grid
     red = np.searchsorted(grid, sed_wavelength[-1], side="right")
     if 0 < blue < grid.size:

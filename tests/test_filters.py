@@ -1517,13 +1517,15 @@ def vega_quantities_need_coverage_where_the_filter_transmits(t):
 def a_coarse_curve_sees_the_spectrum_between_its_samples(t):
     from sed_tools.photometry import FilterCurve, band_average_flux_lambda
 
-    # A flat band tabulated at three points, and a flat spectrum with a line between them (height 11 at 4500 Å):
-    # (2000 + 1000) / 2000 = 1.5, where the curve's own samples see 1.0.
+    # A flat band tabulated at three points, and a flat spectrum with a line between them (height 11 from 4401 to
+    # 4599 Å, 1 Å edges): (2000 + 1980 + 10) / 2000 = 1.995, where the curve's own samples see 1.0. The spectrum's
+    # steps in the band are flat or shorter than lambda/100, so the band grid holds only its samples: exact.
     curve = FilterCurve("c", np.array([4000.0, 5000.0, 6000.0]), np.ones(3), {}, detector_type=ENERGY)
-    spectrum = np.array([3000.0, 4400.0, 4500.0, 4600.0, 7000.0]), np.array([1.0, 1.0, 11.0, 1.0, 1.0])
-    assert band_average_flux_lambda(*spectrum, curve) == pytest.approx(1.5, rel=1e-12)
+    spectrum = (np.array([3000.0, 4400.0, 4401.0, 4599.0, 4600.0, 7000.0]),
+                np.array([1.0, 1.0, 11.0, 11.0, 1.0, 1.0]))
+    assert band_average_flux_lambda(*spectrum, curve) == pytest.approx(1.995, rel=1e-12)
     p = filter_properties(curve.wavelength, curve.transmission, ENERGY, vega=spectrum, sun=spectrum)
-    assert p["ZeroPointVega_flam"] == pytest.approx(1.5, rel=1e-12) and p["Fsun"] == pytest.approx(1.5, rel=1e-12)
+    assert p["ZeroPointVega_flam"] == pytest.approx(1.995, rel=1e-12) and p["Fsun"] == pytest.approx(1.995, rel=1e-12)
 
 
 @row
@@ -1535,18 +1537,37 @@ def a_long_gap_between_samples_is_one_line_for_every_band_quantity(t):
     lam, tr = np.array([4000.0, 12000.0]), np.array([1.0, 0.0])
     pivot = math.sqrt(4000.0 * 8000.0 / (2.0 - math.log(3.0)))
     curve = FilterCurve("gap", lam, tr, {}, detector_type=ENERGY)
-    spectra = [(np.array([3000.0, 6000.0, 6100.0, 13000.0]), np.array([2.0, 1.0, 5.0, 0.5])),
-               (np.array([3000.0, 13000.0]), np.array([1.0, 3.0]))]
-    fine = np.linspace(4000.0, 12000.0, 400001)  # the same lines, resolved: the reference f_nu
-    for sl, sf in spectra:
-        f, w = np.interp(fine, sl, sf), np.interp(fine, lam, tr)
+    # The spectra follow the log rule between their samples (Q12); the band grid's steps of lambda/100 follow that
+    # curve to 1.6e-6 on the smooth spectrum and to 1.2e-3 on the steep one (x5 in 100 A, two grid steps).
+    spectra = [(np.array([3000.0, 6000.0, 6100.0, 13000.0]), np.array([2.0, 1.0, 5.0, 0.5]), 2e-3),
+               (np.array([3000.0, 13000.0]), np.array([1.0, 3.0]), 1e-5)]
+    fine = np.linspace(4000.0, 12000.0, 400001)  # the same curves, resolved: the reference f_nu
+    for sl, sf, tolerance in spectra:
+        f, w = 10.0 ** np.interp(fine, sl, np.log10(sf)), np.interp(fine, lam, tr)
         f_nu = np.trapezoid(f * w, fine) / np.trapezoid(w * SPEED_OF_LIGHT_ANG_PER_S / fine**2, fine)
-        assert band_average_flux_nu(sl, sf, curve) == pytest.approx(f_nu, rel=1e-8)
+        assert band_average_flux_nu(sl, sf, curve) == pytest.approx(f_nu, rel=tolerance)
         assert band_average_flux_nu(sl, sf, curve) / band_average_flux_lambda(sl, sf, curve) == pytest.approx(
             pivot**2 / SPEED_OF_LIGHT_ANG_PER_S, rel=1e-8)
-    p = filter_properties(lam, tr, ENERGY, vega=spectra[0])
+    p = filter_properties(lam, tr, ENERGY, vega=spectra[0][:2])
     assert p["WavelengthPivot"] == pytest.approx(pivot, rel=1e-8)
-    assert p["ZeroPointVega_Jy"] == pytest.approx(band_average_flux_nu(*spectra[0], curve) / 1e-23, rel=1e-12)
+    assert p["ZeroPointVega_Jy"] == pytest.approx(band_average_flux_nu(*spectra[0][:2], curve) / 1e-23, rel=1e-12)
+
+
+@row
+def a_spectrum_is_log_linear_between_positive_samples_and_linear_next_to_others(t):
+    # Cubes were built log-linear, with a zero or negative sample stored as 1e-300 and the steps beside it emptied,
+    # and photometry was linear: one rule for both now (Nill, 25 Nov 2026, Q12: "log, straight line where needed").
+    from sed_tools.cube.build import resample_to_grid as cube_rule
+    from sed_tools.photometry import FilterCurve, band_average_flux_lambda, resample_to_grid
+
+    assert cube_rule is resample_to_grid
+    wl, flux = np.array([1000.0, 2000.0, 3000.0, 4000.0, 5000.0]), np.array([1.0, 4.0, 0.0, -2.0, 6.0])
+    out = resample_to_grid(wl, flux, [500.0, 1500.0, 2500.0, 3000.0, 3500.0, 4000.0, 4500.0, 6000.0])
+    assert out[0] == out[-1] == 0.0 and out[1] == pytest.approx(2.0, rel=1e-12)  # outside; the geometric midpoint
+    assert list(out[2:7]) == [2.0, 0.0, -1.0, -2.0, 2.0]  # straight lines beside a zero or negative sample
+    # Photometry follows it: a box band over one step beside a zero sample sees that step's straight line.
+    box = FilterCurve("box", np.array([2000.0, 3000.0]), np.ones(2), {}, detector_type=ENERGY)
+    assert band_average_flux_lambda(wl, flux, box) == pytest.approx(2.0, rel=1e-12)
 
 
 @row

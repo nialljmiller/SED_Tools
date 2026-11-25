@@ -76,9 +76,18 @@ wavelengths) uses one rule, in `sed_tools.photometry.band_integral`:
 - The integral is taken on the curve's own samples, the spectrum's
   wavelengths inside the band, and extra points that split any step longer
   than λ/R, with R = `BAND_RESOLVING_POWER`.
-- The transmission T and the flux F are linear between those wavelengths,
-  and the integral of their product (times λ for a photon-counting curve) is
-  exact.
+- The spectrum is put onto those wavelengths by the one rule SED_Tools uses
+  for a spectrum between its samples, the cube builders too
+  (`sed_tools.photometry.resample_to_grid`): log F is linear in λ between two
+  positive samples, and F is linear between two where either is zero or
+  negative. On coarsely sampled continua the log rule is the closer of the
+  two (Johnson M on a Husfeld-like sampling: 0.02 mag off instead of 0.10).
+- T and F are then taken as linear between those wavelengths, and the
+  integral of their product (times λ for a photon-counting curve) is exact.
+  That is exact for T; for F it follows the log rule to about 1e-6 on a
+  smooth continuum. Where a spectrum's own steps are shorter than λ/R the
+  wavelengths are its own samples, and nothing is approximated. On a steep
+  step longer than λ/R (a factor 5 over 100 Å) it is about 1e-3.
 - An energy-counting curve is weighted by T(λ), a photon-counting one by
   T(λ)·λ ([Filters](filters.md) explains `DetectorType`).
 

@@ -226,8 +226,11 @@ combined = SED.combine(["bbody", "Husfeld"], output="hot_and_bb_py")
 ```
 
 The combined cube's wavelengths are the union of the grids' own, so it keeps
-each grid's whole coverage. Each spectrum keeps its own flux, and a node no
-spectrum fills stays at zero. A grid that lacks an axis the others have
+each grid's whole coverage. Each spectrum keeps its own flux; between its
+samples it follows the rule photometry uses (log F linear in λ between
+positive samples, F linear next to a zero or negative one; see
+[Photometry](photometry.md)). Every cube stores a spectrum's zero and negative
+samples as they are. A node no spectrum fills stays at zero. A grid that lacks an axis the others have
 (bbody has no log g) is used at every value of that axis. A combination whose
 extra axes vary is split into variants, and the command names the variant
 folders to give MESA. Combining again into the same output folder replaces
