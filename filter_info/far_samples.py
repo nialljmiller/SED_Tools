@@ -5,8 +5,10 @@ Two classes of curves are curated:
 
 A  ESO La Silla filter tables: the curve's Sources cite an ESO-MIDAS XFilter member (``eso*.mt``) or an
    ls.eso.org WFI, SUSI2 or EMMI-archive filter file. ESO's opticians scanned 300-1200 nm and left out readings below about
-   1e-4, so a gap next to an isolated reading is zero, not a line ("Zero in those gaps"). Each such gap gets
-   T = 0 samples half a median step inside both of its ends. A reading at 1100 or 1200 nm for which ESO's RLEAK
+   1e-4, so a gap next to an isolated reading is zero, not a line ("Zero in those gaps"). Each such gap is
+   filled with T = 0 samples whose spacing starts from the neighbouring real step at each end and grows by at most
+   a factor 2 per step, symmetric from both ends ("Space the zeros out", Nill, 25 Nov 2026), so no integration
+   rule that works on the curve's own samples (MESA's Simpson zero points) meets a short step beside a long one. A reading at 1100 or 1200 nm for which ESO's RLEAK
    keyword declares a leak there stays as it is (the gaps next to it are not zeroed).
 C  HST curves that SVO computed with stsynphot, which holds each component table at its last value beyond its end
    and at its first value below its start. Where STScI's tables confirm such a hold (the curve divided by the other
@@ -23,11 +25,14 @@ Every path whose data rows equal a curve of a class is that class too (exact cop
 filter_expansion/provenance/<Facility>__<Instrument>.json, bands.<band>.cleaning, which info.json shows.
 
   python3 -m filter_info.far_samples DATA_DIR --dry-run         # list what would change
+  ... --originals DIR [DIR ...]   take each class A curve as it was published from the first DIR holding a copy
+                                  (e.g. the backups of an earlier run of this rule) and apply the rule to it
   python3 -m filter_info.far_samples DATA_DIR --apply BACKUP    # back up every changed file there, then write
 """
 import argparse
 import hashlib
 import json
+import math
 import re
 import shutil
 import sys
@@ -45,9 +50,11 @@ ESO_WEB = ("ls.eso.org/sci/facilities/lasilla/instruments/wfi/", "ls.eso.org/sci
            "ls.eso.org/lasilla/sciops/ntt/emmi/archive/filters/")
 HELD_MAXDEV = 1e-4  # the hold is confirmed when curve / other components equals the held value to this
 TRDS = "https://ssb.stsci.edu/trds/comp/"
-NOTE_A = ("T = 0 samples added inside the {n} gap(s) next to the isolated ESO reading(s) at {where} A: ESO's La Silla "
-          "tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; "
-          "{src}). ESO's readings are kept.")
+NOTE_A = ("T = 0 samples fill the {n} gap(s) next to the isolated ESO reading(s) at {where} A, spaced from the "
+          "neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below "
+          "about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; {src}). "
+          "ESO's readings are kept.")
+GROWTH = 2.0
 NOTE_A_LEAK = " The reading(s) at {kept} A stay with their gaps: ESO's RLEAK keyword declares a leak there ({rleak})."
 NOTE_C = ("Cut {where}: beyond the measured range of {tables}, SVO's stsynphot curve held the table at its value at that end "
           "(curve / other components = that value to {dev:.0e}), so it was not measured (Nill, 24 Nov 2026). {n} samples "
@@ -105,7 +112,7 @@ def declared_leak(rleak, wavelength):
     return None
 
 
-def plan(data_dir):
+def plan(data_dir, originals=()):
     filters = Path(data_dir) / "filters"
     ends = {(r["inst"], r["band"]): r for r in json.loads((EVIDENCE / "stsci" / "hst_component_ends.json").read_text())}
     leaks = rleak_table()
@@ -116,10 +123,18 @@ def plan(data_dir):
         except (ValueError, IndexError):
             continue
         rel = str(path.relative_to(filters))
-        curves[rel] = (path, head, lines, data, meta)
+        source = next((Path(o) / "data" / "filters" / rel for o in originals
+                       if (Path(o) / "data" / "filters" / rel).is_file()), None)
+        if source is not None:  # the class A rule is applied to the curve as it was published
+            _, o_lines, o_data, o_meta = read_curve(source)
+            if ESO_MEMBER.search(o_meta.get("Sources", "")) or any(w in o_meta.get("Sources", "") for w in ESO_WEB):
+                curves[rel] = (path, head, o_lines, o_data, meta, lines)
+                by_rows.setdefault(hashlib.sha256("\n".join(o_lines).encode()).hexdigest(), []).append(rel)
+                continue
+        curves[rel] = (path, head, lines, data, meta, lines)
         by_rows.setdefault(hashlib.sha256("\n".join(lines).encode()).hexdigest(), []).append(rel)
     changes = {}
-    for rel, (path, head, lines, data, meta) in curves.items():
+    for rel, (path, head, lines, data, meta, _) in curves.items():
         far, share = isolated(data[:, 0], data[:, 1])
         if not far:
             continue
@@ -130,7 +145,7 @@ def plan(data_dir):
         member = ESO_MEMBER.search(src)
         if member or any(w in src for w in ESO_WEB):
             changes[rel] = {"class": "A", "far": far, "share": share, "member": member and member.group(1)}
-    for rel, (path, head, lines, data, meta) in curves.items():
+    for rel, (path, head, lines, data, meta, _) in curves.items():
         fac, inst, band = rel[:-4].split("/")
         record = ends.get((inst, band)) if fac == "HST" and "svo2.cab.inta-csic.es" in meta.get("Sources", "") else None
         cuts = {}
@@ -148,8 +163,31 @@ def plan(data_dir):
     return curves, changes, leaks
 
 
+def gap_points(left, right, step_left, step_right, q=GROWTH):
+    """Points strictly inside (left, right): step i is min(step_left q^i, step_right q^(n-1-i), C), with the fewest
+    steps n that span the gap and the cap C that makes them span it exactly; so neighbouring steps differ by at most a
+    factor q, and the first and last steps by at most q from the real steps beside the gap."""
+    width = right - left
+
+    def steps(n, cap):
+        return [min(step_left * q ** i, step_right * q ** (n - 1 - i), cap) for i in range(n)]
+
+    n = 1
+    while sum(steps(n, math.inf)) < width:
+        n += 1
+    lo, hi = 0.0, max(steps(n, math.inf))
+    for _ in range(200):
+        mid = (lo + hi) / 2
+        lo, hi = (mid, hi) if sum(steps(n, mid)) < width else (lo, mid)
+    out, x = [], left
+    for st in steps(n, hi)[:-1]:
+        x += st
+        out.append(round(x, 6))
+    return [x for x in out if left < x < right]
+
+
 def new_curve(curve, change, leaks):
-    path, head, lines, data, meta = curve
+    path, head, lines, data, meta, _ = curve
     lam = data[:, 0]
     fac, inst, band = str(path)[:-4].split("/")[-3:]
     if change["class"] == "C":
@@ -174,17 +212,20 @@ def new_curve(curve, change, leaks):
         removed = len(lines) - len([l for l in keep_lines if l in set(lines)])
         note = NOTE_C.format(where=" and ".join(where), tables=" and ".join(dict.fromkeys(tables)), dev=max(devs), n=removed)
         return head, keep_lines, note, {"sources": " | ".join(dict.fromkeys(comps)), "add_source": comps}
-    h = float(np.median(np.diff(lam))) / 2
+    step = np.diff(lam)
+    median = float(np.median(step))
+    big = (step > 0.1 * lam[:-1]) & (step > 20 * median)
     rleak = leaks.get(change.get("member") or "", "")
     kept, zero_at = [], set()
     for i in change["far"]:
         if declared_leak(rleak, lam[i]):
             kept.append(i)
             continue
-        if i > 0:
-            zero_at |= {float(lam[i - 1] + h), float(lam[i] - h)}
-        if i < lam.size - 1:
-            zero_at |= {float(lam[i] + h), float(lam[i + 1] - h)}
+        for a in (i - 1, i):  # the gaps on each side of the isolated reading
+            if 0 <= a < lam.size - 1:
+                left = float(step[a - 1]) if a > 0 and not big[a - 1] else median
+                right = float(step[a + 1]) if a + 1 < step.size and not big[a + 1] else median
+                zero_at |= set(gap_points(float(lam[a]), float(lam[a + 1]), left, right))
     out = list(lines)
     for x in sorted(zero_at, reverse=True):
         k = int(np.searchsorted(lam, x))
@@ -206,20 +247,21 @@ def main(argv=None):
     group.add_argument("--dry-run", action="store_true")
     group.add_argument("--apply", type=Path, metavar="BACKUP_DIR")
     ap.add_argument("--log", type=Path)
+    ap.add_argument("--originals", type=Path, nargs="+", default=())
     args = ap.parse_args(argv)
-    curves, changes, leaks = plan(args.data_dir)
+    curves, changes, leaks = plan(args.data_dir, args.originals)
     log, provenance = {}, {}
     for rel in sorted(changes):
         change = changes[rel]
         head, rows, note, extra = new_curve(curves[rel], change, leaks)
-        old_rows = curves[rel][2]
+        old_rows = curves[rel][5]  # the rows served now
         changed = rows != old_rows or head != curves[rel][1]
         log[rel] = {"class": change["class"], "copy_of": change.get("copy_of"), "share": round(change["share"], 4),
                     "rows": [len(old_rows), len(rows)], "changed": changed, "note": note}
         if not changed:
             continue
         fac, inst, band = rel[:-4].split("/")
-        provenance.setdefault(f"{fac}__{inst}", {})[band] = {"cleaning": note,
+        provenance.setdefault(f"{fac}__{inst}", {})[band] = {"cleaning": note, "replace": change["class"] == "A",
                                                              **({"sources": extra["sources"]} if extra else {})}
         if args.apply:
             path = curves[rel][0]
@@ -240,8 +282,9 @@ def main(argv=None):
                                                                     "instrument": name.split("__")[1], "bands": {}}
         for band, fields in bands.items():
             entry = doc.setdefault("bands", {}).setdefault(band, {})
+            replace = fields.pop("replace", False)  # class A's note describes the whole curve: it replaces its own
             for key, value in fields.items():  # an earlier curation's note and sources are kept, the new one added
-                old = entry.get(key)
+                old = None if replace and key == "cleaning" else entry.get(key)
                 entry[key] = value if not old or value in old else f"{old} | {value}" if key == "sources" else f"{old} {value}"
         if args.apply:
             if path.is_file():
