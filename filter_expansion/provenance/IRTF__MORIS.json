@@ -1,0 +1,42 @@
+{
+ "facility": "IRTF",
+ "instrument": "MORIS",
+ "bands": {
+  "Dichr_800nm": {
+   "cleaning": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/). The dichroic curve holds no filter: the caption gives panel (a) as 'Response with no filter'. Incomplete: the figure ends at about 1000 nm, where this curve still transmits; it ends at its last drawn point. Components optics+qe+instrument (was filter+optics+qe+instrument in the manifest): the re-digitised curve's header: Gulbis et al. 2011, Fig. 4, panel (a), 'Response with no filter' (Nill, 25 Nov 2026, Q33).",
+   "sources": "https://doi.org/10.1086/659636"
+  },
+  "Dichr_950nm": {
+   "cleaning": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/). The dichroic curve holds no filter: the caption gives panel (a) as 'Response with no filter'. Incomplete: the figure ends at about 1000 nm, where this curve still transmits; it ends at its last drawn point. Components optics+qe+instrument (was filter+optics+qe+instrument in the manifest): the re-digitised curve's header: Gulbis et al. 2011, Fig. 4, panel (a), 'Response with no filter' (Nill, 25 Nov 2026, Q33).",
+   "sources": "https://doi.org/10.1086/659636"
+  },
+  "OG590": {
+   "cleaning": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/). Incomplete: the figure ends at about 1000 nm, where this curve still transmits; it ends at its last drawn point.",
+   "sources": "https://doi.org/10.1086/659636"
+  },
+  "V": {
+   "cleaning": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/).",
+   "sources": "https://doi.org/10.1086/659636"
+  },
+  "VR": {
+   "cleaning": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/).",
+   "sources": "https://doi.org/10.1086/659636"
+  },
+  "g": {
+   "cleaning": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/).",
+   "sources": "https://doi.org/10.1086/659636"
+  },
+  "i": {
+   "cleaning": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/).",
+   "sources": "https://doi.org/10.1086/659636"
+  },
+  "r": {
+   "cleaning": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/).",
+   "sources": "https://doi.org/10.1086/659636"
+  },
+  "z": {
+   "cleaning": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/). Incomplete: the figure ends at about 1000 nm, where this curve still transmits; it ends at its last drawn point.",
+   "sources": "https://doi.org/10.1086/659636"
+  }
+ }
+}

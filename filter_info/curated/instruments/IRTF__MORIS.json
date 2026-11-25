@@ -1,3 +1,4 @@
 {
-  "short_description": "IRTF MORIS fast visible camera on SpeX: g r i z V VR OG590, dichroics"
+  "short_description": "IRTF MORIS fast visible camera on SpeX: g r i z V VR OG590, dichroics",
+  "notes": "Since 25 Nov 2026 the nine curves are re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4 (Nill: \"Re-digitise the figure\"): they describe MORIS as it was in 2011 (IRTF's 2020 manual lists a changed filter wheel). Four curves, both dichroics, OG590 and z, end where the figure ends, at about 1000 nm, while still transmitting, and are incomplete. The dichroic curves hold no filter (panel (a), \"Response with no filter\"). SVO's earlier records, whose wavelengths were a digitiser axis and not Angstrom, are kept in source_evidence/moris/svo-originals/."
 }
