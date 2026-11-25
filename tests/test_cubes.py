@@ -178,33 +178,46 @@ def trailing_bytes_emit_warning_but_do_not_raise(t):
     assert "trailing data" in t.capsys.readouterr().out.lower()
 
 
-#: name: (the all-axes cube of _two_variant_grid's bytes made corrupt, what the ValueError says). Its header: -1 at
-#: 0, FLUXCUBE at 4, version at 12, P = 4 at 16, the name width 5 at 20, the 9 counts from 24, the names from 60.
+#: name: (the all-axes cube of the split Kurucz pair's bytes made corrupt, or as an earlier version wrote it; what
+#: the ValueError says, or None). Its header: -1 at 0, FLUXCUBE at 4, version at 12, P = 4 at 16, the name width 5
+#: at 20, the 9 counts from 24, the names from 60.
 CORRUPT_HEADERS = {
     "a_corrupt_all_axes_header_is_refused_no_magic": (lambda b: b[:4] + b"NOTACUBE" + b[12:], "has no FLUXCUBE header"),
     "a_corrupt_all_axes_header_is_refused_unknown_version": (
-        lambda b: b[:12] + struct.pack("<i", 3) + b[16:], "version 3 with 4 axes is not one this reads"),
+        lambda b: b[:12] + struct.pack("<i", 4) + b[16:], "version 4 with 4 axes is not one this reads"),
     "a_corrupt_all_axes_header_is_refused_fewer_than_3_axes": (
-        lambda b: b[:16] + struct.pack("<i", 2) + b[20:], "version 2 with 2 axes is not one this reads"),
+        lambda b: b[:16] + struct.pack("<i", 2) + b[20:], "version 3 with 2 axes is not one this reads"),
     "a_corrupt_all_axes_header_is_refused_no_name_width": (
         lambda b: b[:20] + struct.pack("<i", 0) + b[24:], "truncated or gives an empty axis or name"),
     "a_corrupt_all_axes_header_is_refused_an_empty_axis": (
         lambda b: b[:24] + struct.pack("<i", 0) + b[28:], "truncated or gives an empty axis or name"),
     "a_corrupt_all_axes_header_is_refused_truncated": (lambda b: b[:40], "truncated or gives an empty axis or name"),
     "a_corrupt_all_axes_header_is_refused_wrong_size": (lambda b: b[:-8], r"bytes, but its all-axes header gives"),
-    # Version 1 (19-24 Nov 2026, named flux_cube.bin): no name width, 32 bytes per name; it is still read.
-    "a_version_1_all_axes_cube_is_read": (lambda b: b[:12] + struct.pack("<2i", 1, 4) + b[24:60] + b"".join(
-        b[60 + 5 * k:65 + 5 * k].ljust(32) for k in range(4)) + b[80:], None),
+    # Version 2 (24 Nov 2026): the flux in blocks of (wavelength, [M/H], log g, Teff); still read, to the same bits.
+    "a_version_2_all_axes_cube_is_read": (lambda b: _as_version_2(b), None),
+    # Version 1 (19-24 Nov 2026, named flux_cube.bin): version 2 with no name width, 32 bytes per name.
+    "a_version_1_all_axes_cube_is_read": (lambda b: (lambda v2: v2[:12] + struct.pack("<2i", 1, 4) + v2[24:60]
+                                                     + b"".join(v2[60 + 5 * k:65 + 5 * k].ljust(32) for k in range(4))
+                                                     + v2[80:])(_as_version_2(b)), None),
 }
 
 
+def _as_version_2(b):
+    """The version 3 all-axes cube ``b`` (P = 4) as version 2 stores it."""
+    *n, nw = struct.unpack("<5i", b[24:44])
+    head = len(b) - 8 * nw * int(np.prod(n))
+    flux = np.frombuffer(b[head:], dtype="<f8").reshape(n[3], n[2], n[1], n[0], nw)
+    return b[:12] + struct.pack("<i", 2) + b[16:head] + np.moveaxis(flux, -1, 1).tobytes()
+
+
 def _corrupt_header(t, corrupt, message):
-    grid = _build(_two_variant_grid(t.tmp / "G"))
+    grid = _kurucz_alpha(t.tmp / "K", build=True)
     (t.tmp / "bad.bin").write_bytes(corrupt((grid / ND).read_bytes()))
-    if message is None:
+    if message is None:  # at nodes and between them, the same bits as version 3
         assert fileio.read_header(t.tmp / "bad.bin").names == ["teff", "logg", "meta", "alpha"]
-        assert np.array_equal(SEDModel("v1", t.tmp / "bad.bin")(5000, 4.0, 0.0, alpha=0.4).flux,
-                              SEDModel("v2", grid / ND)(5000, 4.0, 0.0, alpha=0.4).flux)
+        old, new = SEDModel("old", t.tmp / "bad.bin"), SEDModel("v3", grid / ND)
+        for point in ((5750.0, 4.0, -0.5, 0.0), (6250.0, 4.5, 0.0, 0.4), (5900.0, 4.2, -0.3, 0.13)):
+            assert np.array_equal(old(*point[:3], alpha=point[3]).flux, new(*point[:3], alpha=point[3]).flux)
         return
     with pytest.raises(ValueError, match=message):
         SEDModel("bad", t.tmp / "bad.bin")
@@ -541,24 +554,25 @@ def a_split_grid_opens_by_its_all_axes_cube_and_refuses_a_flux_cube_bin_at_its_t
 @row
 def the_all_axes_cube_equals_each_variant_cube_at_that_variants_nodes(t):
     # D1, D4: the golden Kurucz pair split by alpha; lh and vtur are constant, so they are no axes. Each variant's
-    # flux is stored unchanged in its block of the all-axes cube, and evaluated at its nodes the two agree exactly.
+    # spectra are stored unchanged in the all-axes cube, and evaluated at its nodes the two agree exactly. Version 3
+    # stores each node's spectrum whole, at node ((alpha * n_meta + meta) * n_logg + logg) * n_teff + teff.
     from sed_tools.cube.variants import _variant_rows
 
     folder = _kurucz_alpha(t.tmp / "K", build=True)
     header = fileio.read_header(folder / ND)
     assert header.names == ["teff", "logg", "meta", "alpha"] and header.labels == {}
-    stored = np.memmap(folder / ND, dtype="<f8", mode="r", offset=header.offset, shape=header.shape)
+    (nt, nl, nm, _), nw = map(len, header.axes), len(header.wavelengths)
     model = SEDModel("K", folder / ND)
     for row in _variant_rows(folder / "variants_index.csv")[1]:
         variant = FluxCube.from_file(str(folder / row["path"] / "flux_cube.bin"))
-        at = [np.searchsorted(header.axes[k], axis) for k, axis in
-              enumerate((variant.teff_grid, variant.logg_grid, variant.meta_grid))]
-        block = stored[list(header.axes[3]).index(float(row["alpha"]))]
-        assert np.array_equal(block[np.ix_(range(len(header.wavelengths)), *at[::-1])],
-                              variant.flux.transpose(3, 2, 1, 0))
-        for teff in variant.teff_grid:
-            for logg in variant.logg_grid:
-                for meta in variant.meta_grid:
+        a = list(header.axes[3]).index(float(row["alpha"]))
+        for i, teff in enumerate(variant.teff_grid):
+            for j, logg in enumerate(variant.logg_grid):
+                for k, meta in enumerate(variant.meta_grid):
+                    it, il, im = (int(np.searchsorted(axis, v)) for axis, v in zip(header.axes, (teff, logg, meta)))
+                    node = ((a * nm + im) * nl + il) * nt + it
+                    stored = np.fromfile(folder / ND, dtype="<f8", count=nw, offset=header.offset + 8 * node * nw)
+                    assert np.array_equal(stored, variant.flux[i, j, k])
                     assert np.array_equal(model(teff, logg, meta, alpha=float(row["alpha"])).flux,
                                           variant.interpolate_spectrum(teff, logg, meta)[1])
 
@@ -596,10 +610,10 @@ def the_all_axes_cube_interpolates_every_numeric_axis_as_the_3_axis_cube_does(t)
     _build(grid)
     header = fileio.read_header(grid / ND)
     stored = np.fromfile(grid / ND, dtype="<f8", offset=header.offset).reshape(header.shape)
-    assert not stored[2, :, 0, 0, 2].any()  # alpha 0.3, Teff 6000
+    assert not stored[2, 0, 0, 2].any()  # alpha 0.3, Teff 6000
     model, hermite = SEDModel("G", grid / ND), FluxCube(*header.axes[:3], header.wavelengths, None)
     for point in ((5500.0, 4.0, 0.0, 0.2), (7999.0, 4.0, 0.0, 0.05), (6000.0, 4.0, 0.0, 0.3)):
-        expected = stored.transpose(4, 3, 2, 0, 1)
+        expected = stored.transpose(3, 2, 1, 0, 4)
         for axis, x in zip(header.axes, point):
             expected = hermite._hermite_interp_axis(expected, axis, x, axis=0)
         np.testing.assert_allclose(model(*point[:3], alpha=point[3]).flux, expected, rtol=1e-12, atol=0)
