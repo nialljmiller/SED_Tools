@@ -830,8 +830,9 @@ Packaging and scripts
   swapped each fail golden on Linux CI. ``public_interface`` (argparse help
   and signatures, which are Python's own text) runs only on the recorded
   Python version.
-- The suite runs every line of ``sed_tools/`` (Nill, Q11), with rows added to
-  the existing tables and no new test functions; ``pyproject.toml`` holds the
+- The suite runs every line of ``sed_tools/`` but nine (Nill, Q11; the nine
+  are listed in ``docs/developing.md``), with rows added to the existing
+  tables and no new test functions (1090 rows, from 987); ``pyproject.toml`` holds the
   coverage.py settings, and coverage.py is not a dependency.
 
 Documentation
