@@ -833,6 +833,22 @@ def extend_catalog_writes_the_good_spectra_then_lists_every_failure(t):
     assert len(completer._completer.calls) == 2
 
 
+@row
+def extend_catalog_prints_its_progress_every_50_spectra_extended(t):
+    import pandas as pd
+
+    catalog = three_spectra(t)
+    pd.DataFrame({"file_name": ["a.txt"] * 100 + ["c.txt"], "teff": 5000, "logg": 4.0, "meta": 0.0}
+                 ).to_csv(catalog / "lookup_table.csv", index=False)
+    completer = stubbed_completer()
+
+    summary = completer.extend_catalog(str(catalog), str(t.tmp / "out"))
+
+    out = t.capsys.readouterr().out
+    assert summary["extended"] == 100 and summary["skipped"] == 1
+    assert "\n  Extended 50 SEDs...\n  Extended 100 SEDs...\n" in out and "Extended 101" not in out
+
+
 # ======================================================================
 # Ranges: the completer keeps every original sample; a reversed range raises wherever it is given
 # ======================================================================
