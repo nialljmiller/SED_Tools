@@ -1366,6 +1366,30 @@
   "volume": "130",
   "year": 2018
  },
+ "arxiv:2008.10780": {
+  "arxiv": "2008.10780",
+  "authors": [
+   "Uyama, Taichi",
+   "Norris, Barnaby",
+   "Jovanovic, Nemanja",
+   "Lozi, Julien",
+   "Tuthill, Peter",
+   "Guyon, Olivier",
+   "Kudo, Tomoyuki",
+   "Hashimoto, Jun",
+   "Tamura, Motohide",
+   "Martinache, Frantz"
+  ],
+  "journal": "arXiv",
+  "key": "arxiv:2008.10780",
+  "resolved": "2026-11-24",
+  "resolved_by": "arxiv",
+  "short": "Uyama et al. 2020",
+  "title": "High-contrast H$\u03b1$ imaging with Subaru/SCExAO+VAMPIRES",
+  "type": "misc",
+  "url": "https://arxiv.org/abs/2008.10780",
+  "year": 2020
+ },
  "arxiv:2205.13014": {
   "arxiv": "2205.13014",
   "authors": [
