@@ -102,9 +102,8 @@ def true_color(wavelength: Sequence[float], transmission: Sequence[float]) -> st
     xyz = np.array([np.trapezoid(light * np.interp(grid, cie_lam, cmf), grid) for cmf in (xbar, ybar, zbar)])
     if xyz[1] <= 0:
         return "#000000"
-    rgb = np.clip(XYZ_TO_SRGB @ (xyz / xyz[1]), 0.0, None)  # clip to the sRGB gamut
-    if rgb.max() <= 0:
-        return "#000000"
+    # Clip to the sRGB gamut; with X, Z >= 0 and Y > 0 the three are never all 0.
+    rgb = np.clip(XYZ_TO_SRGB @ (xyz / xyz[1]), 0.0, None)
     rgb = rgb / rgb.max()
     encoded = np.where(rgb <= 0.0031308, 12.92 * rgb, 1.055 * np.power(rgb, 1 / 2.4) - 0.055)
     return _hex(encoded)

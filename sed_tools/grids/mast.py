@@ -99,9 +99,7 @@ def _metal_tag(token: str) -> str:
     val = float(token)
     return f"m{'+' if val >= 0 else '-'}{abs(val):.2f}"
 
-def _filter_metals_by_range(metals: List[str], meta_range: Optional[Tuple[float, float]]) -> List[str]:
-    if meta_range is None:
-        return metals
+def _filter_metals_by_range(metals: List[str], meta_range: Tuple[float, float]) -> List[str]:
     return [met for met in metals if (val := _metal_tag_to_float(met)) is not None and _in_range(val, meta_range)]
 
 def _filter_urls_by_params(urls: List[str], teff_range: Optional[Tuple[float, float]] = None,

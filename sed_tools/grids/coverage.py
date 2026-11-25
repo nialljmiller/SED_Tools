@@ -164,8 +164,6 @@ def coverage_summary(model_dir: Union[str, Path]) -> Dict:
 
 
 def _fmt_unique(uniq: np.ndarray, limit: int = 12) -> str:
-    if uniq.size == 0:
-        return "(none)"
     vals = [f"{v:g}" for v in uniq]
     if uniq.size <= limit:
         return ", ".join(vals)

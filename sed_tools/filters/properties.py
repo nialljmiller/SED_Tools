@@ -111,9 +111,7 @@ def _half_maximum_points(wavelength: np.ndarray, transmission: np.ndarray) -> Tu
     i, j = above[0], above[-1]
 
     def crossing(a: int, b: int) -> float:
-        t0, t1 = transmission[a], transmission[b]
-        if t1 == t0:
-            return float(wavelength[b])
+        t0, t1 = transmission[a], transmission[b]  # one below half, one at or above: never equal
         return float(wavelength[a] + (half - t0) * (wavelength[b] - wavelength[a]) / (t1 - t0))
 
     blue = crossing(i - 1, i) if i > 0 else float(wavelength[0])

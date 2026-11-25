@@ -514,9 +514,7 @@ def _print_filter_photometry(
             vega_spec = load_spectrum(str(spectrum_path))
         return vega_spec
 
-    source_msg = ", ".join(str(path) for path in filter_roots)
-    if not source_msg:
-        source_msg = "provided paths" if args.filters else "inferred filter directories"
+    source_msg = ", ".join(str(path) for path in filter_roots)  # never empty: a filter found has its search root
     if system_name:
         source_msg = f"{source_msg} (system: {system_name})"
 

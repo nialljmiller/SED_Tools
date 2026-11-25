@@ -217,10 +217,6 @@ def detect_wavelength_unit_from_range(wl: np.ndarray) -> Tuple[str, float, str]:
     if 1e-8 <= wl_max <= 0.1 and wl_span < 1000:
         return 'm', 1e10, 'low'
     
-    # Ambiguous range 100-500: could be nm or Å
-    if 100 < wl_max <= 500 and wl_min > 10:
-        return 'nm', 10.0, 'low'
-    
     # Default: assume Angstroms
     return 'angstrom', 1.0, 'low'
 
