@@ -208,11 +208,14 @@ def workflow_ends_on_the_answer(t, engine, answers, message):
     # 0 and -1 used to index from the end of the list and pick the last entry.
     stellar_dir = stellar_grids(t)
     write_config(t.tmp / "models" / "gm1", {"model_type": "sed_generator"})
+    write_config(t.tmp / "models" / "cm1", CM1)
     for cls in (mc.SEDCompleter, mg.SEDGenerator):
         t.mp.setattr(cls, "train", lambda self, **kw: pytest.fail("trained"))
+    extended = loads_a_model(t)
     answer(t.mp, *answers, echo=True)
     engine.run_interactive_workflow(str(stellar_dir), str(t.tmp / "models"))
     assert t.capsys.readouterr().out.rstrip().endswith(message)
+    assert extended == []
 
 
 def extend_catalog_raises_when_a_column_is_missing(t, missing):
@@ -255,7 +258,9 @@ ALL_NAN = {
 ENDING_ANSWERS = {
     "completer_workflow_is_cancelled_by_n_at_start_training": (mc, ["1", "1", "", "", "", "n"], "Cancelled"),
     "generator_workflow_is_cancelled_by_n_at_start_training": (mg, ["1", "1", "", "", "", "n"], "Cancelled"),
+    "completer_workflow_is_cancelled_by_n_at_start_extension": (mc, ["2", "1", "1", "", "", "n"], "Cancelled"),
     "completer_workflow_rejects_bad_answers_invalid_choice": (mc, ["9"], "Invalid choice"),
+    "completer_workflow_rejects_bad_answers_invalid_model_number": (mc, ["2", "x"], "Invalid selection"),
     "generator_workflow_rejects_zero_and_negative_menu_numbers_0": (mg, ["3", "0"], "Invalid selection"),
     "generator_workflow_rejects_zero_and_negative_menu_numbers_minus_1": (mg, ["3", "-1"], "Invalid selection")}
 MISSING_COLUMN = {f"extend_catalog_raises_when_a_column_is_missing_{name}": name for name in ("teff", "file_name")}
@@ -595,17 +600,30 @@ def completer_workflow_extends_the_chosen_grid(t):
 
 
 @row
-def completer_workflow_lists_models(t):
-    models = t.tmp / "models"
+def completer_workflow_lists_models_and_says_what_is_missing(t):
+    models, stellar = t.tmp / "models", t.tmp / "stellar"
+    for action in ("1", "2", "3"):  # no grids and no models yet
+        answer(t.mp, action)
+        mc.run_interactive_workflow(str(stellar), str(models))
+    out = t.capsys.readouterr().out
+    assert f"\nNo model libraries with flux_cube.bin found in {stellar}\n" in out
+    assert f"\nNo trained models found in {models}/\nTrain a model first (option 1)\n" in out
+    assert f"\nNo models found in {models}/\n" in out
+
     write_config(models / "cm1", CM1)
     answer(t.mp, "3", echo=True)
 
-    mc.run_interactive_workflow(str(t.tmp / "stellar"), str(models))
+    mc.run_interactive_workflow(str(stellar), str(models))
 
     out = t.capsys.readouterr().out
     assert "\n  cm1\n" in out
     assert "    Framework: pytorch, Version: 2.0.0" in out
     assert "    Architecture: 400 -> [8] -> 1000" in out
+
+    extended = loads_a_model(t)
+    answer(t.mp, "2", "1")  # a model, but still no grid to extend
+    mc.run_interactive_workflow(str(stellar), str(models))
+    assert f"\nNo model sets found in {stellar}\n" in t.capsys.readouterr().out and extended == []
 
 
 @row
@@ -623,8 +641,15 @@ def generator_workflow_trains_on_the_chosen_library(t):
 
 
 @row
-def generator_workflow_lists_generators_only(t):
+def generator_workflow_lists_generators_only_and_says_what_is_missing(t):
     models = t.tmp / "models"
+    for action in ("1", "4"):  # no libraries and no generators yet
+        answer(t.mp, action)
+        mg.run_interactive_workflow(str(t.tmp / "stellar"), str(models))
+    out = t.capsys.readouterr().out
+    assert f"\nNo libraries with flux_cube.bin found in {t.tmp / 'stellar'}\n" in out
+    assert f"\nNo generators found in {models}/\n" in out
+
     write_config(models / "gm1", {"model_type": "sed_generator",
                                   "parameter_ranges": {"teff": [4000, 6000], "logg": [4, 4.5], "meta": [-0.5, 0]},
                                   "architecture": {"hidden_layers": [8], "output_dim": 1000}})
