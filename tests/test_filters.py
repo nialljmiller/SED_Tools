@@ -2389,6 +2389,29 @@ def njm_atmosphere_failure_is_reported_before_its_source(t):
     assert "NJM cannot provide the paranal_am1.2_pwv2.5 atmosphere (502" in t.caplog.text
 
 
+@default_svo_row
+def njm_serves_the_atmosphere_point_it_lists_and_the_instruments_builder_is_asked_for_one_it_lacks(t):
+    library, asked = library_with(t.tmp / "filters"), []
+    site = library.atmosphere_root / "fac_site"
+
+    def download_atmosphere(root, name, filename=None):  # NJM's manifest, then the grid point named
+        asked.append(filename)
+        site.mkdir(parents=True, exist_ok=True)
+        (site / (filename or "manifest.json")).write_text(
+            json.dumps(dict(STALE, site=name)) if filename is None else "Wavelength,Transmission\n5000,0.9\n6000,0.95\n")
+        return True
+
+    library.mirror = SimpleNamespace(download_atmosphere=download_atmosphere)
+    manifest = InstrumentManifest("Fac", "Cam", ["g"], ground_based=True, default_site="fac_site")
+    assert library.prepare_atmosphere(manifest, AtmosphereSpec(None, 1.2)) == site / "am1.20.dat"
+    assert asked == [None, "am1.20.dat"]
+    t.mp.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam"), catalog.BuilderRef("test"))
+    t.mp.setattr(filters_library, "get_builder", lambda name: lambda root, **kwargs: asked.append(name))
+    with pytest.raises(ComponentError, match="Site fac_site has no atmosphere for airmass 2"):
+        library.prepare_atmosphere(manifest, AtmosphereSpec(None, 2.0))  # not in NJM's grid, nor the builder's
+    assert asked[2:] == [None, "test"]
+
+
 # SVO failures are no longer taken for "SVO has no answer"
 @default_svo_row
 def svo_error_is_raised_and_nothing_is_written(t):
@@ -2736,6 +2759,11 @@ def a_stale_installed_atmosphere_takes_njms_manifest_and_keeps_its_grids(t):
     requested = len(library.mirror.session.calls)
     library.atmospheres()  # checked today: only the site list is asked for
     assert library.mirror.session.calls[requested:] == ["atmospheres/"]
+    checked = cache_root(library.root) / "atmospheres_checked.json"
+    checked.write_text("{unreadable")  # a damaged record of the checks: checked again, and the record rewritten
+    library.atmospheres()
+    assert "atmospheres/lsst_std/manifest.json" in library.mirror.session.calls[requested + 1:]
+    assert list(json.loads(checked.read_text())) == ["lsst_std"]
 
 
 @row
@@ -4059,8 +4087,9 @@ def label_check_finds_the_same_curve_served_with_two_detector_types(t):
         (t.tmp / rel).parent.mkdir(parents=True, exist_ok=True)
         write_filter_file(t.tmp / rel, wl, [float(v) for v in transmission], detector_type=detector, source=source,
                           wavelength_unit="Angstrom")
-    # Labelled, but with no samples to compare by: a curve whose wavelengths run backwards, and a dark one.
-    for name, wavelength, transmission in (("back", wl[::-1], tr), ("dark", wl, 0 * tr)):
+    # Labelled, but with no samples to compare by: a curve whose wavelengths run backwards, a dark one and one
+    # that cannot be read (a negative transmission).
+    for name, wavelength, transmission in (("back", wl[::-1], tr), ("dark", wl, 0 * tr), ("unreadable", wl, tr - 0.2)):
         write_filter_file(t.tmp / "Misc" / "APASS" / f"{name}.dat", wavelength, transmission, detector_type=ENERGY,
                           source=SOURCE_SVO, wavelength_unit="Angstrom")
     component = t.tmp / "Misc" / "APASS" / "components" / "filter" / "g.dat"   # components keep their own labels
