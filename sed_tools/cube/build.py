@@ -152,7 +152,7 @@ def _write_cube(output_file: str, teff_grid, logg_grid, meta_grid, wavelengths, 
         write_header(f, teff_grid, logg_grid, meta_grid, wavelengths)
         for ci in range(n_chunks):
             w0, w1 = ci * w_chunk, min((ci + 1) * w_chunk, nw)
-            part = np.ascontiguousarray(flux_cube[:, :, :, w0:w1].transpose(3, 2, 1, 0), dtype=np.float64)
+            part = np.ascontiguousarray(flux_cube[:, :, :, w0:w1].transpose(3, 1, 2, 0), dtype=np.float64)
             part.tofile(f)
             del part
             if n_chunks > 1:
