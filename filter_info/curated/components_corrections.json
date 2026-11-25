@@ -1,26 +1,158 @@
 [
- {"set": "LCO/RetroCam", "band": "Y_CSP2", "recipe": "filter+optics+qe+instrument+atmosphere", "header": true, "components_source": "original",
-  "evidence": "the publisher's (CSP) file Y_RetroCam_duPont_TAMU_atm.dat equals the curve; SVO: Filter + CCD + Instrument + Other optical components + Atmosphere; siblings J_CSP2 and H_CSP2"},
- {"set": "LCO/e2v", "band": "B", "recipe": "filter+optics+qe+atmosphere", "evidence": "CSP's file *_CSP2_tel_ccd_atm_ext_1.2.dat (telescope, CCD, atmosphere) equals the curve, as the header says"},
- {"set": "LCO/e2v", "band": "g", "recipe": "filter+optics+qe+atmosphere", "evidence": "CSP's file *_CSP2_tel_ccd_atm_ext_1.2.dat (telescope, CCD, atmosphere) equals the curve, as the header says"},
- {"set": "LCO/e2v", "band": "r", "recipe": "filter+optics+qe+atmosphere", "evidence": "CSP's file *_CSP2_tel_ccd_atm_ext_1.2.dat (telescope, CCD, atmosphere) equals the curve, as the header says"},
- {"set": "Misc/APASS", "band": "B", "recipe": "filter+instrument", "evidence": "byte-identical to GCPD/Johnson B_Landolt, which SVO gives as Filter + Instrument; the manifest's 'filter' was assumed"},
- {"set": "Misc/APASS", "band": "V", "recipe": "filter+instrument", "evidence": "identical to GCPD/Johnson V_Landolt, which SVO gives as Filter + Instrument; the manifest's 'filter' was assumed"},
- {"set": "Misc/APASS", "band": "sdss_i", "recipe": "filter+instrument+atmosphere", "evidence": "byte-identical to SLOAN/SDSS i, which SVO gives as Filter + Instrument + Atmosphere; the manifest's 'filter' was assumed"},
- {"set": "Misc/APASS", "band": "sdss_z", "recipe": "filter+instrument+atmosphere", "evidence": "equal to SLOAN/SDSS z (float32 copy), which SVO gives as Filter + Instrument + Atmosphere; the manifest's 'filter' was assumed"},
- {"set": "Misc/MCPS", "band": "B", "recipe": "filter+instrument", "evidence": "byte-identical to GCPD/Johnson B_Straizys, which SVO gives as Filter + Instrument; the manifest's 'filter' was assumed"},
- {"set": "Misc/UCAC", "band": "B", "recipe": "filter+instrument", "evidence": "byte-identical to GCPD/Johnson B_Landolt, which SVO gives as Filter + Instrument; the manifest's 'filter' was assumed"},
- {"set": "Misc/UCAC", "band": "sdss_g", "recipe": "filter+instrument+atmosphere", "evidence": "equal to SLOAN/SDSS g (float32 copy), which SVO gives as Filter + Instrument + Atmosphere; the manifest's 'filter' was assumed"},
- {"set": "Misc/UCAC", "band": "sdss_r", "recipe": "filter+instrument+atmosphere", "evidence": "byte-identical to SLOAN/SDSS r, which SVO gives as Filter + Instrument + Atmosphere; the manifest's 'filter' was assumed"},
- {"set": "P200/LFC", "band": "sdss_i_filter", "recipe": "filter", "evidence": "the publisher's i_prime.txt (LFC cookbook) equals the curve; SVO's Description says filter only"},
- {"set": "P200/LFC", "band": "sdss_u_filter", "recipe": "filter", "evidence": "the publisher's u_prime.txt (LFC cookbook) equals the curve; SVO's Description says filter only"},
- {"set": "WIYN/NESSI", "band": "NB467_filter", "recipe": "filter", "evidence": "SVO's Description says filter only, and the full curve is this one times a QE-like factor (publisher page offline, not verified against it)"},
- {"set": "WIYN/NESSI", "band": "NB562_filter", "recipe": "filter", "evidence": "SVO's Description says filter only, and the full curve is this one times a QE-like factor (publisher page offline, not verified against it)"},
- {"set": "WIYN/NESSI", "band": "NB716_filter", "recipe": "filter", "evidence": "SVO's Description says filter only, and the full curve is this one times a QE-like factor (publisher page offline, not verified against it)"},
- {"set": "CFHT/Megaprime", "band": "Halpha_off_old", "recipe": "filter+optics+qe+instrument", "header": true, "components_source": "inferred",
-  "evidence": "the curve divided by Halpha_off_old_fil equals NJM's optics times QE components (0.560-0.563), as for its siblings; SVO's sibling records say Filter + CCD + Instrument + Other optical components"},
- {"set": "P200/LFC", "band": "Halpha", "recipe": "filter+instrument", "header": true, "components_source": "inferred", "evidence": "SVO's Description says filter+ccd; the curve divided by Halpha_filter is a constant 0.87, as a QE over a narrow band"},
- {"set": "P200/LFC", "band": "SII", "recipe": "filter+instrument", "header": true, "components_source": "inferred", "evidence": "SVO's Description says filter+ccd; the curve divided by SII_filter is a constant 0.87, as a QE over a narrow band"},
- {"set": "P200/LFC", "band": "Is", "recipe": "filter+instrument", "header": true, "components_source": "inferred", "evidence": "SVO's Description says filter+ccd; the curve divided by Is_filter is 0.39-0.82, as a QE"},
- {"set": "P200/LFC", "band": "Rs", "recipe": "filter+instrument", "header": true, "components_source": "inferred", "evidence": "SVO's Description says filter+ccd; the curve divided by Rs_filter is 0.77-0.88, as a QE"}
+ {
+  "set": "LCO/RetroCam",
+  "band": "Y_CSP2",
+  "recipe": "filter+optics+qe+instrument+atmosphere",
+  "header": true,
+  "components_source": "original",
+  "evidence": "the publisher's (CSP) file Y_RetroCam_duPont_TAMU_atm.dat equals the curve; SVO: Filter + CCD + Instrument + Other optical components + Atmosphere; siblings J_CSP2 and H_CSP2"
+ },
+ {
+  "set": "LCO/e2v",
+  "band": "B",
+  "recipe": "filter+optics+qe+atmosphere",
+  "evidence": "CSP's file *_CSP2_tel_ccd_atm_ext_1.2.dat (telescope, CCD, atmosphere) equals the curve, as the header says"
+ },
+ {
+  "set": "LCO/e2v",
+  "band": "g",
+  "recipe": "filter+optics+qe+atmosphere",
+  "evidence": "CSP's file *_CSP2_tel_ccd_atm_ext_1.2.dat (telescope, CCD, atmosphere) equals the curve, as the header says"
+ },
+ {
+  "set": "LCO/e2v",
+  "band": "r",
+  "recipe": "filter+optics+qe+atmosphere",
+  "evidence": "CSP's file *_CSP2_tel_ccd_atm_ext_1.2.dat (telescope, CCD, atmosphere) equals the curve, as the header says"
+ },
+ {
+  "set": "Misc/APASS",
+  "band": "B",
+  "recipe": "filter+instrument",
+  "evidence": "byte-identical to GCPD/Johnson B_Landolt, which SVO gives as Filter + Instrument; the manifest's 'filter' was assumed"
+ },
+ {
+  "set": "Misc/APASS",
+  "band": "V",
+  "recipe": "filter+instrument",
+  "evidence": "identical to GCPD/Johnson V_Landolt, which SVO gives as Filter + Instrument; the manifest's 'filter' was assumed"
+ },
+ {
+  "set": "Misc/APASS",
+  "band": "sdss_i",
+  "recipe": "filter+instrument+atmosphere",
+  "evidence": "byte-identical to SLOAN/SDSS i, which SVO gives as Filter + Instrument + Atmosphere; the manifest's 'filter' was assumed"
+ },
+ {
+  "set": "Misc/APASS",
+  "band": "sdss_z",
+  "recipe": "filter+instrument+atmosphere",
+  "evidence": "equal to SLOAN/SDSS z (float32 copy), which SVO gives as Filter + Instrument + Atmosphere; the manifest's 'filter' was assumed"
+ },
+ {
+  "set": "Misc/MCPS",
+  "band": "B",
+  "recipe": "filter+instrument",
+  "evidence": "byte-identical to GCPD/Johnson B_Straizys, which SVO gives as Filter + Instrument; the manifest's 'filter' was assumed"
+ },
+ {
+  "set": "Misc/UCAC",
+  "band": "B",
+  "recipe": "filter+instrument",
+  "evidence": "byte-identical to GCPD/Johnson B_Landolt, which SVO gives as Filter + Instrument; the manifest's 'filter' was assumed"
+ },
+ {
+  "set": "Misc/UCAC",
+  "band": "sdss_g",
+  "recipe": "filter+instrument+atmosphere",
+  "evidence": "equal to SLOAN/SDSS g (float32 copy), which SVO gives as Filter + Instrument + Atmosphere; the manifest's 'filter' was assumed"
+ },
+ {
+  "set": "Misc/UCAC",
+  "band": "sdss_r",
+  "recipe": "filter+instrument+atmosphere",
+  "evidence": "byte-identical to SLOAN/SDSS r, which SVO gives as Filter + Instrument + Atmosphere; the manifest's 'filter' was assumed"
+ },
+ {
+  "set": "P200/LFC",
+  "band": "sdss_i_filter",
+  "recipe": "filter",
+  "evidence": "the publisher's i_prime.txt (LFC cookbook) equals the curve; SVO's Description says filter only"
+ },
+ {
+  "set": "P200/LFC",
+  "band": "sdss_u_filter",
+  "recipe": "filter",
+  "evidence": "the publisher's u_prime.txt (LFC cookbook) equals the curve; SVO's Description says filter only"
+ },
+ {
+  "set": "WIYN/NESSI",
+  "band": "NB467_filter",
+  "recipe": "filter",
+  "evidence": "SVO's Description says filter only, and the full curve is this one times a QE-like factor (publisher page offline, not verified against it)"
+ },
+ {
+  "set": "WIYN/NESSI",
+  "band": "NB562_filter",
+  "recipe": "filter",
+  "evidence": "SVO's Description says filter only, and the full curve is this one times a QE-like factor (publisher page offline, not verified against it)"
+ },
+ {
+  "set": "WIYN/NESSI",
+  "band": "NB716_filter",
+  "recipe": "filter",
+  "evidence": "SVO's Description says filter only, and the full curve is this one times a QE-like factor (publisher page offline, not verified against it)"
+ },
+ {
+  "set": "CFHT/Megaprime",
+  "band": "Halpha_off_old",
+  "recipe": "filter+optics+qe+instrument",
+  "header": true,
+  "components_source": "inferred",
+  "evidence": "the curve divided by Halpha_off_old_fil equals NJM's optics times QE components (0.560-0.563), as for its siblings; SVO's sibling records say Filter + CCD + Instrument + Other optical components"
+ },
+ {
+  "set": "P200/LFC",
+  "band": "Halpha",
+  "recipe": "filter+instrument",
+  "header": true,
+  "components_source": "inferred",
+  "evidence": "SVO's Description says filter+ccd; the curve divided by Halpha_filter is a constant 0.87, as a QE over a narrow band"
+ },
+ {
+  "set": "P200/LFC",
+  "band": "SII",
+  "recipe": "filter+instrument",
+  "header": true,
+  "components_source": "inferred",
+  "evidence": "SVO's Description says filter+ccd; the curve divided by SII_filter is a constant 0.87, as a QE over a narrow band"
+ },
+ {
+  "set": "P200/LFC",
+  "band": "Is",
+  "recipe": "filter+instrument",
+  "header": true,
+  "components_source": "inferred",
+  "evidence": "SVO's Description says filter+ccd; the curve divided by Is_filter is 0.39-0.82, as a QE"
+ },
+ {
+  "set": "P200/LFC",
+  "band": "Rs",
+  "recipe": "filter+instrument",
+  "header": true,
+  "components_source": "inferred",
+  "evidence": "SVO's Description says filter+ccd; the curve divided by Rs_filter is 0.77-0.88, as a QE"
+ },
+ {
+  "set": "IRTF/MORIS",
+  "band": "Dichr_800nm",
+  "recipe": "optics+qe+instrument",
+  "evidence": "the re-digitised curve's header: Gulbis et al. 2011, Fig. 4, panel (a), 'Response with no filter'"
+ },
+ {
+  "set": "IRTF/MORIS",
+  "band": "Dichr_950nm",
+  "recipe": "optics+qe+instrument",
+  "evidence": "the re-digitised curve's header: Gulbis et al. 2011, Fig. 4, panel (a), 'Response with no filter'"
+ }
 ]

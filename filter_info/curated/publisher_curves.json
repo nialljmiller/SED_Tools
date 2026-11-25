@@ -1,16 +1,139 @@
 [
- {"set": "LCO/e2v", "band": "i", "file": "source_evidence/csp/i_CSP2_tel_ccd_atm_ext_1.2.dat", "unit_A": 1,
+ {
+  "set": "LCO/e2v",
+  "band": "i",
+  "file": "source_evidence/csp/i_CSP2_tel_ccd_atm_ext_1.2.dat",
+  "unit_A": 1,
   "url": "https://csp.obs.carnegiescience.edu/data/i_CSP2_tel_ccd_atm_ext_1.2.dat",
-  "note": "Replaced by the publisher's (CSP) i curve, i_CSP2_tel_ccd_atm_ext_1.2.dat (telescope, CCD and atmosphere at airmass 1.2; CSP gives its effective wavelength as 7573.8 A). The curve served before, like SVO's record LCO/e2v.i (captures of 2026-06-06 and 2026-10-28), held CSP's r curve (r_CSP2_tel_ccd_atm_ext_1.2.dat) at another decimal precision (Nill, 25 Nov 2026: \"Replace with the real i\")."},
- {"set": "IRTF/NSFCam",
+  "note": "Replaced by the publisher's (CSP) i curve, i_CSP2_tel_ccd_atm_ext_1.2.dat (telescope, CCD and atmosphere at airmass 1.2; CSP gives its effective wavelength as 7573.8 A). The curve served before, like SVO's record LCO/e2v.i (captures of 2026-06-06 and 2026-10-28), held CSP's r curve (r_CSP2_tel_ccd_atm_ext_1.2.dat) at another decimal precision (Nill, 25 Nov 2026: \"Replace with the real i\")."
+ },
+ {
+  "set": "IRTF/NSFCam",
   "source_pattern": "irtfweb\\.ifa\\.hawaii\\.edu/~nsfcam/filters/nsfcam_(?P<name>[a-z0-9]+)_trans\\.dat",
-  "evidence_dir": "source_evidence/nsfcam", "file_template": "nsfcam_{name}_trans.dat", "unit_A": 10000,
+  "evidence_dir": "source_evidence/nsfcam",
+  "file_template": "nsfcam_{name}_trans.dat",
+  "unit_A": 10000,
   "url_template": "https://irtfweb.ifa.hawaii.edu/~nsfcam/filters/{file}",
-  "publisher_lists": ["blka_scale", "brg", "co", "coblka", "cont", "contblka", "fe", "feblka", "h21", "h21blka", "h22", "h22blka", "hblka", "hei", "heiblka", "hmk", "j", "jblka", "jmk", "k", "kmk", "kp", "kpblka", "kpmk", "ks", "ksblka", "ksmk", "l", "lp", "lpmk", "m", "mp1", "mpmk", "pab", "pabblka", "pag", "pagblka", "s17", "s23"],
+  "publisher_lists": [
+   "blka_scale",
+   "brg",
+   "co",
+   "coblka",
+   "cont",
+   "contblka",
+   "fe",
+   "feblka",
+   "h21",
+   "h21blka",
+   "h22",
+   "h22blka",
+   "hblka",
+   "hei",
+   "heiblka",
+   "hmk",
+   "j",
+   "jblka",
+   "jmk",
+   "k",
+   "kmk",
+   "kp",
+   "kpblka",
+   "kpmk",
+   "ks",
+   "ksblka",
+   "ksmk",
+   "l",
+   "lp",
+   "lpmk",
+   "m",
+   "mp1",
+   "mpmk",
+   "pab",
+   "pabblka",
+   "pag",
+   "pagblka",
+   "s17",
+   "s23"
+  ],
   "prefer_suffix": "blka",
   "prefer_note": "IRTF's scan with the PK50 blocker ({file}) is served: IRTF uses this filter with the uncoated PK50 blocker to suppress long-wavelength red leaks and publishes both scans.",
   "detector_max_A": 60000,
   "cut_note": "Cut at {max_um:g} um, the end of the 1-6 micron range over which IRTF states the NSFCam detector is sensitive ({n} samples beyond it removed).",
-  "incomplete": {"J": "Incomplete: IRTF's J scans start at 1.282 um, inside the band, which begins near 1.10 um; no IRTF file covers its blue half."},
-  "evidence": "IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/"}
+  "incomplete": {
+   "J": "Incomplete: IRTF's J scans start at 1.282 um, inside the band, which begins near 1.10 um; no IRTF file covers its blue half."
+  },
+  "evidence": "IRTF, NSFCam Filter Transmission Profiles, Internet Archive capture of 15 Feb 2026, source_evidence/nsfcam/filters_page_20260215.html; IRTF's files in source_evidence/nsfcam/"
+ },
+ {
+  "set": "IRTF/MORIS",
+  "band": "Dichr_800nm",
+  "whole_file": true,
+  "file": "source_evidence/moris/redigitised/curves/Dichr_800nm.dat",
+  "url": "https://doi.org/10.1086/659636",
+  "note": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/). The dichroic curve holds no filter: the caption gives panel (a) as 'Response with no filter'. Incomplete: the figure ends at about 1000 nm, where this curve still transmits; it ends at its last drawn point."
+ },
+ {
+  "set": "IRTF/MORIS",
+  "band": "Dichr_950nm",
+  "whole_file": true,
+  "file": "source_evidence/moris/redigitised/curves/Dichr_950nm.dat",
+  "url": "https://doi.org/10.1086/659636",
+  "note": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/). The dichroic curve holds no filter: the caption gives panel (a) as 'Response with no filter'. Incomplete: the figure ends at about 1000 nm, where this curve still transmits; it ends at its last drawn point."
+ },
+ {
+  "set": "IRTF/MORIS",
+  "band": "OG590",
+  "whole_file": true,
+  "file": "source_evidence/moris/redigitised/curves/OG590.dat",
+  "url": "https://doi.org/10.1086/659636",
+  "note": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/). Incomplete: the figure ends at about 1000 nm, where this curve still transmits; it ends at its last drawn point."
+ },
+ {
+  "set": "IRTF/MORIS",
+  "band": "V",
+  "whole_file": true,
+  "file": "source_evidence/moris/redigitised/curves/V.dat",
+  "url": "https://doi.org/10.1086/659636",
+  "note": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/)."
+ },
+ {
+  "set": "IRTF/MORIS",
+  "band": "VR",
+  "whole_file": true,
+  "file": "source_evidence/moris/redigitised/curves/VR.dat",
+  "url": "https://doi.org/10.1086/659636",
+  "note": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/)."
+ },
+ {
+  "set": "IRTF/MORIS",
+  "band": "g",
+  "whole_file": true,
+  "file": "source_evidence/moris/redigitised/curves/g.dat",
+  "url": "https://doi.org/10.1086/659636",
+  "note": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/)."
+ },
+ {
+  "set": "IRTF/MORIS",
+  "band": "i",
+  "whole_file": true,
+  "file": "source_evidence/moris/redigitised/curves/i.dat",
+  "url": "https://doi.org/10.1086/659636",
+  "note": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/)."
+ },
+ {
+  "set": "IRTF/MORIS",
+  "band": "r",
+  "whole_file": true,
+  "file": "source_evidence/moris/redigitised/curves/r.dat",
+  "url": "https://doi.org/10.1086/659636",
+  "note": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/)."
+ },
+ {
+  "set": "IRTF/MORIS",
+  "band": "z",
+  "whole_file": true,
+  "file": "source_evidence/moris/redigitised/curves/z.dat",
+  "url": "https://doi.org/10.1086/659636",
+  "note": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/). Incomplete: the figure ends at about 1000 nm, where this curve still transmits; it ends at its last drawn point."
+ }
 ]

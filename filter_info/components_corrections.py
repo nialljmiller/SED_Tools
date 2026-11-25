@@ -92,12 +92,15 @@ def main(argv=None):
     mode = ap.add_mutually_exclusive_group(required=True)
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--apply", type=Path, metavar="BACKUP_DIR")
+    ap.add_argument("--set", nargs="+", default=(), help="apply only the entries of these sets")
     args = ap.parse_args(argv)
     from sed_tools.filters.curve_metadata import read_filter_header, write_filter_header
 
     filters = args.data_dir / "filters"
     by_set = {}
     for entry in json.loads(CURATED.read_text()):
+        if args.set and entry["set"] not in args.set:
+            continue
         by_set.setdefault(entry["set"], []).append(entry)
     provenance = {}
     for set_name, entries in sorted(by_set.items()):
