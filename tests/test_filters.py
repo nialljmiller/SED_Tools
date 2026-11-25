@@ -2374,6 +2374,40 @@ def a_recipe_some_bands_can_never_have_asks_no_source_and_names_the_bands_that_h
         library.compose(inst, "filter+optics+qe")
     assert asked == []
     assert sorted(p.name for p in library.compose(inst, "filter+optics+qe", bands=["g"]).glob("*.dat")) == ["g.dat"]
+    assert not FilterLibrary.components_ready(inst, "filter", bands=["z"])  # a band the set does not have
+    manifest = json.loads((inst / "manifest.json").read_text())
+    fresh = put(t.tmp / "Fac" / "Fresh", {"g.dat": CURVE, "gp.dat": CURVE, "manifest.json": json.dumps(dict(
+        manifest, instrument="Fresh", published_bands={"g": "filter+optics+qe"}))})
+    assert not FilterLibrary.components_ready(fresh, "published+atmosphere")  # gp's published contents unknown
+    library.mirror.download_components = lambda f, i: asked.append(f"njm {i}") or put(fresh / "components",
+                                                                                         {"g.dat": CURVE})
+    assert library.prepare_components(fresh, components="filter+optics+qe") is False  # NJM sent all there can be
+    assert asked == ["njm Fresh"]
+
+
+@default_svo_row
+def components_go_into_the_installed_folder_from_njms_spelling_and_never_from_a_builder_writing_another(t):
+    bundled(t, {"Fac": {"Cam_X": {"bands": ["g"]}}})
+    spelt, saved = flat_published(t.tmp / "Fac" / "Cam-X"), []
+
+    def save_components(facility, instrument, directory):
+        saved.append((facility, instrument, directory))
+        manifest = InstrumentManifest.load(directory)
+        add_component(directory, "filter", [4000.0, 6000.0], [1.0, 1.0], band="g", manifest=manifest)
+        add_component(directory, "qe", [4000.0, 6000.0], [0.8, 0.8], manifest=manifest)
+        manifest.save(directory)
+
+    library = library_with(t.tmp, SimpleNamespace(is_available=lambda: True, _save_components=save_components,
+                                                  download_components=raising(RuntimeError("NJM failed"))))
+    assert library.prepare_components(spelt, components="filter+qe") is True
+    assert saved == [("Fac", "Cam_X", spelt)]
+    other = flat_published(t.tmp / "Fac" / "Cam-Y")  # its builder writes Fac/Cam_Y: a second copy
+    t.mp.setitem(catalog.BUILDERS_FOR, ("Fac", "Cam_Y"), catalog.BuilderRef("test"))
+    t.mp.setattr(filters_library, "get_builder", raising(AssertionError("the builder is not run")))
+    with t.caplog.at_level(logging.WARNING):
+        assert library.prepare_components(other, components="filter+qe") is False
+    assert ("NJM cannot provide the components of Fac/Cam-Y (NJM failed), and its original-source builder writes "
+            f"only Fac/Cam_Y, which would be a second copy beside {other}") in t.caplog.text
 
 
 @default_svo_row
