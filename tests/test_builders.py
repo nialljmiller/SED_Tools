@@ -30,7 +30,8 @@ from sed_tools.component_sources import (argus, cassini, catalog, cfht, csp, dec
                                          surveys, swift, team_atmospheres as team, twomass, vista, ztf)
 from sed_tools.component_sources._common import (DerivedCurve, SimpleSource, Table, build_simple, ensure_published,
                                                  write_site)
-from sed_tools.component_sources._original import Fetcher, clean_curve, make_band, to_angstrom
+from sed_tools.component_sources._original import (USER_AGENT, Fetcher, clean_curve, common_product, make_band,
+                                                   safe_band, to_angstrom, write_instrument)
 from sed_tools.filters import library as filters_library, svo
 from sed_tools.filters.compose import ComponentCoverageError, add_component, build_product, compose_band, read_curve
 from sed_tools.filters.curve_metadata import (ENERGY, PHOTON, SVOFilterRecord, SVOMetadataClient, _param_text,
@@ -343,6 +344,42 @@ def without_atlas_row_450(files):
     return tar_gz({"atlas_defn.tex": tex.replace(row + "\n", "")})
 
 
+def megacam_scaled(band, *columns):
+    """filterthroughput.mag<band> with ``columns`` 1 % higher (blank cells stay blank)."""
+    def wrong(files):
+        lines = files[MC + f"filterthroughput.mag{band}"].decode("latin-1").splitlines()
+        at = [obs.MC_COLS.index(c) for c in columns]
+        for k, line in enumerate(lines[2:], 2):
+            cells = line.split("\t")
+            lines[k] = "\t".join(repr(float(v) * 1.01) if i in at and v.strip() else v for i, v in enumerate(cells))
+        return ("\n".join(lines) + "\n").encode("latin-1")
+    return wrong
+
+
+def omegacam_member(edit, member):
+    """The OmegaCAM tarball with ``member``'s text passed through ``edit``."""
+    def wrong(files):
+        with tarfile.open(fileobj=io.BytesIO(files[obs.OCAM_URL])) as tf:
+            members = {m.name: tf.extractfile(m).read() for m in tf.getmembers()}
+        members[member] = edit(members[member].decode("ascii")).encode("ascii")
+        return tar_gz(members)
+    return wrong
+
+
+def without_last_row(text):
+    return "\n".join(text.splitlines()[:-1]) + "\n"
+
+
+def tar_with_directory(name):
+    """A .tar.gz whose member ``name`` is a directory."""
+    info = tarfile.TarInfo(name)
+    info.type = tarfile.DIRTYPE
+    buf = io.BytesIO()
+    with tarfile.open(fileobj=buf, mode="w:gz") as tf:
+        tf.addfile(info)
+    return buf.getvalue()
+
+
 KECK, KPNO, FS, MC = obs.KECK, obs.KPNO_DOCS, obs.FS, obs.MC
 #: name: (module, instrument, the URL whose file is wrong, the wrong file (from the saved ones), the error)
 WRONG_FILE = {
@@ -370,6 +407,67 @@ WRONG_FILE = {
     "bessell_checks_the_readme": (standards, "Bessell", standards.B12_URL.replace("table1.dat", "ReadMe"),
                                   lambda f: b"Byte-by-byte Description of file: table1.dat\n",
                                   "unexpected Bessell & Murphy ReadMe"),
+    "a_wrong_file_stops_the_build_FORS2_u_HIGH_header": (obs, "FORS2", obs.FORS + "u_HIGH.txt",
+                                                         lambda f: f[obs.FORS + "u_HIGH.txt"].replace(b"U-FORS", b"U"),
+                                                         "u_HIGH.txt: unexpected header"),
+    "a_wrong_file_stops_the_build_FORS1_wavelength_range": (obs, "FORS1", obs.FORS + "M_BESS_B.txt",
+                                                            lambda f: b"3300 0.5\n20000 0.9\n",
+                                                            "M_BESS_B.txt: wavelength range"),
+    "a_wrong_file_stops_the_build_FORS1_peak": (obs, "FORS1", obs.FORS + "M_BESS_B.txt",
+                                                lambda f: b"400 0.01\n500 0.02\n", "M_BESS_B.txt: peak 0.02"),
+    "a_wrong_file_stops_the_build_DEIMOS_expression": (obs, "DEIMOS", KECK + "deimos/Bfaber13norm.txt",
+                                                       lambda f: f[KECK + "deimos/Bfaber13norm.txt"].replace(
+                                                           b"dmr,ccd_lot14,", b"dmr,ccd_lot15,"),
+                                                       "DEIMOS B: unexpected synphot header"),
+    "a_wrong_file_stops_the_build_DEIMOS_tpeak": (obs, "DEIMOS", KECK + "deimos/Bfaber13norm.txt",
+                                                  lambda f: f[KECK + "deimos/Bfaber13norm.txt"].replace(
+                                                      b"TPEAK    r 0.3976783", b"TPEAK    r 0.5000000"),
+                                                  "DEIMOS B: column 3 is not column 2 / TPEAK"),
+    "a_wrong_file_stops_the_build_Mosaic_not_a_scan": (obs, "Mosaic", KPNO + "k1002bp_jul04.txt",
+                                                       lambda f: b"Filter Data\n", "not a KPNO Lambda 9 filter scan"),
+    "a_wrong_file_stops_the_build_Mosaic_without_tmax": (obs, "Mosaic", KPNO + "k1002bp_jul04.txt",
+                                                         lambda f: f[KPNO + "k1002bp_jul04.txt"].replace(b"cwl=", b"cwl:"),
+                                                         "no cwl/fwhm/Tmax header"),
+    "a_wrong_file_stops_the_build_Mosaic_tmax": (obs, "Mosaic", KPNO + "k1002bp_jul04.txt",
+                                                 lambda f: f[KPNO + "k1002bp_jul04.txt"].replace(b"Tmax= 69.37%",
+                                                                                                 b"Tmax= 50.00%"),
+                                                 r"data peak 69.37 != header Tmax 50.00"),
+    "a_wrong_file_stops_the_build_MegaCam_columns": (obs, "MegaCam", MC + "filterthroughput.magu",
+                                                     lambda f: f[MC + "filterthroughput.magu"].replace(b"WAVE\t",
+                                                                                                       b"LAMBDA\t", 1),
+                                                     "unexpected MegaCam columns"),
+    "a_wrong_file_stops_the_build_MegaCam_total": (obs, "MegaCam", MC + "filterthroughput.magr",
+                                                   megacam_scaled("r", "QE"),
+                                                   r"MegaCam r: TOTAL != T\*QE\*EXTINCT\*THROUGHPUT"),
+    "a_wrong_file_stops_the_build_MegaCam_shared_qe": (obs, "MegaCam", MC + "filterthroughput.magr",
+                                                       megacam_scaled("r", "QE", "TOTAL"),
+                                                       "MegaCam r: QE differs between tables"),
+    "a_wrong_file_stops_the_build_OmegaCAM_segment_grid": (obs, "OmegaCAM", obs.OCAM_URL,
+                                                           omegacam_member(without_last_row,
+                                                                           "B-partB_modified_transmission_data"),
+                                                           "B_JOHN: segment wavelength grids differ"),
+    "a_wrong_file_stops_the_build_OmegaCAM_range": (obs, "OmegaCAM", obs.OCAM_URL,
+                                                    omegacam_member(without_last_row, "u_modified_transmission_data"),
+                                                    "u_SDSS: wavelength range not 300-1200 nm"),
+    "a_wrong_file_stops_the_build_ODI_header": (obs, "ODI", obs.ODI + "NB_422.txt",
+                                                lambda f: f[obs.ODI + "NB_422.txt"].replace(b"Wavelength[nm]\t",
+                                                                                            b"Wavelength[nm] "),
+                                                "NB_422.txt: unexpected header"),
+    "a_wrong_file_stops_the_build_ODI_red_leak": (obs, "ODI", obs.ODI + "odi_r.txt",
+                                                  lambda f: f[obs.ODI + "odi_r.txt"] + b"11000 0.9\n13000 0.9\n",
+                                                  "ODI r: .* of the response is above 10500 A"),
+    "a_wrong_file_stops_the_build_ATLAS_member": (surveys, "ATLAS", surveys.ATLAS_URL,
+                                                  lambda f: tar_with_directory("atlas_defn.tex"), "unsafe member"),
+    "a_wrong_file_stops_the_build_PS1_pivot": (surveys, "PS1", surveys.PS1_BASE + "table4.dat",
+                                               lambda f: f[surveys.PS1_BASE + "table4.dat"].replace(
+                                                   b"g_P1|0.1212|481|", b"g_P1|0.1212|491|"),
+                                               "PS1 g: log-mean .* vs table4 4910"),
+    "a_wrong_file_stops_the_build_WFCAM_header": (surveys, "WFCAM", surveys.UKIRT_URL,
+                                                  lambda f: f[surveys.UKIRT_URL].replace(b"WFCAM J filter",
+                                                                                         b"WFCAM X filter"),
+                                                  "Table04_online.dat: unexpected header"),
+    "a_wrong_file_stops_the_build_USNO_readme": (standards, "USNO", standards.USNO_README_WB,
+                                                 lambda f: b"USNO 40-inch/SITe 1024^2\n", "unexpected USNO readme"),
 }
 
 
@@ -696,6 +794,21 @@ def cfht_bands_get_their_own_generation_and_ignore_mislabelled_sibling(t):
 
 
 @row
+def cfht_scans_are_percent_tables(t):
+    wl, tr, note = cfht.scan("lambda T1 T2\n800 10 12\n\n900 80 82\n", "u")
+    np.testing.assert_allclose(wl, [8000.0, 9000.0])
+    np.testing.assert_allclose(tr, [0.11, 0.81])
+    assert note == "mean of 2 scans; "
+    for text, message in (("# no data\n800\n", "no numeric rows"),
+                          ("800 10\n900 20 30\n", "rows have different numbers of columns"),
+                          ("800 0.5\n900 0.9\n", "u: peak 0.9 is not a percentage")):
+        with pytest.raises(ValueError, match=message):
+            cfht.scan(text, "u")
+    with pytest.raises(ValueError, match="u: exceeds 100%"):
+        cfht.percent_table("800 50\n900 120\n", "u")
+
+
+@row
 def cfht_needs_published_curves(t):
     with pytest.raises(FileNotFoundError):
         cfht.build(t.tmp, instrument="MegaCam", session=Session({}))
@@ -706,6 +819,46 @@ def eris_unknown_band_is_refused(t):
     published(t.tmp / "ERIS" / "NIX", "Q", np.linspace(11500, 14000, 20), np.full(20, 0.8))
     with pytest.raises(ValueError, match="camera"):
         eris.build(t.tmp, session=Session({eris.ZIP_URL: nix_zip()}))
+
+
+@row
+def nix_zip_members_are_checked(t):
+    with zipfile.ZipFile(io.BytesIO(nix_zip())) as zf:
+        members = {name: zf.read(name).decode("ascii") for name in zf.namelist()}
+    cameras, dichroic = eris.read_zip(zip_bytes(members))
+    assert set(cameras) == set(eris.CAMERAS) and dichroic[1].max() == pytest.approx(0.5)
+    wrong = {"without the dichroic": ({**members, eris.DICHROIC: None}, r"nix-filters.zip lacks \['nix-filters/Dichroic.txt'\]"),
+             "with a dichroic in other units": ({**members, eris.DICHROIC: members[eris.DICHROIC].replace("[nm]", "[um]")},
+                                                "Dichroic.txt header no longer states nm and percent"),
+             "with a camera in percent": ({**members, "nix-filters/cameras1-13masJHK.dat": "1e-6 90\n2e-6 90\n"},
+                                          "cameras1-13masJHK.dat: transmission exceeds 1 after unit conversion")}
+    for files, message in wrong.values():
+        with pytest.raises(ValueError, match=message):
+            eris.read_zip(zip_bytes({name: text for name, text in files.items() if text is not None}))
+
+
+@row
+def twomass_components_come_from_the_supplement_tables(t):
+    inst = t.tmp / "2MASS" / "2MASS"
+    for band in twomass.FILTER_TABLE:
+        published(inst, band, np.linspace(10000, 25000, 31), np.ones(31), "filter+instrument+atmosphere", ENERGY,
+                  source=None)
+    twomass.build(t.tmp, session=Session(twomass_files()))
+    m = InstrumentManifest.load(inst)
+    assert {b: m.component_file(FILTER, b) for b in ("J", "H", "Ks")} == {
+        b: f"components/filter/{b}.dat" for b in ("J", "H", "Ks")}
+    assert read_curve(inst / m.component_file(FILTER, "H")).transmission.max() == pytest.approx(0.8)
+    # Ks optics: mirror^2 x window x lens^7 x J-dichroic transmission x H-dichroic transmission
+    optics = read_curve(inst / m.component_file(OPTICS, "Ks")).transmission
+    np.testing.assert_allclose(optics, 0.9 ** 2 * 0.95 * 0.97 ** 7 * 0.98 * 0.96)
+    assert read_curve(inst / m.component_file(QE, SHARED)).transmission.max() == pytest.approx(0.6)
+    # Tables of two columns, and a block the page does not close, are read too.
+    wl, tr = twomass.micron_curve("<pre>\nxlam yval\n1.0 0.5\n1.1 0.6\n", "u")
+    np.testing.assert_allclose(wl, [10000.0, 11000.0])
+    for page, message in (("<html>moved</html>", "u: no <pre> table"), ("<pre>\n1.0 0.5\n</pre>", "u: no numeric rows"),
+                          (ipac_page("T", [1.0, 2.0], [0.5, 1.5]), "u: exceeds 1")):
+        with pytest.raises(ValueError, match=message):
+            twomass.micron_curve(page, "u")
 
 
 @row
@@ -758,6 +911,29 @@ def lsst_releases_are_separate_instruments(t):
 
 
 @row
+def lsst_publishes_svos_curves_and_writes_rubins_atmosphere_site(t):
+    filters = t.tmp / "filters"
+    session = Session({**lsst_files("1.5"), **lsst_files("v1.9.2")})
+    t.mp.setattr(requests, "Session", lambda: session)  # without a session: a requests session
+    with pytest.raises(RuntimeError, match="SVO has no LSST/LSST.u"):
+        lsst.build(filters, instrument="LSST", svo_client=SVOClient(lambda fid: None))
+    svo_client = SVOClient(lambda fid: record(fid, components="filter+instrument+atmosphere"))
+    inst = lsst.build(filters, instrument="LSST", svo_client=svo_client)
+    assert svo_client.asked == [f"LSST/LSST.{b}" for b in lsst.BANDS]
+    assert read_filter_header(inst / "g.dat")["FilterID"] == "LSST/LSST.g"
+    site = t.tmp / "atmospheres" / "lsst_std"
+    grid = AtmosphereGrid.load(site)
+    assert [(e["airmass"], e["file"]) for e in grid.entries] == [(1.0, "am1.00.dat"), (1.2, "am1.20.dat")]
+    header = read_filter_header(site / "am1.20.dat")
+    assert header["Atmosphere"] == "site=lsst_std airmass=1.2" and "atmos_std" in header["Sources"]
+    np.testing.assert_allclose(curve(site / "am1.00.dat")[0][[0, -1]], [3000.0, 11500.0])
+    v19 = lsst.build(filters, instrument="LSSTv19")
+    before = (v19 / "r.dat").read_bytes()
+    lsst.build(filters, instrument="LSSTv19", session=Session(lsst_files("v1.9.2", scale=0.5)))
+    assert (v19 / "r.dat").read_bytes() == before  # a published curve is kept, not rewritten
+
+
+@row
 def earlier_manifest_note_is_carried_once(t):
     inst = t.tmp / "ERIS" / "NIX"
     published(inst, "J", np.linspace(11500, 14000, 20), np.full(20, 0.8))
@@ -771,6 +947,12 @@ def earlier_manifest_note_is_carried_once(t):
     assert InstrumentManifest.load(inst).notes == first
     assert first.endswith("Earlier note: One negative sample clipped to 0.")
     assert first.count("Earlier note") == 1
+    fresh = t.tmp / "fresh"
+    published(fresh / "ERIS" / "NIX", "J", np.linspace(11500, 14000, 20), np.full(20, 0.8))
+    eris.build(fresh, session=session)
+    own = InstrumentManifest.load(fresh / "ERIS" / "NIX").notes
+    eris.build(fresh, session=session)  # the builder's own note is not carried as an earlier one
+    assert InstrumentManifest.load(fresh / "ERIS" / "NIX").notes == own and "Earlier note" not in own
 
 
 # ======================================================================
@@ -866,6 +1048,10 @@ def ztf_default_qe_is_multi_layer_and_coatings_are_variants(t):
     assert "filter" not in m.sources and m.sources["filter:i"].startswith(ztf.SPEC.filters["i"].url)
     single = compose_band(inst, "g", "filter+qe", variants={"qe": "single_layer"})
     assert single.transmission.max() == pytest.approx(0.6, rel=1e-3)
+    session = Session(files)
+    t.mp.setattr(requests, "Session", lambda: session)  # without a session: a requests session
+    ztf.build(t.tmp)
+    assert ztf.SINGLE in session.calls and InstrumentManifest.load(inst).variants == m.variants
 
 
 @row
@@ -903,6 +1089,13 @@ def hsc_maps_r_i_to_r2_i2_and_publishes_user_filters(t):
     assert "NB387.dat" in (inst / "HSC").read_text().split()
     early = compose_band(inst, "r", "filter", variants={"filter": "first_r_i"})
     assert early.transmission.max() == pytest.approx(0.7, rel=1e-3)
+    # Without a session, a requests session; an MBQ1 archive without a band's member stops the build.
+    member = f"wHSC-{hsc.MBQ1[0]}.txt"
+    files[f"{hsc.SUBARU}/wHSC-MBQ1.zip"] = zip_bytes({f"wHSC-{band}.txt": text_table(WL, gauss(5000, 50), "{:g} {:g}")
+                                                      for band in hsc.MBQ1[1:]})
+    t.mp.setattr(requests, "Session", lambda: Session(files))
+    with pytest.raises(RuntimeError, match=f"wHSC-MBQ1.zip has no {member}"):
+        hsc.build(t.tmp / "filters")
 
 
 BASS_TEXT = """# 90Prime SDSS g filter curve: ...
@@ -927,6 +1120,23 @@ def bass_builder_adds_filter_qe_and_qe(t):
     assert m.component_file("filter+qe", "g") == "components/filter+qe/g.dat"
     assert m.component_file(QE, "r") == "components/qe/qe_r.dat"
     assert m.primary_bands() == ["g", "r"]
+    # Where SVO's sibling is not filter-only, column 1 is written as the band's filter.
+    other = t.tmp / "other" / "BOK" / "BASS"
+    for band in legacy_surveys.BASS_BANDS:
+        published_set(other, band, WL, gauss(5000, 300) * 0.4, "filter+optics+qe+atmosphere")
+    sibling = SVOClient(lambda fid: record(fid, components="filter+qe"))
+    legacy_surveys.build(t.tmp / "other", instrument="BASS", session=Session(files), svo_client=sibling)
+    assert sorted(sibling.asked) == ["BOK/BASS.g_filter", "BOK/BASS.r_filter"]
+    m = InstrumentManifest.load(other)
+    assert m.component_file(FILTER, "g") == "components/filter/g.dat"
+    np.testing.assert_allclose(read_curve(other / "components/filter/g.dat").transmission, [0.01, 0.9, 0.9, 0.02])
+    for text, message in ((BASS_TEXT.replace(" 0.666\n", "\n"), "expected 4 columns"),
+                          (BASS_TEXT.replace("5500.00", "4200.00"), "wavelengths are not increasing")):
+        with pytest.raises(ValueError, match=message):
+            legacy_surveys.read_bass(text.encode())
+    wl, filt, filt_qe, _ = legacy_surveys.read_bass(BASS_TEXT.encode())
+    with pytest.raises(ValueError, match="too few samples above the QE floor"):
+        legacy_surveys.bass_qe(wl, filt, filt_qe, floor=0.95)
 
 
 @row
@@ -940,6 +1150,9 @@ def mzls_publishes_the_corrected_curve_with_the_filter(t):
     assert m.bands == ["z"] and m.published_bands["z"] == "filter+optics+qe+atmosphere"
     assert read_curve(inst / m.component_file(FILTER, "z")).transmission.max() == pytest.approx(0.98, rel=1e-3)
     assert read_filter_header(inst / "z.dat")["FilterID"] == "KPNO/MzLS.z"
+    files[f"{legacy_surveys.FILES}/kpzd.txt"] = text_table(wl, 198 * gauss(9200, 500, wl), "{:.2f} {:.5f}")
+    with pytest.raises(ValueError, match="MzLS curves are not fractions after scaling"):
+        legacy_surveys.build(t.tmp / "other", instrument="MzLS", session=Session(files))
 
 
 @row
@@ -959,6 +1172,10 @@ def gmos_qe_epochs_are_variants_without_default(t):
     with pytest.raises(ComponentError):
         compose_band(inst, "g", "filter+qe")
     assert compose_band(inst, "g", "filter+qe", variants={"qe": "eev"}).transmission.max() == pytest.approx(0.8)
+    t.mp.setattr(requests, "Session", lambda: Session(files))  # without a session: a requests session
+    assert gmos.build(t.tmp, instrument="GMOS_N") == inst
+    with pytest.raises(FileNotFoundError, match="has no published curves"):
+        gmos.build(t.tmp, instrument="GMOS_S")
 
 
 @row
@@ -983,6 +1200,12 @@ def sdss_camera_response_is_built_for_the_bands_that_have_it(t):
     assert product.name == "filter+optics+qe"
     assert (product / product.name).read_text().split() == [f"{b}.dat" for b in bands]
     assert all(released_mesa_reads(product / f"{b}.dat") for b in bands)
+    with pytest.raises(FileNotFoundError, match=r"lacks published \['u', 'g', 'r', 'i', 'z'\]"):
+        sdss.build(t.tmp / "empty")  # no session given: refused before a requests session downloads anything
+    files[sdss.GUNN] = fits_file(*[fits_table([("wavelength", None, WL), ("resnoa", None, np.full(WL.size, 1.5))],
+                                              name=b.upper()) for b in sdss.BANDS])
+    with pytest.raises(ValueError, match="u: unexpected resnoa table"):
+        sdss.read_gunn(Session(files))
 
 
 # ======================================================================
@@ -1168,6 +1391,23 @@ def build_simple_refuses_a_composite_band_without_a_published_curve(t):
     assert not (inst / "manifest.json").exists()
 
 
+@row
+def build_simple_publishes_original_filters_and_writes_further_sites(t):
+    inst = t.tmp / "filters" / "Fac" / "Cam"
+    spec = SimpleSource("Fac", "Cam", filters={"g": Table("f")}, published_from_filters=True, sites=[team_site()])
+    session = Session({"f": "4000 0.5\n5000 0.8\n"})
+    t.mp.setattr(requests, "Session", lambda: session)
+    assert build_simple(spec, t.tmp / "filters") == inst  # no session given: a requests session of its own
+    assert session.calls == ["f"]
+    manifest = InstrumentManifest.load(inst)
+    assert manifest.atmosphere_sites == ["here_team"] and manifest.default_site is None
+    assert AtmosphereGrid.load(t.tmp / "atmospheres" / "here_team").kind == TEAM
+    assert read_filter_header(inst / "g.dat")["ComponentsSource"] == "original"
+    with pytest.raises(ValueError, match="Invalid filter transmission from f"):
+        build_simple(spec, t.tmp / "other", session=Session({"f": "4000 0.5\n5000 1.2\n"}))
+    assert not (t.tmp / "other").exists()
+
+
 def hst_tables():
     """ACS/SBC graph: F122M splits into ota x filter x mama; FR388N has no chain."""
     t = hst.SynphotTables.__new__(hst.SynphotTables)
@@ -1200,6 +1440,21 @@ def hst_build_records_bands_it_cannot_decompose_in_the_notes(t):
     manifest = InstrumentManifest.load(inst)
     assert "Not decomposed: FR388N." in manifest.notes
     assert set(manifest.components["filter"]) == {"F122M"}
+
+
+@row
+def hst_chain_roles_come_from_the_graph(t):
+    tables = hst_tables()
+    tables.outnode = np.array([2, 3, 3, 4])  # f122m loops back to its own node: the chain ends there
+    assert tables.chain("acs,sbc,f122m") == ["hst_ota", "acs_sbc_mama", "acs_f122m"]
+    tables = hst_tables()
+    tables.compname = np.array(["hst_ota", "clear", "acs_f122m", "clear"])  # no detector in the chain
+    with pytest.raises(ValueError, match=r"unclassifiable chain \['hst_ota', 'acs_f122m'\]"):
+        hst._split_chain(tables, "acs,sbc", "F122M")
+    tables.compname = np.array(["clear", "acs_sbc_mama", "acs_f122m", "clear"])  # no optics: none written
+    inst = hst_published(t.tmp, bands=("F122M",))
+    hst.build(t.tmp, instruments=["ACS_SBC"], tables=tables)
+    assert set(InstrumentManifest.load(inst).components) == {FILTER, QE}
 
 
 @row
@@ -1246,9 +1501,13 @@ def jwst_build_raises_after_building_the_others_for_instruments_without_curves(t
     raw = pandeia_raw(t.tmp / "pandeia")
     inst = t.tmp / "filters" / "JWST" / "NIRCam"
     published(inst, "F200W", source=None)
+    published(inst, "GRISMR", source=None)
     with pytest.raises(FileNotFoundError, match="no published curves for MIRI.*Built: NIRCam"):
         jwst.build(t.tmp / "filters", raw=raw, instruments=["NIRCam", "MIRI"])
-    assert set(InstrumentManifest.load(inst).components) == {"filter", "optics", "qe"}
+    manifest = InstrumentManifest.load(inst)
+    assert set(manifest.components) == {"filter", "optics", "qe"}
+    assert "GRISMR" not in manifest.components["filter"]
+    assert "Not decomposed (not imaging filters in Pandeia): GRISMR." in manifest.notes
 
 
 @row
@@ -1311,6 +1570,13 @@ def euclid_parse_checks_columns_and_product(t):
     bad[3] = bad[3].replace(bad[3].split()[1], "0.5", 1)
     with pytest.raises(ValueError, match="multiply"):
         euclid.parse_table("\n".join(bad))
+    np.testing.assert_allclose(euclid.parse_table(text.replace("\n", "\n\n"))["WAVE"], wave)  # blank lines skipped
+    head, *rows = text.splitlines()
+    with pytest.raises(ValueError, match="NISP passband table has no data rows"):
+        euclid.parse_table(head + "\n")
+    with pytest.raises(ValueError, match="NISP passband wavelengths are not increasing"):
+        euclid.parse_table("\n".join([head, *rows[::-1]]))
+    assert euclid._published_deviation(t.tmp, "Y", wave * 10.0, total) is None  # no published curve to compare
 
 
 @row
@@ -1384,6 +1650,13 @@ def roman_qe_is_the_detector_mean(t):
         roman.check_summary(roman_summary(0.5, 0.5), wl, qe)
     with pytest.raises(ValueError, match="unit"):
         roman.parse_qe(qe_text.replace("unit: nm", "unit: um"))
+    for wrong, message in ((qe_text.replace("name: SCU 7, unit: ''", "name: SCU 7, unit: adu"),
+                            "expected 18 dimensionless SCU columns"),
+                           (qe_text.replace("wavelength,SCU 1,", "wavelength,SCU 0,"), "unexpected columns"),
+                           (roman_qe(np.where(values > 0.85, 1.5, values)), "QE lie in"),
+                           (qe_text.replace("\n1000.0,", "\n700.0,"), "wavelengths must increase")):
+        with pytest.raises(ValueError, match=message):
+            roman.parse_qe(wrong)
 
     inst = t.tmp / "Roman" / "WFI"
     published(inst, "F062", np.array([4720.0, 6000.0, 7700.0]), np.array([0.1, 0.5, 0.1]), "filter+optics+qe",
@@ -1410,6 +1683,7 @@ def hst_pins_replace_only_the_named_component(t):
         f"{hst.TRDS}/comp/acs/acs_f115lp_tds_def_010_syn.fits": throughput(wl, [0.875, 0.875, 0.875]),
         f"{hst.TRDS}/comp/acs/acs_f115lp_tds_def_004_syn.fits": throughput(wl, [0.909, 0.909, 0.909]),
         f"{hst.TRDS}/comp/acs/acs_sbc_mama_013_syn.fits": throughput(wl, [0.1, -0.01, 0.2]),
+        f"{hst.TRDS}/comp/acs/acs_sbc_mama_004_syn.fits": throughput(wl, [0.1, 0.1, 0.2]),
     }.__getitem__
     pins = {"acs_f115lp_tds_def": "acs_f115lp_tds_def_004_syn.fits"}
     assert tables.throughput("acs_f115lp_tds_def", pins)[1][0] == pytest.approx(0.909)
@@ -1420,6 +1694,12 @@ def hst_pins_replace_only_the_named_component(t):
     assert note == "acs_f115lp_tds_def_010_syn.fits = 0.9626 x acs_f115lp_tds_def_004_syn.fits"
     _, prod = hst._product(tables, ["acs_f115lp_tds_def", "acs_sbc_mama"], pins)
     assert prod[-1] == pytest.approx(0.909 * 0.2)
+    mama = {"acs_sbc_mama": "acs_sbc_mama_004_syn.fits"}
+    assert hst._pin_note(tables, mama, ["acs_sbc_mama"]) == (
+        "acs_sbc_mama_013_syn.fits differs from acs_sbc_mama_004_syn.fits (not achromatic)")
+    notes = hst._notes(tables, "acs,sbc", {}, {}, pins, {"acs_f115lp_tds_def", "acs_sbc_mama"})
+    assert ("Pinned to the release the published curves were computed with: acs_f115lp_tds_def_004_syn.fits. "
+            f"The newest TRDS files differ by an achromatic factor per band ({note})") in notes
 
 
 @row
@@ -1436,6 +1716,14 @@ def jwst_refdata_is_checked_and_filtered(t):
     assert not (root / "jwst/nircam/psfs/big.fits").exists() and not (root / "devtools").exists()
     with pytest.raises(RuntimeError, match="SHA-1"):
         jwst.fetch_refdata(t.tmp / "b", url="u", session=session)
+    # Without a session, a requests session; without tarfile's extraction filters, the checked name is extracted.
+    t.mp.setattr(requests, "Session", lambda: session)
+    t.mp.setattr(jwst, "tarfile", types.SimpleNamespace(open=tarfile.open))  # a tarfile without data_filter
+    root = jwst.fetch_refdata(t.tmp / "c", url="u", sha1=None)
+    assert (root / "jwst/nircam/filters/f200w.fits").read_bytes() == b"y"
+    session.files["u"] = tar_gz({"jwst/nircam/psfs/big.fits": b"x"}, "pandeia_data-2026.7-jwst")
+    with pytest.raises(RuntimeError, match="No JWST throughput files found"):
+        jwst.fetch_refdata(t.tmp / "d", url="u", sha1=None)
 
 
 @row
@@ -1559,6 +1847,18 @@ def uvot_rejects_a_wrong_filter_extension(t):
     files[swift.CALDB_ROOTS[0] + "cpf/arf/" + v] = files[swift.CALDB_ROOTS[0] + "cpf/arf/" + swift.BANDS["B"][1]]
     with pytest.raises(ValueError, match="FILTER"):
         swift.uvot(Fetcher(Session(files)))
+    grid = np.array([2000.0, 3000.0])
+    arf = fits_file(fits_table([("WAVE_MIN", "nm", grid - 5), ("WAVE_MAX", "angstrom", grid + 5),
+                                ("SPECRESP", "cm**2", [10.0, 20.0])], "SPECRESPV", {"FILTER": "V", "CONTENT": "SPECRESP"}))
+    with pytest.raises(ValueError, match="UVOT ARF V: WAVE_MIN unit 'nm', expected 'angstrom'"):
+        swift.arf_curve(arf, "V")
+    ftrans = fits_file(*[fits_table([("WAVELENGTH", "nm", grid), ("TRANSMIS", "", [0.5, 0.6])], "TRANSMISSION" + f,
+                                    {"FILTER": f}) for f in dict(swift.BANDS.values())])
+    with pytest.raises(ValueError, match="UVOT ftrans: unexpected TRANSMISSION.* header"):
+        swift.ftrans_curves(ftrans)
+    area = fits_file(fits_table([("WAVELENGTH", "angstrom", grid), ("EA", "m**2", [0.05, 0.06])], "MIRROREFFAREA"))
+    with pytest.raises(ValueError, match="UVOT MIRROREFFAREA: unexpected units"):
+        swift.area_curve(area, "MIRROREFFAREA")
 
 
 def csp_package():
@@ -1573,7 +1873,7 @@ def csp_package():
     for band, c in opt.items():
         wl = np.arange(c - 900.0, c + 901.0, 20.0)
         raw = 0.8 * np.exp(-0.5 * ((wl - c) / 120.0) ** 2)
-        members[f"{band}_texas_WLcorr.txt"] = text_table(wl, raw, two)
+        members[f"{band}_texas_WLcorr.txt"] = text_table(wl, raw - 0.001 * (band == "u"), two)  # u dips below 0
         members[f"{band}_tel_ccd_atm_ext_1.2.dat"] = text_table(wl, raw * np.interp(wl, atm_wl, atm_tr) ** 1.2, two)
     for name, c in (("Y_SWO", 10350), ("Jrc1_SWO", 12400), ("Jrc2_SWO", 12350), ("H_SWO", 16300),
                     ("Y_DUP", 10400), ("J_DUP", 12380), ("H_DUP", 16280)):
@@ -1607,6 +1907,9 @@ def csp1_epochs_atmosphere_and_per_band_components(t):
     assert read_filter_header(out / m.components["filter+optics+qe"]["g"])["Components"] == "filter+optics+qe"
     assert comp.transmission.max() == pytest.approx(0.8, rel=1e-6)
     assert "g 1.000 (+-0.000)" in m.notes
+    assert "u: 48 negative samples (min -0.001) set to 0" in m.notes  # the raw scan's noise, noted
+    with pytest.raises(ValueError, match="expected two columns, got 3"):
+        csp.two_columns(b"# wl T err\n4000 0.5 0.1\n5000 0.6 0.1\n")
     assert np.loadtxt(out / "Y.dat", delimiter=",", skiprows=1)[:, 1].min() == 0.0  # noise clipped
     assert all(released_mesa_reads(p) for p in out.rglob("*.dat"))
 
@@ -1636,9 +1939,17 @@ def cassini_publishes_pds_curves_and_keeps_svo_copies_apart(t):
                       source="svo", filter_id="Cassini/ISS_NAC.BL1", wavelength_unit="Angstrom",
                       extra={"Components": "filter+optics+qe+instrument", "ComponentsSource": "svo"})
     svo_before = (inst / "BL1_svo.dat").read_bytes()
+    # A copy that is not the PDS curve (1 % high over BL2's core), and the mirror's index listing both copies.
+    sys_bl2 = np.loadtxt(io.StringIO(files[cassini.systrans_url("ISS_NAC", "BL2")].split("\\begindata\n")[1]))
+    core = sys_bl2[:, 1] > 0.5 * sys_bl2[:, 1].max()
+    write_filter_file(inst / "BL2_svo.dat", sys_bl2[core, 0] * 10, sys_bl2[core, 1] * 1.01, detector_type="photon",
+                      source="svo", filter_id="Cassini/ISS_NAC.BL2", wavelength_unit="Angstrom",
+                      extra={"Components": "filter+optics+qe+instrument", "ComponentsSource": "svo"})
+    mirror_index = "".join(f"{b}.dat\n" for b in sorted([*cassini.BANDS["ISS_NAC"], "BL1_svo", "BL2_svo"]))
+    (inst / "ISS_NAC").write_text(mirror_index)
     out = cassini.build(t.tmp, instrument="ISS_NAC", session=Session(files))
     assert (out / "BL1_svo.dat").read_bytes() == svo_before
-    assert (out / "ISS_NAC").read_text().split() == [f"{b}.dat" for b in sorted(cassini.BANDS["ISS_NAC"])]
+    assert (out / "ISS_NAC").read_text() == mirror_index  # an existing index is kept
     h = read_filter_header(out / "BL1.dat")
     assert h["FilterID"] == "Cassini/ISS_NAC.BL1" and h["DetectorType"] == "photon"
     assert h["Components"] == "filter+optics+qe" and h["ComponentsSource"] == "original"
@@ -1647,6 +1958,7 @@ def cassini_publishes_pds_curves_and_keeps_svo_copies_apart(t):
     assert np.allclose(pub[:, 0], nm * 10) and np.allclose(pub[:, 1], sys_bl1[:, 1])
     m = json.loads((out / "manifest.json").read_text())
     assert m["bands"] == sorted(cassini.BANDS["ISS_NAC"]) and "BL1_svo" not in m["detector_types"]
+    assert not {"BL1_svo", "BL2_svo"} & (set(m["published_bands"]) | set(m["detector_type_sources"]))
     assert m["published"] == {"components": "filter+optics+qe", "source": "original"}
     assert "IR4" not in m["components"]["filter"]  # IR4 extends past 1000 nm
     assert m["components"]["qe"] == {"*": "components/qe/qe.dat"}
@@ -1657,8 +1969,24 @@ def cassini_publishes_pds_curves_and_keeps_svo_copies_apart(t):
     assert np.allclose(f[:, 1], np.interp(f[:, 0] / 10, nm, pairs["BL1"]), atol=2e-3)
     comp = compose_band(out, "BL1", "filter+optics+qe")
     assert np.allclose(np.interp(comp.wavelength, pub[:, 0], pub[:, 1]), comp.transmission, rtol=1e-9, atol=1e-15)
-    assert "IR4 (IR4xCL2" in m["notes"] and "1 SVO copies equal the PDS curve" in m["notes"]
+    assert "IR4 (IR4xCL2" in m["notes"] and "2 SVO copies equal the PDS curve" in m["notes"]
+    assert "except BL2_svo differs from the PDS curve by 0.9901-0.9901" in m["notes"]
     assert all(released_mesa_reads(p) for p in out.rglob("*.dat"))
+
+
+@row
+def cassini_refuses_tables_that_do_not_decompose(t):
+    with pytest.raises(ValueError, match="PDS table without .begindata rows"):
+        cassini.pds_table("PDS_VERSION_ID = PDS3\nEND\n", 2)
+    with pytest.raises(ValueError, match="PDS table wavelengths not increasing"):
+        cassini.pds_table(pds_table([[300.0, 0.5], [200.0, 0.5]]), 2)
+    files, _, _ = cassini_files("ISS_NAC")
+    optics_url = cassini.EFFICIENCY + cassini.CAMERAS["ISS_NAC"][1]
+    for optics, message in ((0.0, "ISS_NAC BL1: QE x optics vanishes inside the validity range"),
+                            (0.1, r"ISS_NAC BL1: derived filter pair exceeds 1 \(5\.4")):
+        files[optics_url] = pds_table(np.c_[np.arange(200.0, 1100.1, 2.5), np.full(361, optics)])
+        with pytest.raises(ValueError, match=message):
+            cassini.RECIPES["ISS_NAC"](Fetcher(Session(files)))
 
 
 @row
@@ -1729,6 +2057,10 @@ def decam_instrument_response_is_the_des_band_over_its_atmosphere(t):
         decam.SPEC.notes + " Flag: the instrument-only quotient exceeds 1 in i peaks at 1.021746 at 8500 A "
         "(118 samples above 1 between 7275 and 8510 A); z peaks at 1.036993 at 9060 A (126 samples above 1 "
         "between 8635 and 9260 A). A physical throughput cannot")
+    plain = t.tmp / "plain" / "CTIO" / "DECam"
+    plain.mkdir(parents=True)
+    InstrumentManifest("CTIO", "DECam", bands=[]).save(plain)
+    assert decam.above_unity(plain) == ""  # nothing above 1, nothing to flag
 
 
 @row
@@ -1801,6 +2133,8 @@ def hst_tables_take_the_newest_graph_and_walk_it(t):
     assert ir[0] == "wfc3_ir_primary" and ir[-3:] == ["wfc3_ir_win", "wfc3_ir_qe", "wfc3_ir_cor"]
     with pytest.raises(ValueError, match="no branch at graph node"):
         tables.chain("acs,sbc,f999w")
+    t.mp.setattr(requests, "Session", lambda: Session(saved()))  # without a session: a requests session
+    assert hst.SynphotTables().tmg_name == "99c1930om_tmg.fits"
 
 
 @row
@@ -1816,11 +2150,22 @@ def write_site_refuses_a_bad_curve_before_writing(t):
     bad = team_site(entries=[(1.2, None, DerivedCurve("u", derived([0.5, 1.2, 0.9]), "x"))])
     with pytest.raises(ValueError, match="not a transmission"):
         write_site(t.tmp, bad, None)
+    unstated = team_site(entries=[(None, 2.5, DerivedCurve("u", derived([0.5, 0.8, 0.9]), "x"))])
+    with pytest.raises(ValueError, match="unstated airmass cannot state a pwv"):
+        write_site(t.tmp, unstated, None)
     assert not (t.tmp / "here_team").exists()
 
 
 PS1_ROWS = (" 500 0.500 0.400 0.000 0.000 0.000 0.000 0.000 0.970 0.880 0.990\n"
             " 501 0.500 0.410 0.000 0.000 0.000 0.000 0.000 0.970 0.881 0.980\n")
+
+
+@row
+def atlas_checks_table_3s_pivot(t):
+    t.mp.setitem(surveys.ATLAS_TABLE3, "c", 540.0)  # Tonry et al. say 533 nm
+    with pytest.raises(ValueError, match=r"ATLAS c: Table-3 statistic 5328\.2 vs Table 3 540\.0 nm"):
+        surveys.build(t.tmp, instrument="ATLAS", session=Session(saved()))
+    assert not any(t.tmp.iterdir())
 
 
 @row
@@ -1837,6 +2182,27 @@ def ps1_build_registers_its_team_site(t):
     assert InstrumentManifest.load(inst).default_site == "haleakala_ps1"
     grid = AtmosphereGrid.load(t.tmp / "atmospheres" / "haleakala_ps1")
     assert grid.kind == TEAM and grid.entries[0]["airmass"] == 1.2 and "Aero" in grid.entries[0]["derivation"]
+    # Without a session, write_instrument downloads the team site with a requests session of its own.
+    spec = surveys.ps1(None)
+    t.mp.setattr(requests, "Session", lambda: session)
+    write_instrument(t.tmp / "again" / "filters", spec)
+    assert session.headers["User-Agent"] == USER_AGENT
+    assert AtmosphereGrid.load(t.tmp / "again" / "atmospheres" / "haleakala_ps1").entries == grid.entries
+    twice = dataclasses.replace(spec, bands=[*spec.bands, dataclasses.replace(spec.bands[0], name="G")])
+    with pytest.raises(ValueError, match=r"PAN-STARRS/PS1: duplicate band names \['g', 'G'\]"):
+        write_instrument(t.tmp / "twice", twice, session=session)
+    assert not (t.tmp / "twice" / "PAN-STARRS").exists()
+
+
+@row
+def ps1_atmosphere_reads_the_fixed_width_columns(t):
+    wl, tr = team.ps1_atmosphere(PS1_ROWS + "\n")  # a blank line is skipped
+    np.testing.assert_allclose(wl, [5000.0, 5010.0])
+    np.testing.assert_allclose(tr, [0.97 * 0.88 * 0.99, 0.97 * 0.881 * 0.98])
+    with pytest.raises(ValueError, match="PS1 table3: expected 11 columns, got 10"):
+        team.ps1_atmosphere(PS1_ROWS.replace(" 0.990\n", "\n"))
+    with pytest.raises(ValueError, match="PS1 table3: fixed-width and whitespace columns disagree"):
+        team.ps1_atmosphere(PS1_ROWS.replace(" 0.000 0.970", " 0.00 10.970", 1))
 
 
 @row
@@ -1846,6 +2212,15 @@ def csp_atmosphere_raises_the_one_airmass_transmission_to_1p2(t):
     wl, tr = team.csp_atmosphere(raw)
     assert wl[0] == 3000.0 and wl[-1] == 11000.0
     np.testing.assert_allclose(tr[wl == 5000.0], 0.8 ** 1.2 * 0.95)
+    lines = b"2950. 1.\n4000. 0.9\n6000. 1.0\n12000. 1.\n"
+    for ext, other, message in ((b"3000. 0.5\n2000. 0.8\n", lines, "atm_ext_ctio.dat: wavelengths are not strictly"),
+                                (b"3000. 0.5\n5000. 1.8\n", lines, "atm_ext_ctio.dat: values are not a 0-1"),
+                                (b"3000. 0.5\n5000. 0.8\n", b"2950. 1.\n4000. 1.5\n", "atm_ext_lines.dat: unexpected"),
+                                (b"# no data\n", lines, "no numeric rows")):
+        with pytest.raises(ValueError, match=message):
+            team.csp_atmosphere(tar_gz({"atm_ext_ctio.dat": ext, "atm_ext_lines.dat": other}, "CSP_filter_package"))
+    with pytest.raises(ValueError, match="atm_ext_ctio.dat is not a regular file"):
+        team.csp_atmosphere(tar_with_directory("CSP_filter_package/atm_ext_ctio.dat"))
 
 
 @row
@@ -1856,6 +2231,9 @@ def vircam_atmosphere_skips_its_title_lines(t):
     np.testing.assert_allclose(wl, [9000.0, 9005.0])
     with pytest.raises(ValueError, match="unexpected title"):
         team.vircam_atmosphere(raw, "trans_10_10.dat.gz", "3.0mm H2O, airmass=2.0")
+    with pytest.raises(ValueError, match="trans_10_10.dat.gz is not a regular file"):
+        team.vircam_atmosphere(tar_with_directory("Filters_QE_Atm_curves/trans_10_10.dat.gz"), "trans_10_10.dat.gz",
+                               "1.0mm H2O, airmass=1.0")
 
 
 @row
@@ -1866,6 +2244,10 @@ def twomass_table_refuses_a_truncated_copy(t):
     np.testing.assert_allclose(wl, [10000.0, 10001.0])
     with pytest.raises(ValueError, match="consecutive"):
         team.twomass_table(page.replace("   2 ", "   3 ").encode(), "ATMOSPHERIC TRANSMISSION AT 2MASS NORTH SITE")
+    with pytest.raises(ValueError, match="title 'ATMOSPHERIC TRANSMISSION AT 2MASS SOUTH SITE' not found"):
+        team.twomass_table(page.encode(), "ATMOSPHERIC TRANSMISSION AT 2MASS SOUTH SITE")
+    with pytest.raises(ValueError, match="2MASS table: no PRE block"):
+        team.twomass_table(page.replace("<pre>", "<p>").encode(), "ATMOSPHERIC TRANSMISSION AT 2MASS NORTH SITE")
 
 
 @row
@@ -1885,6 +2267,12 @@ def sdss_transparency_merges_bands_and_refuses_conflicts(t):
     files[team.SDSS_FILES["z"]] = head + "3000 0 0 0 0.11\n"
     with pytest.raises(ValueError, match="disagrees"):
         team.sdss_transparency(Session(files))
+    files[team.SDSS_FILES["u"]] = "# assumed transparency\n3000 0 0 0 0.10\n"
+    with pytest.raises(ValueError, match="u.dat: unexpected header"):
+        team.sdss_transparency(Session(files))
+    files[team.SDSS_FILES["u"]] = "<!DOCTYPE html><html><body>Not Found</body></html>"
+    with pytest.raises(ValueError, match="u.dat returned HTML, not data"):
+        team.sdss_transparency(Session(files))
 
 
 @row
@@ -1895,6 +2283,12 @@ def bass_ratio_keeps_only_well_measured_rows(t):
     wl, tr = team.bass_atmosphere(Session(files))
     np.testing.assert_allclose(wl, [4000.0, 6000.0])
     np.testing.assert_allclose(tr, [0.75, 0.9])
+    files[team.BASS_FILES["r"]] = head + "4000 0.9 0.800 0.720\n"  # 4000 A in band for g and r
+    with pytest.raises(ValueError, match="BASS: 4000.0 A is in-band for two filters"):
+        team.bass_atmosphere(Session(files))
+    files[team.BASS_FILES["g"]] = "# airmass 1.2\n4000 0.5 0.400 0.300\n"
+    with pytest.raises(ValueError, match="bass-g.txt: unexpected header"):
+        team.bass_atmosphere(Session(files))
 
 
 @row
@@ -1904,7 +2298,11 @@ def form_fields_follow_skycalc_spelling(t):
     assert fields["SKYMODEL.PWV"] == "0.50" and fields["TEL.SITE.HEIGHT"] == "2400"
     assert fields["SKYMODEL.TARGET.AIRMASS"] == "2.00" and fields["SKYMODEL.TARGET.ALT"] == "30.000"
     assert "SKYMODEL.INCL.MOON" not in fields  # unticked checkbox
+    assert skycalc._form_fields(dict(params, incl_moon="Y"))["SKYMODEL.INCL.MOON"] == "Y"
     assert skycalc.airmass_altitude(3.0) == 19.5
+    with pytest.raises(ValueError, match="SkyCalc accepts airmass 1-3, not 3.5"):
+        skycalc.airmass_altitude(3.5)
+    assert skycalc.fits_version(["no version here"]) is None
 
 
 @row
@@ -1916,6 +2314,12 @@ def form_client_checks_the_echo(t):
     bad = skycalc.SkyCalcClient(session=SkyCalc({"SKYMODEL.PWV": "3.5"}), pause=0)
     with pytest.raises(RuntimeError, match="echoed SKYMODEL.PWV"):
         bad.fetch("paranal", 1.5, 2.5, 1000.0, 1100.0, 2000)
+    rejecting = SkyCalc(api_up=True)
+    rejecting.post = lambda url, json=None, **kw: Resp('{"status": "error", "error": "airmass out of range"}')
+    with pytest.raises(RuntimeError, match="SkyCalc rejected .*: airmass out of range"):  # final, not retried
+        skycalc.SkyCalcClient(session=rejecting, pause=0).fetch("paranal", 1.5, 2.5, 1000.0, 1100.0, 2000)
+    t.mp.setattr(requests, "Session", SkyCalc)  # without a session: a requests session
+    assert skycalc.SkyCalcClient(pause=0).fetch("paranal", 1.5, 2.5, 1000.0, 1100.0, 2000).interface == "form"
 
 
 @row
@@ -1961,9 +2365,11 @@ def hsc_builder_and_team_registry_write_the_same_site(t):
 # ======================================================================
 @row
 def table_floors_negative_measured_transmission(t):
-    wl, tr = Table("u").parse(b"4000,-0.0001\n5000,0.8\n")
+    wl, tr = Table("u").parse(b"4000,-0.0001\n5000,0.8\n6000\n7000 0.9x\n")  # short and unreadable rows skipped
     np.testing.assert_allclose(wl, [4000, 5000])
     np.testing.assert_allclose(tr, [0.0, 0.8])
+    with pytest.raises(RuntimeError, match="No numeric rows in u"):
+        Table("u").parse(b"# only a header\n4000\n")
 
 
 @row
@@ -2000,6 +2406,8 @@ def jwst_band_factors(t):
     assert _band_factors("nircam", "F444W", paths)[QE] == ["qe_lw"]
     assert _band_factors("nircam", "GRISMR", paths) is None
     assert _band_factors("miri", "F444W", paths) == {FILTER: ["f444w"], OPTICS: [], QE: ["miri_imager_qe"]}
+    assert _band_factors("niriss", "F200W", paths) == {FILTER: ["f200w"], OPTICS: ["internal"], QE: ["qe"]}
+    assert _band_factors("nirspec", "F200W", paths) is None  # not an imager
 
 
 @row
@@ -2078,6 +2486,16 @@ def units_and_cleaning(t):
     assert "1 negative" in note and "1 undefined" in note and "1 duplicate" in note and "scaled" in note
     with pytest.raises(ValueError):
         clean_curve([1, 2], [0.0, -1.0])
+    with pytest.raises(ValueError, match="Unknown wavelength unit 'furlong'"):
+        to_angstrom([1.0], "furlong")
+    with pytest.raises(ValueError, match="factors do not overlap"):
+        common_product([(np.array([1.0, 2.0]), np.array([1.0, 1.0])), (np.array([3.0, 4.0]), np.array([1.0, 1.0]))])
+    assert safe_band("J.2") == "Jp2"
+    with pytest.raises(ValueError, match="empty band name"):
+        safe_band("#?")
+    with pytest.raises(ValueError, match="detector_type must be photon or energy"):
+        make_band("g", [4000.0, 5000.0], [0.5, 0.6], unit="Angstrom", detector_type="count", components="filter",
+                  sources="x")
 
 
 @row
@@ -2152,6 +2570,8 @@ def ukirt_tar_members_refuse_unsafe_names(t):
         surveys.tar_members(tar_gz({"../evil": "x", "Table02_online.dat": member}), {"Table02_online.dat"})
     with pytest.raises(ValueError, match="lacks"):
         surveys.tar_members(tar_gz({"other.dat": member}), {"Table02_online.dat"})
+    with pytest.raises(ValueError, match="refusing tar member 'Table02_online.dat'"):
+        surveys.tar_members(tar_with_directory("Table02_online.dat"), {"Table02_online.dat"})
 
 
 @row
@@ -2177,10 +2597,18 @@ def herschel_and_planck_fits(t):
     assert wl.tolist() == [60.0, 70.0] and tr.tolist() == [0.2, 0.5]
     with pytest.raises(ValueError, match="BAND"):
         space.pacs_curve(pacs, "R")
+    pacs_nm = fits_file(fits_table([("wavelength", "nm", [60.0, 70.0]), ("transmission", "", [0.2, 0.5])],
+                                   header={"BAND": "BS"}))
+    with pytest.raises(ValueError, match="PACS: wavelength unit is not um"):
+        space.pacs_curve(pacs_nm, "BS")
     spire = fits_file(fits_table([("frequency", "GHz", [1000.0, 1200.0]), ("psw", "", [0.5, 1.0]),
                                   ("pmw", "", [0.0, 0.1]), ("plw", "", [0.0, 0.0])], "RSRF"))
     nu, cols = space.spire_rsrf(spire)
     assert nu.tolist() == [1000.0, 1200.0] and cols["psw"].tolist() == [0.5, 1.0]
+    spire_mhz = fits_file(fits_table([("frequency", "MHz", [1e6, 1.2e6]), ("psw", "", [0.5, 1.0]),
+                                      ("pmw", "", [0.0, 0.1]), ("plw", "", [0.0, 0.0])], "RSRF"))
+    with pytest.raises(ValueError, match="SPIRE: frequency unit is not GHz"):
+        space.spire_rsrf(spire_mhz)
     rimo = table([("WAVENUMBER", "1/cm", [0.5, 2.0, 3.0]), ("TRANSMISSION", "", [1e-8, 0.5, 1.0])],
                  name="BANDPASS_F100")
     x, _ = space.planck_bandpass(rimo, "BANDPASS_F100", "1/cm")
@@ -2198,6 +2626,10 @@ def iras_html_table(t):
     assert sorted(tables) == ["12", "60"]
     assert tables["12"].tolist() == [[7.0, 0.0, 0.3, 0.0], [7.5, 0.01, 0.35, 0.008]]
     assert tables["60"].shape == (2, 4)
+    rows = np.array([[7.0, 0.0, 0.3, 0.0], [7.5, 0.01, 0.35, 0.008]])
+    t.mp.setattr(space, "iras_tables", lambda text: {"12": rows, "25": rows, "60": rows[::-1], "100": rows})
+    with pytest.raises(ValueError, match="IRAS 60: wavelengths not increasing"):
+        space.iras(Fetcher(Session({space.IRAS_URL: page})))
 
 
 @row
@@ -2206,6 +2638,19 @@ def msx_ipac_table(t):
     assert a.shape == (4, 2) and a[0].tolist() == [5.8, 0.0]
     with pytest.raises(ValueError):
         space.msx_table(fx("msx_rsr_a.tbl").replace("microns", "nm"))
+
+
+@row
+def mips_and_xmm_tables_need_their_columns(t):
+    text = ("  24.0 0.10  70.0 0.20  160.0 0.30\n"
+            "  25.0 0.50  71.0 0.60  161.0 0.70\n"
+            "  26.0 0.40\n")  # the 70 and 160 columns end early
+    cols = space.mips_columns(text)
+    assert cols["24"][0].tolist() == [24.0, 25.0, 26.0] and cols["160"][1].tolist() == [0.3, 0.7]
+    with pytest.raises(ValueError, match="MIPS 70: column lengths differ"):
+        space.mips_columns(text + "               72.0\n")  # a wavelength without its response
+    with pytest.raises(ValueError, match="XMM OM: expected 7 columns"):
+        space.xmm_om(Fetcher(Session({space.XMM_URL: "# nm UVW2 UVM2\n200 0.1 0.2\n210 0.1 0.2\n"})))
 
 
 @row
@@ -2225,6 +2670,10 @@ def keck_xls_sheets(t):
     rows = [["W.M. Keck Observatory test report"]] + [[""] * 2] * 5 + [["", "center"]] + [[""] * 2] * 3
     rows += [["wl(nm)", "T%"], [700.0, 10.0], [760.0, 90.0]]
     np.testing.assert_allclose(obs.lris_i_sheet(Book({"s": rows})), [[7000, 0.1], [7600, 0.9]])
+    with pytest.raises(ValueError, match="NIRC2 sheet J: unexpected header"):
+        obs.nirc2_sheet(Book({"J": [["Lambda", "T"], [1.2, 90.0]]}), "J")
+    with pytest.raises(ValueError, match="I.xls: unexpected layout"):
+        obs.lris_i_sheet(Book({"s": [["Another vendor"]] + rows[1:]}))
 
 
 @row
@@ -2277,6 +2726,10 @@ def usno_reads_only_the_wayback_snapshots(t):
     assert standards.usno_table(text, "u").shape == (4, 6)
     with pytest.raises(ValueError, match="unexpected header"):
         standards.usno_table(text, "g")
+    lines = text.splitlines()
+    short = [ln if ln.startswith("\\") or not ln.strip() else ln.rsplit(None, 1)[0] for ln in lines]
+    with pytest.raises(ValueError, match="u: expected 6 columns"):
+        standards.usno_table("\n".join(short), "u", "u")
     # The curves cite the snapshots, so an unreachable archive stops the build
     # instead of silently reading the live files.
     session = Session({standards.USNO_README: "readme", standards.USNO_ORIG.format("u"): text})
