@@ -1248,6 +1248,20 @@ def msg_metadata_raises_for_unknown_grid_and_failed_download(t):
 
 
 @row
+def msg_discovery_takes_the_newest_version_of_a_grid(t):
+    # MSG's index links a grid's old versions beside its current one, and discovery kept the last link, an old
+    # version (CAP18 v1, Goettingen v2; review 24 Nov 2026). Nill, 25 Nov: "pick the newest".
+    base = MSG_FILE.rsplit("/", 2)[0]
+    page = "".join(f'<tr><td><a href="{base}/{current}/sg-{name}.h5">sg-{name}.h5</a></td><td>v{n}</td><td>'
+                   + "".join(f'<a href="{base}/{name}/v{k}/sg-{name}.h5">v{k}</a>' for k in old) + "</td></tr>"
+                   for name, current, n, old in (("A", "A", 2, [1]), ("B", "B/v3", 3, [2, 1]), ("C", "C", 1, [])))
+    grabber, _ = _grabber(t, "msg", {MSG_INDEX: f"<table>{page}</table>"})
+    assert grabber.discover_models() == ["sg-A", "sg-B", "sg-C"]
+    assert grabber.model_urls == {"sg-A": f"{base}/A/sg-A.h5", "sg-B": f"{base}/B/v3/sg-B.h5",
+                                  "sg-C": f"{base}/C/sg-C.h5"}
+
+
+@row
 def msg_metadata_raises_for_unreadable_or_empty_file(t):
     grabber, _ = _grabber(t, "msg")
     grabber.model_urls["sg-Test"] = MSG_FILE
