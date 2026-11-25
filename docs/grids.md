@@ -199,7 +199,8 @@ at a time, so an evaluation reads much of the file: up to 190 GB for the largest
 MSG grids. The next `sed-tools rebuild --grids NAME`, download or `SED.fetch` of
 the grid rewrites it in the current layout (version 3), with the same values to
 the bit; the new file is written in full beside the old one and then swapped
-in.
+in. This applies to `flux_cube_nd.bin` only: an old top `flux_cube.bin` stays
+where it is, as described above.
 
 ## Rebuilding
 
