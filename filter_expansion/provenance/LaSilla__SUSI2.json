@@ -3,55 +3,55 @@
  "instrument": "SUSI2",
  "bands": {
   "NB880": {
-   "cleaning": "T = 0 samples added inside the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7355, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+   "cleaning": "T = 0 samples fill the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7355, 12000 A, spaced from the neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
   },
   "NB881": {
-   "cleaning": "T = 0 samples added inside the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7900, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+   "cleaning": "T = 0 samples fill the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7900, 12000 A, spaced from the neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
   },
   "NB882": {
-   "cleaning": "T = 0 samples added inside the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7945, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+   "cleaning": "T = 0 samples fill the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7945, 12000 A, spaced from the neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
   },
   "NB883": {
-   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+   "cleaning": "T = 0 samples fill the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A, spaced from the neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
   },
   "NB884": {
-   "cleaning": "T = 0 samples added inside the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7990, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+   "cleaning": "T = 0 samples fill the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7990, 12000 A, spaced from the neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
   },
   "NB885": {
-   "cleaning": "T = 0 samples added inside the 3 gap(s) next to the isolated ESO reading(s) at 3000, 7990 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+   "cleaning": "T = 0 samples fill the 3 gap(s) next to the isolated ESO reading(s) at 3000, 7990 A, spaced from the neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
   },
   "B": {
-   "cleaning": "T = 0 samples added inside the 6 gap(s) next to the isolated ESO reading(s) at 3000, 7990, 10840, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+   "cleaning": "T = 0 samples fill the 6 gap(s) next to the isolated ESO reading(s) at 3000, 7990, 10840, 12000 A, spaced from the neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
   },
   "B_817": {
-   "cleaning": "T = 0 samples added inside the 6 gap(s) next to the isolated ESO reading(s) at 3000, 7970, 10510, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+   "cleaning": "T = 0 samples fill the 6 gap(s) next to the isolated ESO reading(s) at 3000, 7970, 10510, 12000 A, spaced from the neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
   },
   "I": {
-   "cleaning": "T = 0 samples added inside the 1 gap(s) next to the isolated ESO reading(s) at 3000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+   "cleaning": "T = 0 samples fill the 1 gap(s) next to the isolated ESO reading(s) at 3000 A, spaced from the neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
   },
   "IB609": {
-   "cleaning": "T = 0 samples added inside the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7990, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+   "cleaning": "T = 0 samples fill the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7990, 12000 A, spaced from the neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
   },
   "IB662": {
-   "cleaning": "T = 0 samples added inside the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7990, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+   "cleaning": "T = 0 samples fill the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7990, 12000 A, spaced from the neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
   },
   "R": {
-   "cleaning": "T = 0 samples added inside the 1 gap(s) next to the isolated ESO reading(s) at 3000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+   "cleaning": "T = 0 samples fill the 1 gap(s) next to the isolated ESO reading(s) at 3000 A, spaced from the neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
   },
   "U": {
-   "cleaning": "T = 0 samples added inside the 3 gap(s) next to the isolated ESO reading(s) at 10640, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+   "cleaning": "T = 0 samples fill the 3 gap(s) next to the isolated ESO reading(s) at 10640, 12000 A, spaced from the neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
   },
   "V": {
-   "cleaning": "T = 0 samples added inside the 3 gap(s) next to the isolated ESO reading(s) at 3000, 7995 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+   "cleaning": "T = 0 samples fill the 3 gap(s) next to the isolated ESO reading(s) at 3000, 7995 A, spaced from the neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
   },
   "WB490": {
-   "cleaning": "T = 0 samples added inside the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7990, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+   "cleaning": "T = 0 samples fill the 4 gap(s) next to the isolated ESO reading(s) at 3000, 7990, 12000 A, spaced from the neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
   },
   "WB655": {
-   "cleaning": "T = 0 samples added inside the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+   "cleaning": "T = 0 samples fill the 2 gap(s) next to the isolated ESO reading(s) at 3000, 12000 A, spaced from the neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
   },
   "Z": {
-   "cleaning": "T = 0 samples added inside the 1 gap(s) next to the isolated ESO reading(s) at 3000 A: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
+   "cleaning": "T = 0 samples fill the 1 gap(s) next to the isolated ESO reading(s) at 3000 A, spaced from the neighbouring real step and growing by at most 2x per step: ESO's La Silla tables leave out readings below about 1e-4, so these gaps are zero, not a straight line (Nill, 24 Nov 2026; spacing, 25 Nov 2026; the La Silla filter file this curve copies). ESO's readings are kept."
   }
  }
 }
