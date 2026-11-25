@@ -4,6 +4,7 @@ and bolometric flux. The flux-cube tool, the SED API, the filter modules and the
 
 from __future__ import annotations
 
+import json
 import logging
 import math
 import re
@@ -45,6 +46,7 @@ class FilterCurve:
     metadata: Dict[str, object]
     wavelength_unit: str = "angstrom"
     detector_type: str = ENERGY
+    path: str | None = None  # the file it was read from
 
 
 @dataclass
@@ -232,7 +234,7 @@ def load_filter_curve(
         detector_type = ENERGY
         metadata.setdefault("detectortypesource", "assumed")
     return FilterCurve(name or Path(path).stem, wavelength, transmission, metadata,
-                       wavelength_unit="angstrom", detector_type=detector_type)
+                       wavelength_unit="angstrom", detector_type=detector_type, path=str(path))
 
 
 #: :func:`band_grid` splits every step longer than lambda / BAND_RESOLVING_POWER, so that :func:`band_integral` is
@@ -493,13 +495,44 @@ def save_spectrum(path, wavelength, flux, parameters: Dict[str, float], extra: D
         f.writelines(f"# {key} = {value}\n" for key, value in header.items())
         f.writelines(f"{w:.6f} {fl:.8e}\n" for w, fl in zip(wavelength, flux))
 
-def _band_magnitude(wl, flux, curve, photometric_system, vega_spectrum):
+def vega_zero_point(curve: FilterCurve, vega: Spectrum | None = None, find_vega=None) -> float:
+    """The zero point of ``curve``'s Vega magnitudes, Vega's band-averaged f_lambda: from ``vega``, a Vega spectrum,
+    when one is given; otherwise the zero point the curve states, in its header (:data:`VEGA_ZP_KEYS`) or as
+    ``ZeroPointVega_flam`` in the ``properties.json`` beside its file (NJM's, saved with the curves); otherwise from
+    the spectrum ``find_vega()`` returns. ValueError when there is none."""
+    if vega is None:
+        try:
+            stated = get_metadata_float(curve.metadata, VEGA_ZP_KEYS)
+        except ValueError as exc:
+            raise ValueError(f"Filter '{curve.name}': {exc}") from exc
+        if stated is None and curve.path is not None:
+            stated = _published_vega_zero_point(Path(curve.path))
+        if stated is not None:
+            return stated
+        if find_vega is None:
+            raise ValueError(f"Filter '{curve.name}' states no Vega zero point, in its header or a properties.json "
+                             "beside it. Supply a Vega spectrum via the 'vega_spectrum' argument.")
+        vega = find_vega()
+    return band_average_flux_lambda(vega.wavelength, vega.flux, curve)
+
+
+def _published_vega_zero_point(path: Path) -> float | None:
+    """``ZeroPointVega_flam`` of the band named as the file ``path`` in the ``properties.json`` beside it, if any."""
+    properties = path.with_name("properties.json")
+    if not properties.is_file():
+        return None
+    value = (json.loads(properties.read_text(encoding="utf-8"))["bands"].get(path.stem) or {}).get("ZeroPointVega_flam")
+    return None if value is None else float(value)
+
+
+def _band_magnitude(wl, flux, curve, photometric_system, find_vega, given_vega: bool = False):
     """Return (flux label, band-averaged flux, magnitude) for one filter.
 
     In both systems the magnitude of a zero band flux is ``inf`` and of a
     negative one NaN; a zero or negative Vega zero point gives ``-inf`` or NaN.
-    *vega_spectrum* is called for the Vega reference only when the filter has
-    no Vega zero point in its metadata.
+    The Vega zero point is :func:`vega_zero_point`'s: *find_vega* is called for
+    a Vega spectrum only when the curve states no zero point, or first when
+    ``given_vega`` (it returns a spectrum the user supplied, which wins).
     """
     if photometric_system == "AB":
         flux_density = band_average_flux_nu(wl, flux, curve)
@@ -508,10 +541,7 @@ def _band_magnitude(wl, flux, curve, photometric_system, vega_spectrum):
             return "f_nu", flux_density, float(-2.5 * np.log10(flux_density / AB_ZERO_FLUX))
 
     flux_density = band_average_flux_lambda(wl, flux, curve)
-    vega_zero = get_metadata_float(curve.metadata, VEGA_ZP_KEYS)
-    if vega_zero is None:
-        vega_curve = vega_spectrum()
-        vega_zero = band_average_flux_lambda(vega_curve.wavelength, vega_curve.flux, curve)
+    vega_zero = vega_zero_point(curve, find_vega() if given_vega else None, find_vega)
     # A zero or negative band flux or zero point gives inf, -inf or NaN, as computed; no error.
     with np.errstate(divide="ignore", invalid="ignore"):
         return "f_lambda", flux_density, float(-2.5 * np.log10(np.divide(flux_density, vega_zero)))

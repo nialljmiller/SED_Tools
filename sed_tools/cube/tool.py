@@ -423,7 +423,9 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--filter-system", help="Restrict photometry to a specific filter system")
     parser.add_argument("--photometric-system", choices=["AB", "Vega", "ab", "vega"],
                         help="Photometric system for synthetic magnitudes")
-    parser.add_argument("--vega-sed", help="Path to a Vega reference spectrum (required for Vega magnitudes if no zeropoint metadata is provided)")
+    parser.add_argument("--vega-sed", help="Path to a Vega reference spectrum for Vega magnitudes; it wins over the "
+                                           "curves' zero points (header or properties.json). Without either, one is "
+                                           "searched for near the cube")
     parser.add_argument("--plot", help="Write a diagnostic plot to this path (defaults to plots/)")
     parser.add_argument("--save-sed", help="Write interpolated SED (wavelength, flux) to a text file")
     return parser
@@ -529,7 +531,8 @@ def _print_filter_photometry(
         curve = load_filter_curve(str(fpath), name)
         filters[name] = curve
         try:
-            flux_label, flux_density, magnitude = _band_magnitude(wl, flux, curve, photometric_system, ensure_vega_spec)
+            flux_label, flux_density, magnitude = _band_magnitude(wl, flux, curve, photometric_system, ensure_vega_spec,
+                                                                  given_vega=bool(args.vega_sed))
         except ValueError as exc:
             print(f"  {name:30s}  error: {exc}")
             failures.append(f"{name}: {exc}")

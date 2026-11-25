@@ -15,9 +15,9 @@ import numpy as np
 
 from ..config import get_data_dir
 from ..filters.manifest import is_auxiliary_path
-from ..photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve, Spectrum, _warn_outside_sed,
-                          band_average_flux_lambda, band_average_flux_nu, get_metadata_float, load_filter_curve,
-                          load_spectrum, save_spectrum)
+from ..photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, FilterCurve, Spectrum, _warn_outside_sed,
+                          band_average_flux_lambda, band_average_flux_nu, load_filter_curve, load_spectrum,
+                          save_spectrum, vega_zero_point)
 from ..ui_utils import ordered_range
 from .collision import _normalise_key
 from .fileio import ALL_AXES_NAME, read_header
@@ -113,14 +113,16 @@ class EvaluatedSED:
             :class:`FilterCurve`. ``(name, path)`` tuples are also accepted.
         system:
             Photometric system to use. "AB" (default) computes magnitudes using
-            the AB zero-point. "Vega" relies on either the filter metadata or on
-            a provided Vega reference spectrum. In both, a band flux of zero
+            the AB zero-point. "Vega" uses the Vega spectrum given as
+            ``vega_spectrum``; without one, the zero point the curve states (its
+            header, or ``ZeroPointVega_flam`` in the ``properties.json`` beside
+            it; see photometry.vega_zero_point). In both, a band flux of zero
             gives an infinite magnitude and a negative one NaN. A Vega zero
             point of zero gives ``-inf``, and a negative one NaN.
         vega_spectrum:
-            Optional spectrum to use as Vega reference when ``system="Vega"``
-            and the filter file does not encode a zero point. Can be provided as
-            a :class:`Spectrum` instance or a filesystem path.
+            Optional Vega spectrum for ``system="Vega"``, which wins over any
+            zero point the curves state. Can be provided as a :class:`Spectrum`
+            instance or a filesystem path.
         """
 
         resolved = self._model._resolve_filters(filters)
@@ -143,28 +145,13 @@ class EvaluatedSED:
                     magnitude = float(-2.5 * np.log10(flux_density / AB_ZERO_FLUX))
             else:
                 flux_density = band_average_flux_lambda(self.wavelength, self.flux, curve)
-                vega_zero = _vega_zero_point(curve, vega_curve)
+                vega_zero = vega_zero_point(curve, vega_curve)
                 with np.errstate(divide="ignore", invalid="ignore"):
                     magnitude = float(-2.5 * np.log10(np.divide(flux_density, vega_zero)))
             results[name] = PhotometryResult(magnitude=magnitude, flux_density=float(flux_density),
                                              system="AB" if system == "AB" else "Vega", filter_name=name)
 
         return results
-
-
-def _vega_zero_point(curve: FilterCurve, vega_curve: Optional[Spectrum]) -> float:
-    try:
-        metadata_value = get_metadata_float(curve.metadata, VEGA_ZP_KEYS)
-    except ValueError as exc:
-        raise ValueError(f"Filter '{curve.name}': {exc}") from exc
-    if metadata_value is not None:
-        return float(metadata_value)
-    if vega_curve is None:
-        raise ValueError(
-            "Filter does not provide a Vega zero point. Supply a Vega spectrum via "
-            "the 'vega_spectrum' argument."
-        )
-    return band_average_flux_lambda(vega_curve.wavelength, vega_curve.flux, curve)
 
 
 class SEDModel:

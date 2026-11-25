@@ -23,11 +23,17 @@ print(vega["V"].magnitude)
   point, 3631 Jy; `flux_density` is then the band-averaged f_ν in
   erg/s/cm²/Hz. Vega magnitudes use the Vega zero point; `flux_density` is
   then the band-averaged f_λ in erg/s/cm²/Å.
-- A Vega magnitude needs a Vega zero point: from the filter file's header, if
-  it carries one, or from a Vega spectrum given as `vega_spectrum=` (a path or
-  a loaded spectrum). `Filters.fetch_vega()` downloads NJM's Vega spectrum,
-  the one MESA uses, and returns its path. The zero points in a set's
-  `properties.json` are not read by `photometry`.
+- A Vega magnitude needs a Vega zero point, taken in this order: from a Vega
+  spectrum given as `vega_spectrum=` (a path or a loaded spectrum), which
+  always wins; otherwise the one the filter file's header states; otherwise
+  the band's `ZeroPointVega_flam` in the `properties.json` beside the curve,
+  which an NJM download saves with the set. So
+  `sun.photometry("Generic/Johnson", system="Vega")` needs no spectrum for an
+  NJM set. Without any of them it raises ValueError. `Filters.fetch_vega()`
+  downloads NJM's Vega spectrum, the one MESA uses, and returns its path. The
+  cube tool's `--vega-sed` (`python -m sed_tools.cube.tool`) is such a
+  spectrum; without it the tool searches for one only for a curve that states
+  no zero point.
 - The magnitudes are those of the surface flux, as the grids store it. For a
   star of radius R at distance d, add `-5 * log10(R / d)` (R and d in the same
   unit). The Sun's surface flux gives G ≈ −38.5 (AB).

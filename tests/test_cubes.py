@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import importlib
 import io
+import json
 import logging
 import math
 import shutil
@@ -384,25 +385,41 @@ def non_numeric_vega_zero_point_in_a_filter_file_raises(t):
     model = _build(_simple_grid(t.tmp / "grid"))
     sed = SEDModel(name="grid", flux_cube_path=model / "flux_cube.bin")(5500.0, 4.25, 0.0)
     band = str(_box_filter(t.tmp / "Band.dat", "# zp_vega = 3.6e-9 erg/s/cm2/A", ANGSTROM))
-    vega = str(_box_filter(t.tmp / "vega.dat", ANGSTROM))
     with pytest.raises(ValueError, match=r"Filter 'Band': metadata zp_vega = '3.6e-9 erg/s/cm2/A' is not a number"):
-        sed.photometry(band, system="Vega", vega_spectrum=vega)
+        sed.photometry(band, system="Vega")  # a Vega spectrum, when given, wins and the header is not read (Q8)
 
 
 @row
-def a_curves_vega_zero_point_wins_over_a_vega_spectrum(t):
-    # Photometry that used the Vega spectrum although the curve states zp_vega passed every row, by both routes:
-    # EvaluatedSED.photometry and photometry._band_magnitude (review 24 Nov 2026, tests.md R3).
-    from sed_tools.photometry import _band_magnitude, load_filter_curve, load_spectrum
+def a_given_vega_spectrum_wins_then_the_curves_header_then_its_properties_json(t):
+    # The order of a Vega zero point (Nill, 24 Nov 2026, Q8): a supplied Vega spectrum; else the curve's header
+    # zp_vega; else ZeroPointVega_flam in the properties.json beside it (NJM's); else an error. properties.json was
+    # never read, and the header used to win over a supplied spectrum (review 24 Nov 2026, tests.md R3). Both
+    # routes: EvaluatedSED.photometry and photometry._band_magnitude (the flux-cube tool's).
+    from sed_tools.photometry import _band_magnitude, band_average_flux_lambda, load_filter_curve, load_spectrum
 
     model = _build(_simple_grid(t.tmp / "grid"))  # flat 1e-10
     sed = SEDModel(name="grid", flux_cube_path=model / "flux_cube.bin")(5500.0, 4.25, 0.0)
-    band = str(_box_filter(t.tmp / "Band.dat", "# zp_vega = 2e-10", ANGSTROM))
+    (t.tmp / "set").mkdir()
+    (t.tmp / "set" / "properties.json").write_text(json.dumps({"bands": {
+        "Band": {"ZeroPointVega_flam": 4e-10}, "Bare": {"ZeroPointVega_flam": 4e-10}, "None": {"error": "no Vega"}}}))
+    band = str(_box_filter(t.tmp / "set" / "Band.dat", "# zp_vega = 2e-10", ANGSTROM))
+    _box_filter(t.tmp / "set" / "Bare.dat", ANGSTROM)
+    _box_filter(t.tmp / "set" / "None.dat", ANGSTROM)
     vega = str(_box_filter(t.tmp / "vega.dat", ANGSTROM))  # a zero point of about 1
-    expected = -2.5 * math.log10(0.5)
-    assert sed.photometry(band, system="Vega", vega_spectrum=vega)["Band"].magnitude == pytest.approx(expected)
-    assert _band_magnitude(sed.wavelength, sed.flux, load_filter_curve(band), "Vega",
-                           lambda: load_spectrum(vega))[2] == pytest.approx(expected)
+
+    def both(name, **given):
+        path, spectrum = str(t.tmp / "set" / f"{name}.dat"), given.get("vega_spectrum")
+        return (sed.photometry(path, system="Vega", **given)[name].magnitude,
+                _band_magnitude(sed.wavelength, sed.flux, load_filter_curve(path), "Vega",
+                                lambda: load_spectrum(spectrum), given_vega=spectrum is not None)[2])
+
+    spectrum = load_spectrum(vega)
+    zero = band_average_flux_lambda(spectrum.wavelength, spectrum.flux, load_filter_curve(band))
+    assert both("Band", vega_spectrum=vega) == pytest.approx((-2.5 * math.log10(1e-10 / zero),) * 2)
+    assert both("Band") == pytest.approx((-2.5 * math.log10(0.5),) * 2)
+    assert both("Bare") == pytest.approx((-2.5 * math.log10(0.25),) * 2)
+    with pytest.raises(ValueError, match="Filter 'None' states no Vega zero point"):
+        sed.photometry(str(t.tmp / "set" / "None.dat"), system="Vega")
 
 
 def _run_tool(tmp, mp, filters_dir):
