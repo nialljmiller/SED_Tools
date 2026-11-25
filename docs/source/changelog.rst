@@ -820,6 +820,19 @@ Packaging and scripts
 - The suite's packaging rows import every module of the package (they
   imported 51 of 90), and every builder row checks that each URL is
   downloaded once (PS1 was exempt by name).
+- Golden runs in CI (Nill, Q9). On the environment the outputs were recorded
+  on, every file still matches byte for byte. Elsewhere every file must match
+  byte for byte except the flux cubes, interpolated spectra and band
+  quantities whose last bits differ between platforms (``TOLERANT`` in
+  ``tests/test_golden.py``): their numbers must agree to a relative 1e-9.
+  Linux differs by at most 1.7e-14; the AB zero point read as 3630 Jy, a
+  0.1 % error in ``ZeroPointAB_flam`` and a 3-axis cube with log g and [M/H]
+  swapped each fail golden on Linux CI. ``public_interface`` (argparse help
+  and signatures, which are Python's own text) runs only on the recorded
+  Python version.
+- The suite runs every line of ``sed_tools/`` (Nill, Q11), with rows added to
+  the existing tables and no new test functions; ``pyproject.toml`` holds the
+  coverage.py settings, and coverage.py is not a dependency.
 
 Documentation
 ~~~~~~~~~~~~~
