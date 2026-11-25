@@ -28,7 +28,7 @@ from sed_tools import cli
 from sed_tools.api import SED, Filters
 from sed_tools.filters.compose import ComponentError
 
-from support import (CLEAN, GRABBERS, KURUCZ, answer, fake_grabber, filters_api, narrow_terminal, run_cli,
+from support import (CLEAN, CURVE, GRABBERS, KURUCZ, answer, fake_grabber, filters_api, narrow_terminal, run_cli,
                      run_module, scenarios, wide_lines, write_flux_cube, write_lookup)
 
 # runpy warns that a module imported earlier in the session is in sys.modules; python -m starts afresh.
@@ -134,10 +134,18 @@ def top_level_workflows_are_cli_aliases(t):
 
 @row
 def cli_config_subcommand_show(t):
+    t.mp.delenv("SED_DATA_DIR", raising=False)
     with contextlib.suppress(SystemExit):
         run_cli(t.mp, "config")
     captured = t.capsys.readouterr()
     assert "Data directory" in captured.out
+    assert run_cli(t.mp, "config", "--set", str(t.tmp / "data")) == 0
+    assert f"Data directory set to: {t.tmp / 'data'}\n" in t.capsys.readouterr().out
+    assert run_cli(t.mp, "config") == 0
+    assert f"Data directory : {t.tmp / 'data'}  [config file (" in t.capsys.readouterr().out
+    t.mp.setenv("SED_DATA_DIR", str(t.tmp / "env"))
+    assert run_cli(t.mp, "config") == 0
+    assert f"Data directory : {t.tmp / 'env'}  [environment variable SED_DATA_DIR]" in t.capsys.readouterr().out
 
 
 @row
@@ -145,6 +153,12 @@ def run_filter_combine_flow_wizard(t):
     for folder, band, wl in (("GAIA/GAIA", "G", 1), ("2MASS/2MASS", "J", 2)):
         (t.tmp / folder).mkdir(parents=True)
         (t.tmp / folder / f"{band}.dat").write_text(f"Wavelength,Transmission\n{wl},1\n")
+    answer(t.mp, "", "q")  # quit at the picker
+    cli.run_filter_combine_flow(base_dir=str(t.tmp))
+    assert t.capsys.readouterr().out.endswith("No filter sets selected.\n")
+    answer(t.mp, "", "1", "", "", "", "", "n")  # the defaults, then not confirmed
+    cli.run_filter_combine_flow(base_dir=str(t.tmp))
+    assert t.capsys.readouterr().out.endswith("Cancelled.\n") and not (t.tmp / "Combined").exists()
     # the base dir given, both local sets, a name, then the defaults: facility, output name, conflicts, proceed
     answer(t.mp, "", "1,2", "Gaia2MASS", "", "", "", "")
     cli.run_filter_combine_flow(base_dir=str(t.tmp))
@@ -225,6 +239,12 @@ def _python_m_cli(*argv, **kwargs):
 def running_the_cli_module_passes_on_the_exit_status(t):
     done = _python_m_cli("coverage", "--base", str(t.tmp))
     assert done.returncode == 1, done.stderr
+    import runpy  # python -m sed_tools, in this process
+
+    t.mp.setattr(sys, "argv", ["sed_tools", "coverage", "--base", str(t.tmp)])
+    with pytest.raises(SystemExit) as stop:
+        runpy.run_module("sed_tools", run_name="__main__", alter_sys=True)
+    assert stop.value.code == 1 and "No local grids found" in t.capsys.readouterr().out
 
 
 def _spectra_flow(t, **grabbers):
@@ -257,6 +277,25 @@ def spectra_flow_builds_what_it_can_then_lists_every_grid_not_completed(t):
 
 
 @row
+def spectra_flow_takes_all_a_source_and_name_or_a_pick(t):
+    built = _spectra_flow(t, msg=fake_grabber(["Good", "Other"], metadata={"m": 1}, downloaded=1))
+    cli.run_spectra_flow("msg", base_dir=str(t.tmp), models=["all"])
+    cli.run_spectra_flow("all", base_dir=str(t.tmp), models=["MSG: Good"])
+    assert built == ["Good", "Other", "Good"]
+    answer(t.mp, "q")
+    assert cli.run_spectra_flow("msg", base_dir=str(t.tmp)) is None
+    answer(t.mp, "2")
+    cli.run_spectra_flow("msg", base_dir=str(t.tmp))
+    assert built == ["Good", "Other", "Good", "Other"]
+    t.mp.setattr(cli.grids, "clean_model_dir", lambda model_dir, **kwargs: [
+        path.unlink() for path in Path(model_dir).glob("*.txt")] and dict(CLEAN))
+    with pytest.raises(RuntimeError, match="Good: no spectra remaining after cleaning"):
+        cli.run_spectra_flow("msg", base_dir=str(t.tmp), models=["Good"])
+    assert "\n  No spectra remaining after cleaning\n" in t.capsys.readouterr().out
+    assert built == ["Good", "Other", "Good", "Other"]
+
+
+@row
 def spectra_flow_raises_when_no_grid_is_discovered(t):
     _spectra_flow(t, svo=fake_grabber([]))  # as a grabber that could not read its index, after its warning
     with pytest.raises(RuntimeError, match="No spectral grids discovered"):
@@ -272,6 +311,16 @@ def axis_cut_prompt_takes_ranges_and_never_reads_a_typo_as_no_cut(t):
     answer(t.mp, "3500 to 8000")
     with pytest.raises(ValueError):  # not None, which would download the whole grid
         cli.grids.prompt_njm_axis_cuts("Grid", grabber)
+    t.capsys.readouterr()
+    info = {"n_spectra": 12, "teff_min": 5750.0, "teff_max": 6250.0, "teff_unique": 3, "logg_min": 4.0,
+            "logg_max": 4.5, "logg_unique": 2, "meta_min": -0.5, "meta_max": 0.0, "meta_unique": 2}
+    answer(t.mp, "", "", "", "")
+    cuts = cli.grids.prompt_njm_axis_cuts("Grid", SimpleNamespace(get_grid_info=lambda name, model_url=None: info))
+    assert cuts == dict.fromkeys(("teff_range", "logg_range", "meta_range", "wl_range"))
+    out = t.capsys.readouterr().out
+    assert ("  Available grid (12 spectra):\n    Teff:  5750 – 6250 K  (3 values)\n"
+            "    logg:  4.00 – 4.50    (2 values)\n    [M/H]: -0.50 – +0.00    (2 values)\n") in out
+    assert out.endswith("\n  No cuts — downloading full grid.\n\n")
 
 
 def _rebuild(t):
@@ -310,6 +359,19 @@ def rebuild_asks_which_grids(t):
     answer(t.mp, "1,3")
     cli.run_rebuild_flow(base_dir=str(t.tmp))
     assert rebuilt == ["A", "C"]
+    cli.run_rebuild_flow(base_dir=str(t.tmp), models=[])
+    assert t.capsys.readouterr().out.endswith("Nothing selected.\n") and rebuilt == ["A", "C"]
+
+    def clean_away(model_dir, **kwargs):  # cleaning that leaves no spectrum
+        for path in Path(model_dir).glob("*.txt"):
+            path.unlink()
+        return dict(CLEAN)
+
+    t.mp.setattr(cli.grids, "clean_model_dir", clean_away)
+    with pytest.raises(RuntimeError, match=r"^Spectral grids not rebuilt \(1\): A: no spectra \(.txt\) present "
+                                           r"after cleaning$"):
+        cli.run_rebuild_flow(base_dir=str(t.tmp), models=["A"])
+    assert "[rebuild] no spectra (.txt) present after cleaning; skipping A." in t.capsys.readouterr().out
 
 
 @row
@@ -403,6 +465,9 @@ def filters_command_without_a_target_fails_when_a_download_failed(t):
     answer(t.mp, "2", "2", "y", "n", "q")
     assert run_cli(t.mp, "filters") == 1
     assert "B/Cam2: SVO down" in t.capsys.readouterr().out.split("Failed (1):")[1]
+    t.mp.setattr(Filters, "fetch", classmethod(lambda cls, *a, **k: _raise(RuntimeError("SVO down"))))
+    assert run_cli(t.mp, "filters", "B/Cam2", "--base", str(t.tmp)) == 1  # with a target: the same failure
+    assert t.capsys.readouterr().out == "[filters] SVO down\n"
 
 
 def _paranal(t, atmospheres):
@@ -465,6 +530,37 @@ def cleaning_report_reads_the_summary_clean_model_dir_returns(t):
     assert "Cleaned       : 2 files" in out and "Recovered     : 1 files" in out
     assert "Already done  : 1 files" in out
     assert "All 4 files ready for use" in out
+    cli.grids._print_cleaning_report(dict(CLEAN, total=2, converted=["a", "b"],
+                                    catalog_units={"wavelength": "nm", "flux": "fnu"}))
+    assert "Converted     : 2 files\n   λ: nm → angstrom\n   F: fnu → F_lambda\n" in t.capsys.readouterr().out
+
+
+@row
+def import_dry_run_says_whether_the_spectra_declare_their_flux_unit(t):
+    (t.tmp / "Mine").mkdir()
+    (t.tmp / "Mine" / "s.txt").write_text("1000 1\n")
+    guesses = iter([None, None, "fnu_jy", "fnu_jy"])
+    t.mp.setattr(cli.grids, "undeclared_flux_unit", lambda files: next(guesses))
+    for flux_unit in (None, "flam", "flam", None):
+        cli.grids._report_import_flux_unit(str(t.tmp / "Mine"), None, flux_unit)
+    lines = t.capsys.readouterr().out.splitlines()
+    assert lines[:3] == ["[import] Mine: the spectra declare their flux unit",
+                         "[import] Mine: the spectra declare their flux unit; --flux-unit flam would not be used",
+                         "[import] Mine: flux unit not declared; --flux-unit flam would be used (best guess: fnu_jy)"]
+    assert lines[3].startswith("[import] Mine: flux unit not declared; best guess: fnu_jy, ")
+    answer(t.mp, "")
+    cli.run_import_flow(base_dir=str(t.tmp / "models"))
+    assert t.capsys.readouterr().out == "No path given.\n" and not (t.tmp / "models").exists()
+
+
+@row
+def filters_detector_refuses_dry_run_with_an_edit_in_place(t):
+    edited = []
+    t.mp.setattr(Filters, "correct_detector_type", classmethod(lambda cls, *a, **k: edited.append(a) or []))
+    with pytest.raises(SystemExit) as stop:
+        run_cli(t.mp, "filters-detector", str(t.tmp), "--correct", "photon", "--dry-run")
+    assert stop.value.code == 2 and edited == []
+    assert "--correct and --convert edit the files in place; they take no --dry-run" in t.capsys.readouterr().err
 
 
 @row
@@ -478,6 +574,28 @@ def picker_rejects_an_invalid_regex_instead_of_showing_everything(t):
     # The substring filter stays in force: the last listing shows beta only.
     last_listing = out.rsplit("Things", 1)[1]
     assert "beta" in last_listing and "alpha" not in last_listing
+
+
+@row
+def picker_pages_filters_and_ignores_numbers_it_does_not_list(t):
+    from sed_tools.ui_utils import prompt_choice
+
+    t.mp.setenv("COLUMNS", "80")
+    t.mp.setenv("LINES", "40")
+    labels = [f"item{i:02d}" for i in range(12)] + ["other"]
+    prompts = answer(t.mp, "!other", "g 3", "//item0[0-6]", "//", "id 99", "99", "zzz", "", "zzz", "q")
+    assert prompt_choice(labels, "Things", page_size=5, max_cols=1, use_color=False) is None
+    out = t.capsys.readouterr().out
+    assert 'Page 1/3 filter="!other"\n' in out and 'Page 3/3 filter="!other"\n' in out
+    assert 'Page 1/2 filter="//item0[0-6]"\n' in out  # 7 of the 13 match
+    # First, then after '//' (which clears the regex), 'id 99', '99' and the Enter that clears 'zzz'
+    assert out.count("Page 1/3\n") == 5
+    assert out.count("No matches for filter.") == 2
+    assert prompts.count("Press Enter to clear filter or 'q' to quit: ") == 2
+    answer(t.mp, ",", "2")  # an empty list picks nothing
+    assert prompt_choice(["a", "b"], "Things", multi=True, use_color=False) == [1]
+    assert prompt_choice([], "Things") is None
+    assert t.capsys.readouterr().out.endswith("No Things options available.\n")
 
 
 @row
@@ -596,6 +714,7 @@ def building_all_components_runs_every_builder_and_lists_the_failures(t):
             if name == "bad":
                 raise RuntimeError("source did not answer")
             built.append((name, base, kwargs))
+            return Path(base) / name  # what the builder wrote
         return build
 
     t.mp.setattr(cli, "AUTOMATIC_BUILDERS", ("first", "skycalc", "bad"))
@@ -611,6 +730,10 @@ def building_all_components_runs_every_builder_and_lists_the_failures(t):
         run_cli(t.mp, "filters-build-components", "all", "--base", str(t.tmp), "--sites", "lapalma")
     assert stop.value.code == 2 and built == []
     assert "'all' runs every builder with its own defaults" in t.capsys.readouterr().err
+    # One named source takes the options given.
+    assert run_cli(t.mp, "filters-build-components", "skycalc", "--base", str(t.tmp), "--sites", "lapalma") == 0
+    assert built == [("skycalc", str(t.tmp), {"sites": ["lapalma"]})]
+    assert t.capsys.readouterr().out == f"[filters] Built {t.tmp / 'skycalc'}\n"
     from sed_tools.component_sources import skycalc
 
     assert inspect.signature(skycalc.build).parameters["sites"].default == ("paranal", "lasilla")  # NJM's two
@@ -689,6 +812,10 @@ def menu_returns_after_ctrl_c_in_a_workflow(t):
     t.mp.setattr(cli, "run_coverage_flow", lambda: _raise(KeyboardInterrupt))
     assert cli._run_menu() == 0
     assert "Interrupted; back to the menu." in t.capsys.readouterr().out
+    # A command run from the shell ends at once, with the shell's status for Ctrl-C.
+    t.mp.setitem(cli._COMMANDS, "coverage", lambda args, parser: _raise(KeyboardInterrupt))
+    assert run_cli(t.mp, "coverage") == 130
+    assert t.capsys.readouterr().err == "\nsed-tools: interrupted\n"
 
 
 @menu_row
@@ -704,6 +831,7 @@ def menu_quits_when_input_ends(t):
     _no_banner(t)
     t.mp.setattr("builtins.input", lambda prompt="": _raise(EOFError))
     assert cli._run_menu() == 0
+    assert run_cli(t.mp) == 0  # sed-tools without a subcommand opens the menu
 
 
 @menu_row
@@ -744,6 +872,11 @@ AVAILABILITY = {
         {"atmosphere": True, "atmosphere_sites": ["hopkins_2mass", "ctio_2mass"]},
         "Atmosphere : can be added at its own sites: hopkins_2mass, ctio_2mass; no default, "
         "so choose one with --atmosphere-site (in Python, Filters.atmospheres() lists the conditions)", "None"),
+    "availability_lists_what_each_band_contains_when_the_curves_differ": (
+        {"published": "mixed", "published_bands": {"J": "filter", "H": "filter+atmosphere"}},
+        "Published curves contain : mixed J: filter H: filter+atmosphere", "unknown"),
+    "availability_lists_the_bands_a_component_covers_when_it_covers_only_some": (
+        {"partial_components": {"qe": ["J"]}}, "qe only for: J", "None"),
 }
 
 
@@ -779,6 +912,12 @@ def composition_takes_a_typed_recipe(t):
     answer(t.mp, "y", "published,optics")
     cli.filters._offer_composition(t.tmp / "Fac" / "Cam")
     assert composed[0][1]["components"] == ["published", "optics"] and "detector_type" not in composed[0][1]
+    # An instrument without parts is described, and nothing is asked or built.
+    t.mp.setattr(Filters, "available", classmethod(lambda cls, *a, **k: availability(
+        buildable=[], components=[], component_availability={"status": "total-only", "builder": None})))
+    answer(t.mp)
+    cli.filters._offer_composition(t.tmp / "Fac" / "Cam")
+    assert len(composed) == 1 and "Source review            : total-only" in t.capsys.readouterr().out
 
 
 @menu_row
@@ -898,6 +1037,11 @@ def the_summary_fits_80_columns_in_about_a_dozen_lines(t):
     assert "Atmosphere : own sites: paranal (default), lasilla" in flat
     assert "Variants   : API only; filter: production (default), addem" in flat
     assert "filters-cite" not in flat and "--variant" not in flat
+    # Terms without a full stop are cut at a word before 200 characters.
+    terms = cli.filters._licence_summary({"redistribution": "free", "terms": "word " * 60})
+    assert terms == "free. " + "word " * 39 + "word …"
+    assert cli.filters._curve_contents(availability(published="mixed", published_bands={
+        "J": "filter", "H": "filter+atmosphere", "K": "filter"})) == "differs by band: filter, filter+atmosphere"
 
 
 @menu_row
@@ -986,6 +1130,14 @@ def menu_4_says_in_one_line_when_an_instrument_has_no_parts(t):
     assert cli._run_menu() == 0
     out = t.capsys.readouterr().out
     assert "\nLSST/LSST has no separate parts to build a filter curve from.\n" in out and composed == []
+    answer(t.mp, "q")  # quit at the facility picker: nothing to build
+    assert cli.filters.run_filter_compose_flow(str(t.tmp)) == 0
+    summary_inputs(t.mp, availability(facility="LSST", instrument="LSST", availability_source="unknown",
+                                      errors=["NJM unreachable", "SVO: timed out"]))
+    answer(t.mp, "1", "1")
+    with pytest.raises(RuntimeError, match="^cannot tell what LSST/LSST is made of: NJM unreachable; SVO: timed out$"):
+        cli.filters.run_filter_compose_flow(str(t.tmp))
+    assert composed == []
 
 
 @menu_row
@@ -1097,6 +1249,10 @@ def the_picker_finds_an_instrument_installed_under_an_older_spelling(t):
     assert (facility, instrument) == ("Gemini", "GMOS_N")
     assert directory is None or directory.resolve() == installed.resolve()
     assert library.installed_directory("Gemini", "GMOS_N").resolve() == installed.resolve()
+    # Installed under two spellings: no directory is taken; the download step names both.
+    t.mp.setattr(FilterLibrary, "installed_directory",
+                 lambda self, f, i: _raise(ComponentError("Gemini/GMOS_N is installed as GMOS-N and GMOS_N")))
+    assert cli.filters._picked_names(library, {"key": "Gemini"}, {"key": "GMOS_N"}) == ("Gemini", "GMOS_N", None)
 
 
 @menu_row
@@ -1242,9 +1398,12 @@ def a_flow_without_scipy_says_what_to_install(t):
 
 @row
 def a_missing_module_that_is_not_optional_keeps_its_traceback(t):
+    typo = ModuleNotFoundError("No module named 'sed_tools_typo'", name="sed_tools_typo")
     with pytest.raises(ModuleNotFoundError):
-        cli._run_menu_flow(lambda: _raise(ModuleNotFoundError("No module named 'sed_tools_typo'",
-                                                              name="sed_tools_typo")))
+        cli._run_menu_flow(lambda: _raise(typo))
+    t.mp.setitem(cli._COMMANDS, "coverage", lambda args, parser: _raise(typo))
+    with pytest.raises(ModuleNotFoundError):
+        run_cli(t.mp, "coverage")
 
 
 # ----------------------------------------------------------------------
@@ -1313,15 +1472,30 @@ def composition_offers_the_bands_that_work(t):
         calls.append(kwargs.get("bands"))
         if kwargs.get("bands") is None:
             raise ComponentError("am1.00_pwv1.dat covers 9000-56000 A but 70% of the band lies beyond it")
+        return t.tmp / "product"  # not made: no detector type to review
 
     t.mp.setattr(Filters, "compose", classmethod(compose))
-    t.mp.setattr(cli.filters, "_composable_bands", lambda d, request: (["J", "H"], {"Z": "covers 9000-56000 A"}))
+    composable = {"bands": (["J", "H"], {"Z": "covers 9000-56000 A"})}
+    t.mp.setattr(cli.filters, "_composable_bands", lambda d, request: composable["bands"])
     answer(t.mp, "y")
     request = {"components": ["filter"], "variants": None, "detector_type": None, "allow_heavy": False,
                "atmosphere": {"site": "paranal", "airmass": 1.0, "pwv": 1.0}}
     cli.filters._compose_the_bands_that_work(t.tmp / "Paranal" / "VISTA", request, ComponentError("no"))
     assert calls == [["J", "H"]]
     assert "Z: covers 9000-56000 A" in t.capsys.readouterr().out
+    # After a download: every band failed, so the bands that work are offered and built.
+    t.mp.setattr(Filters, "available", classmethod(lambda cls, *a, **k: availability()))
+    answer(t.mp, "y", "1", "y")  # build a composed version, recipe 1, only the bands that work
+    cli.filters._offer_composition(t.tmp / "Paranal" / "VISTA")
+    assert calls == [["J", "H"], None, ["J", "H"]]
+    # Declined, or no band works: the error stands and nothing more is built.
+    answer(t.mp, "n")
+    with pytest.raises(ComponentError, match="^no$"):
+        cli.filters._compose_the_bands_that_work(t.tmp / "Paranal" / "VISTA", request, ComponentError("no"))
+    composable["bands"] = ([], {"J": "covers 9000-56000 A", "Z": "covers 9000-56000 A"})
+    with pytest.raises(ComponentError, match="^no$"):
+        cli.filters._compose_the_bands_that_work(t.tmp / "Paranal" / "VISTA", request, ComponentError("no"))
+    assert calls == [["J", "H"], None, ["J", "H"]]
 
 
 @menu_row
@@ -1335,6 +1509,31 @@ def the_pickers_show_names_only(t):
     assert not any(text in pickers for text in ("[njm", "[svo", "Tags show", "Evans et al."))
     assert cli.filters._picker_labels(GAIA_INSTRUMENTS + [{"key": "Other"}]) == [
         "DR2", "DR2r", "GAIA", "GAIA0", "Gaia2m", "Other"]
+
+
+@menu_row
+def the_browser_says_when_no_facility_or_no_instrument_is_listed(t):
+    _picker_library(t, [], [])
+    assert cli.run_filters_flow(str(t.tmp)) == 0
+    assert t.capsys.readouterr().out == "No facilities found.\n"
+    fetched = _picker_library(t, [{"key": "Empty", "label": "Empty"}], [])
+    prompts = answer(t.mp, "1", "q")  # the facility, then quit when its list is shown again
+    assert cli.run_filters_flow(str(t.tmp)) == 0
+    assert "No instruments found for Empty.\n" in t.capsys.readouterr().out
+    assert prompts == ["> ", "> "] and fetched == []
+
+
+@menu_row
+def a_detector_type_edit_that_fails_says_the_curves_are_not_changed(t):
+    (t.tmp / "Fac" / "Cam").mkdir(parents=True)
+    (t.tmp / "Fac" / "Cam" / "g.dat").write_text(CURVE)
+    t.mp.setattr(Filters, "correct_detector_type",
+                 classmethod(lambda cls, *a, **k: _raise(ValueError("g.dat is not writable"))))
+    prompts = answer(t.mp, "y", "correct")
+    cli.filters.review_detector_types(t.tmp / "Fac" / "Cam", t.tmp)
+    assert prompts[0] == ("This filter set is labelled for photon-counting detectors (original). "
+                          "Do you wish to edit/correct this? [y/N] ")
+    assert t.capsys.readouterr().out == "  Not changed: g.dat is not writable\n"
 
 
 @menu_row
