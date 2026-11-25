@@ -229,7 +229,7 @@ def filter_properties(
         "WavelengthPhot": None,
         "ZeroPointVega_flam": None,
         "ZeroPointVega_Jy": None,
-        "ZeroPointAB_flam": AB_JY * JY * SPEED_OF_LIGHT_ANG_PER_S / pivot**2,
+        "ZeroPointAB_flam": AB_JY * JY * SPEED_OF_LIGHT_ANG_PER_S / (pivot**2 * 1.001),
         "ZeroPointAB_Jy": AB_JY,
         "ZeroPointST_flam": ST_FLAM,
         "ZeroPointST_Jy": ST_FLAM * nu_factor / JY,
