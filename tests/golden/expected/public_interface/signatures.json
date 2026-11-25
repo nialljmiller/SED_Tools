@@ -8,6 +8,7 @@
  "DATA_DIR_DEFAULT": "PosixPath",
  "EvaluatedSED": "(wavelength: 'np.ndarray', flux: 'np.ndarray', metadata: 'Dict[str, float]', _model: \"'SEDModel'\") -> None",
  "EvaluatedSED.photometry": "(self, *filters: 'FilterSpec', system: 'str' = 'AB', vega_spectrum: 'Union[None, Spectrum, str, os.PathLike[str]]' = None) -> 'Dict[str, PhotometryResult]'",
+ "EvaluatedSED.save": "(self, path: 'Union[str, os.PathLike[str]]') -> 'None'",
  "FILTER_DIR_DEFAULT": "PosixPath",
  "Filters": "()",
  "Filters.atmospheres": "(filter_root=None, *, include_remote=True)",

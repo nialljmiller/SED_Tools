@@ -71,8 +71,10 @@ every axis.
 
 The returned `EvaluatedSED` has `wavelength`, `flux`, `teff`, `logg`,
 `metallicity` and `photometry(*filters, system="AB", vega_spectrum=None)`
-([Photometry and zero points](photometry.md)). It has no `save` method; write
-its arrays with numpy (see the examples below).
+([Photometry and zero points](photometry.md)). `save(path)` writes it in
+SED_Tools' text format, as a grid's spectra are stored: `# key = value` lines
+for Teff, log g, [M/H], the units and any extra axis (alpha, ...), then
+wavelength (Å) and flux (erg/s/cm²/Å) on each line.
 
 `sed.available_grids()` lists the installed grids, `sed.grid` is the loaded
 grid's `SpectralGrid`, and `sed.model()` the underlying `SEDModel`.
@@ -196,7 +198,6 @@ print(mesa_inlist_lines(Path.home() / ".sed_tools/data/filters/Generic/Johnson")
 
 ```python
 from pathlib import Path
-import numpy as np
 from sed_tools.api import SED
 
 sed = SED.local("Kurucz2003all/Kurucz2003all_alpha_0p00_lh_1p25_vtur_2_km_s")
@@ -209,7 +210,7 @@ stars = [
 ]
 for star in stars:
     spectrum = sed(star["teff"], star["logg"], star["met"])
-    np.savetxt(out / f"{star['name']}.txt", np.column_stack([spectrum.wavelength, spectrum.flux]))
+    spectrum.save(out / f"{star['name']}.txt")
 ```
 
 ### A grid made of two selections

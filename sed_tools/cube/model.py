@@ -17,7 +17,7 @@ from ..config import get_data_dir
 from ..filters.manifest import is_auxiliary_path
 from ..photometry import (AB_ZERO_FLUX, FILTER_EXTENSIONS, VEGA_ZP_KEYS, FilterCurve, Spectrum, _warn_outside_sed,
                           band_average_flux_lambda, band_average_flux_nu, get_metadata_float, load_filter_curve,
-                          load_spectrum)
+                          load_spectrum, save_spectrum)
 from ..ui_utils import ordered_range
 from .collision import _normalise_key
 from .fileio import ALL_AXES_NAME, read_header
@@ -89,6 +89,13 @@ class EvaluatedSED:
     @property
     def metallicity(self) -> float:
         return self.metadata["metallicity"]
+
+    def save(self, path: Union[str, os.PathLike[str]]) -> None:
+        """Save the spectrum in SED_Tools' text format, as its grids store theirs (sed_tools.photometry.save_spectrum):
+        ``# key = value`` lines for Teff, log g, [M/H], the units and any extra axis (alpha, ...), then a line per
+        sample: wavelength (Å) and flux (erg/s/cm²/Å)."""
+        parameters = {key: self.metadata[key] for key in ("teff", "logg", "metallicity")}
+        save_spectrum(path, self.wavelength, self.flux, parameters, self.metadata)
 
     def photometry(
         self,

@@ -39,6 +39,7 @@ from ..grids.pipeline import (  # noqa: F401  (_build_combined_grid and _paramet
 )
 from .filters import Filters, _listing_failures  # noqa: F401  (re-exported)
 from ..mesa_inlist import _print_mesa_inlist
+from ..photometry import save_spectrum
 
 logger = logging.getLogger(__name__)
 
@@ -130,17 +131,10 @@ class Spectrum:
         return {name: getattr(self, name) for name in ('wavelength', 'flux', 'teff', 'logg', 'metallicity', 'filename')}
     
     def save(self, path: Union[str, Path]) -> None:
-        """Save spectrum to file: a header line per parameter (one that is NaN, unknown, is left out), the units and
-        each ``extra`` column, then the wavelengths and fluxes."""
-        params = {"teff": self.teff, "logg": self.logg, "metallicity": self.metallicity}
-        units = {"wavelength_unit": "angstrom", "flux_unit": "erg/cm2/s/A", "units_standardized": True}
-        header = {**{k: v for k, v in params.items() if not np.isnan(v)}, **units,
-                  **{k: v for k, v in self.extra.items() if k not in params and k not in units}}
-        with open(Path(path), 'w') as f:
-            for key, value in header.items():
-                f.write(f"# {key} = {value}\n")
-            for w, fl in zip(self.wavelength, self.flux):
-                f.write(f"{w:.6f} {fl:.8e}\n")
+        """Save spectrum to file (photometry.save_spectrum): a header line per parameter (one that is NaN, unknown,
+        is left out), the units and each ``extra`` column, then the wavelengths and fluxes."""
+        save_spectrum(path, self.wavelength, self.flux,
+                      {"teff": self.teff, "logg": self.logg, "metallicity": self.metallicity}, self.extra)
 
 
 def _file_name(spec: Spectrum) -> str:

@@ -481,6 +481,18 @@ def load_spectrum(path: str, wavelength_unit: str | None = None) -> Spectrum:
     wavelength, order = _standardize_file_wavelengths(path, wavelengths, metadata, wavelength_unit)
     return Spectrum(wavelength, np.asarray(fluxes, dtype=float)[order], metadata, wavelength_unit="angstrom")
 
+
+def save_spectrum(path, wavelength, flux, parameters: Dict[str, float], extra: Dict[str, object]) -> None:
+    """Write a spectrum in SED_Tools' text format, as its grids store theirs: a ``# key = value`` line for each
+    parameter (one that is NaN, unknown, is left out), the units and each ``extra`` entry, then a line per sample:
+    wavelength (Å) and flux (erg/s/cm²/Å)."""
+    units = {"wavelength_unit": "angstrom", "flux_unit": "erg/cm2/s/A", "units_standardized": True}
+    header = {**{k: v for k, v in parameters.items() if not np.isnan(v)}, **units,
+              **{k: v for k, v in extra.items() if k not in parameters and k not in units}}
+    with open(Path(path), "w") as f:
+        f.writelines(f"# {key} = {value}\n" for key, value in header.items())
+        f.writelines(f"{w:.6f} {fl:.8e}\n" for w, fl in zip(wavelength, flux))
+
 def _band_magnitude(wl, flux, curve, photometric_system, vega_spectrum):
     """Return (flux label, band-averaged flux, magnitude) for one filter.
 

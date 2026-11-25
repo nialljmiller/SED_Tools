@@ -231,6 +231,32 @@ def _johnson_band(t, band, low):
                                         f"{low + 1100},0\n")
 
 
+@row
+def an_evaluated_sed_saves_as_a_grid_stores_its_spectra(t):
+    # EvaluatedSED had no save(); the docs wrote its arrays with np.savetxt, with no parameters (Nill, 24 Nov 2026,
+    # Q16). It writes the format of Spectrum.save, which the lookup table and the cube builder read.
+    wl = np.linspace(1000.0, 1e4, 20)
+    (t.tmp / "g").mkdir()
+    lines = ["file_name,teff,logg,metallicity,alpha"]
+    for i, (teff, alpha) in enumerate((teff, alpha) for teff in (5000.0, 6000.0) for alpha in ("0.0", "0.4")):
+        np.savetxt(t.tmp / "g" / f"s{i}.txt", np.column_stack([wl, np.full(wl.size, teff + 100 * float(alpha))]))
+        lines.append(f"s{i}.txt,{teff},4.0,0.0,{alpha}")
+    (t.tmp / "g" / "lookup_table.csv").write_text("\n".join(lines) + "\n")
+    sed_tools.precompute_flux_cube(str(t.tmp / "g"), str(t.tmp / "g" / "flux_cube.bin"))
+    sed = SED.local("g", model_root=t.tmp)(5500.0, 4.0, 0.0, alpha=0.2)
+    (t.tmp / "out").mkdir()
+    sed.save(t.tmp / "out" / "star.txt")
+    text = (t.tmp / "out" / "star.txt").read_text().splitlines()
+    assert text[:7] == ["# teff = 5500.0", "# logg = 4.0", "# metallicity = 0.0", "# wavelength_unit = angstrom",
+                        "# flux_unit = erg/cm2/s/A", "# units_standardized = True", "# alpha = 0.2"]
+    assert np.allclose(np.loadtxt(text[7:]), np.column_stack([sed.wavelength, sed.flux]), rtol=1e-8)
+    sed_tools.grids.lookup.regenerate_lookup_table(str(t.tmp / "out"))
+    lookup = (t.tmp / "out" / "lookup_table.csv").read_text().splitlines()
+    header, row = ([value.strip() for value in line.split(",")] for line in lookup)
+    assert {k: v for k, v in zip(header, row) if k in ("#file_name", "teff", "logg", "metallicity", "alpha")} == {
+        "#file_name": "star.txt", "teff": "5500.0", "logg": "4.0", "metallicity": "0.0", "alpha": "0.2"}
+
+
 def _sloped_sed(t):
     """A spectrum falling as lambda^-2 at 5500 K, log g 4.25, [M/H] 0, with filters Generic/Johnson B and V."""
     for band, low in (("B", 4000.0), ("V", 5000.0)):
