@@ -208,10 +208,11 @@ Added
   Goettingen-HiRes-alpha's 321 GB; version 2, which stored the spectra one
   wavelength at a time as a 3-axis cube does, read 21–35 GB and 112–190 GB.
   On a 2.3 GB test cube the first evaluation from disk takes 0.07 s and reads
-  21 MiB (version 2: 5.6 s and about 1,400 MiB), with the same values to the
-  last bit. Version 2 files (24 Nov 2026) and version 1 files (19–24 Nov
-  2026, named ``flux_cube.bin``) are still read; ``sed-tools rebuild``
-  rewrites them as version 3. ``SED.local("<grid>")`` and
+  21 MiB (version 2: 5.6 s and about 1,400 MiB); on a grid of random spectra
+  with two extra axes, its values at and between nodes are those of version 2
+  to the last bit. Version 2 files (24 Nov 2026) and version 1 files (19–24
+  Nov 2026, named ``flux_cube.bin``) are still read; ``sed-tools rebuild``
+  rewrites a version 2 file as version 3. ``SED.local("<grid>")`` and
   ``SED().model("<grid>")`` open it,
   and take each extra axis by keyword, ``sed(5800, 4.4, 0.0, alpha=0.2)``:
   cubic Hermite on every numeric axis, as the 3-axis cube, with empty nodes
