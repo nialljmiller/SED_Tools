@@ -7,7 +7,7 @@ at least 1 % of its weight, trapezoid of lambda*T on its own samples, the thresh
 has no threshold since Nill's Q1 of 24 Nov 2026):
 
 A  ESO La Silla filter tables: the curve's Sources cite an ESO-MIDAS XFilter member (``eso*.mt``) or an
-   ls.eso.org WFI or SUSI2 filter file. ESO's opticians scanned 300-1200 nm and left out readings below about
+   ls.eso.org WFI, SUSI2 or EMMI-archive filter file. ESO's opticians scanned 300-1200 nm and left out readings below about
    1e-4, so a gap next to an isolated reading is zero, not a line ("Zero in those gaps"). Each such gap gets
    T = 0 samples half a median step inside both of its ends. A reading at 1100 or 1200 nm for which ESO's RLEAK
    keyword declares a leak there stays as it is (the gaps next to it are not zeroed).
@@ -40,7 +40,8 @@ EVIDENCE = ROOT / "source_evidence" / "far-samples"
 PROVENANCE = ROOT / "filter_expansion" / "provenance"
 SHARE_MIN = 0.01
 ESO_MEMBER = re.compile(r"filters/(eso\d+\.mt)")
-ESO_WEB = ("ls.eso.org/sci/facilities/lasilla/instruments/wfi/", "ls.eso.org/sci/facilities/lasilla/instruments/susi/")
+ESO_WEB = ("ls.eso.org/sci/facilities/lasilla/instruments/wfi/", "ls.eso.org/sci/facilities/lasilla/instruments/susi/",
+           "ls.eso.org/lasilla/sciops/ntt/emmi/archive/filters/")
 HST_INSTRUMENTS = {"FOC_F48", "FOC_F96", "WFPC1-PC", "WFPC1-WF"}
 TRDS = "https://ssb.stsci.edu/trds/comp/"
 NOTE_A = ("T = 0 samples added inside the {n} gap(s) next to the isolated ESO reading(s) at {where} A: ESO's La Silla "
