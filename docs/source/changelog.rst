@@ -470,6 +470,13 @@ Changed behaviour
 Fixed
 ~~~~~
 
+- ``export_variant`` (and ``mesa_prepare``) finds a grid's file column by
+  any recognised name (``file_name``, ``filename``, ``file``), as
+  ``list_variants`` and MESA do; a grid listed by ``filename`` was listed but
+  its export raised ``KeyError``.
+- The flux cube tool's search for cubes skips a file where it looks for
+  folders: a file named like a default search folder (``./data``) was offered
+  as a flux cube.
 - **MSG grids are read as MSG defines them.** Before, no MSG spectrum had
   parameters: the reader looked for the vgrid's axes from ``axes[0]``, and MSG
   numbers them from 1. 24 of the 25 grids extracted nothing, and SPHINX wrote
@@ -830,9 +837,10 @@ Packaging and scripts
   swapped each fail golden on Linux CI. ``public_interface`` (argparse help
   and signatures, which are Python's own text) runs only on the recorded
   Python version.
-- The suite runs every line of ``sed_tools/`` but nine (Nill, Q11; the nine
-  are listed in ``docs/developing.md``), with rows added to the existing
-  tables and no new test functions (1090 rows, from 987); ``pyproject.toml`` holds the
+- The suite runs every line of ``sed_tools/`` (Nill, Q11), with rows added to
+  the existing tables and no new test functions (1092 rows, from 987); six
+  lines no input could reach are removed (an unreachable unit-guess branch,
+  and guards for cases their callers already exclude); ``pyproject.toml`` holds the
   coverage.py settings, and coverage.py is not a dependency.
 
 Documentation

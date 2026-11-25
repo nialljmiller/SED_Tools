@@ -36,11 +36,8 @@ GitHub Actions runs the suite on Python 3.10 and 3.12 for every push to
 
 ## Line coverage
 
-Every line of `sed_tools/` is run by the suite (Nill, 24 Nov 2026), except
-nine that no input reaches or that wait on a decision (25 Nov 2026):
-`cube/mesa_export.py` 267, `cube/tool.py` 347-348 and 519,
-`filters/display.py` 107, `filters/properties.py` 116, `grids/coverage.py` 168,
-`grids/mast.py` 104 and `grids/units.py` 222.
+Every line of `sed_tools/` is run by the suite (Nill, 24 Nov 2026). Code no
+input can reach is removed, not exempted.
 A new line gets a row in an existing table, not a new test function. To check,
 install coverage.py yourself (it is not a dependency of SED_Tools; on Python
 3.10 install `coverage[toml]`) and run, from the top of the clone:
