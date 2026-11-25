@@ -836,7 +836,7 @@ Packaging and scripts
   0.1 % error in ``ZeroPointAB_flam`` and a 3-axis cube with log g and [M/H]
   swapped each fail golden on Linux CI. ``public_interface`` (argparse help
   and signatures, which are Python's own text) runs only on the recorded
-  Python version.
+  Python version, 3.14, which CI now also tests (with 3.10 and 3.12).
 - The suite runs every line of ``sed_tools/`` (Nill, Q11), with rows added to
   the existing tables and no new test functions (1092 rows, from 987); six
   lines no input could reach are removed (an unreachable unit-guess branch,

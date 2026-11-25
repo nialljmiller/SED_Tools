@@ -30,7 +30,7 @@ The tests run offline: the files they need are in `tests/fixtures/`, and
 table-driven: one test function runs many rows, and a new case is a new row in
 an existing table.
 
-GitHub Actions runs the suite on Python 3.10 and 3.12 for every push to
+GitHub Actions runs the suite on Python 3.10, 3.12 and 3.14 for every push to
 `main` and every pull request
 ([`.github/workflows/tests.yml`](https://github.com/nialljmiller/SED_Tools/blob/main/.github/workflows/tests.yml)).
 
@@ -69,7 +69,8 @@ Linux differs from the recording by at most 1.7e-14, and the smallest error
 golden must catch (the AB zero point 3631 Jy read as 3630 Jy) moves a
 magnitude by 8e-6. The `public_interface` case records Python's own text
 (argparse help and `inspect` signatures), which differs between Python
-versions, so it runs only on the recorded Python version.
+versions, so it runs only on the recorded Python version, 3.14; CI's 3.14 job
+runs it on every pull request.
 
 A failure means the code now gives a different answer: find out why, and
 do not edit `expected/`. Re-recording is the maintainer's decision.
