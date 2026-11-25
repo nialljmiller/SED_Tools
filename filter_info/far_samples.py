@@ -2,8 +2,9 @@
 analysis in the SED_Tools report far-samples.md and hst-tails.md, copies under source_evidence/far-samples/).
 
 An isolated sample is one whose gaps to both neighbours exceed lambda/10 and 20 times the curve's median step. A
-curve is in scope when the steps next to its isolated samples carry at least 1 % of its weight (trapezoid of
-lambda*T on its own samples), the threshold of the approved list, and it belongs to one of two classes:
+curve with one is in scope when it belongs to one of two classes (class C also needs its isolated samples to carry
+at least 1 % of its weight, trapezoid of lambda*T on its own samples, the threshold of the approved list; class A
+has no threshold since Nill's Q1 of 24 Nov 2026):
 
 A  ESO La Silla filter tables: the curve's Sources cite an ESO-MIDAS XFilter member (``eso*.mt``) or an
    ls.eso.org WFI or SUSI2 filter file. ESO's opticians scanned 300-1200 nm and left out readings below about
@@ -119,14 +120,14 @@ def plan(data_dir):
     changes = {}
     for rel, (path, head, lines, data, meta) in curves.items():
         far, share = isolated(data[:, 0], data[:, 1])
-        if not far or share < SHARE_MIN:
+        if not far:
             continue
         src = meta.get("Sources", "")
         fac, inst, band = rel[:-4].split("/")
         member = ESO_MEMBER.search(src)
         if member or any(w in src for w in ESO_WEB):
             changes[rel] = {"class": "A", "far": far, "share": share, "member": member and member.group(1)}
-        elif fac == "HST" and inst in HST_INSTRUMENTS and "svo2.cab.inta-csic.es" in src and data[-1, 0] >= 30000:
+        elif share >= SHARE_MIN and fac == "HST" and inst in HST_INSTRUMENTS and "svo2.cab.inta-csic.es" in src and data[-1, 0] >= 30000:
             changes[rel] = {"class": "C", "far": far, "share": share, "end": ends[(inst, band)]["red"]}
     for rel, change in list(changes.items()):  # exact copies of a curve of a class
         digest = hashlib.sha256("\n".join(curves[rel][2]).encode()).hexdigest()
