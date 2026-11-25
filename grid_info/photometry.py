@@ -48,6 +48,7 @@ DECIMALS = 4                                    # 1e-4 mag
 CHECK_PAIRS = 300                               # random (spectrum, band) pairs checked against the reference
 CHECK_TOL = 1e-6                                # mag
 CHUNK = 256                                     # spectra read at once
+LAYOUT_MIN = 3                                  # spectra sharing a wavelength grid before its layout pays off
 
 DEFINITIONS = {
     "m_st": "ST magnitude of the band-averaged surface flux F (erg/s/cm2/A): -2.5 log10(F / 3.631e-9); "
@@ -224,6 +225,11 @@ class Bands:
             xs.append(x); keep.append(kept); coefs.append(coef / band_integral(x, t, None, k)); bands.append(np.full(x.size, b))
         return np.concatenate(xs), np.concatenate(keep), np.concatenate(coefs), np.concatenate(bands)
 
+    def apply(self, lam, flux):
+        """The same band averages for one spectrum, from band_average_flux_lambda itself (a wavelength grid with few
+        spectra: its layout would cost more than it saves)."""
+        return np.array([band_average_flux_lambda(lam, flux, c) for c in self.curves])
+
     def averages(self, lam, flux, layout):
         """band_average_flux_lambda(lam, flux, curve) for every band, by the layout of lam."""
         x, keep, coef, band = layout
@@ -242,14 +248,15 @@ def photometry(grid: Grid, bands: Bands | None, vega=None):
     for group in grid.groups:
         lam = grid.wavelengths(group[0])
         lam_range[group] = lam[0], lam[-1]
-        layout = None if bands is None else bands.layout(lam)
+        layout = None if bands is None or len(group) < LAYOUT_MIN else bands.layout(lam)
+        average = (lambda f: bands.averages(lam, f, layout)) if layout is not None else (lambda f: bands.apply(lam, f))
         if bands is not None:
-            outside[group] = 1 - bands.averages(lam, np.ones(lam.size), layout)
+            outside[group] = 1 - average(np.ones(lam.size))
         for start in range(0, len(group), CHUNK):       # bounded memory for grids with long spectra
             members = group[start:start + CHUNK]
             spectra = grid.fluxes(members)
             if bands is not None:
-                flux[members] = [bands.averages(lam, f, layout) for f in spectra]
+                flux[members] = [average(f) for f in spectra]
             for i, f in zip(members, spectra):
                 fbol[i] = integrate_flux(lam, f)
                 planck[i] = trapz(pi_b(lam, teff[i]), lam)
