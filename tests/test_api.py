@@ -16,6 +16,7 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import h5py
 import numpy as np
 import pytest
 import requests
@@ -155,7 +156,8 @@ def local_raises_for_a_listed_spectrum_it_cannot_read(t):
     grid = t.tmp / "Grid"
     grid.mkdir()
     (grid / "flux_cube.bin").write_bytes(ONE_POINT_CUBE)
-    (grid / "lookup_table.csv").write_text("file_name,teff,logg,meta\nbad.txt,5000,4.0,0.0\n")
+    (grid / "lookup_table.csv").write_text("file_name,teff,logg,meta\ngone.txt,5000,4.0,0.0\nbad.txt,5000,4.0,0.0\n")
+    assert SED.local("Grid", model_root=t.tmp).grid.spectra == []  # gone.txt is not there: it is left out
     (grid / "bad.txt").write_text("not a spectrum\n")
     with pytest.raises(ValueError, match="Cannot read spectrum .*bad.txt listed in"):
         SED.local("Grid", model_root=t.tmp)
@@ -175,6 +177,11 @@ def grid_write_lists_in_its_lookup_table_the_files_it_writes(t):
     listed = [line.split(",")[0] for line in (out / "lookup_table.csv").read_text().splitlines()[1:]]
     assert listed == ["teff5000_logg4.00_meta0.00.txt", "teff5500_logg4.50_meta0.00.txt"]
     assert all((out / name).is_file() for name in listed)
+    t.capsys.readouterr()
+    grid.write(t.tmp / "out", build_flux_cube=False)
+    assert t.capsys.readouterr().out.endswith("[write] Built Grid.h5\n")
+    with h5py.File(out / "Grid.h5", "r") as fh:
+        assert sorted(fh["spectra"]) == listed
 
 
 @row
@@ -276,6 +283,36 @@ def import_dry_run_counts_spectra_lacking_a_parameter(t):
     _spectrum(metallicity=float("nan")).save(src / "no_meta.txt")
     report = SED.import_grid(src, name="Grid", model_root=t.tmp / "models", dry_run=True)
     assert report["n_missing"] == 1
+
+
+@row
+def import_bundles_and_builds_the_cube_of_the_spectra_it_copied(t):
+    src = t.tmp / "src"
+    src.mkdir()
+    _spectrum().save(src / "a.txt")
+    _spectrum(teff=6000.0).save(src / "b.txt")
+    built = []
+    t.mp.setattr(api, "build_h5_bundle", lambda folder, bundle: built.append(("h5", Path(folder), Path(bundle).name)))
+    t.mp.setattr(api, "_build_flux_cube", lambda folder: built.append(("cube", Path(folder))))
+    result = SED.import_grid(src, name="Grid", model_root=t.tmp / "models", flux_unit="flam")
+    dest = t.tmp / "models" / "Grid"
+    assert Path(result["dest"]) == dest and sorted(p.name for p in dest.glob("*.txt")) == ["a.txt", "b.txt"]
+    assert built == [("h5", dest, "Grid.h5"), ("cube", dest)]
+
+
+@row
+def combine_without_a_flux_cube_returns_the_grid_it_wrote(t):
+    def write(selected, output_dir, visualization=True):  # a combination that wrote no cube
+        out = Path(output_dir)
+        out.mkdir()
+        _spectrum().save(out / "a_000000.txt")
+        (out / "lookup_table.csv").write_text("file_name,teff,logg,metallicity\na_000000.txt,5000,4.0,0.0\n")
+
+    t.mp.setattr(api, "_build_combined_grid", write)
+    sed = SED.combine(["a", "b"], output="ab", model_root=t.tmp)
+    assert [s.filename for s in sed.grid.spectra] == ["a_000000.txt"] and sed.grid.name == "ab"
+    assert sed.grid.spectra[0].teff == 5000.0
+    assert "Successfully combined 2 spectral grids!" in t.capsys.readouterr().out
 
 
 @row
@@ -655,6 +692,14 @@ def ui_settings_come_from_the_config_file(t):
 
 
 @row
+def available_memory_is_what_psutil_reports_when_it_is_installed(t):
+    from sed_tools import _constants
+
+    t.mp.setattr(_constants, "psutil", SimpleNamespace(virtual_memory=lambda: SimpleNamespace(available=123 << 30)))
+    assert _constants.available_memory_bytes() == 123 << 30
+
+
+@row
 def list_txt_spectra_gives_the_names_of_the_top_level_spectra(t):
     for name in ("b.txt", "a.TXT", "c.dat", "sub/d.txt"):
         (t.tmp / name).parent.mkdir(exist_ok=True)
@@ -830,6 +875,47 @@ def env_var_overrides_default(t):
 
 
 @row
+def config_reads_toml_with_tomli_where_python_has_no_tomllib(t):
+    from importlib import reload
+
+    parser = config.tomllib
+    t.mp.setitem(sys.modules, "tomllib", None)  # Python 3.10, which has no tomllib
+    t.mp.setitem(sys.modules, "tomli", parser)  # the dependency declared there, which became tomllib
+    reload(config)  # as env_var_overrides_default does; nothing is written while it points at ~/.sed_tools
+    assert config.tomllib is parser
+    (t.tmp / "ui.toml").write_text('[ui]\nterminal_color = "never"\n')
+    assert config.load_toml(t.tmp / "ui.toml") == {"ui": {"terminal_color": "never"}}
+
+
+@row
+def set_data_dir_asks_then_moves_and_says_what_was_left(t):
+    t.mp.delenv("SED_DATA_DIR", raising=False)
+    old, new, third = t.tmp / "old", t.tmp / "new", t.tmp / "third"
+    config._CONFIG_FILE.write_text(f'data_dir = "{old}"\nverbose = true\nquiet = false\nthreads = 4\nscale = 0.5\n')
+    for root, text in ((old, "old"), (new, "new")):
+        (root / "filters" / "A").mkdir(parents=True)
+        (root / "filters" / "A" / "clash.dat").write_text(text)
+    prompts = answer(t.mp, "y")
+    config.set_data_dir(str(new), interactive=True)
+    assert prompts == [f"Move existing data from {old} to {new}? [y/N] "]
+    out = t.capsys.readouterr().out
+    assert (f"  1 file(s) differ between old and target and were NOT moved (target kept). Reconcile by hand:\n"
+            f"    old:    {old / 'filters' / 'A' / 'clash.dat'}\n"
+            f"    target: {new / 'filters' / 'A' / 'clash.dat'}\n") in out
+    assert f"  1 file(s) remain under {old} (conflicts and/or non-empty dirs). Nothing was overwritten." in out
+    assert (new / "filters" / "A" / "clash.dat").read_text() == "new"
+    # The settings already in the file are kept, with their types.
+    assert config.load_user_config() == {"data_dir": str(new), "verbose": True, "quiet": False, "threads": 4,
+                                         "scale": 0.5}
+    t.mp.setenv("SED_DATA_DIR", str(new))  # the data directory in use, whatever the file says
+    config.set_data_dir(str(third), move=True)
+    out = t.capsys.readouterr().out
+    assert f"  Old data location {new} fully drained." in out
+    assert out.endswith("Note: SED_DATA_DIR is set and overrides the config file until unset.\n")
+    assert (third / "filters" / "A" / "clash.dat").read_text() == "new" and not (new / "filters").exists()
+
+
+@row
 def data_dir_default_is_home_relative(t):
     from sed_tools.config import _DEFAULT_DATA_DIR
 
@@ -873,7 +959,13 @@ def move_data_removes_drained_dirs_and_keeps_conflicts(t):
         (root / "filters" / "A" / "same.dat").write_text("x")
         (root / "stellar_models" / "B").mkdir(parents=True)
         (root / "stellar_models" / "B" / "clash.txt").write_text(text)
+    (old / "filters" / "OnlyOld").mkdir()
+    (old / "filters" / "OnlyOld" / "x.dat").write_text("x")
+    (old / "stellar_models" / "B" / "only_old.txt").write_text("old")
     conflicts = config._move_data(old, new)
+    assert (new / "filters" / "OnlyOld" / "x.dat").read_text() == "x"  # a folder new lacks is moved whole
+    assert (new / "stellar_models" / "B" / "only_old.txt").read_text() == "old"
+    assert f"  moved {old / 'filters' / 'OnlyOld'} -> {new / 'filters' / 'OnlyOld'}" in t.capsys.readouterr().out
     assert not (old / "filters").exists()
     assert (old / "stellar_models" / "B" / "clash.txt").read_text() == "old"
     assert (new / "stellar_models" / "B" / "clash.txt").read_text() == "new"

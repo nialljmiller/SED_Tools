@@ -289,6 +289,7 @@ def completer_default_construction_is_untrained(t):
 def list_models_skips_dirs_without_config(t):
     (t.tmp / "not_a_model").mkdir()
     assert mc.SEDCompleter.list_models(str(t.tmp)) == []
+    assert mc.SEDCompleter.list_models(str(t.tmp / "absent")) == mg.SEDGenerator.list_models(str(t.tmp / "absent")) == []
 
 
 @row
@@ -342,6 +343,39 @@ def train_complete_and_generate_run_on_mps(t):
     for model in (generator, mg.SEDGenerator(t.tmp / "generator")):
         wl_out, flux_out = model.generate(5000.0, 4.2, -0.2)
         assert np.all(np.isfinite(flux_out)) and len(flux_out) == len(wl_out) == 1000
+
+
+@row
+def get_device_takes_cuda_then_mps_then_the_cpu(t):
+    from sed_tools.ml.common import get_device
+
+    torch = pytest.importorskip("torch")
+    t.mp.setattr(torch.backends.cudnn, "benchmark", False)  # get_device turns it on for CUDA; put back after
+    t.mp.setattr(torch.cuda, "is_available", lambda: True)
+    assert get_device() == torch.device("cuda") and torch.backends.cudnn.benchmark is True
+    t.mp.setattr(torch.cuda, "is_available", lambda: False)
+    t.mp.setattr(torch.backends.mps, "is_available", lambda: True)
+    assert get_device() == torch.device("mps")
+    t.mp.setattr(torch.backends.mps, "is_available", lambda: False)
+    assert get_device() == torch.device("cpu")
+
+
+@row
+def fit_prints_every_10th_epoch_and_stops_after_patience_epochs_without_improvement(t):
+    from types import SimpleNamespace
+
+    from sed_tools.ml import common
+
+    torch = cpu_torch(t)
+    t.mp.setattr(common, "_train_epoch", lambda model, loader, optimizer, device, epoch: [2.0])
+    t.mp.setattr(common, "_validation_losses", lambda model, loader, device: [1.0])  # never improves after epoch 1
+    model = torch.nn.Linear(1, 1)
+    history, best = common.fit(model, [], [], torch.optim.SGD(model.parameters(), lr=0.25),
+                               SimpleNamespace(step=lambda loss: None), epochs=50, patience=10, verbose=True,
+                               device=torch.device("cpu"), progress="Epoch {epoch}: {train} {val} lr={lr}")
+    assert best == 1.0 and len(history["val_loss"]) == 11
+    lines = t.capsys.readouterr().out.splitlines()
+    assert lines[-2:] == ["Epoch 10: 2.0 1.0 lr=0.25", "  Early stopping at epoch 11"]
 
 
 @row
@@ -510,6 +544,10 @@ def generate_check_bounds_prints_each_out_of_range_parameter(t):
     assert "Warning: Teff=9000 outside range [4000, 7000]" in out
     assert "Warning: logg=5.50 outside range [3.50, 5.00]" in out
     assert "Warning: [M/H]=0.60 outside range [-1.00, 0.50]" in out
+    generator = fixed_generator(cpu_torch(t))
+    del generator.config["parameter_ranges"]["meta"]  # a model saved without the [M/H] range
+    generator.generate(9000.0, 4.5, 0.6)
+    assert t.capsys.readouterr().out == "  Warning: Teff=9000 outside range [4000, 7000]\n"
 
 
 @row
@@ -605,18 +643,24 @@ def generator_workflow_lists_generators_only(t):
 def generator_workflow_batch_writes_one_sed_per_grid_point(t):
     generator = fixed_generator(cpu_torch(t))
     stellar_dir = stellar_grids(t)
+    # The training points, of which the parameter-space plot shows at most 500
+    generator._train_params_raw = np.column_stack([np.linspace(4000.0, 7000.0, 501), np.full(501, 4.0),
+                                                   np.zeros(501)])
     generator.save(t.tmp / "models" / "gm1", hidden_layers=[16, 8], dropout=0.2)
-    answer(t.mp, "3", "1", "5000,5500", "4.0", "0.0,-0.5", "", echo=True)
+    config = json.loads((t.tmp / "models" / "gm1" / "config.json").read_text())
+    assert len(config["training_params"]) == 500 and len({tuple(p) for p in config["training_params"]}) == 500
+    answer(t.mp, "3", "1", "5000,5500", "4.0", "0.0,-1.5", "", echo=True)  # -1.5 is outside the trained -1..0.5
 
     mg.run_interactive_workflow(str(stellar_dir), str(t.tmp / "models"))
 
     batch = t.tmp / "models" / "gm1" / "SED" / "batch"
     texts = sorted(p.name for p in batch.glob("*.txt"))
-    assert texts == ["sed_T5000_g4.00_m+0.00.txt", "sed_T5000_g4.00_m-0.50.txt",
-                     "sed_T5500_g4.00_m+0.00.txt", "sed_T5500_g4.00_m-0.50.txt"]
+    assert texts == ["sed_T5000_g4.00_m+0.00.txt", "sed_T5000_g4.00_m-1.50.txt",
+                     "sed_T5500_g4.00_m+0.00.txt", "sed_T5500_g4.00_m-1.50.txt"]
+    assert "Warning: [M/H]=-1.50 outside range [-1.00, 0.50]" in t.capsys.readouterr().out
     loaded = mg.SEDGenerator(t.tmp / "models" / "gm1")
-    wl, flux = loaded.generate(5500.0, 4.0, -0.5, check_bounds=False)
-    np.testing.assert_array_equal(np.loadtxt(batch / "sed_T5500_g4.00_m-0.50.txt"),
+    wl, flux = loaded.generate(5500.0, 4.0, -1.5, check_bounds=False)
+    np.testing.assert_array_equal(np.loadtxt(batch / "sed_T5500_g4.00_m-1.50.txt"),
                                   np.loadtxt([f"{w:.6e} {f:.6e}" for w, f in zip(wl, flux)]))
 
 
@@ -728,10 +772,11 @@ def extend_catalog_writes_the_good_spectra_then_lists_every_failure(t):
     catalog = three_spectra(t)
     np.savetxt(catalog / "one_column.txt", np.arange(5.0))
     pd.DataFrame({
-        "file_name": ["a.txt", "b.txt", "c.txt", "gone.txt", "one_column.txt", None, "a.txt", "a.txt", "a.txt"],
-        "teff": [5000, 6000, 7000, 5000, 5000, 5000, "hot", -10, 5000],
-        "logg": [4.0, 4.5, 3.5, 4.0, 4.0, 4.0, 4.0, 4.0, 12.0],
-        "meta": [0.0, -0.5, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        "file_name": ["a.txt", "b.txt", "c.txt", "gone.txt", "one_column.txt", None, "a.txt", "a.txt", "a.txt",
+                      "a.txt", "a.txt"],
+        "teff": [5000, 6000, 7000, 5000, 5000, 5000, "hot", -10, 5000, "inf", 5000],
+        "logg": [4.0, 4.5, 3.5, 4.0, 4.0, 4.0, 4.0, 4.0, 12.0, 4.0, 4.0],
+        "meta": [0.0, -0.5, 0.2, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 200.0],
     }).to_csv(catalog / "lookup_table.csv", index=False)
     completer = stubbed_completer()
     out_dir = t.tmp / "out"
@@ -740,7 +785,7 @@ def extend_catalog_writes_the_good_spectra_then_lists_every_failure(t):
         completer.extend_catalog(str(catalog), str(out_dir), verbose=False)
 
     message = str(excinfo.value)
-    assert message.startswith(f"6 of 9 spectra in {catalog} could not be extended "
+    assert message.startswith(f"8 of 11 spectra in {catalog} could not be extended "
                               f"(the other 3 were written to {out_dir}):")
     assert f"row 3 (gone.txt): gone.txt not found in {catalog}" in message
     assert "row 4 (one_column.txt): expected wavelength and flux columns, got an array of shape (5,)" in message
@@ -748,6 +793,8 @@ def extend_catalog_writes_the_good_spectra_then_lists_every_failure(t):
     assert "row 6 (a.txt): Teff 'hot' is not a number" in message
     assert "row 7 (a.txt): Teff -10.0 is not positive" in message
     assert "row 8 (a.txt): logg 12.0 is above 10" in message
+    assert "row 9 (a.txt): Teff is 'inf'" in message
+    assert "row 10 (a.txt): [M/H] 200.0 is outside -100..100" in message
     assert sorted(p.name for p in out_dir.iterdir()) == ["a.txt", "b.txt", "c.txt", "lookup_table.csv"]
     assert len(completer._completer.calls) == 2
 
@@ -791,6 +838,10 @@ def complete_sed_keeps_samples_outside_a_narrower_range(t):
     assert_keeps_original(wl_out, flux_out, wl, flux)
     assert wl_out[0] == pytest.approx(500.0) and wl_out[-1] == wl[-1] > 1e5
     assert np.all(np.diff(wl_out) > 0)
+    t.capsys.readouterr()
+    wl_out, flux_out = completer.complete_sed(wl, flux, 5800.0, 4.4, 0.0, extension_range=(5000.0, 1e5))
+    assert wl_out is wl and flux_out is flux  # the range lies inside the SED: nothing is added
+    assert t.capsys.readouterr().out == "SED already covers requested range\n"
 
 
 def extend_menu(t, *answers):
@@ -865,6 +916,10 @@ def generator_generate_menu_takes_the_parameters_typed(t):
     answer(t.mp, "2", "1", "5800", "4.4", "0", str(t.tmp / "out"))
     mg.run_interactive_workflow(str(t.tmp), str(t.tmp))
     assert calls == [(5800.0, 4.4, 0.0, str(t.tmp / "out"))]
+    answer(t.mp, "3", "1", "5000,5100,5200,5300,5400", "4.0,4.5", "0", str(t.tmp / "out"))  # a batch of 10
+    mg.run_interactive_workflow(str(t.tmp), str(t.tmp))
+    assert len(calls) == 11 and calls[-1] == (5400.0, 4.5, 0.0, str(t.tmp / "out"))
+    assert "  Generated 10/10...\n" in t.capsys.readouterr().out
 
 
 @row
