@@ -30,7 +30,6 @@ from ..cube.model import (
     _read_flux_cube_header,
     grid_cube,
 )
-from ..cube.collision import _value, discover_extra_axes
 from ..cube.check import _bundle_shortfall, _flux_cube_file, _flux_cube_shortfall  # noqa: F401
 from ..cube.variants import ensure_all_axes_cube
 from ..grids.pipeline import (  # noqa: F401  (_build_combined_grid and _parameter_cuts are re-exported)
@@ -239,20 +238,10 @@ class SpectralGrid:
         -------
         Path
             The output directory path
-
-        Raises
-        ------
-        ValueError
-            Before anything is written, for a ``path`` holding a grid split into variants (``variants_index.csv``)
-            when these spectra are of one variant: their one flux cube would replace the variant folders.
         """
         path = self._base_dir / self.name if path is None else Path(path)
         table = self.parameters
         table = table.drop(columns=[c for c in ("logg", "metallicity") if c in table and table[c].isna().all()])
-        if (path / "variants_index.csv").is_file() and not _splits(table):
-            raise ValueError(f"{path} holds a grid split into variants (variants_index.csv), and these spectra are "
-                             "of one variant, so their flux cube would replace its variant folders; nothing was "
-                             "written. Write them to another folder.")
         path.mkdir(parents=True, exist_ok=True)
         
         for spec in self.spectra:
@@ -280,15 +269,6 @@ class SpectralGrid:
 # The older names of the two classes.
 Catalog = SpectralGrid
 CatalogInfo = SpectralGridInfo
-
-
-def _splits(table: pd.DataFrame) -> bool:
-    """Whether the cube builder splits the grid of this lookup ``table`` into variants: an extra axis
-    (collision.discover_extra_axes) has more than one value."""
-    nodes = list(zip(*(table[c] if c in table else [0.0] * len(table) for c in ("teff", "logg", "metallicity"))))
-    columns = {c: table[c].astype(str).tolist() for c in table.columns
-               if c not in ("file_name", "teff", "logg", "metallicity")}
-    return any(len({_value(v) for v in columns[axis]}) > 1 for axis in discover_extra_axes(columns, nodes))
 
 
 def _read_listed_spectra(lookup_path: Path, grid_name: str) -> List[Spectrum]:

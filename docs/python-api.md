@@ -128,9 +128,11 @@ grid.write(Path.home() / "husfeld_cool")
 ```
 
 Without a path, `write` writes into the grid's own folder and replaces its
-spectra and lookup table with the selection; into a folder that holds a split
-grid it refuses, before writing anything, a selection of one variant, whose
-single cube would replace the variant folders. Give a path.
+spectra and lookup table with the selection. A selection of one variant written
+into a split grid's folder makes it one grid: its lookup table and
+`flux_cube.bin`, with `variants_index.csv` removed; the variant folders,
+`flux_cube_nd.bin` and the other spectra stay beside it. Give a path to keep
+the split grid as it was.
 
 `SpectralGridInfo` (the rows of `SED.query()`) describes a grid without
 loading it:

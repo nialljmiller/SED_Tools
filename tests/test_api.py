@@ -201,9 +201,12 @@ def grid_write_keeps_a_split_grids_variants_and_leaves_out_an_unknown_axis(t):
         assert np.allclose(variant(5000.0, 4.0, 0.0).flux, 5000.0 + 100 * alpha, rtol=1e-12)
     one = SpectralGrid(name="one", source="local", spectra=[s for s in SED.local("split", model_root=t.tmp).grid
                                                              if s.extra["Alpha"] == "0.4"])
-    with pytest.raises(ValueError, match="holds a grid split into variants"):
-        one.write(out, build_h5=False)  # its one cube would have replaced the variant folders
-    assert sed_tools.mesa_inlist_lines(out) == variants
+    # write() refused one variant over a split folder (Nill, 24 Nov 2026, Q19): it now writes it as one grid there,
+    # and the variant folders and the all-axes cube stay beside it (R5).
+    one.write(out, build_h5=False)
+    assert sed_tools.mesa_inlist_lines(out) == [f"stellar_atm = '{out.resolve()}'"] and not (out / "variants_index.csv").exists()
+    assert np.allclose(SED.local("out", model_root=t.tmp)(5000.0, 4.0, 0.0).flux, 5040.0, rtol=1e-12)
+    assert all((Path(line.split("'")[1]) / "flux_cube.bin").is_file() for line in variants)
     bb = SED.local("bb", model_root=t.tmp).grid.write(t.tmp / "bb_out", build_h5=False)
     assert (bb / "lookup_table.csv").read_text().splitlines()[0] == "file_name,teff"
     assert np.allclose(SED.local("bb_out", model_root=t.tmp)(5500.0, 0.0, 0.0).flux, 5500.0, rtol=1e-12)
