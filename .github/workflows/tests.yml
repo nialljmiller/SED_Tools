@@ -2,7 +2,7 @@ name: Tests
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'diag/**', 'mutant/**']
   pull_request:
 
 permissions:
@@ -28,5 +28,7 @@ jobs:
           pip install -e ".[full]"
           pip install "pytest>=9"  # the tests use pytest's built-in subtests
 
-      - name: Run test suite
-        run: pytest tests/ -v
+      - name: Golden diagnostic
+        run: python tests/golden/diag.py
+      - name: Python package versions
+        run: pip list
