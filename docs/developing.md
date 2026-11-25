@@ -37,11 +37,23 @@ GitHub Actions runs the suite on Python 3.10 and 3.12 for every push to
 ## Golden tests
 
 `tests/test_golden.py` reruns every case in `tests/golden/cases.py` on fixed
-inputs and requires the outputs to match `tests/golden/expected/` byte for
-byte, so any change that alters a result, even in the last digit, fails. The
-outputs depend on the platform and on the numpy and scipy versions recorded in
-`expected/environment.json`; on any other environment the cases skip and say
-why. A failure means the code now gives a different answer: find out why, and
+inputs and compares the outputs with `tests/golden/expected/`. On the
+environment the outputs were recorded on (`expected/environment.json`: the
+platform and the Python, numpy and scipy versions) every file must match byte
+for byte, so any change that alters a result, even in the last digit, fails.
+
+Golden also runs everywhere else, including CI on Linux. There every file must
+still match byte for byte, except the files listed in `TOLERANT` in
+`tests/test_golden.py` (the flux cubes, the interpolated spectra and the band
+quantities), whose last bits differ between platforms: their headers and text
+must be identical and their numbers equal to within a relative 1e-9 (`RTOL`).
+Linux differs from the recording by at most 1.7e-14, and the smallest error
+golden must catch (the AB zero point 3631 Jy read as 3630 Jy) moves a
+magnitude by 8e-6. The `public_interface` case records Python's own text
+(argparse help and `inspect` signatures), which differs between Python
+versions, so it runs only on the recorded Python version.
+
+A failure means the code now gives a different answer: find out why, and
 do not edit `expected/`. Re-recording is the maintainer's decision.
 [tests/golden/README.md](https://github.com/nialljmiller/SED_Tools/blob/main/tests/golden/README.md)
 has the details.
