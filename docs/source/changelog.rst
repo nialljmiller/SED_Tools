@@ -5,9 +5,17 @@ Changelog
 Version 0.7.0 (unreleased)
 --------------------------
 
-0.7.0 removes what nothing needs any more: the 36 old import paths, the last
-0.4.1 aliases, the modules' own command lines, and parameters and functions
-that did nothing or that only the tests used. It adds checks that a served
+For MESA users, 0.7.0 prints the exact ``&colors`` inlist lines after every
+download and with ``sed-tools mesa-path`` (PR #71); keeps a split grid's
+all-axes cube at its top as ``flux_cube_nd.bin``, which SED_Tools reads and
+MESA does not, with each variant folder's ``flux_cube.bin`` unchanged (PR #72
+and the review); and computes every band quantity by one integration rule
+(PR #73). A ``flux_cube.bin`` that an earlier version left at a split grid's
+top is not moved: rename it and rebuild (Changed behaviour).
+
+0.7.0 also removes what nothing needs any more: the 36 old import paths, the
+last 0.4.1 aliases, the modules' own command lines, and parameters and
+functions that did nothing or that only the tests used. It adds checks that a served
 filter tree and a grid are consistent with what MESA reads (PR #66), drops the
 checks that only reworded a user's mistake (PR #67), reads MSG grids as MSG
 defines them, stops combine from scaling one grid's spectra to another's and
@@ -209,18 +217,33 @@ Changed behaviour
 ~~~~~~~~~~~~~~~~~
 
 - **Misuse is not pre-checked (PR #67).** SED_Tools no longer checks
-  arguments only to word a user's mistake. A misused option, name or value
-  now fails where Python or the library fails (``KeyError``, ``ValueError``,
+  arguments only to word a user's mistake. A misused name or value now fails
+  where Python or the library fails (``KeyError``, ``ValueError``,
   ``TypeError``, ``FileNotFoundError``), and a question is asked once rather
-  than again after a bad answer. Valid use behaves as before, and the checks
+  than again after a bad answer. An option that applies only with another now
+  has no effect without it, with no message: ``--pwv`` and
+  ``--atmosphere-site`` without ``--airmass`` (``filters``,
+  ``filters-compose``), ``filters-detector --bands`` without ``--correct`` or
+  ``--convert``, and ``ml_generator --trials`` and ``--epochs`` without
+  ``--auto`` (``--trials 0`` or ``--epochs 0`` means the default). Further
+  results of dropping those checks: ``SED().model()`` returns ``None`` until a
+  grid is loaded, where it raised ``RuntimeError``; input that ends (stdin
+  closed) at a prompt prints ``sed-tools: error: EOF when reading a line``
+  instead of its own message; and the builders' ``facility=`` argument, which
+  only checked the caller's facility, is gone. Valid use behaves as before, and the checks
   of SED_Tools' own and upstream data stay. ``Filters.compose`` with an
   unknown band, or with bands for which the manifest declares none of the
   requested components, now asks NJM and the builder before it fails.
 - **Unknown builder keywords raise ``TypeError``.** Every builder in
-  ``component_sources`` takes only its own parameters; before, thirteen of
+  ``component_sources`` takes only its own parameters; before, eleven of
   them silently ignored any other keyword (``sed-tools filters-build-components
   sdss --archive DIR`` ignored ``--archive``). A removed parameter therefore
   raises ``TypeError`` too.
+- **GAIA/GAIA in the shipped catalogue is G, Gbp, Grp and Grvs**, SVO's
+  GAIA/GAIA3 curves, as NJM serves it. ``Gbp_bright`` and ``Gbp_faint`` (Maíz
+  Apellániz & Weiler's DR2 split of BP) belong to ``GAIA/Gaia2m``. Without NJM,
+  ``filters GAIA/GAIA`` now expects those four bands, where 0.6.0 expected six
+  and installed the set as incomplete.
 - **combine scales no spectrum.** Each spectrum keeps the absolute flux in
   its file, which the cleaner ties to its own sigma T^4. Before, combine
   multiplied every spectrum of every grid but one by its ratio to the nearest
@@ -302,7 +325,7 @@ Changed behaviour
   is kept. The cube grows with the number of distinct wavelengths, so combine
   now builds each cube on disk (a hidden folder beside the output, removed at
   the end) and writes it in parts of wavelengths: memory holds about one
-  spectrum and one part (128 MiB) at a time, where it held every variant's
+  spectrum and one part (256 MiB) at a time, where it held every variant's
   cube and a copy of each. The files are byte-identical. The cube builder's
   writer makes one copy per part instead of three.
 - **combine compares axis values exactly**, as the cube builder does. It
@@ -814,7 +837,7 @@ Documentation
   Kurucz2003all: paste the printed absolute lines, or export one variant with
   ``sed-tools mesa_prepare``.
 - The 12 notebooks in ``jupyter_notebooks/`` are replaced by seven current
-  ones (decision R4): ``01_discovery_and_download`` (NJM optional),
+  ones: ``01_discovery_and_download`` (NJM optional),
   ``02_filters`` (search, properties, components, detector types,
   ``label_check``), ``03_photometry_and_zero_points`` (AB, ST and Vega;
   photon- vs energy-counting), ``04_grids_and_interpolation`` (split grids,
