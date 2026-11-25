@@ -703,16 +703,25 @@ def generator_workflow_warns_about_an_unreadable_lookup_table(t):
 # ======================================================================
 @row
 def completer_prepare_training_data_warns_how_many_spectra_it_dropped(t):
-    flux = np.full((2, 1, 1, 200), 1e-10)
+    # On the 1000-point model grid the input window is 400 points; 1000-50000 Å covers 566 of them.
+    flux = np.full((6, 1, 1, 200), 1e-10)
     flux[0, 0, 0, :150] = np.nan          # 4000 K: only 50 usable points
-    lib = grid(t, [4000.0, 5000.0], flux)
+    flux[2, 0, 0, :80] = np.nan           # 6000 K: 338 grid points, fewer than the window
+    flux[3, 0, 0, 142:] = np.nan          # 7000 K: 401 grid points, no room to move the window
+    flux[4, 0, 0, 80:133] = np.nan        # 8000 K: a gap that every window position contains
+    flux[5, 0, 0, 150:] = np.nan          # 9000 K: 424 grid points, 24 of them outside the window
+    lib = grid(t, [4000.0, 5000.0, 6000.0, 7000.0, 8000.0, 9000.0], flux)
 
     np.random.seed(0)
-    _, _, params, _ = mc.SEDCompleter()._prepare_training_data(lib, 2)
+    _, _, params, _ = mc.SEDCompleter()._prepare_training_data(lib, 6)
 
     assert params[:, 0].tolist() == [5000.0]
-    assert ("dropped 1 of 2 sampled spectra (1 with fewer than 100 positive, finite flux points)"
-            in t.caplog.text)
+    assert "dropped 5 of 6 sampled spectra (" in t.caplog.text
+    for reason in ("1 with fewer than 100 positive, finite flux points",
+                   "2 with coverage narrower than the 400-point input window",
+                   "1 with input window less than 80% valid",
+                   "1 with fewer than 50 valid points outside the input window"):
+        assert reason in t.caplog.text
 
 
 @row
