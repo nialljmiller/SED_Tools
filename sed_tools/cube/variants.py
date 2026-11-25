@@ -17,7 +17,7 @@ import numpy as np
 from ..grids.lookup import (find_file_column, find_logg_column, find_metallicity_column, find_teff_column,
                             write_lookup_csv)
 from .collision import _value
-from .fileio import ALL_AXES_NAME, read_header, write_all_axes_header
+from .fileio import ALL_AXES_NAME, VERSION, read_header, write_all_axes_header
 
 logger = logging.getLogger(__name__)
 
@@ -215,10 +215,12 @@ def write_all_axes_cube(model_dir: str, part_bytes: int = 256 * 2**20) -> str:
 
 
 def ensure_all_axes_cube(model_dir: str) -> None:
-    """Write a split grid's all-axes cube when it has none (split by an earlier version); any other grid is left as
-    it is."""
+    """Write a split grid's all-axes cube when it has none (split by an earlier version) or holds an earlier layout
+    (version 1 or 2): the same values, rewritten in full beside it and then swapped in. Any other grid is left as it
+    is."""
+    target = os.path.join(model_dir, ALL_AXES_NAME)
     if (os.path.isfile(os.path.join(model_dir, "variants_index.csv"))
-            and not os.path.isfile(os.path.join(model_dir, ALL_AXES_NAME))):
+            and (not os.path.isfile(target) or read_header(target).version < VERSION)):
         write_all_axes_cube(model_dir)
 
 

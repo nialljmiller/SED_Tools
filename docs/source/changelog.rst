@@ -211,8 +211,11 @@ Added
   21 MiB (version 2: 5.6 s and about 1,400 MiB); on a grid of random spectra
   with two extra axes, its values at and between nodes are those of version 2
   to the last bit. Version 2 files (24 Nov 2026) and version 1 files (19–24
-  Nov 2026, named ``flux_cube.bin``) are still read; ``sed-tools rebuild``
-  rewrites a version 2 file as version 3. ``SED.local("<grid>")`` and
+  Nov 2026, named ``flux_cube.bin``) are still read. The next rebuild,
+  download or ``SED.fetch`` of a split grid whose ``flux_cube_nd.bin`` is
+  version 1 or 2 rewrites it as version 3, with the same values to the bit,
+  written in full beside the old file and then swapped in (Nill, 25 Nov
+  2026). ``SED.local("<grid>")`` and
   ``SED().model("<grid>")`` open it,
   and take each extra axis by keyword, ``sed(5800, 4.4, 0.0, alpha=0.2)``:
   cubic Hermite on every numeric axis, as the 3-axis cube, with empty nodes

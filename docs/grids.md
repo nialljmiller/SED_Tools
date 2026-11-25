@@ -193,11 +193,13 @@ The rebuild writes `flux_cube_nd.bin`. A split grid that has neither file (split
 before the all-axes cube existed) needs only the rebuild, or a new download of
 the grid.
 
-A `flux_cube_nd.bin` written by an earlier build (header version 2) is still
-read and gives the same values, but it stores the spectra one wavelength at a
-time, so an evaluation reads much of the file: up to 190 GB for the largest MSG
-grids. `sed-tools rebuild --grids NAME` rewrites it in the current layout
-(version 3).
+A `flux_cube_nd.bin` written by an earlier build (header version 1 or 2) is
+still read and gives the same values, but it stores the spectra one wavelength
+at a time, so an evaluation reads much of the file: up to 190 GB for the largest
+MSG grids. The next `sed-tools rebuild --grids NAME`, download or `SED.fetch` of
+the grid rewrites it in the current layout (version 3), with the same values to
+the bit; the new file is written in full beside the old one and then swapped
+in.
 
 ## Rebuilding
 

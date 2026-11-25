@@ -224,6 +224,31 @@ def _corrupt_header(t, corrupt, message):
         SEDModel("bad", t.tmp / "bad.bin")
 
 
+@row
+def a_fetch_or_rebuild_rewrites_a_version_1_or_2_all_axes_cube_as_version_3_to_the_same_bits(t):
+    """Nill, 25 Nov 2026: the earlier layouts are rewritten on the next rebuild or fetch (ensure_all_axes_cube); the
+    new file is written in full and then swapped in, and is the version 3 cube byte for byte."""
+    from sed_tools.cube import variants
+
+    grid = _kurucz_alpha(t.tmp / "K", build=True)
+    v3 = (grid / ND).read_bytes()
+    swaps = []
+
+    def swap(src, dst):  # at the swap, the new file is whole and the old one still in place
+        swaps.append((fileio.read_header(src).version, fileio.read_header(dst).version))
+        return replace(src, dst)
+
+    replace = variants.os.replace
+    t.mp.setattr(variants.os, "replace", swap)
+    for version in (2, 1):
+        (grid / ND).write_bytes(CORRUPT_HEADERS[f"a_version_{version}_all_axes_cube_is_read"][0](v3))
+        variants.ensure_all_axes_cube(str(grid))
+        assert (grid / ND).read_bytes() == v3, f"version {version}"
+    assert swaps == [(3, 2), (3, 1)] and not (grid / (ND + ".tmp")).exists()
+    variants.ensure_all_axes_cube(str(grid))  # a version 3 cube is left as it is
+    assert len(swaps) == 2
+
+
 # ----------------------------------------------------------------------
 # Building a cube: lookup values, spectra, the split strategy, the RAM probe
 # ----------------------------------------------------------------------
