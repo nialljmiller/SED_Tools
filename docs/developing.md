@@ -34,6 +34,24 @@ GitHub Actions runs the suite on Python 3.10 and 3.12 for every push to
 `main` and every pull request
 ([`.github/workflows/tests.yml`](https://github.com/nialljmiller/SED_Tools/blob/main/.github/workflows/tests.yml)).
 
+## Line coverage
+
+Every line of `sed_tools/` is run by the suite (Nill, 24 Nov 2026), except the
+few listed in the pull request that introduced the rule, each with its reason.
+A new line gets a row in an existing table, not a new test function. To check,
+install coverage.py yourself (it is not a dependency of SED_Tools; on Python
+3.10 install `coverage[toml]`) and run, from the top of the clone:
+
+```bash
+pip install coverage
+coverage run -m pytest tests/
+coverage combine
+coverage report -m --skip-covered
+```
+
+`[tool.coverage.run]` in `pyproject.toml` sets the package as the source and
+follows the subprocesses some rows start (`sed-tools`, `python -m`).
+
 ## Golden tests
 
 `tests/test_golden.py` reruns every case in `tests/golden/cases.py` on fixed

@@ -58,3 +58,9 @@ sed_tools = ["sed_tools.defaults", "cie/*.csv", "instrument_catalogue.json"]
 
 [project.scripts]
 sed-tools = "sed_tools.cli:main"
+
+# For `coverage run -m pytest tests/` (docs/developing.md). coverage is a tool you install yourself, not a dependency.
+[tool.coverage.run]
+source = ["sed_tools"]
+parallel = true
+patch = ["subprocess"]  # the rows that run sed-tools or python -m in a subprocess
