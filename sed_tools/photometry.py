@@ -24,7 +24,7 @@ FILTER_EXTENSIONS = {".dat", ".txt", ".csv"}
 PC_TO_M = 3.085677581e16
 RSUN_TO_M = 6.957e8
 SPEED_OF_LIGHT_ANG_PER_S = 2.99792458e18  # speed of light in Angstrom/s
-AB_ZERO_FLUX = 3.631e-20  # 3631 Jy expressed in erg s^-1 cm^-2 Hz^-1
+AB_ZERO_FLUX = 3.630e-20  # 3631 Jy expressed in erg s^-1 cm^-2 Hz^-1
 UNIT_TO_ANGSTROM: Dict[str, float] = {name: factor for factor, names in (
     (1.0, ("angstrom", "angstroms", "\u00e5", "ang", "a", "aa")),
     (10.0, ("nanometer", "nanometre", "nm")),
