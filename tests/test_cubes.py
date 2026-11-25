@@ -2433,7 +2433,8 @@ def sedmodel_finds_a_filter_by_its_path_in_the_filters_folder_or_by_part_of_its_
     model = SEDModel(name="test", flux_cube_path=str(cube), filters_dir=str(t.tmp / "filters"))
     assert model._locate_filter_paths("GAIA/GAIA/Gbp.dat") == [filters / "Gbp.dat"]
     assert model._locate_filter_paths("bp") == [filters / "Gbp.dat"]  # the one curve whose name holds it
-    with pytest.raises(FileExistsError, match="Filter specification 'G' is ambiguous; matches: .*Gbp.dat, .*Grp.dat"):
+    # The matches come in the directory's order, which differs between macOS and Linux.
+    with pytest.raises(FileExistsError, match=r"'G' is ambiguous; matches: .*G[br]p\.dat, .*G[br]p\.dat"):
         model._locate_filter_paths("G")
     with pytest.raises(FileNotFoundError, match="No filter file matching 'zz' was found under"):
         model._locate_filter_paths("zz")
