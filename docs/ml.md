@@ -88,8 +88,12 @@ print([m["name"] for m in MLGenerator.list_models()])
 
 `train(grid, epochs=200, batch_size=64, save_name=None, max_samples=10000)`
 saves the model as `models/<save_name>` (default
-`sed_generator_<grid>`). `generate` warns about parameters outside the training
-ranges (`check_bounds=False` turns the warning off).
+`sed_generator_<grid>`). Training leaves out spectra whose flux is
+non-positive or non-finite anywhere, and says how many; `parameter_ranges()`
+then gives the range actually trained on, which can be narrower than the
+grid's (for this Kurucz cut it prints a Teff range of 4000–6750 K, not
+4000–8000 K). `generate` warns about parameters outside the training ranges
+(`check_bounds=False` turns the warning off).
 
 ![Generator diagnostic: parameter coverage](sed_T6969_g4.20_m+0.02_params.png)
 

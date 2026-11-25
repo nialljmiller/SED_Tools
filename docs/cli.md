@@ -111,9 +111,14 @@ SED_TOOLS_DEBUG=1 sed-tools config
 
 ## Environment variables
 
+They are read when `sed_tools` is imported, so set them before starting
+Python or the command.
+
 | Variable | Effect |
 |---|---|
 | `SED_DATA_DIR` | Use this data directory instead of the configured one |
+| `SED_STELLAR_DIR` | Use this folder for spectral grids instead of `<data dir>/stellar_models` (the default of `--base` and of `model_root`) |
+| `SED_FILTER_DIR` | Use this folder for filter sets instead of `<data dir>/filters` (the default of `--base` and of `filter_root`) |
 | `SED_SVO_FPS_URL` | Use another SVO Filter Profile Service endpoint (`fps.php`) |
 | `SED_TOOLS_DEBUG=1` | Show tracebacks |
 

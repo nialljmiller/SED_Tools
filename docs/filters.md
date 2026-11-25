@@ -124,8 +124,8 @@ and the cached catalogue. Part of the output for LSST:
 ```text
 LSST/LSST  (12 bands)
   Published curves contain : filter+instrument+atmosphere [svo]
-  Separate components      : optics, qe
-    filter only for: u, g, r, i, z, y
+  Separate components      : filter, optics, qe
+  Can be built             : filter, filter+optics, filter+qe, filter+optics+qe
   Source review            : supported (lsst)
   Atmosphere               : can be added at its own site: lsst_std (default) (in Python,
                              Filters.atmospheres() lists the conditions)
@@ -242,13 +242,15 @@ treated as energy-counting.
 ### Tagging existing files
 
 Downloads write the header. Files installed by older versions, or your own
-files, can be tagged in place. `filters-detector` takes a path: the filter
-root, an instrument folder or a single `.dat` file.
+files, can be tagged in place. `filters-detector` takes an installed set's
+name (`Facility/Instrument`, under the filter root) or a path: the filter
+root, an instrument folder or a single `.dat` file. A target that does not
+exist is an error.
 
 ```bash
 sed-tools filters-detector --dry-run                                         # whole filter root
-sed-tools filters-detector ~/.sed_tools/data/filters/GAIA/GAIA --dry-run      # one instrument
-sed-tools filters-detector ~/.sed_tools/data/filters/Generic/Johnson --force --dry-run
+sed-tools filters-detector GAIA/GAIA --dry-run                                # one installed set, by name
+sed-tools filters-detector ~/.sed_tools/data/filters/Generic/Johnson --force --dry-run   # or by path
 ```
 
 ```python

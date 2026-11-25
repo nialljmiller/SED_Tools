@@ -58,7 +58,9 @@ sed-tools config --set ~/sed_data --move           # move it, with everything in
 
 `sed-tools config` also names the configuration file
 (`~/.sed_tools/config.toml`). The environment variable `SED_DATA_DIR`, when
-set, overrides the configured data directory, and `sed-tools config` says so. In these pages, `~/.sed_tools/data` stands
+set, overrides the configured data directory, and `sed-tools config` says so;
+`SED_STELLAR_DIR` and `SED_FILTER_DIR` move only the grids' or the filters'
+folder ([Command line](cli.md)). In these pages, `~/.sed_tools/data` stands
 for the data directory; replace it if you have moved yours.
 
 ## Network access

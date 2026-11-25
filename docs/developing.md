@@ -17,7 +17,10 @@ The tests use pytest's built-in subtests, hence pytest 9 or newer.
 
 ## Running the tests
 
+From the top of the clone:
+
 ```bash
+cd SED_Tools
 python -m pytest tests/
 python -m pytest tests/test_filters.py -q
 ```

@@ -68,8 +68,7 @@ those curves.
 - Filter sets come from SVO or the original-source builders. An NJM set that
   SVO holds under other names (NJM's `GAIA/GAIA` is SVO's `GAIA/GAIA3`) is
   installed from SVO under NJM's names. If SVO has only some of its bands,
-  those are installed and a warning names the missing ones (`GAIA/GAIA`: 4 of
-  6, without `Gbp_bright` and `Gbp_faint`); `filters-info` and the picker
+  those are installed and a warning names the missing ones; `filters-info` and the picker
   summary mark the set "Incomplete", and `Filters.available()` gives the
   installed `bands` and all `expected_bands`. Fetch it again when NJM is back
   to complete it.
