@@ -1,0 +1,8 @@
+[
+ {"path": "Subaru/VAMPIRES/Halpha.dat", "unit": "nm", "pivot_range_A": [6550, 6575],
+  "source": "https://arxiv.org/abs/2008.10780",
+  "evidence": "Uyama et al. 2020, JATIS 6, 045004 (arXiv:2008.10780), the curve's source: VAMPIRES H-alpha filter at 656.3 nm, width 1.0 nm"},
+ {"path": "Subaru/VAMPIRES/Cont.dat", "unit": "nm", "pivot_range_A": [6465, 6490],
+  "source": "https://arxiv.org/abs/2008.10780",
+  "evidence": "Uyama et al. 2020, JATIS 6, 045004 (arXiv:2008.10780), the curve's source: VAMPIRES continuum filter at 647.68 nm, width 2.05 nm"}
+]
