@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-11-25T01:31:40.615032",
+  "generated": "2026-11-25T04:27:44.033334",
   "statistics": {
     "total_models": 8,
     "complete_models": 7,
@@ -29005,8 +29005,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 25066,
-            "size_human": "24.48 KB",
+            "size_bytes": 26431,
+            "size_human": "25.81 KB",
             "description": "Subaru SCExAO VAMPIRES H-alpha and continuum filters (Uyama+ 2020)",
             "svo_instruments": [
               "Subaru/VAMPIRES"
@@ -32285,7 +32285,7 @@
         "ids": 11066,
         "sha256": "52a5f1c2475b77157e2ec8762b0ccf123f3aab65ee465b768a0edc02bba5dfe6"
       },
-      "references": 416,
+      "references": 417,
       "unresolved_references": 0,
       "svo_fields": {
         "Fsun": {
