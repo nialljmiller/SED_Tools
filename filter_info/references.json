@@ -911,6 +911,35 @@
   "url": "https://arxiv.org/abs/1102.4717",
   "year": 2011
  },
+ "arxiv:1102.5248": {
+  "arxiv": "1102.5248",
+  "authors": [
+   "Gulbis, A. A. S.",
+   "Bus, S. J.",
+   "Elliot, J. L.",
+   "Rayner, J. T.",
+   "Stahlberger, W. E.",
+   "Rojas, F. E.",
+   "Adams, E. R.",
+   "Person, M. J.",
+   "Chung, R.",
+   "Tokunaga, A. T.",
+   "Zuluaga, C. A."
+  ],
+  "bibtex": "@article{arXiv:1102.5248, title={First Results from the MIT Optical Rapid Imaging System (MORIS) on the IRTF: A Stellar Occultation by Pluto and a Transit by Exoplanet XO-2b}, volume={123}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/659636}, DOI={10.1086/659636}, number={902}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Gulbis, A. A. S. and Bus, S. J. and Elliot, J. L. and Rayner, J. T. and Stahlberger, W. E. and Rojas, F. E. and Adams, E. R. and Person, M. J. and Chung, R. and Tokunaga, A. T. and Zuluaga, C. A.}, year={2011}, month=Apr, pages={461\u2013469} }",
+  "doi": "10.1086/659636",
+  "journal": "Publications of the Astronomical Society of the Pacific",
+  "key": "arxiv:1102.5248",
+  "page": "461-469",
+  "resolved": "2026-11-25",
+  "resolved_by": "doi.org",
+  "short": "Gulbis et al. 2011",
+  "title": "First Results from the MIT Optical Rapid Imaging System (MORIS) on the IRTF: A Stellar Occultation by Pluto and a Transit by Exoplanet XO-2b",
+  "type": "article",
+  "url": "https://arxiv.org/abs/1102.5248",
+  "volume": "123",
+  "year": 2011
+ },
  "arxiv:1301.3650": {
   "arxiv": "1301.3650",
   "authors": [
@@ -16066,6 +16095,35 @@
   "url": "https://doi.org/10.1086/588541",
   "volume": "681",
   "year": 2008
+ },
+ "doi:10.1086/659636": {
+  "authors": [
+   "Gulbis, A. A. S.",
+   "Bus, S. J.",
+   "Elliot, J. L.",
+   "Rayner, J. T.",
+   "Stahlberger, W. E.",
+   "Rojas, F. E.",
+   "Adams, E. R.",
+   "Person, M. J.",
+   "Chung, R.",
+   "Tokunaga, A. T.",
+   "Zuluaga, C. A."
+  ],
+  "bibtex": "@article{10.1086/659636, title={First Results from the MIT Optical Rapid Imaging System (MORIS) on the IRTF: A Stellar Occultation by Pluto and a Transit by Exoplanet XO-2b}, volume={123}, ISSN={1538-3873}, url={http://dx.doi.org/10.1086/659636}, DOI={10.1086/659636}, number={902}, journal={Publications of the Astronomical Society of the Pacific}, publisher={IOP Publishing}, author={Gulbis, A. A. S. and Bus, S. J. and Elliot, J. L. and Rayner, J. T. and Stahlberger, W. E. and Rojas, F. E. and Adams, E. R. and Person, M. J. and Chung, R. and Tokunaga, A. T. and Zuluaga, C. A.}, year={2011}, month=Apr, pages={461\u2013469} }",
+  "doi": "10.1086/659636",
+  "journal": "Publications of the Astronomical Society of the Pacific",
+  "key": "doi:10.1086/659636",
+  "page": "461-469",
+  "resolved": "2026-11-25",
+  "resolved_by": "doi.org",
+  "same_as": "arxiv:1102.5248",
+  "short": "Gulbis et al. 2011",
+  "title": "First Results from the MIT Optical Rapid Imaging System (MORIS) on the IRTF: A Stellar Occultation by Pluto and a Transit by Exoplanet XO-2b",
+  "type": "article",
+  "url": "https://doi.org/10.1086/659636",
+  "volume": "123",
+  "year": 2011
  },
  "doi:10.1086/682259": {
   "authors": [

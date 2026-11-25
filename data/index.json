@@ -1,11 +1,11 @@
 {
   "version": "1.0",
-  "generated": "2026-11-25T16:08:51.034357",
+  "generated": "2026-11-25T21:11:25.772629",
   "statistics": {
     "total_models": 8,
     "complete_models": 7,
     "total_spectra": 24625,
-    "total_size_bytes": 110802072363,
+    "total_size_bytes": 110801997667,
     "total_size_human": "103.19 GB",
     "total_facilities": 221,
     "total_filters": 12235
@@ -83,8 +83,8 @@
       "has_lookup_table": true,
       "has_h5_bundle": true,
       "spectra_count": 588,
-      "size_bytes": 42400729,
-      "size_human": "40.44 MB",
+      "size_bytes": 42326033,
+      "size_human": "40.37 MB",
       "manifest_passes": true
     },
     "bt-cond": {
@@ -3427,8 +3427,7 @@
             ],
             "published_paths": {
               "filter": 22,
-              "filter+optics+qe+instrument": 21,
-              "unspecified": 1
+              "filter+optics+qe+instrument": 22
             },
             "detector_types": {
               "photon": 44
@@ -3441,7 +3440,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1630792,
+            "size_bytes": 1631322,
             "size_human": "1.56 MB",
             "description": "CFHT MegaPrime broad-, narrow- and medium-band filters (full, filter)",
             "svo_instruments": [
@@ -15269,7 +15268,8 @@
               "z"
             ],
             "published_paths": {
-              "filter+optics+qe+instrument": 9
+              "filter+optics+qe+instrument": 7,
+              "optics+qe+instrument": 2
             },
             "detector_types": {
               "photon": 9
@@ -15278,8 +15278,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 72548,
-            "size_human": "70.85 KB",
+            "size_bytes": 92556,
+            "size_human": "90.39 KB",
             "description": "IRTF MORIS fast visible camera on SpeX: g r i z V VR OG590, dichroics",
             "svo_instruments": [
               "IRTF/MORIS"
@@ -15335,8 +15335,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1769984,
-            "size_human": "1.69 MB",
+            "size_bytes": 1410379,
+            "size_human": "1.35 MB",
             "description": "IRTF NSFCam 1-5 micron camera: broad, MKO-NIR and narrow-band filters",
             "svo_instruments": [
               "IRTF/NSFCam"
@@ -18251,20 +18251,17 @@
             ],
             "published_paths": {
               "filter+instrument+atmosphere": 5,
-              "filter+optics+qe+atmosphere": 1,
-              "filter+optics+qe+instrument+atmosphere": 2
+              "filter+optics+qe+instrument+atmosphere": 3
             },
             "detector_types": {
               "photon": 8
             },
-            "separate_components": {
-              "filter": 1
-            },
+            "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 127155,
-            "size_human": "124.17 KB",
+            "size_bytes": 127518,
+            "size_human": "124.53 KB",
             "description": "Swope RetroCam near-IR imager (CSP), curves up to and since 2011",
             "svo_instruments": [
               "LCO/RetroCam"
@@ -18406,8 +18403,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 54670,
-            "size_human": "53.39 KB",
+            "size_bytes": 55801,
+            "size_human": "54.49 KB",
             "description": "Swope e2v CCD passbands (B, g, r, i), since 2013",
             "svo_instruments": [
               "LCO/e2v"
@@ -18621,8 +18618,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1296018,
-            "size_human": "1.24 MB",
+            "size_bytes": 1293873,
+            "size_human": "1.23 MB",
             "description": "Lick Observatory (Mount Hamilton) filter collection",
             "svo_instruments": [
               "LICK/LICK"
@@ -21872,14 +21869,12 @@
               "energy": 2,
               "photon": 4
             },
-            "separate_components": {
-              "filter": 4
-            },
+            "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 36330,
-            "size_human": "35.48 KB",
+            "size_bytes": 37209,
+            "size_human": "36.34 KB",
             "description": "APASS survey filters, defined as Johnson B, V and SDSS i, z",
             "svo_instruments": [
               "Misc/APASS"
@@ -22017,13 +22012,13 @@
               "energy": 4
             },
             "separate_components": {
-              "filter": 2
+              "filter": 1
             },
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 24256,
-            "size_human": "23.69 KB",
+            "size_bytes": 24470,
+            "size_human": "23.90 KB",
             "description": "Magellanic Clouds Photometric Survey (MCPS) Johnson B filter",
             "svo_instruments": [
               "Misc/MCPS"
@@ -22124,13 +22119,13 @@
               "photon": 3
             },
             "separate_components": {
-              "filter": 4
+              "filter": 1
             },
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 34961,
-            "size_human": "34.14 KB",
+            "size_bytes": 35636,
+            "size_human": "34.80 KB",
             "description": "UCAC4 filters, defined as Johnson B and SDSS g, r",
             "svo_instruments": [
               "Misc/UCAC"
@@ -24492,20 +24487,20 @@
               "sdss_z_filter"
             ],
             "published_paths": {
-              "filter": 18,
-              "filter+instrument": 10
+              "filter": 14,
+              "filter+instrument": 14
             },
             "detector_types": {
               "photon": 28
             },
             "separate_components": {
-              "filter": 16
+              "filter": 14
             },
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 362993,
-            "size_human": "354.49 KB",
+            "size_bytes": 364444,
+            "size_human": "355.90 KB",
             "description": "Large Format Camera (LFC) filters, Palomar 200-inch Hale telescope",
             "svo_instruments": [
               "P200/LFC"
@@ -31592,13 +31587,13 @@
               "photon": 18
             },
             "separate_components": {
-              "filter": 10
+              "filter": 13
             },
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 124902,
-            "size_human": "121.97 KB",
+            "size_bytes": 125727,
+            "size_human": "122.78 KB",
             "description": "WIYN NESSI speckle imager filters (filter-only and filter+CCD)",
             "svo_instruments": [
               "WIYN/NESSI"
@@ -32285,7 +32280,7 @@
         "ids": 11066,
         "sha256": "52a5f1c2475b77157e2ec8762b0ccf123f3aab65ee465b768a0edc02bba5dfe6"
       },
-      "references": 417,
+      "references": 419,
       "unresolved_references": 0,
       "svo_fields": {
         "Fsun": {
