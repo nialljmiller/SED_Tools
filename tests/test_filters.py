@@ -48,7 +48,7 @@ from sed_tools.filters.curve_metadata import (ENERGY, PHOTON, SOURCE_ASSUMED, SO
                                               migrate_filter_tree, normalize_detector_type, read_filter_header,
                                               released_mesa_reads, tag_filter_file, tag_filter_tree, write_filter_file,
                                               write_filter_header)
-from sed_tools.filters.display import display_colors, instrument_colors
+from sed_tools.filters.display import display_colors, instrument_colors, true_color, visible_fraction
 from sed_tools.filters.library import FilterLibrary
 from sed_tools.filters.manifest import check_sets, set_problems
 from sed_tools.filters.names import instrument_catalogue, load_instrument_catalogue
@@ -272,8 +272,13 @@ QUERY_LOCAL = {
 def _query_local(t, files, expected):
     """An installed set is a folder of curves; an index file alone is none."""
     put(t.tmp / "WISE" / "WISE", files)
+    put(t.tmp, {"README": ""}), put(t.tmp / "WISE", {"notes.txt": ""})  # files beside the sets are no sets
     t.mp.setattr(Filters, "_filter_root", t.tmp)
     assert Filters.query(include_local=True, include_remote=False) == expected
+    assert Filters.query(facility="wise", include_local=True, include_remote=False) == expected
+    assert Filters.query(facility="Other", include_local=True, include_remote=False) == []
+    t.mp.setattr(Filters, "_filter_root", t.tmp / "missing")
+    assert Filters.query(include_local=True, include_remote=False) == []
 
 
 @row
@@ -291,6 +296,14 @@ def combine_renamed_band_has_no_dot_before_dat(t):
     # Run again, each curve finds its own earlier copy: no band is added twice.
     Filters.combine("Combined/Sony", t.tmp / "Cameras/Sony.A200", t.tmp / "Old/Sony.A200", filter_root=t.tmp)
     assert sorted(p.name for p in out.glob("*.dat")) == names and (out / "Sony").read_text().splitlines() == names
+    # A third V from another Old/Sony.A200, given as its curve: the made name is taken too, so it gets _2. A folder
+    # holding one set is that set; a facility or instrument names the output folder under the filter root.
+    third = put(t.tmp / "x" / "Old" / "Sony.A200", {"V.dat": "Wavelength,Transmission\n9,1\n"}) / "V.dat"
+    out = Filters.combine("Sony", t.tmp / "Cameras", t.tmp / "Old/Sony.A200", third, filter_root=t.tmp,
+                          facility="Mine")
+    assert out == t.tmp / "Mine" / "Sony"
+    assert sorted(p.name for p in out.glob("*.dat")) == ["Old_SonypA200_V.dat", "Old_SonypA200_V_2.dat", "V.dat"]
+    assert (out / "Old_SonypA200_V_2.dat").read_text() == "Wavelength,Transmission\n9,1\n"
 
 
 @row
@@ -332,6 +345,15 @@ def a_failed_combine_writes_nothing(t):
         Filters.combine("Combined/J", other, inst, filter_root=t.tmp)
     assert {p.name: p.read_bytes() for p in out.iterdir()} == before == {
         "U.dat": b"Wavelength,Transmission\n1,1\n", "J": b"U.dat\n"}
+    with pytest.raises(ValueError, match="No .dat filter files were found"):
+        combine_filter_sets("Combined/J", [], filter_root=t.tmp)
+    # Putting the finished set in place fails: the set that was there is put back.
+    rename = Path.rename
+    t.mp.setattr(Path, "rename", lambda self, target: raising(OSError("disk full"))()
+                 if self.parent.name.startswith(".combine-") and self.name == "J" else rename(self, target))
+    with pytest.raises(OSError, match="disk full"):
+        Filters.combine("Combined/J", other, on_conflict="overwrite", filter_root=t.tmp)
+    assert {p.name: p.read_bytes() for p in out.iterdir()} == before
 
 
 # ======================================================================
@@ -540,6 +562,9 @@ def search_by_wavelength_pivot_fwhm_detector_and_any_property(t):
     # A null Vega quantity never matches, and never raises.
     assert list(Filters.search(where={"ABminusVega": (None, 0.5)}, filter_root=root)["band"]) == ["g", "i"]
     assert list(Filters.search(where={"DetectorType": "ENERGY"}, filter_root=root)["band"]) == ["J", "K"]
+    assert list(Filters.search(where={"ABminusVega": 0.4}, filter_root=root)["band"]) == ["i"]  # an exact value
+    for absent in ((1, 2), "x"):  # a property NJM does not give matches nothing
+        assert Filters.search(where={"Colour": absent}, filter_root=root).empty
     # A permanent catalogue gap is reported apart from fetch failures.
     assert covers.attrs["gaps"] == ["Fac/Old: NJM has no properties file"] and covers.attrs["errors"] == []
     assert covers.attrs["units"]["FWHM"] == "Angstrom"
@@ -588,6 +613,11 @@ def files_are_cached_beside_the_filter_root_and_revalidated_when_the_index_chang
         Filters.properties("Fac", "Old", filter_root=root)
     with pytest.raises(CatalogueError, match="does not serve"):
         Filters.info("Nope", "Cam", filter_root=root)
+    # The client is built only when a file is asked for; nothing is cached outside the cache folder.
+    catalogue = FilterCatalogue(root, mirror=lambda: grabber_for(root, njm))
+    assert catalogue.info("Fac", "Cam")["description"] == "A camera."
+    with pytest.raises(CatalogueError, match="catalogue path outside the cache: ../index.json"):
+        catalogue._cache_path("../index.json")
 
 
 @row
@@ -625,6 +655,19 @@ def citations_default_to_installed_instruments(t):
     text = Filters.cite(filter_root=root)
     assert "Citations for Fac/Cam" in text and "We thank Fac." in text and "Free to use." in text
     assert "@article{2020Cam.....1A" in text
+    # The set's own info.json (as saved beside its curves) is read before NJM's.
+    info = json.loads(catalogue_files()["filters/Fac/Cam/info.json"])
+    info["acknowledgements"] = [{"for": "Blank", "text": "  "},
+                                {"for": "Fac", "text": "We thank the installed Fac.", "url": "https://fac.invalid/a"}]
+    info["bibliography"]["bibcode:2020Cam.....1A"].update(journal="PASP", volume=1, page=2)
+    put(root / "Fac" / "Cam", {"info.json": json.dumps(info)})
+    for target in (root / "Fac" / "Cam", str(root / "Fac" / "Cam" / "g.dat")):
+        text = Filters.cite(target, filter_root=root)
+        assert "We thank the installed Fac.\n  https://fac.invalid/a" in text and "Blank" not in text
+        assert '[1] Author 2020, PASP 1, 2. "The camera"' in text
+    assert "Citations for Fac/Cam (g)" in Filters.cite(str(root / "Fac" / "Cam" / "g.dat"), filter_root=root)
+    ir = put(root / "Other" / "IR", {"info.json": json.dumps({"bands": ["J", "K"]})})  # not NJM's form
+    assert Filters.citations(ir, filter_root=root)["errors"] == ["Other/IR: not an NJM catalogue file"]
 
 
 @row
@@ -639,6 +682,8 @@ def search_and_cite_in_python(t):
     assert list(Filters.search(wavelength=21000, filter_root=root)["band"]) == ["K"]
     bibtex = Filters.cite("Other/IR", format="bibtex", filter_root=root)
     assert bibtex.startswith("% No BibTeX served") and "@article{2020Cam.....1A" in bibtex
+    with pytest.raises(ValueError, match="format must be 'text' or 'bibtex'"):
+        Filters.cite("Other/IR", format="xml", filter_root=root)
 
 
 @row
@@ -696,6 +741,24 @@ def plot_uses_filter_colors_and_overlays_vega(t):
     with pytest.raises(ValueError):
         Filters.plot(filter_root=root)
 
+    vega = put(t.tmp, {"vega.csv": catalogue_files()["vega/vega_flam.csv"]}) / "vega.csv"
+    for spectrum in (vega, load_vega(vega)):
+        ax = Filters.plot("Fac/Cam/g", "Other/IR/K", normalize="area", vega=spectrum, log_wavelength=True,
+                          filter_root=root)
+        lines = {line.get_label(): line for line in ax.get_lines()}
+        assert "Vega f$_\\lambda$ (scaled)" in lines and ax.get_xscale() == "log"
+        assert np.trapezoid(lines["Fac/Cam g"].get_ydata(), lines["Fac/Cam g"].get_xdata()) == pytest.approx(1.0)
+        plain = ax.xaxis.get_major_formatter()
+        assert [plain(value, 0) for value in (2000.0, 3000.0, 5000.0, 10000.0, 0.0)] == ["2000", "", "5000", "10000", ""]
+        plt.close(ax.figure)
+    # An instrument NJM serves that is not installed is fetched under NJM's name, then plotted.
+    fetched = []
+    t.mp.setattr(Filters, "_fetch_published", lambda fac, inst, filter_root=None: fetched.append((fac, inst)) or
+                 write_curve(root / fac / inst / "U.dat", 3600, 600) or root / fac / inst)
+    ax = Filters.plot("fac/old", filter_root=root)
+    assert fetched == [("Fac", "Old")] and [line.get_label() for line in ax.get_lines()] == ["U"]
+    plt.close(ax.figure)
+
 
 @row
 def vega_is_downloaded_from_njm_where_mesa_can_read_it(t):
@@ -737,6 +800,12 @@ def all_ultraviolet_set_runs_purple_to_sky_blue(t):
     colors = display_colors({"FUV": top_hat(1350, 1750), "NUV": top_hat(1750, 2800)})
     assert hue(colors["NUV"]["DisplayColor"]) < hue(colors["FUV"]["DisplayColor"])
     assert 180 < hue(colors["NUV"]["DisplayColor"]) < 210 and 280 < hue(colors["FUV"]["DisplayColor"]) < 300
+    # One band alone outside the visible is red (infrared) or violet (ultraviolet); a dark curve has no colour.
+    assert hue(display_colors({"K": top_hat(20000, 24000)})["K"]["DisplayColor"]) == pytest.approx(0.0)
+    assert hue(display_colors({"NUV": top_hat(1750, 2800)})["NUV"]["DisplayColor"]) == pytest.approx(275, abs=1)
+    lam, dark = top_hat(5000, 6000)[0], np.zeros(top_hat(5000, 6000)[0].size)
+    assert visible_fraction(lam, dark) == 0.0 and true_color(lam, dark) == "#000000"
+    assert true_color(*top_hat(20000, 24000)) == "#000000"  # beyond the colour-matching functions
 
 
 # ======================================================================
@@ -803,6 +872,10 @@ def multiply_curves_refuses_to_extrapolate(t):
         multiply_curves([band, short])
     grid, product = multiply_curves([band, short], allow_partial=True)
     assert np.all(product[grid < 4500.0] == 0.0)
+    with pytest.raises(ComponentError, match="Unknown outside-range policy 'sideways'"):
+        multiply_curves([band, short], outside="sideways")
+    with pytest.raises(ComponentError, match="transmission is zero everywhere"):
+        multiply_curves([Curve(WL, np.zeros(WL.size), {}), short])
 
 
 PUBLISHED_WITH_ATMOSPHERE = {
@@ -1049,6 +1122,14 @@ def edit_refuses_unknown_bands_types_and_untagged_conversions(t):
     (inst / "u.dat").write_text("Wavelength,Transmission,DetectorType=photon\n4000.0,0.1\n4500.0,abc\n5000.0,0.5\n")
     with pytest.raises(ValueError, match=r"u\.dat, line 3: expected two numbers, found '4500\.0,abc'"):
         Filters.convert_detector_type(inst / "u.dat", "energy")
+    with pytest.raises(FileNotFoundError, match="No filter curves in"):
+        Filters.correct_detector_type(put(root / "Empty" / "Set", {}), "energy", filter_root=root)
+    # A curve tagged by 0.3.0 that has no column row gets one to hold what the conversion records.
+    old = put(root / "Old" / "Cam", {"u.dat": "# DetectorType: photon\n4000.0,0.1\n5000.0,0.5\n6000.0,0.1\n"})
+    Filters.convert_detector_type(old / "u.dat", "energy", filter_root=root)
+    assert (old / "u.dat").read_text().splitlines() == [
+        "Wavelength,Transmission,DetectorType=energy;DetectorTypeSource=user;DetectorTypeOriginal=photon;"
+        "DetectorTypeConversion=lambda", "4000.0,0.08", "5000.0,0.5", "6000.0,0.12000000000000001"]
 
 
 @row
@@ -1177,6 +1258,15 @@ def tag_resolves_by_filter_id(t):
     assert (result.detector_type, result.source, result.changed) == (PHOTON, SOURCE_SVO, True)
     assert read_filter_header(path)["DetectorType"] == PHOTON
     assert load_filter_curve(str(path)).detector_type == PHOTON
+    # A FilterID found by matching the curve keeps that provenance when SVO is asked by the ID again.
+    write_filter_header(path, {**read_filter_header(path), "DetectorTypeSource": SOURCE_SVO_MATCH})
+    client = SVOClient({"GAIA/GAIA3.G": svo_record("GAIA/GAIA3.G", PHOTON, wl, tr)})
+    assert tag_filter_file(path, client=client, force=True).source == SOURCE_SVO_MATCH
+    # Without a client, SVO's own client is asked; Filters tags one file of a facility the same way.
+    t.mp.setattr(fm, "SVOMetadataClient", lambda: client)
+    assert fm.resolve_detector_type(path) == (PHOTON, "GAIA/GAIA3.G", SOURCE_SVO, "")
+    [tagged] = Filters.tag_detector_types(path, facility="GAIA", force=True)
+    assert (tagged["path"], tagged["detector_type"], tagged["source"]) == (str(path), PHOTON, SOURCE_SVO_MATCH)
 
 
 @row
@@ -1194,6 +1284,14 @@ def curve_mismatch_is_not_accepted(t):
     write_plain(path, [5000.0, 6000.0], [0.5, 0.6])
     client = SVOClient({"GAIA/GAIA.G": svo_record("GAIA/GAIA.G", PHOTON, [5000.0, 6000.0], [0.5, 0.7])})
     assert tag_filter_file(path, client=client).source == SOURCE_ASSUMED
+    # The same curve under two SVO IDs with different types names neither; one of another length is no match.
+    client = SVOClient({"GAIA/GAIA2.G": svo_record("GAIA/GAIA2.G", PHOTON, [5000.0, 6000.0], [0.5, 0.6]),
+                        "GAIA/GAIA3.G": svo_record("GAIA/GAIA3.G", ENERGY, [5000.0, 6000.0], [0.5, 0.6]),
+                        "GAIA/GAIA0.G": svo_record("GAIA/GAIA0.G", PHOTON, [5000.0, 5500.0, 6000.0], [0.5, 1, 0.6])},
+                       listing=["GAIA/GAIA2.G", "GAIA/GAIA3.G", "GAIA/GAIA0.G"])
+    result = tag_filter_file(path, client=client)
+    assert (result.detector_type, result.source) == (ENERGY, SOURCE_ASSUMED)
+    assert result.note == "curve matches SVO filters with conflicting detector types (GAIA/GAIA2.G, GAIA/GAIA3.G)"
 
 
 # Source precedence: evidence outranks SVO, with or without --force
@@ -1403,6 +1501,26 @@ def burst_block_403_is_not_reported_as_an_outage(t):
     grabber._available = True
     assert grabber.discover_facilities() == ["Test"]  # reuses the index fetched by the check
     assert len(session.calls) == 3
+    # A 429 is waited out for as long as NJM's Retry-After asks.
+    answers = [Resp("", 429), Resp(TEST_INDEX)]
+    answers[0].headers = {"Retry-After": "7"}
+    grabber.session = SimpleNamespace(get=lambda url, **kwargs: answers.pop(0))
+    assert grabber._get(f"{NJM}/index.json").text == TEST_INDEX and delays == [1, 7]
+    # A transient 503 with an index.json that is not JSON, or has no filters, is still NJM answering.
+    for index in ("<html>busy</html>", json.dumps({"generated": "2026-11-25"})):
+        filters_njm._STATE.reset()
+        grabber, _ = blocked_grabber(t, BurstBlockedNJM({"index.json": index}, head_status=503))
+        assert REAL_AVAILABILITY_CHECK(grabber) is True and grabber._index_data is None
+    grabber._available = True
+    with t.caplog.at_level(logging.WARNING):
+        assert grabber.discover_facilities() == []  # nor does the directory listing (404) list any
+    assert "Cannot read NJM's index.json (it has no 'filters' section); listing the filters directory" in t.caplog.text
+    # A facility described in an unexpected form lists no instruments.
+    grabber = njm_filters(t, t.tmp, {"index.json": json.dumps(
+        {"filters": {"facilities_detailed": {"Fac": {"instruments": ["Cam"]}}}})})
+    with t.caplog.at_level(logging.WARNING):
+        assert grabber.discover_instruments("Fac") == []
+    assert "NJM's index.json describes Fac in an unexpected form" in t.caplog.text
 
 
 @njm_offline_row
@@ -1457,6 +1575,16 @@ def original_source_failure_falls_back_to_svo(t):
         list_instruments=lambda f: [Instrument("Paranal", "HAWKI", "HAWKI")],
         list_filters=lambda f, i: [FilterRow("Paranal/HAWKI.J", "J", "Paranal", "HAWKI", "")],
         download_filters=download_svo)
+    # Before anything is installed, its bands are those of its tabular source.
+    info = library.available("Paranal", "HAWKI", remote=False)
+    assert info["availability_source"] == "original" and "J" in info["bands"]
+    # The builder fails for another reason, and SVO lists nothing: every source says why.
+    listed, library.svo.list_filters = library.svo.list_filters, lambda f, i: []
+    t.mp.setattr(filters_library, "get_builder", lambda name: raising(RuntimeError("the ESO page moved")))
+    with pytest.raises(ComponentError, match="No source can provide Paranal/HAWKI: .*original source: the ESO "
+                                             "page moved; SVO: SVO returned no filters for Paranal/HAWKI"):
+        library.published("Paranal", "HAWKI")
+    library.svo.list_filters = listed
     t.mp.setattr(filters_library, "get_builder", lambda name: raising(requests.ConnectionError("ESO offline")))
     directory = t.tmp / "Paranal" / "HAWKI"
     directory.mkdir(parents=True)
@@ -1632,6 +1760,8 @@ def afav_is_none_without_dust_extinction(t):
     assert p["AfAv"] is None and p["WavelengthPivot"] > 0
     assert extinction_ratio(5500.0) is None
     assert "valid_range_angstrom" not in extinction_law()
+    t.mp.setattr(fp.metadata, "version", raising(fp.metadata.PackageNotFoundError("dust_extinction")))
+    assert extinction_law()["dust_extinction_version"] is None
 
 
 @row
@@ -1641,6 +1771,10 @@ def helpers_pass_the_sun_through(t):
     write_filter_file(inst / "V.dat", *gaussian(5500.0, 300.0), detector_type="photon", source="svo")
     sun = (np.linspace(1000.0, 30000.0, 100), np.full(100, 185.0))
     assert curve_properties(inst / "V.dat", sun=sun)["Fsun"] == pytest.approx(185.0)
+    # A curve with no properties is recorded with why, and with its header's labels.
+    write_filter_file(inst / "X.dat", [5000.0, 6000.0], [0.0, 0.0], detector_type="photon", source="svo")
+    assert properties_record(inst / "X.dat") == {"error": "the filter curve has no positive transmission",
+                                                 "DetectorType": "photon", "DetectorTypeSource": "svo"}
 
 
 # ======================================================================
@@ -1694,6 +1828,13 @@ def instrument_manifest_without_extra_sites_has_no_new_key(t):
 def grid_entries_need_a_numeric_airmass(t):
     with pytest.raises(ComponentError, match="unstated"):
         AtmosphereGrid("s", [{"airmass": None, "pwv": None, "file": "a.dat"}])
+    with pytest.raises(ComponentError, match="s: atmosphere kind must be one of"):
+        AtmosphereGrid("s", [], kind="guessed")
+    with pytest.raises(ComponentError, match="s: unknown outside-range policy 'wrap'"):
+        AtmosphereGrid("s", [], outside_range="wrap")
+    two = AtmosphereGrid("s", [], unstated=[{"file": "a.dat"}, {"file": "b.dat"}])
+    with pytest.raises(ComponentError, match="s: 2 atmospheres of unstated airmass; the site manifest must name one"):
+        two.find(AtmosphereSpec("s", None))
 
 
 # Registering a team atmosphere as a site
@@ -1843,7 +1984,21 @@ def missing_conditions_error_says_what_the_site_has(t):
         (AtmosphereSpec("grid_team", 1.5, 2.5),
          "Site grid_team has no atmosphere for airmass 1.5 and PWV 2.5 mm; it has airmass 1, 1.2 with PWV 2.5, 5 mm"),
         (AtmosphereSpec("nowhere", 1.2), "No atmosphere of site nowhere is cached; fetch or generate the site first"),
+        (AtmosphereSpec("grid_team", None),
+         "Site grid_team has no atmosphere for unstated airmass; it has airmass 1, 1.2 with PWV 2.5, 5 mm"),
+        (AtmosphereSpec("lost", 1.2), "The lost atmosphere for airmass 1.2 is listed but its file is not cached; "
+                                      "fetch it first"),
+        (AtmosphereSpec("moved", 1.2), "Atmosphere manifest site 'lost' does not match 'moved'"),
+        (AtmosphereSpec("linked", 1.2), "Atmosphere file resolves outside its site directory"),
     ]
+    lost = AtmosphereGrid("lost", [{"airmass": 1.2, "pwv": None, "file": "am1.2.dat"}])
+    for site in ("lost", "moved", "linked"):
+        (t.tmp / site).mkdir()
+    lost.save(t.tmp / "lost")
+    lost.save(t.tmp / "moved")  # a site folder renamed or copied: its manifest names another site
+    put(t.tmp / "outside", {"am1.2.dat": "Wavelength,Transmission\n3000,0.9\n7000,0.9\n"})
+    (t.tmp / "linked" / "am1.2.dat").symlink_to(t.tmp / "outside" / "am1.2.dat")
+    AtmosphereGrid("linked", lost.entries).save(t.tmp / "linked")
     for spec, message in messages:
         with pytest.raises(ComponentError) as excinfo:
             atmosphere_file(t.tmp, spec)
@@ -1925,6 +2080,40 @@ def variant_paths_must_stay_inside_the_instrument(t):
         InstrumentManifest("F", "I", ["g"], variants={"qe": {"x": {"files": {"*": "../other/qe.dat"}}}})
     with pytest.raises(ComponentError):
         InstrumentManifest("F", "I", ["g"], variants={"qe": {"bad/name": {"files": {}}}})
+    with pytest.raises(ComponentError, match="Invalid band name in manifest: '../g'"):
+        InstrumentManifest("F", "I", ["../g"])
+    with pytest.raises(ComponentError, match="Invalid variant name: 'bad/name'"):
+        add_component(t.tmp, QE, WL, np.full(WL.size, 0.5), variant="bad/name")
+    # A component file that is a link to a curve elsewhere is refused where it is read, as a path with ".." is.
+    inst = qe_variants(t)
+    put(t.tmp / "elsewhere", {"qe.dat": (inst / "components/qe/qe_a.dat").read_text()})
+    (inst / "components/qe/qe_a.dat").unlink()
+    (inst / "components/qe/qe_a.dat").symlink_to(t.tmp / "elsewhere" / "qe.dat")
+    with pytest.raises(ComponentError, match="qe_a.dat: component resolves outside its instrument directory"):
+        compose_band(inst, "g", "filter+qe")
+    with pytest.raises(ComponentError, match="components/qe/qe_a.dat: component resolves outside its instrument"):
+        InstrumentManifest.load(inst).local(inst)
+
+
+@row
+def a_product_that_cannot_be_built_is_refused_and_the_previous_one_kept(t):
+    inst = qe_variants(t)
+    with pytest.raises(ComponentError, match="'instrument' describes published curves; request 'optics' and/or 'qe'"):
+        compose_band(inst, "g", "instrument")
+    with pytest.raises(ComponentError, match="Unknown detector type: 'ccd'; choose energy or photon"):
+        build_product(inst, "filter+qe", detector_type="ccd")
+    with pytest.raises(ComponentError, match="No bands selected for composition"):
+        build_product(inst, "filter+qe", bands=[])
+    product = build_product(inst, "filter+qe")
+    before = (product / "g.dat").read_bytes()
+    assert build_product(inst, "filter+qe", overwrite=False) == product
+    # Putting the finished product in place fails: the product that was there is put back.
+    rename = Path.rename
+    t.mp.setattr(Path, "rename", lambda self, target: raising(OSError("disk full"))()
+                 if self.parent.name.startswith(".compose-") and self.name == "filter+qe" else rename(self, target))
+    with pytest.raises(OSError, match="disk full"):
+        build_product(inst, "filter+qe")
+    assert (product / "g.dat").read_bytes() == before
 
 
 @row
@@ -1935,6 +2124,25 @@ def njm_downloads_variant_files(t):
                                  "filters/F/I/components/qe/qe_a.dat": "Wavelength,Transmission\n4000,0.5\n5000,0.5\n"})
     assert njm.download_components("F", "I") == 1
     assert (t.tmp / "F/I/components/qe/qe_a.dat").exists()
+    # Downloaded again, the installed file is kept; a component installed as a link out of the set is refused.
+    manifest["components"] = {"filter": {"g": "components/filter/g.dat"}}
+    njm.session.files["filters/F/I/manifest.json"] = json.dumps(manifest)
+    put(t.tmp / "elsewhere", {"g.dat": CURVE})
+    (t.tmp / "F/I/components/filter").mkdir()
+    (t.tmp / "F/I/components/filter/g.dat").symlink_to(t.tmp / "elsewhere" / "g.dat")
+    asked = len(njm.session.calls)
+    with pytest.raises(RuntimeError, match="1 component files of F/I were not downloaded:\n  "
+                                           "components/filter/g.dat: resolves outside the instrument directory"):
+        njm.download_components("F", "I")
+    assert njm.session.calls[asked:] == ["filters/F/I/manifest.json"]
+    # NJM stops answering: the components after the one that failed are not asked for.
+    manifest = {"facility": "F", "instrument": "J", "bands": ["g"],
+                "components": {"filter": {"g": "components/filter/g.dat"}, "qe": {"*": "components/qe/qe.dat"}}}
+    njm.session.files.update({"filters/F/J/manifest.json": json.dumps(manifest),
+                              "filters/F/J/components/filter/g.dat": requests.ConnectionError("no answer")})
+    with pytest.raises(RuntimeError, match="1 component files of F/J were not downloaded"):
+        njm.download_components("F", "J")
+    assert not [c for c in njm.session.calls if c.endswith("qe/qe.dat")]
 
 
 @row
@@ -2049,6 +2257,11 @@ def catalogue_files_skip_unserved_and_report_unreadable(t):
         assert grabber.download_catalogue_files("Fac", "Cam") == []
     assert "info.json for Fac/Cam was not saved" in t.caplog.text
     assert "properties.json" not in t.caplog.text  # not served (404): skipped quietly
+    grabber.session.files["filters/Fac/Cam/info.json"] = '{"bands": ["g"]}'  # JSON, but not NJM's form
+    t.caplog.clear()
+    with t.caplog.at_level(logging.WARNING):
+        assert grabber.download_catalogue_files("Fac", "Cam") == []
+    assert "info.json for Fac/Cam was not saved beside its curves (not an NJM info.json)" in t.caplog.text
 
 
 @default_svo_row
@@ -2070,10 +2283,21 @@ def manifest_is_none_only_when_not_served(t):
 
 @default_svo_row
 def atmosphere_is_false_only_when_not_served(t):
-    grabber = njm_filters(t, t.tmp, {"atmospheres/down/manifest.json": 500}, tags=True)
+    served = AtmosphereGrid("paranal", [{"airmass": 1.2, "pwv": 2.5, "file": "am.dat"}]).to_dict()
+    grabber = njm_filters(t, t.tmp, {"atmospheres/down/manifest.json": 500,
+                                     "atmospheres/paranal/manifest.json": json.dumps(served),
+                                     "atmospheres/paranal/am.dat": CURVE}, tags=True)
     assert grabber.download_atmosphere(str(t.tmp), "nowhere") is False
     with pytest.raises(requests.HTTPError, match="500"):
         grabber.download_atmosphere(str(t.tmp), "down")
+    assert grabber.download_atmosphere(str(t.tmp), "paranal", "am.dat") is True
+    assert json.loads((t.tmp / "paranal" / "manifest.json").read_text()) == served
+    assert (t.tmp / "paranal" / "am.dat").read_text() == CURVE
+    asked = len(grabber.session.calls)
+    assert grabber.download_atmosphere(str(t.tmp), "paranal", "am.dat") is True  # the manifest only
+    assert grabber.session.calls[asked:] == ["atmospheres/paranal/manifest.json"]
+    grabber._available = False  # an unavailable grabber lists and fetches no atmosphere
+    assert grabber.list_atmosphere_sites() == [] and grabber.download_atmosphere(str(t.tmp), "paranal") is False
 
 
 @default_svo_row
@@ -2205,6 +2429,10 @@ def failed_facility_listing_is_raised_and_not_cached_as_empty(t):
         b'<?xml version="1.0"?><VOTABLE version="1.3" xmlns="http://www.ivoa.net/xml/VOTable/v1.3">'
         b'<RESOURCE><INFO name="QUERY_STATUS" value="ERROR">none</INFO></RESOURCE></VOTABLE>')
     assert client.facility_filter_ids("GAIA") == []
+    assert client.get_filter("GAIA/GAIA3.G") is None
+    asked = len(session.calls)
+    assert client.facility_filter_ids("GAIA") == [] and client.get_filter("GAIA/GAIA3.G") is None
+    assert len(session.calls) == asked  # an answer, even an empty one, is asked for once
 
 
 @default_svo_row
@@ -2605,6 +2833,14 @@ def filters_info_describes_curves_installed_under_other_band_names(t):
     pivots = catalogue.properties("PLANCK", "HFI")["bands"]
     assert {band: record["WavelengthPivot"] for band, record in pivots.items()} == {
         "100GHz": 30035700.0, "857GHz": 3527564.0}
+    # Without an info.json that matches them by FilterID, the records keep NJM's band names.
+    served = catalogue._instrument_file
+    for unmatched in (raising(CatalogueError("info.json is not cached and NJM is unreachable")),
+                      lambda *args, **kwargs: {"bands": {"100_svo": {"curve": {}}}}):
+        t.mp.setattr(catalogue, "_instrument_file", lambda fac, inst, kind, *, refresh, unmatched=unmatched: (
+            unmatched() if kind == "info" else served(fac, inst, kind, refresh=refresh)))
+        assert {band: record["WavelengthPivot"] for band, record in
+                catalogue.properties("PLANCK", "HFI")["bands"].items()} == {"100": 30013450.0, "857": 3525232.0}
 
 
 @row
@@ -2802,6 +3038,28 @@ def svo_may_complete_a_set_njm_wrote_nothing_into(t):
     assert (directory / "g.dat").read_text() == (directory / "r.dat").read_text() == SVO_CURVE
 
 
+@row
+def a_set_installed_under_another_spelling_is_completed_in_place_and_a_partial_mirror_is_not_mixed(t):
+    bundled(t)
+    installed = write_set(t.tmp / "New_Facility" / "NewCamera", ["r"], manifest_bands=["g", "r"])
+    saved = []
+
+    def download_into(directory, bands, expected=()):
+        saved.append((directory, sorted(bands)))
+        put(directory, {"g.dat": CURVE})
+
+    library = library_with(t.tmp, NJM_DOWN, new_camera_svo(download_into=download_into))
+    assert library.published("NewFacility", "NewCamera") == installed and saved == [(installed, ["g"])]
+    # NJM lists two curves and gives one, with no failure: SVO is not asked to fill in beside it.
+    def one_of_two(fac, inst, output_dir=None):
+        put(t.tmp / fac / inst, {"g.dat": CURVE})
+        return SetDownload(listed=["g.dat", "r.dat"], downloaded=1)
+
+    library.mirror = SimpleNamespace(is_available=lambda: True, _download_set=one_of_two)
+    with pytest.raises(ComponentError, match="NJM provided only part of Fac/Cam; .*NJM: the mirror has no complete set"):
+        library.published("Fac", "Cam")
+
+
 # Compose and availability
 @row
 def njm_instrument_without_manifest_is_described_not_an_error(t):
@@ -2817,6 +3075,15 @@ def njm_instrument_without_manifest_is_described_not_an_error(t):
     assert result["availability_source"] == "njm" and result["errors"] == []
     assert result["bands"] == ["G", "Grvs"] and result["detector_type"] == "photon"
     assert result["notes"][0].startswith("no component manifest")
+    # An info.json NJM fails to give is an error of the description; a manifest.json describes the set.
+    library.mirror.session.files.update({
+        "filters/GAIA/Down/Down": "G.dat\n", "filters/GAIA/Down/info.json": 503,
+        "filters/GAIA/Served/manifest.json": json.dumps({"facility": "GAIA", "instrument": "Served", "bands": ["G"]})})
+    down = library.available("GAIA", "Down")
+    assert down["availability_source"] == "njm" and down["bands"] == ["G"]
+    assert down["errors"] == ["NJM: 503 for filters/GAIA/Down/info.json"]
+    served = library.available("GAIA", "Served")
+    assert (served["availability_source"], served["bands"], served["errors"]) == ("njm", ["G"], [])
 
 
 # ======================================================================
@@ -2872,6 +3139,11 @@ def a_silent_outage_is_checked_and_reported_once_per_process(t):
     with pytest.raises(requests.ConnectionError, match="not asked again for 5 minutes"):
         grabbers[2]._get("https://data.nialljmiller.com/sed_tools/index.json")
     assert len(session.calls) == 1
+    # A grabber that found NJM down lists and saves nothing, and asks it nothing.
+    down = grabbers[0]
+    assert down.discover_facilities() == [] and down.discover_instruments("Fac") == []
+    assert down.download_catalogue_files("Fac", "Cam") == [] and down.download_filters("Fac", "Cam") == 0
+    assert "[njm] Mirror not available" in t.capsys.readouterr().out and len(session.calls) == 1
 
 
 @row
@@ -2908,6 +3180,19 @@ def a_reachable_mirror_is_checked_once_and_its_ssl_fallback_is_kept(t):
     assert calls == [("HEAD", True), ("HEAD", False)]  # the second grabber asked nothing
     assert second.session.verify is False  # and skips the certificate check as the first does
     assert t.caplog.text.count("could not be verified") == 1
+    # Without the certificate check NJM fails too: it is down, and why is said in a few plain words.
+    from sed_tools.njm_mirror import plain_reason
+
+    filters_njm._STATE.reset()
+    handshake = requests.exceptions.SSLError("HTTPSConnectionPool(host='data.nialljmiller.com', port=443): Max "
+                                             "retries exceeded (Caused by SSLError('handshake failure'))")
+    t.mp.setattr(filters_njm.requests, "Session",
+                 lambda: SimpleNamespace(headers={}, verify=True, head=raising(handshake)))
+    with t.caplog.at_level(logging.WARNING):
+        assert not NJMFilterGrabber(base_dir=str(t.tmp)).is_available()
+    assert "is unavailable (its certificate or TLS handshake failed)" in t.caplog.text
+    assert plain_reason(requests.ReadTimeout("HTTPSConnectionPool(host='data.nialljmiller.com', port=443): "
+                                             "Read timed out. (read timeout=10)")) == "it did not answer in time"
 
 
 @row
@@ -2923,6 +3208,8 @@ def an_error_answer_to_one_catalogue_is_not_an_outage_for_the_next(t):
         with pytest.raises(CatalogueError, match="Cannot fetch index.json"):
             FilterCatalogue(t.tmp / "filters", mirror=mirror(get)).index()
     assert len(asked) == 2
+    with pytest.raises(CatalogueError, match="NJM served an unreadable index.json: no 'filters' section"):
+        FilterCatalogue(t.tmp / "filters", mirror=mirror(lambda url, **kwargs: Resp('{"generated": "x"}'))).index()
 
 
 # Installed curves are checked against NJM only when there is a reason
@@ -2934,9 +3221,28 @@ def a_retry_after_a_partial_download_fetches_only_what_is_missing(t):
     first = njm_filters(t, t.tmp / "filters", partial)
     assert first._download_set("Fac", "Cam").curve_failures == ["r.dat: 404 for filters/Fac/Cam/r.dat"]
     assert InstrumentManifest.load(f"{first.base_dir}/Fac/Cam").bands == ["g", "r"]
+    with pytest.raises(RuntimeError, match="NJM download of Fac/Cam is incomplete; run again to retry:\n  r.dat: 404"):
+        first.download_filters("Fac", "Cam")
+    assert first.download_filters("Fac", "Nothing") == 0
+    assert "[njm] No filters found for Fac/Nothing" in t.capsys.readouterr().out
     retry = njm_filters(t, t.tmp / "filters", fac_cam_set())
     assert retry._download_set("Fac", "Cam").downloaded == 1
     assert curves_requested(retry.session) == ["r.dat"]
+
+
+@row
+def a_download_replaces_a_copy_that_is_not_text_and_says_which_types_are_assumed(t):
+    served = fac_cam_set()
+    served["filters/Fac/Cam/g.dat"] = "Wavelength,Transmission\n4000,0\n5000,1\n6000,0\n"  # no DetectorType
+    (put(t.tmp / "filters" / "Fac" / "Cam", {}) / "g.dat").write_bytes(b"\xff\xfe\x00\x01")
+    grabber = njm_filters(t, t.tmp / "filters", served, tags=True)
+    grabber._metadata_client = SVOClient()  # SVO lists nothing like it
+    with t.caplog.at_level(logging.WARNING):
+        assert grabber.download_filters("Fac", "Cam") == 2
+    assert "replaced g.dat with NJM's copies, which differ" in t.caplog.text
+    assert ("[warn] g.dat: detector type unverified, assuming energy (no SVO filter with band 'g' under facility 'Fac')"
+            in t.capsys.readouterr().out)
+    assert read_filter_header(t.tmp / "filters" / "Fac" / "Cam" / "g.dat")["DetectorTypeSource"] == SOURCE_ASSUMED
 
 
 # Every old spelling still works as input to the API and the CLI
@@ -2991,6 +3297,13 @@ def the_shipped_catalogue_names_each_instrument_as_njm_does(t):
     shipped = load_instrument_catalogue()
     for _, (fac, inst) in LEGACY.values():
         assert inst in shipped[fac]["instruments"], f"{fac}/{inst}"
+    with pytest.raises(ValueError, match="expected a mapping of facilities"):
+        instrument_catalogue(["GAIA"])
+    # SVO bands are kept only for an SVO instrument the record claims.
+    record = {"svo_instruments": ["GAIA/GAIA3"], "bands": ["G", "BP"],
+              "svo_bands": {"GAIA/GAIA3": ["G"], "GAIA/GAIA2": ["Gbp=BP"]}}
+    assert instrument_catalogue({"GAIA": {"instruments": {"GAIA": record}}})["GAIA"]["instruments"]["GAIA"][
+        "svo_bands"] == {"GAIA/GAIA3.G": "G"}
 
 
 FETCH_INFO_AND_COMPOSE = {f"fetch_info_and_compose_take_the_old_spelling_{name}": spellings
@@ -3049,6 +3362,8 @@ def fetch_and_compose_print_the_mesa_instrument_line(t):
     assert t.capsys.readouterr().out == f"\nThe MESA colors inlist path for this is:\n    instrument = '{installed}'\n"
     product = Filters.compose("Gemini/GMOS-N", "filter", filter_root=root)
     assert t.capsys.readouterr().out.endswith(f"\nThe MESA colors inlist path for this is:\n    instrument = '{product}'\n")
+    assert Filters.fetch("Gemini", "GMOS-N", filter_root=root, components="filter") == product  # fetched, composed
+    assert t.capsys.readouterr().out.endswith(f"    instrument = '{product}'\n")
 
 
 @row
@@ -3396,6 +3711,50 @@ def download_stops_at_first_unreachable_filter(t):
     assert len(session.calls) == 1
 
 
+@default_svo_row
+def svo_pages_are_read_for_their_own_links_and_rows_only(t):
+    from bs4 import BeautifulSoup
+
+    browse = "index.php?mode=browse"
+    tip = "return overlib('<table><tr><td class=helptd>Gaia&#39;s passbands</td></tr></table>')"
+    pages = {  # by what is asked: the facilities, an instrument's filters, and a facility's instruments (none)
+        "facilities": f"""<a href="{browse}&gname=GAIA">GAIA (ESA)</a>
+            <a href="{browse}&gname=GAIA" onmouseover="{tip}">GAIA</a>
+            <a href="{browse}&gname=2MASS&gname2=2MASS">2MASS/2MASS</a> <a href="index.php?mode=other&gname=X">X</a>
+            <a href="{browse}">every facility</a> <a href="{browse}&gname=Bessell"></a>""",
+        "filters": """<table></table><table><tr><th>Filter ID</th><th>Facility</th><th>Instrument</th><th>Text</th></tr>
+            <tr><td><a href="x">Filter ID</a></td><td>-</td><td>-</td><td>-</td></tr>
+            <tr><td>no link</td><td>-</td><td>-</td><td>-</td></tr><tr><td><a href="x"> </a></td><td>-</td></tr>
+            <tr><td><a href="x">GAIA/GAIA3.G</a></td><td>GAIA</td><td>GAIA</td><td>G, DR3</td></tr></table>""",
+        "instruments": "<html></html>"}
+    asked = []
+
+    def page(params):
+        asked.append(params)
+        return BeautifulSoup(pages["filters" if "gname2" in params else "instruments" if "gname" in params
+                                   else "facilities"], "html.parser")
+
+    browser = SVOFilterBrowser(base_dir=str(t.tmp), session=SVOSession())
+    t.mp.setattr(browser, "_fetch_index", page)
+    facilities = [Facility("Bessell", "Bessell", ""), Facility("GAIA", "GAIA", "Gaia's passbands")]
+    assert browser.list_facilities() == facilities and browser.list_facilities() == facilities
+    assert browser.list_filters("GAIA", "GAIA3") == [FilterRow("GAIA/GAIA3.G", "G", "GAIA", "GAIA", "G, DR3")]
+    assert len(asked) == 3  # the facilities once
+    browser.download_filters([])
+    assert t.capsys.readouterr().out == "No filters to download.\n"
+    with pytest.raises(RuntimeError, match="Failed to fetch SVO index: 404"):  # an error answer, not an outage
+        SVOFilterBrowser(base_dir=str(t.tmp), session=Session({})).list_facilities()
+
+
+@default_svo_row
+def an_svo_curve_without_a_detector_type_is_saved_as_assumed_energy(t):
+    browser = svo_browser(t.tmp, {("Fac", "Cam"): ["g"]}, detector=None)
+    browser.download_filters(browser.list_filters("Fac", "Cam"))
+    assert "[warn] SVO gives no DetectorType for Fac/Cam.g; assuming energy" in t.capsys.readouterr().out
+    header = read_filter_header(t.tmp / "Fac" / "Cam" / "g.dat")
+    assert (header["DetectorType"], header["DetectorTypeSource"]) == (ENERGY, SOURCE_ASSUMED)
+
+
 # ======================================================================
 # Curves stay readable by released MESA colors, 25.12.1 and 26.4.1
 #
@@ -3558,6 +3917,7 @@ RELEASED_MESA_CHECK = {f"released_mesa_check_matches_the_released_reader_{name}"
     "with_a_blank_line_before_the_column_row": ("\nWavelength,Transmission\n1,2\n", False),
     "with_a_blank_line_at_the_end": ("Wavelength,Transmission\n1,2\n\n", False),
     "with_a_blank_line_between_samples": ("Wavelength,Transmission\n1,2\n\n3,4\n", False),
+    "of_one_comment_line_and_no_samples": ("# c\n", True),
 }.items()}
 
 
@@ -3699,6 +4059,10 @@ def label_check_finds_the_same_curve_served_with_two_detector_types(t):
         (t.tmp / rel).parent.mkdir(parents=True, exist_ok=True)
         write_filter_file(t.tmp / rel, wl, [float(v) for v in transmission], detector_type=detector, source=source,
                           wavelength_unit="Angstrom")
+    # Labelled, but with no samples to compare by: a curve whose wavelengths run backwards, and a dark one.
+    for name, wavelength, transmission in (("back", wl[::-1], tr), ("dark", wl, 0 * tr)):
+        write_filter_file(t.tmp / "Misc" / "APASS" / f"{name}.dat", wavelength, transmission, detector_type=ENERGY,
+                          source=SOURCE_SVO, wavelength_unit="Angstrom")
     component = t.tmp / "Misc" / "APASS" / "components" / "filter" / "g.dat"   # components keep their own labels
     component.parent.mkdir(parents=True)
     write_filter_file(component, wl, tr, detector_type=ENERGY, source="component")
@@ -3755,6 +4119,13 @@ def keys_from_newer_writers_are_kept(t):
 def invalid_metadata_keys_are_refused(t):
     with pytest.raises(ValueError):
         format_metadata_field({"bad key": "x"})
+    with pytest.raises(ValueError, match="Unknown filter header key: Colour"):
+        write_filter_file(t.tmp / "c.dat", [1.0, 2.0], [1.0, 1.0], detector_type=PHOTON, source="user",
+                          extra={"Colour": "red"})
+    assert not (t.tmp / "c.dat").exists()
+    assert [fm.conversion_power(v) for v in (None, "1/lambda", "lambda", "lambda^2")] == [0, -1, 1, 2]
+    with pytest.raises(ValueError, match="Unknown DetectorTypeConversion: 'sqrt'"):
+        fm.conversion_power("sqrt")
 
 
 @row
@@ -3769,6 +4140,12 @@ def curve_without_column_row_is_never_given_one(t):
     path.write_bytes(b"# DetectorType: photon\n# DetectorTypeSource: assumed\n" + raw)  # tagged by 0.3.0
     assert migrate_filter_file(path)
     assert path.read_bytes() == raw
+    # SVO resolves its type, and the file is still left as it is.
+    band = put(t.tmp / "Fac" / "Cam", {"g.dat": raw.decode()}) / "g.dat"
+    client = SVOClient({"Fac/Cam.g": svo_record("Fac/Cam.g", PHOTON, [3830.0, 4000.0], [0.0, 0.5])})
+    result = tag_filter_file(band, client=client)
+    assert (result.detector_type, result.source, result.changed) == (PHOTON, SOURCE_SVO_MATCH, False)
+    assert result.note == "no column-name row to hold metadata; file left as it is" and band.read_bytes() == raw
 
 
 @row
@@ -3942,3 +4319,22 @@ def spectrum_accepts_explicit_unit(t):
     np.testing.assert_allclose(spec.wavelength, [500.0, 600.0])
     with pytest.raises(ValueError, match="Unknown wavelength unit 'nm \\(air\\)': declare WavelengthUnit as"):
         load_spectrum(str(path), wavelength_unit="nm (air)")
+    # Blank lines are skipped; a "#" line without a key is kept as a comment, and a key may have no value.
+    path.write_text("# Source: lab\n# measured by hand\n# Note:\n\n500 1.0\n600 2.0\n")
+    assert load_two_column_file(str(path)) == ([500.0, 600.0], [1.0, 2.0],
+                                               {"source": "lab", "comments": ["measured by hand"], "note": ""})
+    assert infer_unit_from_values(np.array([])) == "angstrom"
+
+
+@row
+def a_band_with_no_weight_or_a_grid_of_one_wavelength(t):
+    from sed_tools.photometry import FilterCurve, band_average_flux_lambda_from_arrays, band_sampling
+
+    flat = np.ones(WL.size)
+    with pytest.raises(ValueError, match="Filter transmission integrates to zero"):
+        band_average_flux_lambda_from_arrays(WL, flat, np.zeros(WL.size))
+    nothing = band_sampling(np.linspace(3000.0, 7000.0, 5), FilterCurve("z", WL, np.zeros(WL.size), {}))
+    assert (nothing.inside, nothing.outside, nothing.coarse) == (0, 0.0, 0.0) and not nothing.sampled
+    one = band_sampling(np.array([5000.0]), FilterCurve("g", WL, gauss(5000, 300), {}))
+    assert (one.inside, one.outside, one.coarse) == (1, 1.0, 0.0) and not one.sampled
+    assert one.describe() == "1 grid wavelength where it transmits, 100% of its weight beyond the grid"
