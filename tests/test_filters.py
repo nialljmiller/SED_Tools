@@ -2411,6 +2411,29 @@ def components_go_into_the_installed_folder_from_njms_spelling_and_never_from_a_
 
 
 @default_svo_row
+def svo_instruments_are_found_by_label_and_the_ones_svo_lacks_are_named(t):
+    bundled(t, {"Fac": {"Old": {"svo_instruments": ["Fac/Gone"], "bands": ["G"], "svo_bands": {"Fac/Gone": ["G"]}},
+                        "New": {"svo_instruments": ["Fac/Cam2"], "bands": ["G"], "svo_bands": {"Fac/Cam2": ["G"]}}}})
+    unreachable = SVOUnreachableError("SVO Filter Profile Service unreachable")
+    library = library_with(t.tmp, NJM_DOWN, SimpleNamespace(
+        list_facilities=lambda: [Facility("Fac", "Fac")],
+        list_instruments=lambda key: [Instrument("Fac", "Cam2", "Camera Two"), Instrument("Fac", "Empty", "Empty")],
+        list_filters=lambda fac, inst: [FilterRow(f"{fac}/{inst}.G", "G", fac, inst, "")] if inst == "Cam2" else [],
+        download_into=raising(unreachable)))
+    assert [row.filter_id for row in library.svo_filters("Fac", "camera two")] == ["Fac/Cam2.G"]
+    with pytest.raises(ComponentError, match="^SVO instrument not found: Fac/Nope$"):
+        library.svo_filters("Fac", "Nope")
+    with pytest.raises(ComponentError) as info:
+        library.svo_filters("Fac", "Old")
+    assert str(info.value) == ("SVO lists none of the filters of Fac/Old's SVO equivalents (Fac/Gone): "
+                               "Fac/Gone: SVO instrument not found: Fac/Gone")
+    assert library.available("Fac", "Empty")["availability_source"] == "unknown"  # SVO lists no curve of it
+    with pytest.raises(ComponentError, match="^No source can provide Fac/New: .*SVO: SVO Filter Profile Service "
+                                             "unreachable$"):
+        library.published("Fac", "New")  # SVO holds New's curves under Fac/Cam2, but cannot be reached
+
+
+@default_svo_row
 def njm_atmosphere_failure_is_reported_before_its_source(t):
     library = library_with(t.tmp / "filters", SimpleNamespace(download_atmosphere=raising(
         requests.HTTPError("502 for atmospheres/paranal/manifest.json"))))
