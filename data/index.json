@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-11-25T21:11:25.772629",
+  "generated": "2026-11-26T03:30:58.323054",
   "statistics": {
     "total_models": 8,
     "complete_models": 7,
@@ -18618,7 +18618,7 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1293873,
+            "size_bytes": 1293751,
             "size_human": "1.23 MB",
             "description": "Lick Observatory (Mount Hamilton) filter collection",
             "svo_instruments": [
