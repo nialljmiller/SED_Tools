@@ -1,11 +1,11 @@
 {
   "version": "1.0",
-  "generated": "2026-11-26T03:30:58.323054",
+  "generated": "2026-11-27T22:42:37.515508",
   "statistics": {
     "total_models": 8,
     "complete_models": 7,
     "total_spectra": 24625,
-    "total_size_bytes": 110801997667,
+    "total_size_bytes": 110801998721,
     "total_size_human": "103.19 GB",
     "total_facilities": 221,
     "total_filters": 12235
@@ -36,7 +36,7 @@
       "has_lookup_table": true,
       "has_h5_bundle": true,
       "spectra_count": 448,
-      "size_bytes": 68657758,
+      "size_bytes": 68658812,
       "size_human": "65.48 MB",
       "manifest_passes": true
     },

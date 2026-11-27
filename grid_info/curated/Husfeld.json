@@ -10,7 +10,7 @@
       "url": "http://svo2.cab.inta-csic.es/theory/newov2/index.php?models=Husfeld",
       "retrieved": "spectra dated 2026-04; SVO FID list cached 2026-01-06",
       "fid_list": "source_evidence/grids/Husfeld/svo_fids.json",
-      "copy": "SVO's ASCII spectra (wavelength in Angstrom, flux in erg/cm2/s/A), cleaned by SED_Tools: header rewritten to SED_Tools' standard keys, no unit conversion (original_flux_unit flam)"
+      "copy": "SVO's ASCII spectra (wavelength in Angstrom, flux in erg/cm2/s/A), cleaned by SED_Tools: header rewritten to SED_Tools' standard keys, no unit conversion (original_flux_unit flam); 83 flux samples of 42 spectra changed on 2026-11-27 by the repair rule below (negative fluxes), every other value as SVO publishes it"
     }
   ],
   "upstream": {
@@ -65,5 +65,58 @@
   "wavelength_medium": "not stated by SVO",
   "flux_quantity": "surface flux F_lambda (SVO's column 2: FLUX (ERG/CM2/S/A))",
   "default_variant": "Husfeld_yhe_0p10",
-  "default_variant_note": "flux_cube.bin at the top level is a byte copy of this variant's cube, for clients that read only the top-level cube: SED_Tools 0.4.1's SED.local, tested on 30 Oct 2026 (whether MESA colors reads it was not tested). Y(He) = 0.10 is a choice, not a fact of the grid: it is the value nearest the solar helium abundance by number (about 0.09), but SVO's page says only 'value for the Helium abundance', not whether Y(He) is a number or a mass fraction (by mass the nearest would be 0.25). Nill to confirm. The top-level cube served before 29 Oct 2026 was empty."
+  "default_variant_note": "flux_cube.bin at the top level is a byte copy of this variant's cube, for clients that read only the top-level cube: SED_Tools 0.4.1's SED.local, tested on 30 Oct 2026 (whether MESA colors reads it was not tested). Y(He) = 0.10 is a choice, not a fact of the grid: it is the value nearest the solar helium abundance by number (about 0.09), but SVO's page says only 'value for the Helium abundance', not whether Y(He) is a number or a mass fraction (by mass the nearest would be 0.25). Nill to confirm. The top-level cube served before 29 Oct 2026 was empty.",
+  "repairs": {
+    "applied": "2026-11-27",
+    "decision": "Niall Miller, 27 Nov 2026: set tiny negatives to 0, repair the two",
+    "why": "SVO's Husfeld files (identical to NJM's copy, value for value, checked 2026-11-25) hold negative fluxes, which an emergent flux cannot have. No publisher documentation explaining them was found.",
+    "rule": {
+      "numerical_zero": "negative with |F| <= 2.220446e-16 * max|F| of the spectrum: set to 0",
+      "significant": "window of samples negative or off by more than 1% from the interpolation between the nearest valid neighbours along the first of ['yhe', 'logg', 'teff'] that has them: replaced by that interpolation"
+    },
+    "numerical_zeros": {
+      "samples": 41,
+      "spectra": 40,
+      "wavelengths_A": [
+        29.979,
+        37.474
+      ],
+      "published_range": [
+        -2.12505e-29,
+        -9.93883e-59
+      ],
+      "set_to": 0.0,
+      "threshold": "float64 machine epsilon (2.2e-16) times the spectrum's largest |flux|: a value below it is beneath the spectrum's own floating-point resolution. These values are at most 1.5e-40 of their spectrum's peak; the Paschen alpha negatives are 5.0e-7 to 4.0e-5 of theirs."
+    },
+    "repaired_windows": [
+      {
+        "spectrum": "Husfeld_fid164.txt",
+        "axis": "yhe",
+        "axis_value": 0.1,
+        "from_A": 18748.0,
+        "to_A": 18754.0,
+        "samples": 21,
+        "replaced_by": "0.625 x Husfeld_fid163.txt (yhe 0.01) + 0.375 x Husfeld_fid165.txt (yhe 0.25)"
+      },
+      {
+        "spectrum": "Husfeld_fid342.txt",
+        "axis": "yhe",
+        "axis_value": 0.5,
+        "from_A": 18748.0,
+        "to_A": 18754.0,
+        "samples": 21,
+        "replaced_by": "0.5714 x Husfeld_fid341.txt (yhe 0.35) + 0.4286 x Husfeld_fid343.txt (yhe 0.7)"
+      }
+    ],
+    "note": "Both windows are a sign-flipping oscillation in the Paschen alpha line core (18,751 A) of a single model; every grid neighbour has a smooth positive emission bump there. The window is the run of samples around the negatives that are negative or differ by more than 1 % from the interpolation between the model's two Y(He) neighbours, and it is replaced by that interpolation.",
+    "not_repaired": [
+      "Husfeld_fid211.txt (55,000 K, log g 5.0, Y(He) 0): its Paschen alpha core is flat-topped at 2.46 times the continuum, against 1.33-1.47 in its neighbours, but it holds no negative flux; left as published",
+      "Husfeld_fid164.txt: a single-sample positive spike at 4,860.52 A (H beta), about 2.1 times the expected value, not next to any negative sample; left as published"
+    ],
+    "record": "source_evidence/grids/Husfeld/spectrum_repairs.json (every changed sample: published and new value)",
+    "originals": [
+      "source_evidence/grids/Husfeld/svo-originals/ (SVO's files for the 42 changed spectra, fetched 2026-11-25 05:35-05:44 UTC from svo2.cab.inta-csic.es/theory/newov2/ssap.php)",
+      "backups/20261127T220540Z-spectrum-repairs (NJM's copies before the repair)"
+    ]
+  }
 }
