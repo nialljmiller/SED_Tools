@@ -1,14 +1,14 @@
 {
   "version": "1.0",
-  "generated": "2026-11-27T22:42:37.515508",
+  "generated": "2026-11-27T23:41:18.412324",
   "statistics": {
     "total_models": 8,
     "complete_models": 7,
     "total_spectra": 24625,
-    "total_size_bytes": 110801998721,
+    "total_size_bytes": 110801999002,
     "total_size_human": "103.19 GB",
     "total_facilities": 221,
-    "total_filters": 12235
+    "total_filters": 12234
   },
   "models": [
     "Husfeld",
@@ -36,7 +36,7 @@
       "has_lookup_table": true,
       "has_h5_bundle": true,
       "spectra_count": 448,
-      "size_bytes": 68658812,
+      "size_bytes": 68659093,
       "size_human": "65.48 MB",
       "manifest_passes": true
     },
@@ -15287,10 +15287,9 @@
           },
           "NSFCam": {
             "name": "NSFCam",
-            "filter_count": 33,
+            "filter_count": 32,
             "filters": [
               "BRG",
-              "BRG_inband",
               "Blk",
               "CO",
               "CONT",
@@ -15324,10 +15323,10 @@
               "S23"
             ],
             "published_paths": {
-              "filter": 33
+              "filter": 32
             },
             "detector_types": {
-              "photon": 33
+              "photon": 32
             },
             "separate_components": {
               "filter": 29
@@ -15335,8 +15334,8 @@
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 1410379,
-            "size_human": "1.35 MB",
+            "size_bytes": 1351925,
+            "size_human": "1.29 MB",
             "description": "IRTF NSFCam 1-5 micron camera: broad, MKO-NIR and narrow-band filters",
             "svo_instruments": [
               "IRTF/NSFCam"
@@ -15407,14 +15406,12 @@
             "detector_types": {
               "photon": 22
             },
-            "separate_components": {
-              "filter": 1
-            },
+            "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 122539,
-            "size_human": "119.67 KB",
+            "size_bytes": 123378,
+            "size_human": "120.49 KB",
             "description": "ISOCAM (ISO camera) SW1-SW11 and LW1-LW10 broad-band filters",
             "svo_instruments": [
               "ISO/ISO"
@@ -27765,20 +27762,17 @@
               "band865"
             ],
             "published_paths": {
-              "filter": 3,
-              "filter+optics+qe": 8
+              "filter+optics+qe": 11
             },
             "detector_types": {
               "energy": 11
             },
-            "separate_components": {
-              "filter": 3
-            },
+            "separate_components": {},
             "has_component_manifest": true,
             "properties": "properties.json",
             "info": "info.json",
-            "size_bytes": 221283,
-            "size_human": "216.10 KB",
+            "size_bytes": 227721,
+            "size_human": "222.38 KB",
             "description": "SeaWiFS (Sea-viewing Wide Field-of-view Sensor) bands 412-865 nm",
             "svo_instruments": [
               "SeaStar/SeaWiFS"

@@ -135,5 +135,13 @@
   "file": "source_evidence/moris/redigitised/curves/z.dat",
   "url": "https://doi.org/10.1086/659636",
   "note": "Re-digitised from Gulbis et al. 2011, PASP 123, 461, Fig. 4, on the figure's real 300-1000 nm axis (Nill, 25 Nov 2026: \"Re-digitise the figure\"); the curve describes MORIS as it was in 2011. It replaces SVO's record, whose wavelengths were the digitiser's 0-10000 axis, not Angstrom (SVO's files are kept in source_evidence/moris/svo-originals/). Incomplete: the figure ends at about 1000 nm, where this curve still transmits; it ends at its last drawn point."
+ },
+ {
+  "set": "IRTF/NSFCam",
+  "band": "BRG",
+  "whole_file": true,
+  "file": "source_evidence/nsfcam/BRG_inband_svo.dat",
+  "url": "https://svo2.cab.inta-csic.es/theory/fps/fps.php?ID=IRTF/NSFCam.Brg",
+  "note": "Served from SVO's record IRTF/NSFCam.Brg, SVO's in-band copy (Nill, 27 Nov 2026: \"Only serve SVO's in-band\"). Its 82 rows are IRTF's own NSFCam Br-gamma scan (nsfcam_brg_trans.dat) from 2.1250 to 2.2007 um, value for value, where the transmission has fallen to 0.001 at both ends. IRTF's filter page says \"Both the H band filter and the Brackett gamma filter have a blocker sandwiched with them in the filter wheel; for these filters we give only the tranmission profiles including the blocker.\" IRTF's full Br-gamma scan nevertheless transmits up to 0.83 at 4-6 um, as IRTF's scans of the CO (0.84) and H2 1-0 S(1) (0.50) filters without the PK50 blocker do, while IRTF's H scan with its sandwiched blocker transmits nothing beyond 2.5 um. Within the detector's 1-6 um range the 4-6 um leak held 97 % of the scan's integrated transmission and put its pivot at 4.97 um. This indicates, without confirmation from IRTF, that the published scan lacks its blocker. IRTF's scan as served until 27 Nov 2026 (cut at 6 um) and SVO's copy as served under the name BRG_inband are kept in backups/20261127-brg/; SVO's copy is also source_evidence/nsfcam/BRG_inband_svo.dat, and IRTF's file source_evidence/nsfcam/nsfcam_brg_trans.dat."
  }
 ]
