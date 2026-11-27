@@ -5,6 +5,9 @@ Each entry gives a band's corrected recipe, for its manifest's ``published_bands
 wrong too, for its ``Components`` header (with ``ComponentsSource``). A filter component that points at the band's own
 curve stays only while that curve is filter-only (a curve that holds more is no filter piece). The change goes to the
 set's provenance record (filter_expansion/provenance/<Facility>__<Instrument>.json, bands.<band>.cleaning), which info.json shows.
+An entry with ``"manifest": false`` corrects only the header (a hosted band the manifest does not list). An entry with
+``"published"`` and no ``band`` corrects the set-level ``published`` record ({"components": ..., "source": ...}).
+``decision`` names who decided and when (default: Nill, 25 Nov 2026, Q33).
 
 ``problems`` is the class guard filter_info.check_manifests runs:
 - a manifest whose ``published`` source is ``assumed`` whose ``published_bands`` entry disagrees with a header that
@@ -111,11 +114,19 @@ def main(argv=None):
         comp_filters = (manifest.get("components") or {}).get("filter")
         headers = []
         for e in entries:
+            decision = e.get("decision", "Nill, 25 Nov 2026, Q33")
+            if "band" not in e:
+                old_set = dict(manifest.get("published") or {})
+                manifest["published"] = {**old_set, **e["published"]}
+                print(f"{set_name}: published {old_set!r} -> {manifest['published']!r}")
+                continue
             band, recipe = e["band"], e["recipe"]
-            old = published.get(band)
-            published[band] = recipe
+            in_manifest = e.get("manifest", True)
+            old = published.get(band) if in_manifest else None
+            if in_manifest:
+                published[band] = recipe
             dropped = None
-            if comp_filters is not None and comp_filters.get(band) == f"{band}.dat" and recipe != "filter":
+            if in_manifest and comp_filters is not None and comp_filters.get(band) == f"{band}.dat" and recipe != "filter":
                 dropped = comp_filters.pop(band)
             curve = filters / set_name / f"{band}.dat"
             fields = read_filter_header(curve)
@@ -123,14 +134,20 @@ def main(argv=None):
                 if fields.get("Components") != recipe or fields.get("ComponentsSource") != e["components_source"]:
                     headers.append((curve, {**fields, "Components": recipe, "ComponentsSource": e["components_source"]},
                                     fields.get("Components")))
-            print(f"{set_name}/{band}: published_bands {old!r} -> {recipe!r}"
+            print(f"{set_name}/{band}: "
+                  + (f"published_bands {old!r} -> {recipe!r}" if in_manifest else "not in the manifest")
                   + (f"; header {fields.get('Components')!r} -> {recipe!r} ({e['components_source']})" if e.get("header") else "")
                   + (f"; own-curve filter component {dropped!r} removed" if dropped else ""))
             fac, inst = set_name.split("/")
+            was = [f"{old or 'none'} in the manifest"] if in_manifest else []
+            if e.get("header"):
+                was.append(f"{fields.get('Components') or 'none'} in the header")
+            if dropped:
+                was.append(f"the manifest listed this curve as its own filter component")
             provenance.setdefault(f"{fac}__{inst}", {})[band] = (
-                f"Components {recipe} (was {old or 'none'} in the manifest"
-                + (f", {fields.get('Components') or 'none'} in the header" if e.get("header") else "")
-                + f"): {e['evidence']} (Nill, 25 Nov 2026, Q33).")
+                f"Components {recipe} (was {', '.join(was)}): {e['evidence']} ({decision}).")
+        if comp_filters is not None and not comp_filters:
+            del manifest["components"]["filter"]   # no filter piece left
         if args.apply:
             target = args.apply / path.relative_to(args.data_dir.parent)
             target.parent.mkdir(parents=True, exist_ok=True)

@@ -154,5 +154,72 @@
   "band": "Dichr_950nm",
   "recipe": "optics+qe+instrument",
   "evidence": "the re-digitised curve's header: Gulbis et al. 2011, Fig. 4, panel (a), 'Response with no filter'"
+ },
+ {
+  "set": "ISO/ISO",
+  "band": "LW1",
+  "recipe": "filter+qe",
+  "evidence": "the ISO Handbook Vol. II (CAM), Appendix A, defines ISOCAM's spectral transmission as R(lambda) = T(lambda) x Q(lambda), the filter transmission times the detector quantum efficiency, and says 'No transmission curve for the lenses has been included' (http://iso.esac.esa.int/manuals/HANDBOOK/cam_hb/cam_hb.pdf, read 2026-11-27, copy in source_evidence/components-20261127/cam_hb.pdf); the filter transmission alone is only in the CAL-G file CCGLWSPEC, which is not public, so NJM holds no filter-only curve of LW1",
+  "decision": "Nill, 27 Nov 2026, 'Correct the labels'"
+ },
+ {
+  "set": "SeaStar/SeaWiFS",
+  "band": "band490",
+  "recipe": "filter+optics+qe",
+  "evidence": "NASA OBPG's table seawifs_rsrs.txt ('Spectral response functions for SeaWiFS', https://oceandata.sci.gsfc.nasa.gov/rsr_tables/images/rsr/seawifs_rsrs.txt) gives each band's whole-instrument relative spectral response; Barnes et al. 1994, SeaWiFS Technical Report Series Vol. 23 (NASA TM 104566, 'SeaWiFS Prelaunch Radiometric Calibration and Spectral Characterization', https://oceancolor.gsfc.nasa.gov/images/resources/seawifs/PreLVol23.pdf), built the band responses from 'measurements of individual parts in the instrument's optical train' (interference filter, mirrors, dichroics, broadband filters, photodiode); no filter-only curve is published as data (copies in source_evidence/components-20261127/)",
+  "decision": "Nill, 27 Nov 2026, 'Correct the labels'"
+ },
+ {
+  "set": "SeaStar/SeaWiFS",
+  "band": "band670",
+  "recipe": "filter+optics+qe",
+  "evidence": "NASA OBPG's table seawifs_rsrs.txt ('Spectral response functions for SeaWiFS', https://oceandata.sci.gsfc.nasa.gov/rsr_tables/images/rsr/seawifs_rsrs.txt) gives each band's whole-instrument relative spectral response; Barnes et al. 1994, SeaWiFS Technical Report Series Vol. 23 (NASA TM 104566, 'SeaWiFS Prelaunch Radiometric Calibration and Spectral Characterization', https://oceancolor.gsfc.nasa.gov/images/resources/seawifs/PreLVol23.pdf), built the band responses from 'measurements of individual parts in the instrument's optical train' (interference filter, mirrors, dichroics, broadband filters, photodiode); no filter-only curve is published as data (copies in source_evidence/components-20261127/)",
+  "decision": "Nill, 27 Nov 2026, 'Correct the labels'"
+ },
+ {
+  "set": "SeaStar/SeaWiFS",
+  "band": "band765",
+  "recipe": "filter+optics+qe",
+  "evidence": "NASA OBPG's table seawifs_rsrs.txt ('Spectral response functions for SeaWiFS', https://oceandata.sci.gsfc.nasa.gov/rsr_tables/images/rsr/seawifs_rsrs.txt) gives each band's whole-instrument relative spectral response; Barnes et al. 1994, SeaWiFS Technical Report Series Vol. 23 (NASA TM 104566, 'SeaWiFS Prelaunch Radiometric Calibration and Spectral Characterization', https://oceancolor.gsfc.nasa.gov/images/resources/seawifs/PreLVol23.pdf), built the band responses from 'measurements of individual parts in the instrument's optical train' (interference filter, mirrors, dichroics, broadband filters, photodiode); no filter-only curve is published as data (copies in source_evidence/components-20261127/)",
+  "decision": "Nill, 27 Nov 2026, 'Correct the labels'"
+ },
+ {
+  "set": "SeaStar/SeaWiFS",
+  "band": "band490_norm",
+  "recipe": "filter+optics+qe",
+  "header": true,
+  "components_source": "inferred",
+  "manifest": false,
+  "evidence": "SVO's record SeaStar/SeaWiFS.band490, of which this is SVO's copy, describes the curve as 'SeaStar SeaWiFS band490 RSR' and cites NASA OceanColor's RSR tables (https://oceancolor.gsfc.nasa.gov/docs/rsr/rsr_tables/), OBPG's whole-instrument responses: NASA OBPG's table seawifs_rsrs.txt ('Spectral response functions for SeaWiFS', https://oceandata.sci.gsfc.nasa.gov/rsr_tables/images/rsr/seawifs_rsrs.txt) gives each band's whole-instrument relative spectral response; Barnes et al. 1994, SeaWiFS Technical Report Series Vol. 23 (NASA TM 104566, 'SeaWiFS Prelaunch Radiometric Calibration and Spectral Characterization', https://oceancolor.gsfc.nasa.gov/images/resources/seawifs/PreLVol23.pdf), built the band responses from 'measurements of individual parts in the instrument's optical train' (interference filter, mirrors, dichroics, broadband filters, photodiode); no filter-only curve is published as data (copies in source_evidence/components-20261127/)",
+  "decision": "Nill, 27 Nov 2026, 'Correct the labels'"
+ },
+ {
+  "set": "SeaStar/SeaWiFS",
+  "band": "band670_norm",
+  "recipe": "filter+optics+qe",
+  "header": true,
+  "components_source": "inferred",
+  "manifest": false,
+  "evidence": "SVO's record SeaStar/SeaWiFS.band670, of which this is SVO's copy, describes the curve as 'SeaStar SeaWiFS band670 RSR' and cites NASA OceanColor's RSR tables (https://oceancolor.gsfc.nasa.gov/docs/rsr/rsr_tables/), OBPG's whole-instrument responses: NASA OBPG's table seawifs_rsrs.txt ('Spectral response functions for SeaWiFS', https://oceandata.sci.gsfc.nasa.gov/rsr_tables/images/rsr/seawifs_rsrs.txt) gives each band's whole-instrument relative spectral response; Barnes et al. 1994, SeaWiFS Technical Report Series Vol. 23 (NASA TM 104566, 'SeaWiFS Prelaunch Radiometric Calibration and Spectral Characterization', https://oceancolor.gsfc.nasa.gov/images/resources/seawifs/PreLVol23.pdf), built the band responses from 'measurements of individual parts in the instrument's optical train' (interference filter, mirrors, dichroics, broadband filters, photodiode); no filter-only curve is published as data (copies in source_evidence/components-20261127/)",
+  "decision": "Nill, 27 Nov 2026, 'Correct the labels'"
+ },
+ {
+  "set": "SeaStar/SeaWiFS",
+  "band": "band765_norm",
+  "recipe": "filter+optics+qe",
+  "header": true,
+  "components_source": "inferred",
+  "manifest": false,
+  "evidence": "SVO's record SeaStar/SeaWiFS.band765, of which this is SVO's copy, describes the curve as 'SeaStar SeaWiFS band765 RSR' and cites NASA OceanColor's RSR tables (https://oceancolor.gsfc.nasa.gov/docs/rsr/rsr_tables/), OBPG's whole-instrument responses: NASA OBPG's table seawifs_rsrs.txt ('Spectral response functions for SeaWiFS', https://oceandata.sci.gsfc.nasa.gov/rsr_tables/images/rsr/seawifs_rsrs.txt) gives each band's whole-instrument relative spectral response; Barnes et al. 1994, SeaWiFS Technical Report Series Vol. 23 (NASA TM 104566, 'SeaWiFS Prelaunch Radiometric Calibration and Spectral Characterization', https://oceancolor.gsfc.nasa.gov/images/resources/seawifs/PreLVol23.pdf), built the band responses from 'measurements of individual parts in the instrument's optical train' (interference filter, mirrors, dichroics, broadband filters, photodiode); no filter-only curve is published as data (copies in source_evidence/components-20261127/)",
+  "decision": "Nill, 27 Nov 2026, 'Correct the labels'"
+ },
+ {
+  "set": "SeaStar/SeaWiFS",
+  "published": {
+   "components": "filter+optics+qe",
+   "source": "original"
+  },
+  "evidence": "NASA OBPG's table seawifs_rsrs.txt ('Spectral response functions for SeaWiFS', https://oceandata.sci.gsfc.nasa.gov/rsr_tables/images/rsr/seawifs_rsrs.txt) gives each band's whole-instrument relative spectral response; Barnes et al. 1994, SeaWiFS Technical Report Series Vol. 23 (NASA TM 104566, 'SeaWiFS Prelaunch Radiometric Calibration and Spectral Characterization', https://oceancolor.gsfc.nasa.gov/images/resources/seawifs/PreLVol23.pdf), built the band responses from 'measurements of individual parts in the instrument's optical train' (interference filter, mirrors, dichroics, broadband filters, photodiode); no filter-only curve is published as data (copies in source_evidence/components-20261127/)",
+  "decision": "Nill, 27 Nov 2026, 'Correct the labels'"
  }
 ]

@@ -19,5 +19,5 @@
   },
   "bands": {},
   "evidence": [],
-  "notes": "OBPG's columns are not peak-normalised (peaks 8.2-26.2); each band is divided by its maximum. Rows with -999 dropped. Pivots agree with SVO's archived SeaWiFS records to <= 0.16 % except band865 (-0.76 %). DetectorType energy assumed."
+  "notes": "OBPG's columns are not peak-normalised (peaks 8.2-26.2); each band is divided by its maximum. Rows with -999 dropped. Pivots agree with SVO's archived SeaWiFS records to <= 0.16 % except band865 (-0.76 %). DetectorType energy assumed. Components filter+optics+qe for every band and for the set (corrected 27 Nov 2026, Nill): OBPG's table gives whole-instrument relative spectral responses, which Barnes et al. 1994 (SeaWiFS Technical Report Series Vol. 23, NASA TM 104566) built from measurements of the parts of the instrument's optical train (interference filter, mirrors, dichroics, broadband filters, photodiode). SVO's copies band490_norm, band670_norm and band765_norm are the same responses (SVO's records: 'RSR', citing OBPG's RSR tables). No filter-only curve is published as data."
 }
