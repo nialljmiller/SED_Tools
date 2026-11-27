@@ -65,7 +65,7 @@
   "wavelength_medium": "not stated by SVO",
   "flux_quantity": "surface flux F_lambda (SVO's column 2: FLUX (ERG/CM2/S/A))",
   "default_variant": "Husfeld_yhe_0p10",
-  "default_variant_note": "flux_cube.bin at the top level is a byte copy of this variant's cube, for clients that read only the top-level cube: SED_Tools 0.4.1's SED.local, tested on 30 Oct 2026 (whether MESA colors reads it was not tested). Y(He) = 0.10 is a choice, not a fact of the grid: it is the value nearest the solar helium abundance by number (about 0.09), but SVO's page says only 'value for the Helium abundance', not whether Y(He) is a number or a mass fraction (by mass the nearest would be 0.25). Nill to confirm. The top-level cube served before 29 Oct 2026 was empty.",
+  "default_variant_note": "Since 25 Nov 2026 the grid has no top-level flux_cube.bin: its top-level flux_cube_nd.bin is the all-axes cube (Teff, log g and Y(He)) of every variant, and MESA colors reads the per-variant folders Husfeld_yhe_0p00 to Husfeld_yhe_0p70, each with its own flux_cube.bin and lookup table. The default variant is the one NJM's grid comparison tables (grid_info.compare) use when Husfeld is named without a variant. From 29 Oct to 25 Nov 2026 the top-level flux_cube.bin was a byte copy of this variant's cube; the one served before 29 Oct 2026 was empty. Y(He) = 0.10 is a choice, not a fact of the grid: it is the value nearest the solar helium abundance by number (about 0.09), but SVO's page says only 'value for the Helium abundance', not whether Y(He) is a number or a mass fraction (by mass the nearest would be 0.25). Nill to confirm.",
   "repairs": {
     "applied": "2026-11-27",
     "decision": "Niall Miller, 27 Nov 2026: set tiny negatives to 0, repair the two",
