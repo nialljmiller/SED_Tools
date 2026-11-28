@@ -165,6 +165,11 @@ Removed: aliases, command lines, parameters and functions
 - ``sed-tools mesa_prepare`` no longer reads the ``fluxcube_library/`` layout
   of grids split by SED_Tools before 0.5.0; ``sed-tools rebuild`` writes the
   current one (``variants_index.csv`` and one subgrid per variant).
+- ``sed_tools.photometry.filter_weight`` and ``FilterCurve.weight`` (compute
+  the weight from the curve's transmission and ``DetectorType``), and
+  ``sed-tools grids --no-h5`` (also on ``spectra``) with
+  ``run_spectra_flow(force_bundle_h5=)``, which had no effect. ``--no-h5``
+  stays on ``rebuild`` and ``import``.
 
 Added
 ~~~~~
@@ -211,7 +216,8 @@ Added
   21 MiB (version 2: 5.6 s and about 1,400 MiB); on a grid of random spectra
   with two extra axes, its values at and between nodes are those of version 2
   to the last bit. Version 2 files (24 Nov 2026) and version 1 files (19–24
-  Nov 2026, named ``flux_cube.bin``) are still read. The next rebuild,
+  Nov 2026, written as ``flux_cube.bin``; rename one to
+  ``flux_cube_nd.bin``) are still read. The next rebuild,
   download or ``SED.fetch`` of a split grid whose ``flux_cube_nd.bin`` is
   version 1 or 2 rewrites it as version 3, with the same values to the bit,
   written in full beside the old file and then swapped in (Nill, 25 Nov
@@ -225,6 +231,11 @@ Added
   and the cube checks read only 3-axis cubes and leave it alone;
   ``spectra_not_in_cube``, ``FluxCube.from_file`` and ``cube.fileio.load``
   stop with ``ValueError`` on it.
+- **EvaluatedSED.save(path).** An interpolated spectrum (``sed(teff, logg,
+  [M/H])``) saves in the text format a grid stores its spectra in: ``# key =
+  value`` lines for Teff, log g, [M/H], the units and any extra axis, then
+  wavelength (Å) and flux (erg/s/cm²/Å). ``Spectrum.save`` writes the same
+  format, through the same writer (``sed_tools.photometry.save_spectrum``).
 
 Changed behaviour
 ~~~~~~~~~~~~~~~~~
@@ -364,7 +375,8 @@ Changed behaviour
 
   The NJM client downloads neither top cube of a split grid. It builds
   ``flux_cube_nd.bin`` from the variant cubes, and rebuilds it only when a
-  variant's files were newly downloaded. MESA reads a variant's folder
+  variant's files were newly downloaded or the file is missing or version 1
+  or 2. MESA reads a variant's folder
   (``stellar_atm = '.../<grid>/<variant>/'``), as before, and the variant
   cubes are byte for byte unchanged. The README's examples point at a
   Kurucz2003all variant.
@@ -466,6 +478,31 @@ Changed behaviour
   models".
 - ``MASTSpectraGrabber.get_model_metadata`` no longer asks anything; it plans
   every metallicity, and ``download_model_spectra`` narrows them.
+- ``sed-tools mesa_prepare`` and ``export_variant`` write into an existing
+  output folder without asking: the exported files replace theirs and the
+  folder's other files stay. ``mesa_prepare``'s "Overwrite? [y/N]" question
+  and ``export_variant``'s ``overwrite`` parameter (and the
+  ``FileExistsError`` without it) are gone.
+- **A given Vega spectrum sets the Vega zero point.** Vega magnitudes
+  (``EvaluatedSED.photometry(system="Vega", vega_spectrum=...)``, the flux
+  cube tool's ``--vega-sed``) use the Vega spectrum given; without one, the
+  zero point the curve's header states (``zp_vega``), then
+  ``ZeroPointVega_flam`` in the ``properties.json`` beside the curve (NJM's),
+  else ``ValueError``. Before, a header ``zp_vega`` won over a given
+  spectrum, and ``properties.json`` was not read. One rule,
+  ``sed_tools.photometry.vega_zero_point``, serves all of them.
+- **One interpolation rule for a spectrum between its samples**
+  (``sed_tools.photometry.resample_to_grid``), for band averages, every band
+  quantity and every flux cube builder: log flux is linear in wavelength
+  between two positive samples, and flux is linear between two where either
+  is zero or negative. Band integrals used a straight line in flux, which is
+  further off on coarsely sampled continua. Band quantities change by up to
+  0.0075 mag on the test suite's recorded curves (LSST u). A cube stores a
+  spectrum's zero or negative samples as they are, where it stored 1e-300;
+  every other cube value is unchanged.
+- The ML generator's training keeps a spectrum with zero flux samples and
+  skips only a spectrum with negative or non-finite flux; it skipped any
+  spectrum with a flux of zero or below.
 
 Fixed
 ~~~~~
@@ -585,7 +622,8 @@ Fixed
   MESA does; Johnson U, B and V now agree with MESA to 0.006 mag. Curves
   sampled every 5 Å or finer change by less than 0.001 mag (99.9 % of NJM's).
   The detector weighting is unchanged. NJM's served ``properties.json``
-  values follow this rule, and the next, since 24 Nov 2026.
+  values follow this rule and the next (since 24 Nov 2026), and the one
+  interpolation rule (Changed behaviour; since 25 Nov 2026).
 - **One rule for every band quantity.** The pivot wavelength, and with it
   ``ZeroPointAB_flam``, ``ZeroPointVega_Jy``, ``ABminusVega`` and ``AfAv``,
   still integrated on the curve's own samples, while band averages used the
@@ -595,16 +633,20 @@ Fixed
   zero points, pivot, mean, effective and photon wavelengths, the shares of a
   band beyond a grid, the coverage tolerance of composing, the display order)
   is now ``sed_tools.photometry.band_integral`` on ``band_grid``: the curve
-  linear between its samples, a spectrum linear between its own, and the
-  integral of their product exact (steps split to lambda/100, so the
-  lambda^-2 of the pivot is exact to 1e-9). ``band_average_flux_nu`` is the
+  linear between its samples, a spectrum by the one interpolation rule
+  (Changed behaviour), and the integral of their product exact for the curve
+  (steps split to lambda/100, so the lambda^-2 of the pivot is exact to
+  1e-9). ``band_average_flux_nu`` is the
   band-averaged f_lambda times pivot^2 / c for every spectrum. Over NJM's
   10,982 curves the pivot moves by less than 1e-4 mag (as the AB zero point)
   for 91.5 % and by more than 0.01 mag for 52; Vega zero points (f_lambda)
   move by at most 0.011 mag from the combined grid above. MESA's own
   compiled routines give the same Vega zero points to a median 2e-5 mag
   over 10,998 curves. SVO's pivots follow the trapezoid on the curve's own
-  samples, and so differ on those 52 curves.
+  samples, and so differ on those 52 curves. The figures in this bullet and
+  the one above were measured on 24 Nov 2026 with a spectrum linear between
+  its samples, before the one interpolation rule; the pivot figures do not
+  depend on the spectrum.
 - **A split grid is checked by its variants.** NJM serves Kurucz2003all and
   Husfeld split. Its top-level ``flux_cube.bin`` copied the default variant's
   cube until 19 Nov 2026 and has been the all-axes cube since; NJM moves it to
@@ -648,9 +690,10 @@ Fixed
   grid is written split, a folder per variant, instead of one cube averaging
   its variants. A parameter that is unknown for every spectrum (log g of a
   blackbody) is left out, so bbody and Husfeld can be written. Writing the
-  spectra of one variant into a folder that holds a split raises
-  ``ValueError`` before anything is written, so its variant folders are never
-  replaced.
+  spectra of one variant into a folder that holds a split makes that folder
+  one grid (its lookup table and ``flux_cube.bin``, with
+  ``variants_index.csv`` removed); the variant folders, ``flux_cube_nd.bin``
+  and the other spectra stay beside it.
 - A loaded ``SED`` reads its filter curves at each photometry call, so a curve
   edited on disk (``Filters.correct_detector_type``) is the one used; it kept
   the old curve before.
@@ -722,6 +765,12 @@ Fixed
 - ``scripts/bump_version.py`` replaces a ``Version X.Y.Z`` heading marked
   unreleased with the release heading, instead of adding a second one above
   it.
+- MSG's grid index is read from its current address,
+  ``https://madstar.richtownsend.dev/static.php?ref=msg-grids``; the old
+  address only redirects there.
+- MSG downloads take the newest version of each grid. MSG's index links a
+  grid's old versions beside its current one, and the last link won, so
+  seven grids came as an older version (CAP18 v1, Goettingen v2).
 
 Checks and guards
 ~~~~~~~~~~~~~~~~~
@@ -857,8 +906,8 @@ Documentation
   (``[project.urls]``).
 - Corrected examples: paths use the default data directory
   (``~/.sed_tools/data/...``) instead of a relative ``data/...`` that did not
-  exist; the batch example writes spectra with ``np.savetxt``
-  (``EvaluatedSED`` has no ``save``); the command-to-API table names commands
+  exist; the batch example writes each spectrum with ``EvaluatedSED.save``
+  (Added); the command-to-API table names commands
   that exist; the ``filters-combine --on-conflict error`` example combines
   sets without a shared band name; ``filters-detector`` is given a path;
   2MASS is no longer given as a photon-counting curve; the ``filters-info``
