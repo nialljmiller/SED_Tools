@@ -187,26 +187,15 @@ def collect_filter_files(
     search_roots = _unique_resolved(search_roots)
 
     filter_entries: List[Tuple[str, Path]] = []
-    existing_names: set[str] = set()
-    name_counts: Dict[str, int] = {}
-
     for file_path in unique_files:
-        # Name each filter by its path below the first search root holding it.
+        # Name each filter by its path below the first search root holding it; a name two roots share is told
+        # apart when photometry is printed (model.distinct_filter_names).
         name = file_path.stem
         for root in search_roots:
             if file_path.is_relative_to(root):
                 name = file_path.relative_to(root).with_suffix("").as_posix()
                 break
-
-        base_name = name
-        counter = name_counts.get(base_name, 0)
-        while name in existing_names:
-            counter += 1
-            name = f"{base_name}_{counter}"
-        name_counts[base_name] = counter
-
         filter_entries.append((name, file_path))
-        existing_names.add(name)
 
     return filter_entries, search_roots
 
@@ -522,7 +511,8 @@ def _print_filter_photometry(
 
     filters: Dict[str, FilterCurve] = {}
     failures: List[str] = []
-    for name, fpath in selected_entries:
+    names = _model.distinct_filter_names(selected_entries)
+    for name, (_, fpath) in zip(names, selected_entries):
         curve = load_filter_curve(str(fpath), name)
         filters[name] = curve
         try:
