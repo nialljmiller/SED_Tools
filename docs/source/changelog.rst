@@ -236,6 +236,9 @@ Added
   value`` lines for Teff, log g, [M/H], the units and any extra axis, then
   wavelength (Å) and flux (erg/s/cm²/Å). ``Spectrum.save`` writes the same
   format, through the same writer (``sed_tools.photometry.save_spectrum``).
+- ``sed-tools mesa_prepare --variant NAME`` exports the variant whose subgrid
+  folder is NAME (as ``variants_index.csv`` lists it) without asking; a name
+  the grid has none of exits with status 1 and lists the names.
 
 Changed behaviour
 ~~~~~~~~~~~~~~~~~
@@ -332,9 +335,6 @@ Changed behaviour
   ``Filters.available``, composing and describing it stop; for NJM's or SVO's
   description, ``Filters.available`` records the error as that source's
   failure and asks the next source.
-- ``python -m sed_tools.filters.label_check`` stops with a usage error (exit 2)
-  when the ``--against`` tree is not a directory, as for ``FILTERS_DIR``.
-  Before, a mistyped ``--against`` path compared against nothing and passed.
 - **combine leaves a node no spectrum fills at zero.** It used to fill every
   empty node with the nearest filled node's spectrum, unscaled, so a 3500 K
   node at log g 4.5 could hold a 900 K star's spectrum; the 1 % guard checks
@@ -393,9 +393,6 @@ Changed behaviour
   rebuilds it. ``sed-tools grids`` keeps a downloaded cube that holds every
   spectrum beside it, as it keeps such an HDF5 bundle; it rebuilt the cube
   after every download.
-- ``sed-tools mesa_prepare --variant NAME`` exports the variant whose subgrid
-  folder is NAME (as ``variants_index.csv`` lists it) without asking; a name
-  the grid has none of exits with status 1 and lists the names.
 - **SED.combine refuses an output that is one of its grids**, as
   ``sed-tools combine`` did: it used to overwrite that grid's lookup table and
   cube. One rule in ``grids.pipeline._build_combined_grid`` serves both, and
@@ -497,12 +494,27 @@ Changed behaviour
   between two positive samples, and flux is linear between two where either
   is zero or negative. Band integrals used a straight line in flux, which is
   further off on coarsely sampled continua. Band quantities change by up to
-  0.0075 mag on the test suite's recorded curves (LSST u). A cube stores a
+  about 0.014 mag, in SDSS u′ for cool Kurucz stars, whose near-UV samples
+  are coarse: 0.0139 mag AB at 3750 K, log g 3.5, [M/H] 0 on Kurucz2003all
+  spectra, and 0.0017 mag in Gaia Gbp (measured 27 Nov 2026). A cube stores a
   spectrum's zero or negative samples as they are, where it stored 1e-300;
   every other cube value is unchanged.
 - The ML generator's training keeps a spectrum with zero flux samples and
   skips only a spectrum with negative or non-finite flux; it skipped any
   spectrum with a flux of zero or below.
+- **The flux cube tool names a shared band as photometry does.** A band that
+  two folders given to ``python -m sed_tools.cube.tool --filters`` share is
+  named with its folder, ``Johnson/J`` and ``2MASS/J``, as
+  ``EvaluatedSED.photometry`` names it; the tool printed ``J`` and ``J_1``.
+  One rule, ``sed_tools.cube.model.distinct_filter_names``, serves both. The
+  filter-system menu groups the bands as before (Nill, 27 Nov 2026).
+- **The ML train menus offer a split grid's variants.** ``sed-tools
+  ml_generator`` and ``ml_completer`` list each variant of a split grid for
+  training, as ``<grid>/<variant>``, the names ``SED.local`` takes
+  (``cube.model.SED.available_grids``); they listed only grids with a
+  ``flux_cube.bin`` at their top, so a variant could be trained on only
+  through the API. The default model name takes the variant's folder name
+  (Nill, 27 Nov 2026).
 
 Fixed
 ~~~~~
@@ -815,7 +827,9 @@ Checks and guards
   stronger evidence than the old one, or on ``user``. A rebuild then cannot
   undo a correction, nor follow SVO reclassifying a curve, without a report.
   Run against the shipped ``colors_data``, it catches TESS returning from
-  MESA's hand-set ``photon`` to SVO's ``energy``.
+  MESA's hand-set ``photon`` to SVO's ``energy``. An ``--against`` tree that
+  is not a directory stops it with a usage error (exit 2), as for
+  ``FILTERS_DIR``.
 - Every curve's ``Sources`` is written as one list of distinct references
   separated by ``" | "`` (``sed_tools.filters.curve_metadata.normalize_sources``),
   the form most served curves already had. An item that runs references
