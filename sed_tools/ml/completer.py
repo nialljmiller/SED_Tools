@@ -1018,7 +1018,7 @@ def _train_menu(base_dir: str, models_dir: str) -> None:
     print("\nTraining parameters:")
     epochs = _ask_number("  Epochs [100]: ", 100, whole=True)
     batch_size = _ask_number("  Batch size [32]: ", 32, whole=True)
-    default_name = f"sed_model_{selected['name']}"
+    default_name = f"sed_model_{os.path.basename(selected['name'])}"  # a variant's folder name names its grid
     model_name = input(f"  Model name [{default_name}]: ").strip() or default_name
     output_path = os.path.join(models_dir, model_name)
     print(f"\nModel will be saved to: {output_path}/")

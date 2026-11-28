@@ -154,6 +154,20 @@ class EvaluatedSED:
         return results
 
 
+def distinct_filter_names(named: Sequence[Tuple[str, Optional[Path]]]) -> List[str]:
+    """The name each ``(name, file)`` is reported by, photometry's and the flux cube tool's: a name that files in
+    different folders share (J of Generic/Johnson and of 2MASS/2MASS) is given its folder, "Johnson/J" and "2MASS/J",
+    so no result replaces another (a curve with no file keeps its name). ValueError if two would still share one."""
+    names = [name for name, _ in named]
+    keys: List[str] = []
+    for name, path in named:
+        key = f"{path.parent.name}/{name}" if path is not None and names.count(name) > 1 else name
+        if key in keys:
+            raise ValueError(f"Two filters would both be reported as {key!r}; name one with a (name, path) pair")
+        keys.append(key)
+    return keys
+
+
 class SEDModel:
     """Thin wrapper around a flux cube providing interpolation utilities.
 
@@ -246,10 +260,8 @@ class SEDModel:
     # --- Filter handling ---
 
     def _resolve_filters(self, filters: Sequence[FilterSpec]) -> Dict[str, FilterCurve]:
-        """Each curve by its name. Curves of different files that share a name (J of Generic/Johnson and of
-        2MASS/2MASS) are named with their folder, "Johnson/J" and "2MASS/J", so no result replaces another; a file
-        asked for twice is one curve. Curves are read at each call, so one edited on disk
-        (Filters.correct_detector_type) is the one used. ValueError if two curves would still share a name."""
+        """Each curve by its name, as distinct_filter_names gives it; a file asked for twice is one curve. Curves
+        are read at each call, so one edited on disk (Filters.correct_detector_type) is the one used."""
         found: Dict[Tuple, Tuple[str, FilterCurve, Optional[Path]]] = {}
         for item in _normalize_filter_sequence(filters):
             if isinstance(item, FilterCurve):
@@ -259,14 +271,8 @@ class SEDModel:
             for path in [self._locate_filter_path(spec)] if custom else self._locate_filter_paths(spec):
                 curve = load_filter_curve(str(path), name=custom)
                 found[curve.name, Path(path).resolve()] = (curve.name, curve, Path(path))
-        names = [name for name, _, _ in found.values()]
-        resolved: Dict[str, FilterCurve] = {}
-        for name, curve, path in found.values():
-            key = f"{path.parent.name}/{name}" if path is not None and names.count(name) > 1 else name
-            if key in resolved:
-                raise ValueError(f"Two filters would both be reported as {key!r}; name one with a (name, path) pair")
-            resolved[key] = curve
-        return resolved
+        keys = distinct_filter_names([(name, path) for name, _, path in found.values()])
+        return dict(zip(keys, (curve for _, curve, _ in found.values())))
 
     def _locate_filter_paths(self, spec: Union[str, os.PathLike[str]]) -> List[Path]:
         path = Path(spec)

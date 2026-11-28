@@ -11,6 +11,7 @@ import io
 import json
 import logging
 import math
+import re
 import shutil
 import struct
 import sys
@@ -757,7 +758,8 @@ def three_axis_readers_leave_the_all_axes_cube_alone(t):
     found = tool.discover_flux_cube_files([folder])  # also searches the working directory
     assert (folder / "flux_cube.bin").resolve() not in found and all(v.resolve() / "flux_cube.bin" in found
                                                                      for v in variants)
-    assert training_libraries(str(t.tmp / "models")) == []
+    # the ML train menus offer each variant, as the API names it (they offered no split grid)
+    assert [library["name"] for library in training_libraries(str(t.tmp / "models"))] == [f"K/{v.name}" for v in variants]
     assert fileio.load_axes(top)[0].tolist() == _read_flux_cube_header(top)["teff"].tolist() == [5750.0, 6000.0, 6250.0]
     assert SED(model_root=t.tmp / "models").available_grids() == [f"K/{v.name}" for v in variants]
     assert mesa_inlist_lines(folder) == [f"stellar_atm = '{v}'" for v in variants]
@@ -2135,9 +2137,16 @@ def filter_files_are_collected_from_files_and_folders_and_named_apart(t):
         (t.tmp / folder).mkdir()
         (t.tmp / folder / "V.dat").write_text("4000 1\n5000 1\n")
     cube = str(t.tmp / "flux_cube.bin")
-    # two folders each with a V: the second is V_1
+    # two folders each with a V: one system, and the bands are printed as photometry names them, a/V and b/V (were
+    # V and V_1)
     assert tool.collect_filter_files([str(t.tmp / "a"), str(t.tmp / "b")], cube) == (
-        [("V", t.tmp / "a" / "V.dat"), ("V_1", t.tmp / "b" / "V.dat")], [t.tmp / "a", t.tmp / "b"])
+        [("V", t.tmp / "a" / "V.dat"), ("V", t.tmp / "b" / "V.dat")], [t.tmp / "a", t.tmp / "b"])
+    model = _build(_simple_grid(t.tmp / "grid"))
+    t.mp.setattr("builtins.input", lambda *args: "")
+    tool.main(["--flux-cube", str(model / "flux_cube.bin"), "--teff", "5500", "--logg", "4.25", "--metallicity", "0",
+               "--filters", str(t.tmp / "a"), str(t.tmp / "b"), "--photometric-system", "AB",
+               "--plot", str(t.tmp / "sed.png")])
+    assert re.findall(r"^  (\S+) +(?:\w+=|error:)", t.capsys.readouterr().out, re.M) == ["a/V", "b/V"]
     # a file is named below the folder that holds it
     assert tool.collect_filter_files([str(t.tmp / "a" / "V.dat")], cube) == ([("V", t.tmp / "a" / "V.dat")], [t.tmp / "a"])
     with pytest.raises(FileNotFoundError, match="Filter path 'nowhere.dat' does not exist"):
