@@ -15,6 +15,9 @@ python3 -m filter_info.check_manifests data
 # distinct references, and one DetectorType for every served copy of the same curve.
 python3 -m sed_tools.filters.label_check data/filters
 python3 -m filter_info.svo_archive build source_evidence/svo-archive/parsed $(grep -v '^#' filter_info/svo_manifests.txt)
+# Which SVO instruments each NJM instrument duplicates (generate_index.py lists them in index.json), from the served
+# curves and SVO's archived filter lists, rebuilt here so it follows every curve change (Nill, 27 Nov 2026).
+python3 -m filter_info.svo_instruments source_evidence/svo-archive/svo-live-2026-10-27-b00-lists filter_info/svo_instruments.json
 python3 generate_index.py data
 if [ -s filter_info/unresolved.txt ]; then
   python3 -m filter_info.references resolve

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "generated": "2026-11-27T23:41:18.412324",
+  "generated": "2026-11-28T00:30:47.888749",
   "statistics": {
     "total_models": 8,
     "complete_models": 7,
@@ -32291,7 +32291,7 @@
         }
       },
       "svo_instruments": {
-        "generated": "2026-11-13T14:52:27Z",
+        "generated": "2026-11-28T00:29:21Z",
         "svo_list": "source_evidence/svo-archive/svo-live-2026-10-27-b00-lists",
         "thresholds": {
           "overlap": 0.995,
