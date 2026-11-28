@@ -343,16 +343,13 @@ def model_configs(models_dir: str, config_file: str, logger: logging.Logger):
 
 
 def training_libraries(base_dir: str) -> List[Dict[str, Any]]:
-    """Libraries under base_dir with a 3-axis flux_cube.bin (not a split grid's all-axes cube), and their SED counts
-    ("?" if unknown)."""
-    from ..cube.fileio import is_all_axes
+    """Libraries under base_dir with a flux_cube.bin, as the API names them (cube.model.SED.available_grids: a split
+    grid's variants as ``<grid>/<variant>``), and their SED counts ("?" if unknown)."""
+    from ..cube.model import SED
     import pandas as pd
     libraries = []
-    for name in sorted(os.listdir(base_dir)):
+    for name in SED(model_root=base_dir).available_grids():
         path = os.path.join(base_dir, name)
-        cube = os.path.join(path, "flux_cube.bin")
-        if not os.path.isdir(path) or not os.path.exists(cube) or is_all_axes(cube):
-            continue
         lookup = os.path.join(path, "lookup_table.csv")
         n_seds = "?"
         if os.path.exists(lookup):

@@ -758,7 +758,8 @@ def three_axis_readers_leave_the_all_axes_cube_alone(t):
     found = tool.discover_flux_cube_files([folder])  # also searches the working directory
     assert (folder / "flux_cube.bin").resolve() not in found and all(v.resolve() / "flux_cube.bin" in found
                                                                      for v in variants)
-    assert training_libraries(str(t.tmp / "models")) == []
+    # the ML train menus offer each variant, as the API names it (they offered no split grid)
+    assert [library["name"] for library in training_libraries(str(t.tmp / "models"))] == [f"K/{v.name}" for v in variants]
     assert fileio.load_axes(top)[0].tolist() == _read_flux_cube_header(top)["teff"].tolist() == [5750.0, 6000.0, 6250.0]
     assert SED(model_root=t.tmp / "models").available_grids() == [f"K/{v.name}" for v in variants]
     assert mesa_inlist_lines(folder) == [f"stellar_atm = '{v}'" for v in variants]
